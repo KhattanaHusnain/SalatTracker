@@ -50,6 +50,9 @@ fun MainScaffold() {
     val navBackStack  by navController.currentBackStackEntryAsState()
     val currentDest   = navBackStack?.destination
 
+    LaunchedEffect(currentDest) {
+        Log.d("NAV", "Current route = ${currentDest?.route}")
+    }
     Scaffold(
         containerColor = SalatBackground,
         topBar = {
@@ -62,6 +65,8 @@ fun MainScaffold() {
                 routes      = BottomNavRoute.all,
                 currentDest = currentDest,
                 onNavigate  = { route ->
+                    Log.d("NAV", "Clicked ${route.route}")
+
                     navController.navigate(route.route) {
                         popUpTo(navController.graph.findStartDestination().id) { saveState = true }
                         launchSingleTop = true
@@ -158,42 +163,46 @@ private fun SalatBottomNavBar(
         containerColor = SalatSurface,
         tonalElevation = 0.dp,
     ) {
-        routes.forEachIndexed { index, route ->
-            Log.d("BOTTOM_NAV", "[$index] = $route")
-        }
-//        routes.forEach { route ->
-//
-//
-//            val isSelected = currentDest?.hierarchy?.any { it.route == route.route } == true
-//
-//            NavigationBarItem(
-//                selected = isSelected,
-//                onClick  = { onNavigate(route) },
-//                label    = {
-//                    Text(
-//                        text = route.label,
-//                        fontSize = 11.sp,
-//                        fontFamily = InterFamily,
-//                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-//                    )
-//                },
-//                icon = {
-//                    Icon(
-//                        painter = painterResource(
-//                            if (isSelected) route.iconFilledRes else route.iconOutlinedRes
-//                        ),
-//                        contentDescription = route.label,
-//                    )
-//                },
-//                colors = NavigationBarItemDefaults.colors(
-//                    selectedIconColor   = SalatOnSecondaryContainer,
-//                    selectedTextColor   = SalatOnSecondaryContainer,
-//                    indicatorColor      = SalatSecondaryContainer,
-//                    unselectedIconColor = SalatOnSurfaceVariant,
-//                    unselectedTextColor = SalatOnSurfaceVariant,
-//                ),
-//            )
+//        routes.forEachIndexed { index, route ->
+//            Log.d("BOTTOM_NAV", "[$index] = $route")
 //        }
+        routes.forEach { route ->
+            Log.d(
+                "NAV",
+                "route=${route.route}, current=${currentDest?.route}"
+            )
+
+
+            val isSelected = currentDest?.hierarchy?.any { it.route == route.route } == true
+
+            NavigationBarItem(
+                selected = isSelected,
+                onClick  = { onNavigate(route) },
+                label    = {
+                    Text(
+                        text = route.label,
+                        fontSize = 11.sp,
+                        fontFamily = InterFamily,
+                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                    )
+                },
+                icon = {
+                    Icon(
+                        painter = painterResource(
+                            if (isSelected) route.iconFilledRes else route.iconOutlinedRes
+                        ),
+                        contentDescription = route.label,
+                    )
+                },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor   = SalatOnSecondaryContainer,
+                    selectedTextColor   = SalatOnSecondaryContainer,
+                    indicatorColor      = SalatSecondaryContainer,
+                    unselectedIconColor = SalatOnSurfaceVariant,
+                    unselectedTextColor = SalatOnSurfaceVariant,
+                ),
+            )
+        }
     }
 }
 

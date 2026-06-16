@@ -15,6 +15,14 @@ sealed class BottomNavRoute(
     object Settings : BottomNavRoute("settings", "Settings", R.drawable.ic_nav_settings, R.drawable.ic_nav_settings_filled)
 
     companion object {
-        val all = listOf(Home, Calendar, Qaza, Stats, Settings)
+        val all: List<BottomNavRoute> by lazy {
+            listOf(
+                Home,
+                Calendar,
+                Qaza,
+                Stats,
+                Settings
+            )
+        }
     }
 }
