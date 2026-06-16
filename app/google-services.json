@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "116240079706",
+    "project_id": "salat-tracker-sowp",
+    "storage_bucket": "salat-tracker-sowp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:116240079706:android:b29700072587f1d2303163",
+        "android_client_info": {
+          "package_name": "com.salattracker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "116240079706-lisbqgbu3e3731iselqi33dpr2th4cqg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.salattracker",
+            "certificate_hash": "0ba5704dcdfd598fa7c7e04c4c3aaa305c714c84"
+          }
+        },
+        {
+          "client_id": "116240079706-3qfunrp9vbf1d3chffhnioc4trr4qd34.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD2ViiO9x_NpSx_sbB7gkgbwWh54deAaAM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "116240079706-3qfunrp9vbf1d3chffhnioc4trr4qd34.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Salat Tracker</string>
+
+    <!-- Bottom nav labels -->
+    <string name="nav_home">Home</string>
+    <string name="nav_calendar">Calendar</string>
+    <string name="nav_qaza">Qaza</string>
+    <string name="nav_stats">Stats</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Auth -->
+    <string name="sign_in_with_google">Continue with Google</string>
+    <string name="sign_in_with_email">Sign in with Email</string>
+    <string name="tagline">Maintain your spiritual discipline with organised daily tracking.</string>
+
+    <!-- Google Sign-In web client ID (replace with your actual client ID from google-services.json) -->
+    <string name="default_web_client_id" translatable="false">116240079706-3qfunrp9vbf1d3chffhnioc4trr4qd34.apps.googleusercontent.com</string>
+
+    <!-- Prayer names -->
+    <string name="prayer_fajr">Fajr</string>
+    <string name="prayer_dhuhr">Dhuhr</string>
+    <string name="prayer_asr">Asr</string>
+    <string name="prayer_maghrib">Maghrib</string>
+    <string name="prayer_isha">Isha</string>
+
+    <!-- Status labels -->
+    <string name="status_congregation">Congregation</string>
+    <string name="status_individual">Individual</string>
+    <string name="status_qaza_pending">Qaza Pending</string>
+    <string name="status_qaza_completed">Qaza Completed</string>
+    <string name="status_menstruation">Menstruation</string>
+    <string name="status_not_recorded">Not Recorded</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_prayer_id">prayer_reminders</string>
+    <string name="notification_channel_prayer_name">Prayer Reminders</string>
+    <string name="notification_channel_prayer_desc">Reminders for daily prayer times</string>
+    <string name="notification_channel_sync_id">sync_status</string>
+    <string name="notification_channel_sync_name">Sync Status</string>
+    <string name="notification_mark_prayed">Mark as Prayed</string>
+</resources>
