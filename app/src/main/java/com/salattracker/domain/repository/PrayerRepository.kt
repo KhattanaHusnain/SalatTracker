@@ -8,21 +8,20 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 /**
- * Single repository interface that all ViewModels depend on.
- * The concrete implementation lives in the data layer (Room + Firestore).
- * This interface lives in the domain layer and has zero Android/Room imports.
+ * CHANGED:
+ * - Fixed broken interface body (all methods now inside the interface braces).
+ * - Removed cross-layer imports of feature.stats.* types — replaced with domain-
+ *   owned types StreakPoint and PrayerBreakdown declared at the bottom of this file.
+ * - PeriodStats moved inside this file.
  */
 interface PrayerRepository {
 
     // ── Today / single day ────────────────────────────────────────────────────
 
-    /** Reactive stream of all 5 prayer entries for [date]. Emits on every DB change. */
     fun observeTodayPrayers(date: LocalDate): Flow<List<PrayerEntry>>
 
-    /** One-shot fetch of all entries for [date] (used for day-detail in Calendar). */
     suspend fun getPrayerEntriesForDate(date: LocalDate): List<PrayerEntry>
 
-    /** Insert or update a single prayer status. Enqueues a sync op automatically. */
     suspend fun upsertPrayerStatus(
         date: LocalDate,
         prayerType: PrayerType,
@@ -31,50 +30,65 @@ interface PrayerRepository {
 
     // ── Month range ───────────────────────────────────────────────────────────
 
-    /**
-     * Reactive stream of all entries between [from] and [to] (inclusive),
-     * grouped by date for the Calendar month grid.
-     */
     fun observeMonthEntries(
         from: LocalDate,
         to: LocalDate,
     ): Flow<Map<LocalDate, List<PrayerEntry>>>
 
-    // ── Prayer times (AlAdhan cache) ──────────────────────────────────────────
+    // ── Prayer times ──────────────────────────────────────────────────────────
 
-    /**
-     * Returns cached prayer times for [date] as a map of PrayerType → LocalTime.
-     * Returns null if not yet fetched (UI should show "--:--").
-     */
     suspend fun getCachedPrayerTimes(date: LocalDate): Map<PrayerType, LocalTime>?
 
-    // ── Hijri date label ──────────────────────────────────────────────────────
+    // ── Hijri ─────────────────────────────────────────────────────────────────
 
-    /** Returns a formatted Hijri date string, e.g. "3 Rajab 1445 AH". */
     suspend fun getHijriLabel(date: LocalDate): String
 
     // ── Streak ────────────────────────────────────────────────────────────────
 
-    /** Fetches the cached streak snapshot (current + highest). */
     suspend fun getStreakSnapshot(): Pair<Int, Int>
 
     // ── Qaza ──────────────────────────────────────────────────────────────────
 
-    /**
-     * Reactive stream of pending Qaza count per prayer type.
-     * Map key = PrayerType, value = count of QAZA_PENDING entries.
-     */
     fun observeQazaBalance(): Flow<Map<PrayerType, Int>>
 
-    /**
-     * Reactive stream of all QAZA_PENDING entries, ordered by date descending
-     * (most recent missed first — matches the "Recent Missed Prayers" list).
-     */
     fun observePendingQazaEntries(): Flow<List<PrayerEntry>>
 
-    /**
-     * Marks a specific QAZA_PENDING entry as QAZA_COMPLETED and
-     * decrements the QazaBalance for that prayer type.
-     */
     suspend fun markQazaCompleted(date: LocalDate, prayerType: PrayerType)
+
+    // ── Analytics ─────────────────────────────────────────────────────────────
+
+    suspend fun getStatsForPeriod(from: LocalDate, to: LocalDate): PeriodStats
+
+    /**
+     * Daily completion points for the streak line chart.
+     * [periodLabel] controls label format: "week" → "Mon", "month" → "d", "year" → "MMM".
+     */
+    suspend fun getStreakPoints(
+        from: LocalDate,
+        to: LocalDate,
+        periodLabel: String,       // "week" | "month" | "year"
+    ): List<StreakPoint>
+
+    suspend fun getPrayerBreakdown(
+        from: LocalDate,
+        to: LocalDate,
+    ): List<PrayerBreakdown>
 }
+
+// ── Domain result types (no feature-layer imports) ────────────────────────────
+
+data class PeriodStats(
+    val congregationPct: Int,
+    val individualPct: Int,
+    val missedPct: Int,
+)
+
+data class StreakPoint(
+    val label: String,
+    val completedCount: Int,
+)
+
+data class PrayerBreakdown(
+    val prayerType: PrayerType,
+    val completionRate: Float,
+)

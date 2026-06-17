@@ -29,6 +29,11 @@ android {
             "GOOGLE_WEB_CLIENT_ID",
             "\"${project.findProperty("GOOGLE_WEB_CLIENT_ID") ?: ""}\"",
         )
+        buildConfigField(
+            "Boolean",
+            "ENABLE_LOGGING",
+            "true"
+        )
     }
 
     buildTypes {
@@ -111,5 +116,10 @@ dependencies {
 
     // Material
     implementation(libs.material.v1130)
+    implementation(libs.coil.compose)
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.okhttp)
+    implementation(libs.logging.interceptor)
+
 
 }

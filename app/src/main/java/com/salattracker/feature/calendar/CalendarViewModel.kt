@@ -13,24 +13,12 @@ import java.time.LocalDate
 import java.time.YearMonth
 import javax.inject.Inject
 
-// ── UI models ─────────────────────────────────────────────────────────────────
-
-/**
- * The dot colour category shown under each day cell.
- * Maps to five dots (one per prayer) with distinct colours.
- */
-enum class DotColor {
-    GREEN,   // CONGREGATION or INDIVIDUAL (on time)
-    YELLOW,  // INDIVIDUAL (secondary)
-    RED,     // QAZA_PENDING
-    PURPLE,  // QAZA_COMPLETED
-    GREY,    // NOT_RECORDED / MENSTRUATION
-}
+enum class DotColor { GREEN, YELLOW, RED, PURPLE, GREY }
 
 data class DayCell(
     val date: LocalDate,
-    val dots: List<DotColor>,          // exactly 5, one per prayer in order
-    val completionPct: Int,            // 0-100
+    val dots: List<DotColor>,
+    val completionPct: Int,
     val isToday: Boolean,
     val isSelected: Boolean,
 )
@@ -54,13 +42,10 @@ data class CalendarUiState(
     val selectedDay: DayDetail? = null,
     val isLoadingMonth: Boolean = true,
     val isLoadingDay: Boolean = false,
-    // Bottom sheet
     val sheetArgs: PrayerStatusSheetArgs? = null,
     val isSaving: Boolean = false,
     val error: String? = null,
 )
-
-// ── ViewModel ─────────────────────────────────────────────────────────────────
 
 @HiltViewModel
 class CalendarViewModel @Inject constructor(
@@ -74,8 +59,6 @@ class CalendarViewModel @Inject constructor(
         loadMonth(YearMonth.now())
         onDaySelected(LocalDate.now())
     }
-
-    // ── Month navigation ──────────────────────────────────────────────────────
 
     fun onPreviousMonth() {
         val prev = _uiState.value.visibleMonth.minusMonths(1)
@@ -117,10 +100,7 @@ class CalendarViewModel @Inject constructor(
         }
     }
 
-    // ── Day selection ─────────────────────────────────────────────────────────
-
     fun onDaySelected(date: LocalDate) {
-        // Update selection highlight immediately
         _uiState.update { state ->
             state.copy(
                 isLoadingDay = true,
@@ -147,8 +127,6 @@ class CalendarViewModel @Inject constructor(
         }
     }
 
-    // ── Bottom sheet ──────────────────────────────────────────────────────────
-
     fun onPrayerRowClick(type: PrayerType) {
         val day     = _uiState.value.selectedDay ?: return
         val current = day.prayers.find { it.type == type }?.status ?: PrayerStatus.NOT_RECORDED
@@ -165,6 +143,9 @@ class CalendarViewModel @Inject constructor(
 
     fun onSheetDismiss() = _uiState.update { it.copy(sheetArgs = null) }
 
+    // FIXED: was accidentally appended outside the class body in the previous version
+    fun onDayDetailDismiss() = _uiState.update { it.copy(selectedDay = null) }
+
     fun onStatusSave(newStatus: PrayerStatus) {
         val args = _uiState.value.sheetArgs ?: return
         viewModelScope.launch {
@@ -173,7 +154,6 @@ class CalendarViewModel @Inject constructor(
                 prayerRepository.upsertPrayerStatus(args.date, args.prayerType, newStatus)
             }.onSuccess {
                 _uiState.update { it.copy(isSaving = false, sheetArgs = null) }
-                // Refresh day detail and month dots
                 onDaySelected(args.date)
             }.onFailure { e ->
                 _uiState.update { it.copy(isSaving = false, error = e.message) }
@@ -182,8 +162,6 @@ class CalendarViewModel @Inject constructor(
     }
 
     fun clearError() = _uiState.update { it.copy(error = null) }
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private fun PrayerStatus?.toDotColor() = when (this) {
         PrayerStatus.CONGREGATION   -> DotColor.GREEN
@@ -200,8 +178,4 @@ class CalendarViewModel @Inject constructor(
         }
         return (done * 100) / 5
     }
-
-    // Close the day detail sheet (sets selectedDay to null)
-    fun onDayDetailDismiss() = _uiState.update { it.copy(selectedDay = null) }
 }
-

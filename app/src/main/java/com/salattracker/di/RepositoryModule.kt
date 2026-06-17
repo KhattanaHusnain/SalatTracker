@@ -1,7 +1,9 @@
 package com.salattracker.di
 
-import com.salattracker.data.repository.InMemoryPrayerRepository
+import com.salattracker.data.repository.PrayerRepositoryImpl
+import com.salattracker.data.repository.SettingsRepositoryImpl
 import com.salattracker.domain.repository.PrayerRepository
+import com.salattracker.domain.repository.SettingsRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -14,7 +16,9 @@ abstract class RepositoryModule {
 
     @Binds
     @Singleton
-    abstract fun bindPrayerRepository(
-        impl: InMemoryPrayerRepository,
-    ): PrayerRepository
+    abstract fun bindPrayerRepository(impl: PrayerRepositoryImpl): PrayerRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindSettingsRepository(impl: SettingsRepositoryImpl): SettingsRepository
 }

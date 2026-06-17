@@ -1,0 +1,97 @@
+package com.salattracker.data.local.preferences
+
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.*
+import com.salattracker.domain.model.PrayerType
+import com.salattracker.domain.repository.SettingsRepository
+import com.salattracker.domain.repository.UserPrefs
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import java.io.IOException
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class DataStoreSettingsRepository @Inject constructor(
+    private val dataStore: DataStore<Preferences>,
+) : SettingsRepository {
+
+    // ── Keys ──────────────────────────────────────────────────────────────────
+
+    private object Keys {
+        val USE_DEVICE_LOCATION   = booleanPreferencesKey("use_device_location")
+        val LATITUDE              = doublePreferencesKey("latitude")
+        val LONGITUDE             = doublePreferencesKey("longitude")
+        val TIMEZONE              = stringPreferencesKey("timezone")
+        val CALCULATION_METHOD_ID = intPreferencesKey("calculation_method_id")
+        val USE_24_HOUR           = booleanPreferencesKey("use_24_hour")
+        val LAST_SYNC_AT          = longPreferencesKey("last_sync_at")
+
+        // Per-prayer reminder toggle: "reminder_enabled_FAJR" etc.
+        fun reminderEnabled(type: PrayerType) =
+            booleanPreferencesKey("reminder_enabled_${type.name}")
+
+        // Per-prayer offset: "reminder_offset_FAJR" etc.
+        fun reminderOffset(type: PrayerType) =
+            intPreferencesKey("reminder_offset_${type.name}")
+    }
+
+    // ── Read ──────────────────────────────────────────────────────────────────
+
+    override fun observeSettings(): Flow<UserPrefs> =
+        dataStore.data
+            .catch { e ->
+                if (e is IOException) emit(emptyPreferences()) else throw e
+            }
+            .map { prefs -> prefs.toUserPrefs() }
+
+    override suspend fun getCurrentPrefs(): UserPrefs =
+        dataStore.data.first().toUserPrefs()
+
+    private fun Preferences.toUserPrefs() = UserPrefs(
+        useDeviceLocation    = this[Keys.USE_DEVICE_LOCATION]   ?: true,
+        latitude             = this[Keys.LATITUDE]               ?: 0.0,
+        longitude            = this[Keys.LONGITUDE]              ?: 0.0,
+        timezone             = this[Keys.TIMEZONE]               ?: "UTC",
+        calculationMethodId  = this[Keys.CALCULATION_METHOD_ID] ?: 3,
+        reminderEnabled      = PrayerType.values().associateWith { type ->
+            this[Keys.reminderEnabled(type)] ?: true
+        },
+        reminderOffsetMinutes = PrayerType.values().associateWith { type ->
+            this[Keys.reminderOffset(type)] ?: 0
+        },
+        use24HourFormat      = this[Keys.USE_24_HOUR]            ?: false,
+        lastSyncAt           = this[Keys.LAST_SYNC_AT]           ?: 0L,
+    )
+
+    // ── Write ─────────────────────────────────────────────────────────────────
+
+    override suspend fun saveSettings(
+        useDeviceLocation: Boolean,
+        latitude: Double,
+        longitude: Double,
+        calculationMethodId: Int,
+        reminderEnabled: Map<PrayerType, Boolean>,
+        reminderOffsetMinutes: Map<PrayerType, Int>,
+        use24HourFormat: Boolean,
+    ) {
+        dataStore.edit { prefs ->
+            prefs[Keys.USE_DEVICE_LOCATION]   = useDeviceLocation
+            prefs[Keys.LATITUDE]              = latitude
+            prefs[Keys.LONGITUDE]             = longitude
+            prefs[Keys.CALCULATION_METHOD_ID] = calculationMethodId
+            prefs[Keys.USE_24_HOUR]           = use24HourFormat
+            PrayerType.values().forEach { type ->
+                prefs[Keys.reminderEnabled(type)] = reminderEnabled[type] ?: true
+                prefs[Keys.reminderOffset(type)]  = reminderOffsetMinutes[type] ?: 0
+            }
+        }
+    }
+
+    /** Called by SyncWorker after a successful sync to record the timestamp. */
+    suspend fun updateLastSyncAt(epochMs: Long) {
+        dataStore.edit { prefs -> prefs[Keys.LAST_SYNC_AT] = epochMs }
+    }
+}
