@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -21,11 +22,14 @@ import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.core.ui.DayDetailBottomSheet
 import com.salattracker.core.ui.DayDetailPrayerRow
-import com.salattracker.core.ui.PrayerStatusBottomSheet
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
+import com.salattracker.domain.model.VerseInfo
 import java.time.LocalDate
 import java.time.YearMonth
+import java.time.format.DateTimeFormatter
+
+private val monthYearFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
 
 // ── Calendar Screen ───────────────────────────────────────────────────────────
 
@@ -35,10 +39,8 @@ fun CalendarScreen(
     onPreviousMonth: () -> Unit,
     onNextMonth: () -> Unit,
     onDaySelected: (LocalDate) -> Unit,
-    onPrayerRowClick: (PrayerType) -> Unit,
-    onSheetDismiss: () -> Unit,
     onDayDetailDismiss: () -> Unit,
-    onStatusSave: (PrayerStatus) -> Unit,
+    onStatusSave: (PrayerType, PrayerStatus) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -54,7 +56,7 @@ fun CalendarScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(
-                text       = "Spiritual Progress",
+                text       = uiState.visibleMonth.format(monthYearFormatter),
                 color      = SalatOnSurface,
                 fontSize   = 24.sp,
                 fontWeight = FontWeight.SemiBold,
@@ -81,49 +83,45 @@ fun CalendarScreen(
             isLoading     = uiState.isLoadingMonth,
             onDaySelected = onDaySelected,
         )
+
+        // ── Verse of the day ──────────────────────────────────────────────────
+        uiState.verse?.let { verse ->
+            Spacer(modifier = Modifier.height(20.dp))
+            VerseCard(verse)
+        }
     }
 
     // ── Day Detail Bottom Sheet (opens when a day cell is tapped) ─────────────
+    // DayDetailBottomSheet owns its own nested status picker internally,
+    // so onStatusSave here is the final (type, status) to persist directly.
     uiState.selectedDay?.let { detail ->
         DayDetailBottomSheet(
             date       = detail.date,
             hijriLabel = detail.hijriLabel,
             prayers    = detail.prayers.map { p ->
                 DayDetailPrayerRow(
-                    type      = p.type,
-                    timeLabel = p.time,
-                    status    = p.status,
+                    type       = p.type,
+                    timeLabel  = p.time,
+                    status     = p.status,
+                    isMarkable = p.isMarkable,
                 )
             },
             isSaving     = uiState.isSaving,
             onDismiss    = onDayDetailDismiss,
-            onStatusSave = { type, status ->
-                // Update sheetArgs so PrayerStatusBottomSheet opens from inside DayDetail
-                onPrayerRowClick(type)
-            },
-        )
-    }
-
-    // ── Standalone status sheet (triggered from within DayDetail) ─────────────
-    uiState.sheetArgs?.let { args ->
-        PrayerStatusBottomSheet(
-            args      = args,
-            isSaving  = uiState.isSaving,
-            onDismiss = onSheetDismiss,
-            onSave    = onStatusSave,
+            onStatusSave = onStatusSave,
         )
     }
 }
 
 // ── Dot legend ────────────────────────────────────────────────────────────────
 
-private data class LegendItem(val color: Color, val label: String)
+private data class LegendItem(val color: Color, val labelRes: Int)
 private val legendItems = listOf(
-    LegendItem(Color(0xFF10B981), "Congregation"),
-    LegendItem(Color(0xFFEAB308), "Individual"),
-    LegendItem(Color(0xFFEF4444), "Qaza"),
-    LegendItem(Color(0xFFA855F7), "Qaza Done"),
-    LegendItem(Color(0xFFCBD5E1), "Not Recorded"),
+    LegendItem(Color(0xFF10B981), R.string.status_congregation),
+    LegendItem(Color(0xFFEAB308), R.string.status_individual),
+    LegendItem(Color(0xFFEF4444), R.string.status_qaza),
+    LegendItem(Color(0xFFA855F7), R.string.status_qaza_done),
+    LegendItem(Color(0xFFCBD5E1), R.string.status_not_recorded),
 )
 
 @Composable
@@ -144,8 +142,38 @@ private fun DotLegend() {
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(item.color))
-                    Text(item.label, color = SalatOnSurfaceVariant, fontSize = 9.sp, fontFamily = InterFamily, fontWeight = FontWeight.Medium)
+                    Text(stringResource(item.labelRes), color = SalatOnSurfaceVariant, fontSize = 9.sp, fontFamily = InterFamily, fontWeight = FontWeight.Medium)
                 }
+            }
+        }
+    }
+}
+
+// ── Verse card ────────────────────────────────────────────────────────────────
+
+@Composable
+private fun VerseCard(verse: VerseInfo) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape    = RoundedCornerShape(16.dp),
+        color    = SalatPrimaryContainer,
+    ) {
+        Column(modifier = Modifier.fillMaxWidth().padding(20.dp)) {
+            Text(
+                text       = "“${verse.text}”",
+                color      = SalatOnPrimary,
+                fontSize   = 14.sp,
+                fontFamily = InterFamily,
+                lineHeight = 20.sp,
+            )
+            if (verse.citation.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text       = verse.citation,
+                    color      = SalatOnPrimaryContainer,
+                    fontSize   = 11.sp,
+                    fontFamily = InterFamily,
+                )
             }
         }
     }
@@ -153,7 +181,10 @@ private fun DotLegend() {
 
 // ── Month grid ────────────────────────────────────────────────────────────────
 
-private val DAY_HEADERS = listOf("SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT")
+private val DAY_HEADERS = listOf(
+    R.string.weekday_sun, R.string.weekday_mon, R.string.weekday_tue, R.string.weekday_wed,
+    R.string.weekday_thu, R.string.weekday_fri, R.string.weekday_sat,
+)
 
 @Composable
 private fun MonthGrid(
@@ -166,9 +197,9 @@ private fun MonthGrid(
 
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(modifier = Modifier.fillMaxWidth()) {
-            DAY_HEADERS.forEach { label ->
+            DAY_HEADERS.forEach { labelRes ->
                 Text(
-                    text      = label,
+                    text      = stringResource(labelRes),
                     modifier  = Modifier.weight(1f),
                     textAlign = TextAlign.Center,
                     color     = SalatOutline,
@@ -277,13 +308,15 @@ fun CalendarScreenPreview() {
                 )
             },
             selectedDay = null,
+            verse = VerseInfo(
+                text = "Indeed, prayer prohibits immorality and wrongdoing, and the remembrance of Allāh is greater.",
+                citation = "Al-Ankabut 29:45",
+            ),
         ),
         onPreviousMonth    = {},
         onNextMonth        = {},
         onDaySelected      = {},
-        onPrayerRowClick   = {},
-        onSheetDismiss     = {},
         onDayDetailDismiss = {},
-        onStatusSave       = {},
+        onStatusSave       = { _, _ -> },
     )
 }

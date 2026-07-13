@@ -125,16 +125,21 @@ interface PrayerDao {
         to: LocalDate,
     ): List<DailyCompletionRow>
 
-    // ── Sync helpers ──────────────────────────────────────────────────────────
-
-    @Query("SELECT * FROM prayer_entries WHERE sync_state = 'PENDING' AND user_id = :userId")
-    suspend fun getPendingSync(userId: String): List<PrayerEntryEntity>
-
-    @Query("UPDATE prayer_entries SET sync_state = 'SYNCED' WHERE id IN (:ids)")
-    suspend fun markSynced(ids: List<Long>)
-
-    @Query("UPDATE prayer_entries SET sync_state = 'PENDING' WHERE user_id = :userId AND updated_at > :since")
-    suspend fun markPendingSince(userId: String, since: Long)
+    @Query("""
+        SELECT date,
+            SUM(CASE WHEN status = 'CONGREGATION' THEN 1 ELSE 0 END) as congregation,
+            SUM(CASE WHEN status = 'INDIVIDUAL'   THEN 1 ELSE 0 END) as individual,
+            SUM(CASE WHEN status IN ('QAZA_PENDING','QAZA_COMPLETED') THEN 1 ELSE 0 END) as qaza
+        FROM prayer_entries
+        WHERE user_id = :userId AND date >= :from AND date <= :to
+        GROUP BY date
+        ORDER BY date ASC
+    """)
+    suspend fun getDailyStatusCounts(
+        userId: String,
+        from: LocalDate,
+        to: LocalDate,
+    ): List<DailyStatusCountRow>
 }
 
 // ── Result row helpers ────────────────────────────────────────────────────────
@@ -160,4 +165,11 @@ data class PrayerBreakdownRow(
 data class DailyCompletionRow(
     @ColumnInfo(name = "date")           val date: LocalDate,
     @ColumnInfo(name = "completedCount") val completedCount: Int,
+)
+
+data class DailyStatusCountRow(
+    @ColumnInfo(name = "date")         val date: LocalDate,
+    @ColumnInfo(name = "congregation") val congregation: Int,
+    @ColumnInfo(name = "individual")   val individual: Int,
+    @ColumnInfo(name = "qaza")         val qaza: Int,
 )

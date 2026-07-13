@@ -9,19 +9,28 @@
     <string name="nav_stats">Stats</string>
     <string name="nav_settings">Settings</string>
 
-    <!-- Auth -->
-    <string name="sign_in_with_google">Continue with Google</string>
-    <string name="sign_in_with_email">Sign in with Email</string>
-    <string name="tagline">Maintain your spiritual discipline with organised daily tracking.</string>
-
-    <!-- Google Sign-In web client ID (replace with your actual client ID from google-services.json) -->
-    <string name="default_web_client_id" translatable="false">116240079706-3qfunrp9vbf1d3chffhnioc4trr4qd34.apps.googleusercontent.com</string>
+    <!-- Top bar titles -->
+    <string name="topbar_today">Today</string>
+    <string name="topbar_calendar">Calendar</string>
+    <string name="topbar_qaza">Qaza Tracker</string>
+    <string name="topbar_stats">Stats &amp; Progress</string>
+    <string name="topbar_settings">Settings</string>
+    <string name="topbar_bulk_update">Bulk Update</string>
+    <string name="topbar_goals">Spiritual Goals</string>
+    <string name="topbar_new_goal">New Goal</string>
+    <string name="topbar_edit_goal">Edit Goal</string>
+    <string name="topbar_missed_prayers">Missed Prayers</string>
+    <string name="topbar_default">Salat Tracker</string>
+    <string name="cd_menu">Menu</string>
+    <string name="action_add_goal">Add Goal</string>
+    <string name="action_bulk_update">Bulk Update</string>
 
     <!-- Prayer names -->
     <string name="prayer_fajr">Fajr</string>
     <string name="prayer_dhuhr">Dhuhr</string>
     <string name="prayer_asr">Asr</string>
     <string name="prayer_maghrib">Maghrib</string>
+    <string name="prayer_maghrib_short">Magh</string>
     <string name="prayer_isha">Isha</string>
 
     <!-- Status labels -->
@@ -31,12 +40,232 @@
     <string name="status_qaza_completed">Qaza Completed</string>
     <string name="status_menstruation">Menstruation</string>
     <string name="status_not_recorded">Not Recorded</string>
+    <string name="status_qaza">Qaza</string>
+    <string name="status_qaza_done">Qaza Done</string>
+    <string name="status_jamaat">Jamā\'at</string>
+    <string name="status_alone">Alone</string>
+    <string name="status_excused">Excused</string>
+    <string name="status_not_set">Not Set</string>
+    <string name="status_upcoming">Upcoming</string>
+
+    <!-- Categories -->
+    <string name="category_salat">Salat</string>
+    <string name="category_quran">Quran</string>
+    <string name="category_fasting">Fasting</string>
+    <string name="category_charity">Charity</string>
+    <string name="category_dhikr">Dhikr</string>
+
+    <!-- Frequency -->
+    <string name="frequency_daily">Daily</string>
+    <string name="frequency_weekly">Weekly</string>
+    <string name="frequency_monthly">Monthly</string>
+
+    <!-- Weekday abbreviations -->
+    <string name="weekday_sun">SUN</string>
+    <string name="weekday_mon">MON</string>
+    <string name="weekday_tue">TUE</string>
+    <string name="weekday_wed">WED</string>
+    <string name="weekday_thu">THU</string>
+    <string name="weekday_fri">FRI</string>
+    <string name="weekday_sat">SAT</string>
+
+    <!-- Common actions -->
+    <string name="action_ok">OK</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_done">Done</string>
+    <string name="action_continue">Continue</string>
+    <string name="action_next">Next</string>
+    <string name="action_get_started">Get Started</string>
+    <string name="action_view_all">View All</string>
+    <string name="action_mark_done">Mark Done</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_welcome_title">Welcome to Salat Tracker</string>
+    <string name="onboarding_welcome_subtitle">Please select your preferred language to begin your journey.</string>
+    <string name="onboarding_change_later">You can change this later in settings.</string>
+    <string name="onboarding_theme_title">Choose Your Vibe</string>
+    <string name="onboarding_theme_subtitle">Select a theme that brings you peace.</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_light_desc">Pure and bright</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_dark_desc">Calm and deep</string>
+    <string name="theme_system">System</string>
+    <string name="theme_system_desc">Sync with device</string>
+    <string name="onboarding_location_title">Precise Prayer Times</string>
+    <string name="onboarding_location_desc">We need your location to calculate accurate prayer times based on your current city. This ensures your daily prayers are always in sync with the sun\'s position.</string>
+    <string name="onboarding_allow_location">Allow Location</string>
+    <string name="onboarding_location_privacy">Your data is stored locally and never shared.</string>
+    <string name="onboarding_notifications_title">Stay Connected</string>
+    <string name="onboarding_notifications_subtitle">Enable reminders so you never miss a prayer or a spiritual milestone.</string>
+    <string name="prayer_reminders">Prayer Reminders</string>
+    <string name="daily_spiritual_tips">Daily Spiritual Tips</string>
+
+    <!-- Home -->
+    <string name="home_daily_stack">The Daily Stack</string>
+    <string name="home_daily_goals">Daily Goals</string>
+    <string name="home_percent_completed">%1$d%% Completed</string>
+    <string name="home_set_first_goal">Set your first spiritual goal</string>
+    <string name="home_best_streak">Best %1$d</string>
+    <string name="home_reminder_at">Reminder %1$s</string>
+
+    <!-- Qaza dashboard -->
+    <string name="qaza_today_missed">Today\'s Missed Prayers</string>
+    <string name="qaza_total_outstanding">TOTAL OUTSTANDING</string>
+    <string name="qaza_overall_backlog">Overall Backlog</string>
+    <string name="qaza_none_pending">No pending Qaza prayers!</string>
+    <string name="qaza_nothing_today">Nothing missed today!</string>
+    <string name="qaza_keep_consistency">MashAllah — keep up the consistency.</string>
+    <string name="qaza_insight_title">Consistency Insight</string>
+    <string name="qaza_insight_none">MashAllah! You have no outstanding Qaza prayers. Keep maintaining your streak!</string>
+    <string name="qaza_insight_almost">Almost there — only %1$d prayers remaining. Consistency is key!</string>
+    <string name="qaza_insight_progress">You\'ve been making progress. At one Qaza per day you\'ll be clear in %1$d days.</string>
+    <string name="qaza_insight_many">Breaking it into a few prayers each week makes it manageable. You\'ve got this!</string>
+    <string name="error_goal_name">Give your goal a name.</string>
+    <string name="error_goal_not_found">Goal not found.</string>
+    <plurals name="qaza_backlog_remaining">
+        <item quantity="one">You still have %1$d prayer pending from previous days.</item>
+        <item quantity="other">You still have %1$d prayers pending from previous days.</item>
+    </plurals>
+
+    <!-- Missed prayers -->
+    <string name="filter_all">All</string>
+    <string name="missed_total_pending">%1$d Total Pending</string>
+    <string name="sort_newest">Newest First</string>
+    <string name="sort_oldest">Oldest First</string>
+    <string name="action_deselect_all">Deselect All</string>
+    <string name="action_select_multiple">Select Multiple</string>
+    <string name="action_select_all">Select All</string>
+    <string name="selected_label">Selected</string>
+    <string name="action_complete_all">Complete All</string>
+    <string name="missed_empty_title">Patience is rewarding</string>
+    <string name="missed_empty_desc">You\'ve completed all your missed prayers! Your discipline is inspiring.</string>
+    <string name="action_back_dashboard">Back to Dashboard</string>
+    <plurals name="selected_prayers">
+        <item quantity="one">%1$d Prayer</item>
+        <item quantity="other">%1$d Prayers</item>
+    </plurals>
+
+    <!-- Settings -->
+    <string name="settings_location">Location</string>
+    <string name="settings_prayer_calc">Prayer Calculation</string>
+    <string name="settings_minutes_offset">Minutes Offset</string>
+    <string name="settings_display">Display</string>
+    <string name="settings_appearance_language">Appearance &amp; Language</string>
+    <string name="settings_saving">Saving…</string>
+    <string name="settings_save">Save Settings</string>
+    <string name="settings_saved">Settings saved.</string>
+    <string name="settings_device_location">Device Location</string>
+    <string name="settings_latitude">Latitude</string>
+    <string name="settings_longitude">Longitude</string>
+    <string name="settings_calc_method">Calculation Method</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_theme">Theme</string>
+    <string name="settings_24hour">24-Hour Format</string>
+
+    <!-- Stats -->
+    <string name="stats_highest_streaks">Highest Streaks</string>
+    <string name="stats_best_per_prayer">Your best run per prayer</string>
+    <string name="stats_congregation_pct">Congregation %</string>
+    <string name="stats_individual_pct">Individual %</string>
+    <string name="stats_missed_qaza">Missed / Qaza</string>
+    <string name="stats_vs_last">%1$s%% vs last</string>
+    <string name="stats_prayer_trend">Prayer Trend</string>
+    <string name="stats_composition_over">Composition over %1$s</string>
+    <string name="stats_daily_goals">Daily Goals</string>
+    <string name="stats_completion_rate">Completion rate</string>
+    <string name="stats_no_active_goals">No active goals yet — set one from the Goals screen.</string>
+    <string name="stats_achievement_title">Consistent Spirit</string>
+    <string name="stats_achievement_desc">You\'ve completed all prayers for %1$d days in a row. May your steadfastness be rewarded.</string>
+
+    <!-- Goals dashboard -->
+    <string name="goals_active">Active Goals</string>
+    <string name="goals_in_progress">%1$d IN PROGRESS</string>
+    <string name="goals_todays_focus">Today\'s Focus</string>
+    <string name="goals_progress_glance">Your spiritual progress at a glance</string>
+    <string name="goals_completed_caps">COMPLETED</string>
+    <string name="goals_none_yet">No goals yet — tap + to set your first spiritual goal.</string>
+    <string name="goals_progress">Progress</string>
+    <string name="goal_completed">Completed</string>
+    <string name="goal_checkin">Check-in</string>
+    <string name="cd_edit_goal">Edit goal</string>
+    <string name="cd_delete_goal">Delete goal</string>
+    <string name="goal_delete_title">Delete Goal?</string>
+    <string name="goal_delete_desc">This will permanently remove your progress and streaks for this goal. This action cannot be undone.</string>
+    <string name="goal_deleting">DELETING GOAL</string>
+
+    <!-- Add / Edit goal -->
+    <string name="addgoal_name">Goal Name</string>
+    <string name="addgoal_name_hint">e.g., Tahajjud Prayer</string>
+    <string name="addgoal_category">Category</string>
+    <string name="addgoal_target_freq">Target Frequency</string>
+    <string name="addgoal_amount">Amount</string>
+    <string name="addgoal_unit">Unit</string>
+    <string name="addgoal_reminder">Reminder</string>
+    <string name="addgoal_notify_at">Notify me at:</string>
+    <string name="addgoal_duration">Duration (days)</string>
+    <string name="addgoal_create">Create Goal</string>
+    <string name="addgoal_created">Goal created!</string>
+    <string name="editgoal_delete">Delete Goal</string>
+    <string name="editgoal_save">Save Changes</string>
+    <string name="editgoal_updated">Goal updated!</string>
+
+    <!-- Bulk update -->
+    <string name="bulk_dur_day">Day</string>
+    <string name="bulk_dur_week">Week</string>
+    <string name="bulk_dur_month">Month</string>
+    <string name="bulk_dur_custom">Custom</string>
+    <string name="bulk_select_duration">Select Duration</string>
+    <string name="bulk_select_prayers">Select Prayers</string>
+    <string name="bulk_set_status">Set Status</string>
+    <string name="bulk_apply_changes">Apply Changes</string>
+    <string name="bulk_date_range">Date Range</string>
+    <string name="bulk_start">Start: %1$s</string>
+    <string name="bulk_end">End: %1$s</string>
+    <string name="bulk_previous">Previous</string>
+    <string name="bulk_next">Next</string>
+    <string name="bulk_confirm_title">Confirm Bulk Update</string>
+    <string name="bulk_confirm_desc">This action cannot be undone. Existing status logs for these prayers will be overwritten.</string>
+    <string name="bulk_confirm_update">Confirm Update</string>
+    <string name="bulk_applied">Bulk update applied.</string>
+    <string name="bulk_applied_skipped">Bulk update applied. Skipped %1$d prayer(s) not yet due.</string>
+    <string name="bulk_apply_summary">Apply %1$s to %2$s</string>
+    <string name="bulk_confirm_summary">You are about to apply %1$s status to %2$s.</string>
+    <plurals name="bulk_prayers_count">
+        <item quantity="one">%1$d prayer</item>
+        <item quantity="other">%1$d prayers</item>
+    </plurals>
+    <plurals name="bulk_days_count">
+        <item quantity="one">for %1$d day</item>
+        <item quantity="other">for %1$d days</item>
+    </plurals>
+
+    <!-- Day detail sheet -->
+    <string name="sheet_complete_count">%1$d/%2$d Complete</string>
+    <string name="sheet_all_logged">All prayers logged</string>
+    <string name="sheet_n_of_m_logged">%1$d of %2$d logged</string>
+
+    <!-- Prayer status sheet -->
+    <string name="sheet_update_status">Update your prayer status</string>
+    <string name="sheet_updating">Updating…</string>
+    <string name="sheet_save_status">Save Status</string>
+
+    <!-- Prayer reminder (full screen) -->
+    <string name="reminder_prayer_title">%1$s Prayer</string>
+    <string name="reminder_scheduled_for">Scheduled for %1$s</string>
+    <string name="reminder_snooze">Snooze 10m</string>
+    <string name="reminder_dismiss">DISMISS ALERT</string>
 
     <!-- Notifications -->
     <string name="notification_channel_prayer_id">prayer_reminders</string>
     <string name="notification_channel_prayer_name">Prayer Reminders</string>
     <string name="notification_channel_prayer_desc">Reminders for daily prayer times</string>
-    <string name="notification_channel_sync_id">sync_status</string>
-    <string name="notification_channel_sync_name">Sync Status</string>
-    <string name="notification_mark_prayed">Mark as Prayed</string>
+    <string name="notification_prayer_title">Time for %1$s</string>
+    <string name="notification_prayer_body">%1$s prayer time has arrived</string>
+
+    <string name="notification_channel_goal_id">goal_reminders</string>
+    <string name="notification_channel_goal_name">Goal Reminders</string>
+    <string name="notification_channel_goal_desc">Reminders for your spiritual goals</string>
+    <string name="notification_goal_title">Time for: %1$s</string>
+    <string name="notification_goal_body">Tap to check in on your goal.</string>
 </resources>

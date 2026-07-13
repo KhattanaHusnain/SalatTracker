@@ -14,8 +14,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 fun StatsEntry(viewModel: StatsViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsState()
     StatsScreen(
-        uiState         = uiState,
-        onPeriodChanged = viewModel::onPeriodChanged,
-        onErrorDismiss  = viewModel::clearError,
+        uiState                    = uiState,
+        onStatusTrendPeriodChanged = viewModel::onStatusTrendPeriodChanged,
+        onGoalsBarPeriodChanged    = viewModel::onGoalsBarPeriodChanged,
+        onErrorDismiss             = viewModel::clearError,
     )
 }

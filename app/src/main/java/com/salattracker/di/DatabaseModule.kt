@@ -26,8 +26,9 @@ object DatabaseModule {
             .fallbackToDestructiveMigration()   // replace with proper migrations before release
             .build()
 
-    @Provides fun providePrayerDao(db: SalatDatabase): PrayerDao         = db.prayerDao()
-    @Provides fun provideStreakDao(db: SalatDatabase): StreakDao           = db.streakDao()
+    @Provides fun providePrayerDao(db: SalatDatabase): PrayerDao          = db.prayerDao()
+    @Provides fun provideStreakDao(db: SalatDatabase): StreakDao          = db.streakDao()
     @Provides fun providePrayerTimesDao(db: SalatDatabase): PrayerTimesDao= db.prayerTimesDao()
-    @Provides fun provideSyncQueueDao(db: SalatDatabase): SyncQueueDao    = db.syncQueueDao()
+    @Provides fun provideVerseDao(db: SalatDatabase): VerseDao            = db.verseDao()
+    @Provides fun provideGoalDao(db: SalatDatabase): GoalDao              = db.goalDao()
 }

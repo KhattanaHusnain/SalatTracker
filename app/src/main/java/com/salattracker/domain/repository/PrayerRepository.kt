@@ -3,6 +3,7 @@ package com.salattracker.domain.repository
 import com.salattracker.domain.model.PrayerEntry
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
+import com.salattracker.domain.model.StreakInfo
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 import java.time.LocalTime
@@ -28,6 +29,12 @@ interface PrayerRepository {
         status: PrayerStatus,
     )
 
+    /** Sets [status] for every listed (date, prayer type) pair in one write, recalculating streaks once at the end. */
+    suspend fun bulkUpsertPrayerStatus(
+        entries: List<Pair<LocalDate, PrayerType>>,
+        status: PrayerStatus,
+    )
+
     // ── Month range ───────────────────────────────────────────────────────────
 
     fun observeMonthEntries(
@@ -45,7 +52,11 @@ interface PrayerRepository {
 
     // ── Streak ────────────────────────────────────────────────────────────────
 
-    suspend fun getStreakSnapshot(): Pair<Int, Int>
+    /** Independent current/highest streak per prayer type — missing entries default to StreakInfo(0, 0). */
+    suspend fun getStreakSnapshot(): Map<PrayerType, StreakInfo>
+
+    /** Same data as [getStreakSnapshot], but live — re-emits on any change, from any screen. */
+    fun observeStreaks(): Flow<Map<PrayerType, StreakInfo>>
 
     // ── Qaza ──────────────────────────────────────────────────────────────────
 
@@ -60,14 +71,19 @@ interface PrayerRepository {
     suspend fun getStatsForPeriod(from: LocalDate, to: LocalDate): PeriodStats
 
     /**
-     * Daily completion points for the streak line chart.
-     * [periodLabel] controls label format: "week" → "Mon", "month" → "d", "year" → "MMM".
+     * Percentage-composition points for the status-trend multi-line chart over [from]..[to],
+     * where [days] is the range length driving both bucketing and label format:
+     *   - days ≤ 40   → one point per day  (label "EEE" when days == 7, else "d")
+     *   - 40 < days ≤ 120 → weekly buckets counted back from [to] (label "d MMM")
+     *   - days > 120  → monthly buckets     (label "MMM")
+     * Each point carries the % of recorded prayers in that bucket that were congregation /
+     * individual / qaza (the three sum to ≤ 100; the remainder is un-recorded prayers).
      */
-    suspend fun getStreakPoints(
+    suspend fun getStatusTrendPoints(
         from: LocalDate,
         to: LocalDate,
-        periodLabel: String,       // "week" | "month" | "year"
-    ): List<StreakPoint>
+        days: Int,
+    ): List<StatusTrendPoint>
 
     suspend fun getPrayerBreakdown(
         from: LocalDate,
@@ -83,9 +99,12 @@ data class PeriodStats(
     val missedPct: Int,
 )
 
-data class StreakPoint(
+/** One x-axis bucket of the status-trend chart: the % of recorded prayers of each status. */
+data class StatusTrendPoint(
     val label: String,
-    val completedCount: Int,
+    val congregationPct: Int,
+    val individualPct: Int,
+    val qazaPct: Int,
 )
 
 data class PrayerBreakdown(

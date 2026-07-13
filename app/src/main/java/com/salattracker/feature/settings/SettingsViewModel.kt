@@ -2,13 +2,20 @@ package com.salattracker.feature.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.auth.FirebaseAuth
-import com.salattracker.data.sync.SyncOrchestrator
+import androidx.work.WorkManager
+import com.salattracker.core.locale.LocaleManager
+import com.salattracker.data.location.LocationProvider
+import com.salattracker.domain.model.AppLanguage
 import com.salattracker.domain.model.PrayerType
+import com.salattracker.domain.model.ThemeMode
+import com.salattracker.domain.repository.PrayerRepository
 import com.salattracker.domain.repository.SettingsRepository
+import com.salattracker.notification.PrayerReminderWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.LocalTime
 import javax.inject.Inject
 
 enum class CalculationMethod(val id: Int, val label: String) {
@@ -22,23 +29,22 @@ enum class CalculationMethod(val id: Int, val label: String) {
 data class ReminderSetting(
     val prayerType: PrayerType,
     val enabled: Boolean,
-    val offsetMinutes: Int,
+    val offsetMinutes: String,   // raw text as typed; parsed to Int only at save time
+    val prayerTime: LocalTime? = null,
 )
 
 data class SettingsUiState(
     val isLoading: Boolean = true,
-    val displayName: String = "",
-    val email: String = "",
-    val photoUrl: String? = null,
     val useDeviceLocation: Boolean = true,
     val latitude: String = "",
     val longitude: String = "",
     val calculationMethod: CalculationMethod = CalculationMethod.MWL,
     val reminders: List<ReminderSetting> = emptyList(),
     val use24HourFormat: Boolean = false,
+    val language: AppLanguage = AppLanguage.ENGLISH,
+    val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val dailyTipsEnabled: Boolean = false,
     val isSaving: Boolean = false,
-    val signOutConfirmVisible: Boolean = false,
-    val navigateToLogin: Boolean = false,
     val error: String? = null,
     val saveSuccess: Boolean = false,
 )
@@ -46,9 +52,9 @@ data class SettingsUiState(
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
-    private val auth: FirebaseAuth,
-    // ADDED: cancel background sync on sign-out
-    private val syncOrchestrator: SyncOrchestrator,
+    private val prayerRepository: PrayerRepository,
+    private val locationProvider: LocationProvider,
+    private val workManager: WorkManager,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -58,17 +64,14 @@ class SettingsViewModel @Inject constructor(
 
     private fun loadSettings() {
         viewModelScope.launch {
-            val user = auth.currentUser
             settingsRepository.observeSettings()
                 .onStart { _uiState.update { it.copy(isLoading = true) } }
                 .catch   { e -> _uiState.update { it.copy(isLoading = false, error = e.message) } }
                 .collect { prefs ->
+                    val times = prayerRepository.getCachedPrayerTimes(LocalDate.now())
                     _uiState.update {
                         it.copy(
                             isLoading         = false,
-                            displayName       = user?.displayName ?: "",
-                            email             = user?.email ?: "",
-                            photoUrl          = user?.photoUrl?.toString(),
                             useDeviceLocation = prefs.useDeviceLocation,
                             latitude          = prefs.latitude.toString(),
                             longitude         = prefs.longitude.toString(),
@@ -79,10 +82,14 @@ class SettingsViewModel @Inject constructor(
                                 ReminderSetting(
                                     prayerType    = type,
                                     enabled       = prefs.reminderEnabled[type] ?: true,
-                                    offsetMinutes = prefs.reminderOffsetMinutes[type] ?: 0,
+                                    offsetMinutes = (prefs.reminderOffsetMinutes[type] ?: 0).toString(),
+                                    prayerTime    = times?.get(type),
                                 )
                             },
                             use24HourFormat   = prefs.use24HourFormat,
+                            language          = prefs.language,
+                            themeMode         = prefs.themeMode,
+                            dailyTipsEnabled  = prefs.dailyTipsEnabled,
                         )
                     }
                 }
@@ -92,6 +99,14 @@ class SettingsViewModel @Inject constructor(
     fun onUseDeviceLocationChanged(enabled: Boolean) = _uiState.update { it.copy(useDeviceLocation = enabled) }
     fun onLatitudeChanged(value: String)              = _uiState.update { it.copy(latitude = value) }
     fun onLongitudeChanged(value: String)             = _uiState.update { it.copy(longitude = value) }
+
+    /** Called once ACCESS_FINE_LOCATION is confirmed granted. Fills the fields; user still hits Save to persist. */
+    fun fetchDeviceLocation() {
+        viewModelScope.launch {
+            val (lat, lon) = locationProvider.getCurrentLocation() ?: return@launch
+            _uiState.update { it.copy(latitude = lat.toString(), longitude = lon.toString()) }
+        }
+    }
     fun onCalculationMethodChanged(method: CalculationMethod) = _uiState.update { it.copy(calculationMethod = method) }
 
     fun onReminderEnabledChanged(prayerType: PrayerType, enabled: Boolean) {
@@ -103,15 +118,20 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun onReminderOffsetChanged(prayerType: PrayerType, offset: String) {
-        val offsetInt = offset.toIntOrNull() ?: return
+        // Accept any in-progress input (empty, a lone "-", or a valid int) so the
+        // field's text always mirrors exactly what the user typed — parsed at save time.
+        if (offset.isNotEmpty() && offset != "-" && offset.toIntOrNull() == null) return
         _uiState.update { state ->
             state.copy(reminders = state.reminders.map { r ->
-                if (r.prayerType == prayerType) r.copy(offsetMinutes = offsetInt) else r
+                if (r.prayerType == prayerType) r.copy(offsetMinutes = offset) else r
             })
         }
     }
 
     fun on24HourFormatChanged(enabled: Boolean) = _uiState.update { it.copy(use24HourFormat = enabled) }
+    fun onLanguageChanged(language: AppLanguage) = _uiState.update { it.copy(language = language) }
+    fun onThemeModeChanged(themeMode: ThemeMode) = _uiState.update { it.copy(themeMode = themeMode) }
+    fun onDailyTipsChanged(enabled: Boolean)     = _uiState.update { it.copy(dailyTipsEnabled = enabled) }
 
     fun onSave() {
         viewModelScope.launch {
@@ -124,30 +144,24 @@ class SettingsViewModel @Inject constructor(
                     longitude             = state.longitude.toDoubleOrNull() ?: 0.0,
                     calculationMethodId   = state.calculationMethod.id,
                     reminderEnabled       = state.reminders.associate { it.prayerType to it.enabled },
-                    reminderOffsetMinutes = state.reminders.associate { it.prayerType to it.offsetMinutes },
+                    reminderOffsetMinutes = state.reminders.associate { it.prayerType to (it.offsetMinutes.toIntOrNull() ?: 0) },
                     use24HourFormat       = state.use24HourFormat,
+                    language              = state.language,
+                    themeMode             = state.themeMode,
+                    dailyTipsEnabled      = state.dailyTipsEnabled,
                 )
             }.onSuccess {
+                // Reminder settings changed — reschedule alarms with the new values right away.
+                PrayerReminderWorker.enqueueOneTime(workManager)
                 _uiState.update { it.copy(isSaving = false, saveSuccess = true) }
+                // Apply language app-wide (no-op if unchanged; recreates the UI if it changed).
+                LocaleManager.apply(_uiState.value.language)
             }.onFailure { e ->
                 _uiState.update { it.copy(isSaving = false, error = e.message) }
             }
         }
     }
 
-    fun onSignOutRequest() = _uiState.update { it.copy(signOutConfirmVisible = true) }
-    fun onSignOutCancel()  = _uiState.update { it.copy(signOutConfirmVisible = false) }
-
-    fun onSignOutConfirm() {
-        viewModelScope.launch {
-            // ADDED: cancel periodic + one-time sync before signing out
-            syncOrchestrator.cancelAll()
-            auth.signOut()
-            _uiState.update { it.copy(signOutConfirmVisible = false, navigateToLogin = true) }
-        }
-    }
-
     fun clearError()        = _uiState.update { it.copy(error = null) }
     fun clearSaveSuccess()  = _uiState.update { it.copy(saveSuccess = false) }
-    fun navigationHandled() = _uiState.update { it.copy(navigateToLogin = false) }
 }

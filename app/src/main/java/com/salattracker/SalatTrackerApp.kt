@@ -6,6 +6,11 @@ import android.app.NotificationManager
 import android.os.Build
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import androidx.work.WorkManager
+import com.salattracker.notification.GoalReminderWorker
+import com.salattracker.notification.PrayerReminderWorker
+import com.salattracker.notification.QazaAutoMarkWorker
+import com.salattracker.notification.VerseCacheWorker
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
@@ -15,6 +20,9 @@ class SalatTrackerApp : Application(), Configuration.Provider {
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
 
+    @Inject
+    lateinit var workManager: WorkManager
+
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
             .setWorkerFactory(workerFactory)
@@ -23,6 +31,13 @@ class SalatTrackerApp : Application(), Configuration.Provider {
     override fun onCreate() {
         super.onCreate()
         createNotificationChannels()
+        PrayerReminderWorker.enqueueOneTime(workManager)
+        PrayerReminderWorker.enqueuePeriodic(workManager)
+        QazaAutoMarkWorker.enqueuePeriodic(workManager)
+        VerseCacheWorker.enqueueOneTime(workManager)
+        VerseCacheWorker.enqueuePeriodic(workManager)
+        GoalReminderWorker.enqueueOneTime(workManager)
+        GoalReminderWorker.enqueuePeriodic(workManager)
     }
 
     private fun createNotificationChannels() {
@@ -42,10 +57,13 @@ class SalatTrackerApp : Application(), Configuration.Provider {
 
             manager.createNotificationChannel(
                 NotificationChannel(
-                    getString(R.string.notification_channel_sync_id),
-                    getString(R.string.notification_channel_sync_name),
-                    NotificationManager.IMPORTANCE_LOW
-                )
+                    getString(R.string.notification_channel_goal_id),
+                    getString(R.string.notification_channel_goal_name),
+                    NotificationManager.IMPORTANCE_DEFAULT
+                ).apply {
+                    description =
+                        getString(R.string.notification_channel_goal_desc)
+                }
             )
         }
     }

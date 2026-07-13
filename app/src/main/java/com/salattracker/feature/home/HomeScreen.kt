@@ -15,6 +15,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -23,8 +24,11 @@ import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.core.ui.PrayerStatusBottomSheet
+import com.salattracker.core.ui.label
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
+import com.salattracker.domain.model.StreakInfo
+import com.salattracker.domain.model.VerseInfo
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -36,7 +40,7 @@ fun HomeScreen(
     onPrayerCardClick: (PrayerType) -> Unit,
     onSheetDismiss: () -> Unit,
     onStatusSave: (PrayerStatus) -> Unit,
-    onBulkUpdateClick: () -> Unit,
+    onGoalsClick: () -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
 
@@ -45,18 +49,29 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(bottom = 120.dp)   // room for FAB + bottom nav
+                .padding(bottom = 100.dp)   // room for bottom nav
         ) {
-            // ── Streak bento card ─────────────────────────────────────────────
-            StreakCard(
-                currentStreak = uiState.streak.currentStreak,
-                highestStreak = uiState.streak.highestStreak,
+            // ── Daily goals summary ───────────────────────────────────────────
+            val goalsCardModifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .padding(top = 12.dp)
+            val percent = uiState.goalsCompletionPercent
+            if (percent != null) {
+                DailyGoalsCard(percent = percent, onClick = onGoalsClick, modifier = goalsCardModifier)
+            } else if (!uiState.isLoading) {
+                NoGoalsYetCard(onClick = onGoalsClick, modifier = goalsCardModifier)
+            }
+
+            // ── Per-prayer streaks ─────────────────────────────────────────────
+            StreakRow(
+                streaks  = uiState.streaks,
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 20.dp),
             )
 
             // ── Section title ─────────────────────────────────────────────────
             Text(
-                text = "The Daily Stack",
+                text = stringResource(R.string.home_daily_stack),
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp),
                 color = SalatPrimary,
                 fontSize = 20.sp,
@@ -88,21 +103,16 @@ fun HomeScreen(
             }
 
             // ── Inspirational banner ──────────────────────────────────────────
-            InspirationBanner(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
-                    .padding(top = 24.dp)
-            )
+            uiState.verse?.let { verse ->
+                InspirationBanner(
+                    verse = verse,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp)
+                        .padding(top = 24.dp)
+                )
+            }
         }
-
-        // ── Floating Action Button ────────────────────────────────────────────
-        BulkUpdateFab(
-            onClick = onBulkUpdateClick,
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 24.dp, bottom = 88.dp), // above nav bar
-        )
     }
 
     // ── Prayer status bottom sheet ────────────────────────────────────────────
@@ -116,72 +126,146 @@ fun HomeScreen(
     }
 }
 
-// ── Streak card ───────────────────────────────────────────────────────────────
+// ── Daily goals summary ───────────────────────────────────────────────────────
 
 @Composable
-private fun StreakCard(
-    currentStreak: Int,
-    highestStreak: Int,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(160.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(SalatPrimaryContainer),
+private fun DailyGoalsCard(percent: Int, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Surface(
+        onClick  = onClick,
+        modifier = modifier,
+        shape    = RoundedCornerShape(12.dp),
+        color    = SalatSurfaceContainer,
+        border   = BorderStroke(1.dp, SalatOutlineVariant),
     ) {
-        // Decorative watermark icon
-        Icon(
-            painter = painterResource(R.drawable.ic_auto_awesome),
-            contentDescription = null,
-            tint = SalatOnPrimary.copy(alpha = 0.08f),
-            modifier = Modifier
-                .size(160.dp)
-                .align(Alignment.BottomEnd)
-                .offset(x = 32.dp, y = 32.dp),
-        )
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp),
-            verticalArrangement = Arrangement.SpaceBetween,
+        Row(
+            modifier              = Modifier.fillMaxWidth().padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment     = Alignment.CenterVertically,
         ) {
-            Column {
-                Text(
-                    text = "CURRENT PROGRESS",
-                    color = SalatOnPrimaryContainer,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = InterFamily,
-                    letterSpacing = 2.sp,
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "$currentStreak Day${if (currentStreak != 1) "s" else ""} Streak",
-                    color = SalatOnPrimary,
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = MontserratFamily,
-                )
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(
+                    modifier = Modifier.size(36.dp).clip(RoundedCornerShape(8.dp)).background(SalatPrimary),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(painterResource(R.drawable.ic_check_circle_filled), null, tint = SalatOnPrimary, modifier = Modifier.size(20.dp))
+                }
+                Column {
+                    Text(stringResource(R.string.home_daily_goals), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily)
+                    Text(stringResource(R.string.home_percent_completed, percent), color = SalatPrimary, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily)
+                }
             }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_workspace_premium),
-                    contentDescription = null,
-                    tint = Color(0xFFFFB77D),
-                    modifier = Modifier.size(20.dp),
+            Box(modifier = Modifier.size(40.dp), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(
+                    progress    = { 1f },
+                    modifier    = Modifier.fillMaxSize(),
+                    color       = SalatSurfaceVariant,
+                    strokeWidth = 3.dp,
                 )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = "Highest: $highestStreak Days",
-                    color = SalatOnPrimaryContainer,
-                    fontSize = 14.sp,
-                    fontFamily = InterFamily,
+                CircularProgressIndicator(
+                    progress    = { percent / 100f },
+                    modifier    = Modifier.fillMaxSize(),
+                    color       = SalatPrimary,
+                    strokeWidth = 3.dp,
                 )
+                Text("$percent%", fontSize = 9.sp, fontWeight = FontWeight.Bold, fontFamily = InterFamily, color = SalatOnSurface)
             }
         }
+    }
+}
+
+@Composable
+private fun NoGoalsYetCard(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Surface(
+        onClick  = onClick,
+        modifier = modifier,
+        shape    = RoundedCornerShape(12.dp),
+        color    = SalatSurfaceContainer,
+        border   = BorderStroke(1.dp, SalatOutlineVariant),
+    ) {
+        Row(
+            modifier              = Modifier.fillMaxWidth().padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment     = Alignment.CenterVertically,
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(
+                    modifier = Modifier.size(36.dp).clip(RoundedCornerShape(8.dp)).background(SalatPrimaryContainer),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(painterResource(R.drawable.ic_add), null, tint = SalatOnPrimaryContainer, modifier = Modifier.size(20.dp))
+                }
+                Column {
+                    Text(stringResource(R.string.home_daily_goals), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily)
+                    Text(stringResource(R.string.home_set_first_goal), color = SalatPrimary, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily)
+                }
+            }
+            Icon(painterResource(R.drawable.ic_chevron_right), null, tint = SalatOnSurfaceVariant, modifier = Modifier.size(18.dp))
+        }
+    }
+}
+
+// ── Per-prayer streaks ────────────────────────────────────────────────────────
+
+@Composable
+private fun StreakRow(
+    streaks: Map<PrayerType, StreakInfo>,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        PrayerType.values().forEach { type ->
+            val info = streaks[type] ?: StreakInfo(0, 0)
+            StreakTile(
+                type     = type,
+                info     = info,
+                modifier = Modifier.weight(1f),
+            )
+        }
+    }
+}
+
+@Composable
+private fun StreakTile(
+    type: PrayerType,
+    info: StreakInfo,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(14.dp))
+            .background(SalatPrimaryContainer)
+            .padding(vertical = 12.dp, horizontal = 2.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Icon(
+            painter = painterResource(type.iconRes),
+            contentDescription = null,
+            tint = SalatPrimary,
+            modifier = Modifier.size(16.dp),
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = "${info.currentStreak}",
+            color = SalatOnPrimary,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            fontFamily = MontserratFamily,
+        )
+        Text(
+            text = type.label(),
+            color = SalatOnPrimaryContainer,
+            fontSize = 10.sp,
+            fontFamily = InterFamily,
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(
+            text = stringResource(R.string.home_best_streak, info.highestStreak),
+            color = SalatOnSurfaceVariant,
+            fontSize = 9.sp,
+            fontFamily = InterFamily,
+        )
     }
 }
 
@@ -198,7 +282,8 @@ private fun PrayerCard(
 
     Surface(
         onClick = onClick,
-        modifier = modifier.clip(RoundedCornerShape(12.dp)),
+        enabled = entry.isMarkable,
+        modifier = modifier.clip(RoundedCornerShape(12.dp)).alpha(if (entry.isMarkable) 1f else 0.6f),
         shape = RoundedCornerShape(12.dp),
         color = SalatSurface,
         border = BorderStroke(1.dp, SalatSecondaryContainer),
@@ -230,7 +315,7 @@ private fun PrayerCard(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = entry.type.displayName,
+                    text = entry.type.label(),
                     color = SalatPrimary,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.SemiBold,
@@ -253,10 +338,27 @@ private fun PrayerCard(
                         )
                     }
                 }
+                if (entry.reminderTime != null) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_schedule),
+                            contentDescription = null,
+                            tint = SalatPrimary,
+                            modifier = Modifier.size(14.dp),
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = stringResource(R.string.home_reminder_at, entry.reminderTime.format(timeFormatter)),
+                            color = SalatPrimary,
+                            fontSize = 12.sp,
+                            fontFamily = InterFamily,
+                        )
+                    }
+                }
             }
 
             // Status chip
-            PrayerStatusChip(status = entry.status)
+            PrayerStatusChip(status = entry.status, isUpcoming = !entry.isMarkable)
         }
     }
 }
@@ -264,14 +366,16 @@ private fun PrayerCard(
 // ── Status chip ───────────────────────────────────────────────────────────────
 
 @Composable
-private fun PrayerStatusChip(status: PrayerStatus) {
-    val (bg, fg, label) = when (status) {
-        PrayerStatus.CONGREGATION    -> Triple(SalatPrimary,            SalatOnPrimary,          "Congregation")
-        PrayerStatus.INDIVIDUAL      -> Triple(SalatPrimaryContainer,   SalatPrimaryFixed,        "Individual")
-        PrayerStatus.QAZA_PENDING    -> Triple(SalatTertiaryContainer,  Color(0xFFFF9939),        "Qaza Pending")
-        PrayerStatus.QAZA_COMPLETED  -> Triple(SalatSecondaryContainer, SalatOnSecondaryContainer,"Qaza Done")
-        PrayerStatus.MENSTRUATION    -> Triple(SalatErrorContainer,     SalatOnErrorContainer,    "Menstruation")
-        PrayerStatus.NOT_RECORDED    -> Triple(SalatSurfaceContainerHigh, SalatOnSurfaceVariant,  "Not Recorded")
+private fun PrayerStatusChip(status: PrayerStatus, isUpcoming: Boolean = false) {
+    val (bg, fg, label) = if (status == PrayerStatus.NOT_RECORDED && isUpcoming) {
+        Triple(SalatSurfaceContainerHigh, SalatOnSurfaceVariant, stringResource(R.string.status_upcoming))
+    } else when (status) {
+        PrayerStatus.CONGREGATION    -> Triple(SalatPrimary,            SalatOnPrimary,          stringResource(R.string.status_congregation))
+        PrayerStatus.INDIVIDUAL      -> Triple(SalatPrimaryContainer,   SalatPrimaryFixed,        stringResource(R.string.status_individual))
+        PrayerStatus.QAZA_PENDING    -> Triple(SalatTertiaryContainer,  Color(0xFFFF9939),        stringResource(R.string.status_qaza_pending))
+        PrayerStatus.QAZA_COMPLETED  -> Triple(SalatSecondaryContainer, SalatOnSecondaryContainer,stringResource(R.string.status_qaza_done))
+        PrayerStatus.MENSTRUATION    -> Triple(SalatErrorContainer,     SalatOnErrorContainer,    stringResource(R.string.status_menstruation))
+        PrayerStatus.NOT_RECORDED    -> Triple(SalatSurfaceContainerHigh, SalatOnSurfaceVariant,  stringResource(R.string.status_not_recorded))
     }
 
     Box(
@@ -312,10 +416,10 @@ private fun PrayerCardSkeleton(modifier: Modifier = Modifier) {
 // ── Inspiration banner ────────────────────────────────────────────────────────
 
 @Composable
-private fun InspirationBanner(modifier: Modifier = Modifier) {
+private fun InspirationBanner(verse: VerseInfo, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
-            .height(160.dp)
+            .heightIn(min = 160.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(
                 Brush.linearGradient(
@@ -325,59 +429,26 @@ private fun InspirationBanner(modifier: Modifier = Modifier) {
             .padding(24.dp),
         contentAlignment = Alignment.BottomStart,
     ) {
-        Text(
-            text = "\u201cVerily, in the remembrance of Allah do hearts find rest.\u201d",
-            color = Color.White,
-            fontSize = 16.sp,
-            fontStyle = FontStyle.Italic,
-            fontFamily = InterFamily,
-            lineHeight = 22.sp,
-        )
-    }
-}
-
-// ── Bulk Update FAB ───────────────────────────────────────────────────────────
-
-@Composable
-private fun BulkUpdateFab(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    // Subtle periodic glow pulse
-    val glowAlpha by rememberInfiniteTransition(label = "glow")
-        .animateFloat(
-            initialValue = 0f, targetValue = 0.3f,
-            animationSpec = infiniteRepeatable(
-                tween(1_000, easing = FastOutSlowInEasing),
-                repeatMode = RepeatMode.Reverse,
-                initialStartOffset = StartOffset(2_000),
-            ),
-            label = "glowAlpha",
-        )
-
-    ExtendedFloatingActionButton(
-        onClick = onClick,
-        modifier = modifier,
-        containerColor = SalatPrimary,
-        contentColor = SalatOnPrimary,
-        shape = RoundedCornerShape(50),
-        icon = {
-            Icon(
-                painter = painterResource(R.drawable.ic_edit_square),
-                contentDescription = null,
-                modifier = Modifier.size(20.dp),
-            )
-        },
-        text = {
+        Column {
             Text(
-                text = "BULK UPDATE",
+                text = "\u201c${verse.text}\u201d",
+                color = Color.White,
+                fontSize = 16.sp,
+                fontStyle = FontStyle.Italic,
                 fontFamily = InterFamily,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 11.sp,
-                letterSpacing = 2.sp,
+                lineHeight = 22.sp,
             )
-        },
-    )
+            if (verse.citation.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = verse.citation,
+                    color = Color.White.copy(alpha = 0.7f),
+                    fontSize = 12.sp,
+                    fontFamily = InterFamily,
+                )
+            }
+        }
+    }
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -388,14 +459,6 @@ private val PrayerType.iconRes get() = when (this) {
     PrayerType.ASR     -> R.drawable.ic_wb_sunny
     PrayerType.MAGHRIB -> R.drawable.ic_wb_twilight
     PrayerType.ISHA    -> R.drawable.ic_dark_mode
-}
-
-private val PrayerType.displayName get() = when (this) {
-    PrayerType.FAJR    -> "Fajr"
-    PrayerType.DHUHR   -> "Dhuhr"
-    PrayerType.ASR     -> "Asr"
-    PrayerType.MAGHRIB -> "Maghrib"
-    PrayerType.ISHA    -> "Isha"
 }
 
 // ── Preview ───────────────────────────────────────────────────────────────────
@@ -409,16 +472,25 @@ fun HomeScreenPreview() {
             hijriDate = "24 Rajab 1445",
             prayers = PrayerType.values().mapIndexed { i, type ->
                 PrayerEntryUi(
-                    type   = type,
-                    time   = LocalTime.of(5 + i * 2, 30),
-                    status = if (i < 2) PrayerStatus.CONGREGATION else PrayerStatus.NOT_RECORDED,
+                    type         = type,
+                    time         = LocalTime.of(5 + i * 2, 30),
+                    reminderTime = if (i == 1) LocalTime.of(5 + i * 2, 25) else null,
+                    status       = if (i < 2) PrayerStatus.CONGREGATION else PrayerStatus.NOT_RECORDED,
+                    isMarkable   = i < 3,
                 )
             },
-            streak = com.salattracker.domain.model.StreakInfo(7, 42),
+            streaks = PrayerType.values().mapIndexed { i, type ->
+                type to StreakInfo(currentStreak = listOf(7, 12, 3, 0, 5)[i], highestStreak = listOf(42, 20, 15, 8, 30)[i])
+            }.toMap(),
+            verse = VerseInfo(
+                text = "Verily, in the remembrance of Allah do hearts find rest.",
+                citation = "Ar-Ra'd 13:28",
+            ),
+            goalsCompletionPercent = 68,
         ),
         onPrayerCardClick  = {},
         onSheetDismiss     = {},
         onStatusSave       = {},
-        onBulkUpdateClick  = {},
+        onGoalsClick       = {},
     )
 }

@@ -1,9 +1,11 @@
 package com.salattracker.feature.settings
 
 import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -11,17 +13,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import com.salattracker.R
 import com.salattracker.core.theme.*
+import com.salattracker.core.ui.label
+import com.salattracker.domain.model.AppLanguage
 import com.salattracker.domain.model.PrayerType
+import com.salattracker.domain.model.ThemeMode
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 // ── Settings Screen ───────────────────────────────────────────────────────────
 
@@ -35,15 +44,22 @@ fun SettingsScreen(
     onReminderEnabledChanged: (PrayerType, Boolean) -> Unit,
     onReminderOffsetChanged: (PrayerType, String) -> Unit,
     on24HourFormatChanged: (Boolean) -> Unit,
+    onLanguageChanged: (AppLanguage) -> Unit,
+    onThemeModeChanged: (ThemeMode) -> Unit,
+    onDailyTipsChanged: (Boolean) -> Unit,
     onSave: () -> Unit,
-    onSignOutRequest: () -> Unit,
     onErrorDismiss: () -> Unit,
     onClearSaveSuccess: () -> Unit,
 ) {
+    val focusManager = LocalFocusManager.current
+
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .pointerInput(Unit) {
+                    detectTapGestures(onTap = { focusManager.clearFocus() })
+                }
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp)
                 .padding(bottom = 120.dp),
@@ -51,16 +67,8 @@ fun SettingsScreen(
         ) {
             Spacer(modifier = Modifier.height(4.dp))
 
-            // ── Account ───────────────────────────────────────────────────────
-            AccountSection(
-                displayName    = uiState.displayName,
-                email          = uiState.email,
-                photoUrl       = uiState.photoUrl,
-                onSignOutClick = onSignOutRequest,
-            )
-
             // ── Location ──────────────────────────────────────────────────────
-            SettingsSectionLabel("Location")
+            SettingsSectionLabel(stringResource(R.string.settings_location))
             LocationSection(
                 useDeviceLocation = uiState.useDeviceLocation,
                 latitude          = uiState.latitude,
@@ -71,7 +79,7 @@ fun SettingsScreen(
             )
 
             // ── Calculation method ────────────────────────────────────────────
-            SettingsSectionLabel("Prayer Calculation")
+            SettingsSectionLabel(stringResource(R.string.settings_prayer_calc))
             CalculationSection(
                 selected  = uiState.calculationMethod,
                 onChanged = onCalculationMethodChanged,
@@ -83,8 +91,8 @@ fun SettingsScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment     = Alignment.CenterVertically,
             ) {
-                SettingsSectionLabel("Prayer Reminders", modifier = Modifier)
-                Text("Minutes Offset", color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily)
+                SettingsSectionLabel(stringResource(R.string.prayer_reminders), modifier = Modifier)
+                Text(stringResource(R.string.settings_minutes_offset), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily)
             }
             RemindersSection(
                 reminders       = uiState.reminders,
@@ -93,10 +101,21 @@ fun SettingsScreen(
             )
 
             // ── Display ───────────────────────────────────────────────────────
-            SettingsSectionLabel("Display")
+            SettingsSectionLabel(stringResource(R.string.settings_display))
             DisplaySection(
                 use24Hour   = uiState.use24HourFormat,
                 onToggle    = on24HourFormatChanged,
+            )
+
+            // ── Appearance & language ─────────────────────────────────────────
+            SettingsSectionLabel(stringResource(R.string.settings_appearance_language))
+            AppearanceSection(
+                language         = uiState.language,
+                themeMode        = uiState.themeMode,
+                dailyTipsEnabled = uiState.dailyTipsEnabled,
+                onLanguageChanged = onLanguageChanged,
+                onThemeChanged    = onThemeModeChanged,
+                onDailyTipsChanged = onDailyTipsChanged,
             )
 
             // ── Save button ───────────────────────────────────────────────────
@@ -113,40 +132,20 @@ fun SettingsScreen(
                 if (uiState.isSaving) {
                     CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp, color = SalatOnPrimary)
                     Spacer(Modifier.width(8.dp))
-                    Text("Saving…", fontFamily = InterFamily, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.settings_saving), fontFamily = InterFamily, fontWeight = FontWeight.SemiBold)
                 } else {
                     Icon(painterResource(R.drawable.ic_save), null, Modifier.size(20.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("Save Settings", fontFamily = InterFamily, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.settings_save), fontFamily = InterFamily, fontWeight = FontWeight.SemiBold)
                 }
             }
-        }
-
-        // ── Sign-out confirm dialog ───────────────────────────────────────────
-        if (uiState.signOutConfirmVisible) {
-            AlertDialog(
-                onDismissRequest = onSignOutRequest,
-                containerColor   = SalatSurface,
-                title = { Text("Sign Out?", color = SalatPrimary, fontFamily = MontserratFamily, fontWeight = FontWeight.SemiBold) },
-                text  = { Text("You'll be signed out of your account. Local data will remain.", color = SalatOnSurfaceVariant, fontFamily = InterFamily) },
-                confirmButton = {
-                    TextButton(onClick = {}) { // wired in SettingsActivity
-                        Text("Sign Out", color = SalatError, fontFamily = InterFamily, fontWeight = FontWeight.SemiBold)
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = {}) {
-                        Text("Cancel", color = SalatOnSurfaceVariant, fontFamily = InterFamily)
-                    }
-                },
-            )
         }
 
         // ── Error snackbar ────────────────────────────────────────────────────
         uiState.error?.let { msg ->
             Snackbar(
                 modifier       = Modifier.align(Alignment.BottomCenter).padding(16.dp),
-                action         = { TextButton(onClick = onErrorDismiss) { Text("OK", color = SalatPrimaryFixed) } },
+                action         = { TextButton(onClick = onErrorDismiss) { Text(stringResource(R.string.action_ok), color = SalatPrimaryFixed) } },
                 containerColor = SalatInverseSurface,
                 contentColor   = SalatInverseOnSurface,
             ) { Text(msg, fontFamily = InterFamily) }
@@ -156,10 +155,10 @@ fun SettingsScreen(
         if (uiState.saveSuccess) {
             Snackbar(
                 modifier       = Modifier.align(Alignment.BottomCenter).padding(16.dp),
-                action         = { TextButton(onClick = onClearSaveSuccess) { Text("OK", color = SalatPrimary) } },
+                action         = { TextButton(onClick = onClearSaveSuccess) { Text(stringResource(R.string.action_ok), color = SalatPrimary) } },
                 containerColor = SalatSecondaryContainer,
                 contentColor   = SalatOnSecondaryContainer,
-            ) { Text("Settings saved.", fontFamily = InterFamily) }
+            ) { Text(stringResource(R.string.settings_saved), fontFamily = InterFamily) }
         }
     }
 }
@@ -177,79 +176,6 @@ private fun SettingsSectionLabel(text: String, modifier: Modifier = Modifier.fil
         fontFamily    = InterFamily,
         letterSpacing = 1.5.sp,
     )
-}
-
-// ── Account section ───────────────────────────────────────────────────────────
-
-@Composable
-private fun AccountSection(
-    displayName: String,
-    email: String,
-    photoUrl: String?,
-    onSignOutClick: () -> Unit,
-) {
-    SettingsCard {
-        Row(
-            modifier          = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            // Avatar
-            Box(modifier = Modifier.size(64.dp)) {
-                if (photoUrl != null) {
-                    AsyncImage(
-                        model             = photoUrl,
-                        contentDescription = "Profile photo",
-                        modifier          = Modifier.fillMaxSize().clip(CircleShape)
-                            .border(2.dp, SalatPrimaryFixed, CircleShape),
-                        contentScale      = ContentScale.Crop,
-                    )
-                } else {
-                    Box(
-                        modifier         = Modifier.fillMaxSize().clip(CircleShape)
-                            .background(SalatSecondaryContainer),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Icon(painterResource(R.drawable.ic_person), null,
-                            tint = SalatOnSecondaryContainer, modifier = Modifier.size(32.dp))
-                    }
-                }
-            }
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text       = displayName.ifEmpty { "User" },
-                    color      = SalatPrimary,
-                    fontSize   = 20.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = MontserratFamily,
-                )
-                Text(
-                    text     = email,
-                    color    = SalatOnSurfaceVariant,
-                    fontSize = 14.sp,
-                    fontFamily = InterFamily,
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Sign Out button
-        OutlinedButton(
-            onClick = onSignOutClick,
-            modifier = Modifier.fillMaxWidth().height(48.dp),
-            shape    = RoundedCornerShape(8.dp),
-            colors   = ButtonDefaults.outlinedButtonColors(contentColor = SalatOnErrorContainer),
-            border   = BorderStroke(1.dp, SalatErrorContainer),
-        ) {
-            Icon(painterResource(R.drawable.ic_logout), null,
-                modifier = Modifier.size(18.dp), tint = SalatOnErrorContainer)
-            Spacer(Modifier.width(8.dp))
-            Text("Sign Out", fontFamily = InterFamily, fontWeight = FontWeight.SemiBold,
-                fontSize = 14.sp, color = SalatOnErrorContainer)
-        }
-    }
 }
 
 // ── Location section ──────────────────────────────────────────────────────────
@@ -276,7 +202,7 @@ private fun LocationSection(
             ) {
                 Icon(painterResource(R.drawable.ic_my_location), null,
                     tint = SalatPrimary, modifier = Modifier.size(24.dp))
-                Text("Device Location", color = SalatOnSurface, fontSize = 16.sp, fontFamily = InterFamily)
+                Text(stringResource(R.string.settings_device_location), color = SalatOnSurface, fontSize = 16.sp, fontFamily = InterFamily)
             }
             Switch(
                 checked         = useDeviceLocation,
@@ -297,14 +223,14 @@ private fun LocationSection(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             CoordField(
-                label    = "Latitude",
+                label    = stringResource(R.string.settings_latitude),
                 value    = latitude,
                 onChanged = onLatChanged,
                 enabled  = !useDeviceLocation,
                 modifier = Modifier.weight(1f),
             )
             CoordField(
-                label    = "Longitude",
+                label    = stringResource(R.string.settings_longitude),
                 value    = longitude,
                 onChanged = onLonChanged,
                 enabled  = !useDeviceLocation,
@@ -322,6 +248,8 @@ private fun CoordField(
     enabled: Boolean,
     modifier: Modifier = Modifier,
 ) {
+    val focusManager = LocalFocusManager.current
+
     Column(modifier = modifier) {
         Text(label, color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily)
         Spacer(Modifier.height(4.dp))
@@ -334,7 +262,8 @@ private fun CoordField(
             textStyle     = LocalTextStyle.current.copy(
                 fontFamily = InterFamily, fontSize = 14.sp, color = SalatOnSurface,
             ),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
             colors          = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor   = SalatPrimary,
                 unfocusedBorderColor = SalatOutlineVariant,
@@ -360,7 +289,7 @@ private fun CalculationSection(
 
     SettingsCard {
         Column {
-            Text("Calculation Method", color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily)
+            Text(stringResource(R.string.settings_calc_method), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily)
             Spacer(Modifier.height(4.dp))
             ExposedDropdownMenuBox(
                 expanded         = expanded,
@@ -427,12 +356,18 @@ private fun RemindersSection(
     }
 }
 
+private val timeFormatter = DateTimeFormatter.ofPattern("hh:mm a")
+
 @Composable
 private fun ReminderRow(
     setting: ReminderSetting,
     onToggle: (Boolean) -> Unit,
     onOffsetChanged: (String) -> Unit,
 ) {
+    val focusManager = LocalFocusManager.current
+    val isNegative   = setting.offsetMinutes.startsWith("-")
+    val magnitude    = setting.offsetMinutes.removePrefix("-")
+
     Row(
         modifier              = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment     = Alignment.CenterVertically,
@@ -454,36 +389,212 @@ private fun ReminderRow(
                     uncheckedTrackColor = SalatOutlineVariant,
                 ),
             )
+            Column {
+                Text(
+                    text       = setting.prayerType.label(),
+                    color      = if (setting.enabled) SalatPrimary else SalatOnSurfaceVariant,
+                    fontSize   = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    fontFamily = InterFamily,
+                )
+                Text(
+                    text       = setting.prayerTime?.format(timeFormatter) ?: "--:--",
+                    color      = SalatOnSurfaceVariant,
+                    fontSize   = 12.sp,
+                    fontFamily = InterFamily,
+                )
+            }
+        }
+        Row(
+            verticalAlignment     = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            // Soft keyboards' number pad has no "-" key, so the sign is a dedicated
+            // toggle rather than something typed into the field.
+            SignToggleButton(
+                isNegative = isNegative,
+                enabled    = setting.enabled,
+                onClick    = {
+                    val toggled = when {
+                        isNegative                              -> magnitude
+                        magnitude.isEmpty() || magnitude == "0"  -> magnitude
+                        else                                     -> "-$magnitude"
+                    }
+                    onOffsetChanged(toggled)
+                },
+            )
+            OutlinedTextField(
+                value         = magnitude,
+                onValueChange = { input ->
+                    if (input.isEmpty() || input.all(Char::isDigit)) {
+                        onOffsetChanged((if (isNegative) "-" else "") + input)
+                    }
+                },
+                enabled       = setting.enabled,
+                modifier      = Modifier.width(56.dp),
+                singleLine    = true,
+                textStyle     = LocalTextStyle.current.copy(
+                    fontFamily = InterFamily, fontSize = 14.sp,
+                    textAlign  = androidx.compose.ui.text.style.TextAlign.Center,
+                ),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
+                colors          = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor   = SalatPrimary,
+                    unfocusedBorderColor = SalatOutlineVariant,
+                    disabledBorderColor  = SalatOutlineVariant.copy(alpha = 0.4f),
+                    focusedContainerColor   = SalatSurfaceContainerLow,
+                    unfocusedContainerColor = SalatSurfaceContainerLow,
+                    disabledContainerColor  = SalatSurfaceContainerLow.copy(alpha = 0.4f),
+                ),
+                shape = RoundedCornerShape(8.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun SignToggleButton(
+    isNegative: Boolean,
+    enabled: Boolean,
+    onClick: () -> Unit,
+) {
+    Surface(
+        onClick  = onClick,
+        enabled  = enabled,
+        modifier = Modifier.size(32.dp),
+        shape    = CircleShape,
+        color    = if (isNegative) SalatPrimary else SalatSurfaceContainerLow,
+        border   = BorderStroke(1.dp, SalatOutlineVariant.copy(alpha = if (enabled) 1f else 0.4f)),
+    ) {
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
             Text(
-                text       = setting.prayerType.displayName,
-                color      = if (setting.enabled) SalatPrimary else SalatOnSurfaceVariant,
+                text       = if (isNegative) "−" else "+",
+                color      = if (isNegative) SalatOnPrimary else SalatOnSurfaceVariant,
                 fontSize   = 16.sp,
-                fontWeight = FontWeight.Medium,
+                fontWeight = FontWeight.Bold,
                 fontFamily = InterFamily,
             )
         }
-        OutlinedTextField(
-            value         = setting.offsetMinutes.toString(),
-            onValueChange = onOffsetChanged,
-            enabled       = setting.enabled,
-            modifier      = Modifier.width(72.dp),
-            singleLine    = true,
-            textStyle     = LocalTextStyle.current.copy(
-                fontFamily = InterFamily, fontSize = 14.sp,
-                textAlign  = androidx.compose.ui.text.style.TextAlign.Center,
-            ),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
-            colors          = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor   = SalatPrimary,
-                unfocusedBorderColor = SalatOutlineVariant,
-                disabledBorderColor  = SalatOutlineVariant.copy(alpha = 0.4f),
-                focusedContainerColor   = SalatSurfaceContainerLow,
-                unfocusedContainerColor = SalatSurfaceContainerLow,
-                disabledContainerColor  = SalatSurfaceContainerLow.copy(alpha = 0.4f),
-            ),
-            shape = RoundedCornerShape(8.dp),
+    }
+}
+
+// ── Appearance & language section ─────────────────────────────────────────────
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AppearanceSection(
+    language: AppLanguage,
+    themeMode: ThemeMode,
+    dailyTipsEnabled: Boolean,
+    onLanguageChanged: (AppLanguage) -> Unit,
+    onThemeChanged: (ThemeMode) -> Unit,
+    onDailyTipsChanged: (Boolean) -> Unit,
+) {
+    SettingsCard {
+        // Language
+        Text(stringResource(R.string.settings_language), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily)
+        Spacer(Modifier.height(4.dp))
+        var expanded by remember { mutableStateOf(false) }
+        ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+            OutlinedTextField(
+                value         = language.displayName,
+                onValueChange = {},
+                readOnly      = true,
+                modifier      = Modifier.fillMaxWidth().menuAnchor(),
+                singleLine    = true,
+                leadingIcon   = { Icon(painterResource(R.drawable.ic_language), null, tint = SalatPrimary, modifier = Modifier.size(20.dp)) },
+                trailingIcon  = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                textStyle     = LocalTextStyle.current.copy(fontFamily = InterFamily, fontSize = 14.sp),
+                colors        = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor      = SalatPrimary,
+                    unfocusedBorderColor    = SalatOutlineVariant,
+                    focusedContainerColor   = SalatSurfaceContainerLow,
+                    unfocusedContainerColor = SalatSurfaceContainerLow,
+                ),
+                shape = RoundedCornerShape(8.dp),
+            )
+            ExposedDropdownMenu(
+                expanded         = expanded,
+                onDismissRequest = { expanded = false },
+                modifier         = Modifier.background(SalatSurface),
+            ) {
+                AppLanguage.values().forEach { lang ->
+                    DropdownMenuItem(
+                        text    = { Text(lang.displayName, fontFamily = InterFamily, fontSize = 14.sp, color = SalatOnSurface) },
+                        onClick = { onLanguageChanged(lang); expanded = false },
+                        colors  = MenuDefaults.itemColors(
+                            textColor = if (lang == language) SalatPrimary else SalatOnSurface,
+                        ),
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        // Theme
+        Text(stringResource(R.string.settings_theme), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily)
+        Spacer(Modifier.height(8.dp))
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            ThemeMode.values().forEach { mode ->
+                ThemeModeChip(
+                    label      = stringResource(mode.themeLabelRes),
+                    isSelected = mode == themeMode,
+                    onClick    = { onThemeChanged(mode) },
+                    modifier   = Modifier.weight(1f),
+                )
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        // Daily spiritual tips
+        Row(
+            modifier              = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment     = Alignment.CenterVertically,
+        ) {
+            Text(stringResource(R.string.daily_spiritual_tips), color = SalatOnSurface, fontSize = 16.sp, fontFamily = InterFamily)
+            Switch(
+                checked         = dailyTipsEnabled,
+                onCheckedChange = onDailyTipsChanged,
+                colors          = SwitchDefaults.colors(
+                    checkedThumbColor   = SalatOnPrimary,
+                    checkedTrackColor   = SalatPrimary,
+                    uncheckedThumbColor = SalatOutline,
+                    uncheckedTrackColor = SalatOutlineVariant,
+                ),
+            )
+        }
+    }
+}
+
+@Composable
+private fun ThemeModeChip(label: String, isSelected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Surface(
+        onClick  = onClick,
+        modifier = modifier,
+        shape    = RoundedCornerShape(10.dp),
+        color    = if (isSelected) SalatPrimary else SalatSurfaceContainerLow,
+        border   = BorderStroke(1.dp, if (isSelected) SalatPrimary else SalatOutlineVariant),
+    ) {
+        Text(
+            text       = label,
+            modifier   = Modifier.fillMaxWidth().padding(vertical = 10.dp),
+            textAlign  = androidx.compose.ui.text.style.TextAlign.Center,
+            color      = if (isSelected) SalatOnPrimary else SalatOnSurfaceVariant,
+            fontSize   = 13.sp,
+            fontWeight = FontWeight.SemiBold,
+            fontFamily = InterFamily,
         )
     }
+}
+
+private val ThemeMode.themeLabelRes get() = when (this) {
+    ThemeMode.LIGHT  -> R.string.theme_light
+    ThemeMode.DARK   -> R.string.theme_dark
+    ThemeMode.SYSTEM -> R.string.theme_system
 }
 
 // ── Display section ───────────────────────────────────────────────────────────
@@ -499,7 +610,7 @@ private fun DisplaySection(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment     = Alignment.CenterVertically,
         ) {
-            Text("24-Hour Format", color = SalatOnSurface, fontSize = 16.sp, fontFamily = InterFamily)
+            Text(stringResource(R.string.settings_24hour), color = SalatOnSurface, fontSize = 16.sp, fontFamily = InterFamily)
             Switch(
                 checked         = use24Hour,
                 onCheckedChange = onToggle,
@@ -532,15 +643,6 @@ private fun SettingsCard(
     }
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-private val PrayerType.displayName get() = when (this) {
-    PrayerType.FAJR    -> "Fajr"
-    PrayerType.DHUHR   -> "Dhuhr"
-    PrayerType.ASR     -> "Asr"
-    PrayerType.MAGHRIB -> "Maghrib"
-    PrayerType.ISHA    -> "Isha"
-}
 
 // ── Preview ───────────────────────────────────────────────────────────────────
 
@@ -550,14 +652,20 @@ fun SettingsScreenPreview() {
     SettingsScreen(
         uiState = SettingsUiState(
             isLoading    = false,
-            displayName  = "Zaid Al-Farsi",
-            email        = "zaid.alfarsi@example.com",
             useDeviceLocation = true,
             latitude     = "24.4672",
             longitude    = "39.6111",
             calculationMethod = CalculationMethod.MWL,
             reminders    = PrayerType.values().mapIndexed { i, t ->
-                ReminderSetting(t, i != 4, listOf(0, -5, 0, 3, 0)[i])
+                ReminderSetting(
+                    prayerType    = t,
+                    enabled       = i != 4,
+                    offsetMinutes = listOf(0, -5, 0, 3, 0)[i].toString(),
+                    prayerTime    = listOf(
+                        LocalTime.of(5, 42), LocalTime.of(12, 15), LocalTime.of(15, 30),
+                        LocalTime.of(17, 58), LocalTime.of(19, 15),
+                    )[i],
+                )
             },
             use24HourFormat = false,
         ),
@@ -568,8 +676,10 @@ fun SettingsScreenPreview() {
         onReminderEnabledChanged   = { _, _ -> },
         onReminderOffsetChanged    = { _, _ -> },
         on24HourFormatChanged      = {},
+        onLanguageChanged          = {},
+        onThemeModeChanged         = {},
+        onDailyTipsChanged         = {},
         onSave                     = {},
-        onSignOutRequest           = {},
         onErrorDismiss             = {},
         onClearSaveSuccess         = {},
     )

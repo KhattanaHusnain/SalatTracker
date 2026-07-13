@@ -16,6 +16,8 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -23,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.*
+import com.salattracker.core.ui.label
 import com.salattracker.domain.model.PrayerType
 import java.time.LocalDate
 
@@ -68,7 +71,7 @@ fun QazaScreen(
                 verticalAlignment     = Alignment.CenterVertically,
             ) {
                 Text(
-                    text       = "Recent Missed Prayers",
+                    text       = stringResource(R.string.qaza_today_missed),
                     color      = SalatOnSurface,
                     fontSize   = 20.sp,
                     fontWeight = FontWeight.SemiBold,
@@ -76,7 +79,7 @@ fun QazaScreen(
                 )
                 TextButton(onClick = onViewAllClick) {
                     Text(
-                        text       = "View All",
+                        text       = stringResource(R.string.action_view_all),
                         color      = SalatPrimary,
                         fontSize   = 12.sp,
                         fontWeight = FontWeight.SemiBold,
@@ -97,7 +100,7 @@ fun QazaScreen(
                     )
                 }
             } else if (uiState.pendingEntries.isEmpty()) {
-                QazaEmptyState()
+                QazaEmptyState(totalBacklog = uiState.totalBacklog)
             } else {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     uiState.pendingEntries.forEach { entry ->
@@ -132,7 +135,7 @@ fun QazaScreen(
                 modifier      = Modifier.align(Alignment.BottomCenter).padding(16.dp),
                 action        = {
                     TextButton(onClick = onErrorDismiss) {
-                        Text("OK", color = SalatPrimaryFixed)
+                        Text(stringResource(R.string.action_ok), color = SalatPrimaryFixed)
                     }
                 },
                 containerColor = SalatInverseSurface,
@@ -176,34 +179,42 @@ private fun BacklogHeroBanner(total: Int, isLoading: Boolean) {
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text          = "TOTAL OUTSTANDING",
+                text          = stringResource(R.string.qaza_total_outstanding),
                 color         = SalatOnPrimaryContainer.copy(alpha = 0.8f),
                 fontSize      = 11.sp,
                 fontWeight    = FontWeight.SemiBold,
                 fontFamily    = InterFamily,
                 letterSpacing = 2.sp,
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(6.dp))
             if (isLoading) {
                 Box(
                     modifier = Modifier
-                        .width(160.dp)
-                        .height(52.dp)
+                        .width(100.dp)
+                        .height(40.dp)
                         .clip(RoundedCornerShape(8.dp))
                         .background(Color.White.copy(alpha = 0.15f))
                 )
             } else {
                 Text(
-                    text       = "Overall Backlog: $total",
+                    text       = total.toString(),
                     color      = Color.White,
-                    fontSize   = 32.sp,
+                    fontSize   = 40.sp,
                     fontWeight = FontWeight.Bold,
                     fontFamily = MontserratFamily,
                     textAlign  = TextAlign.Center,
-                    lineHeight = 38.sp,
+                    lineHeight = 44.sp,
                 )
             }
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text       = stringResource(R.string.qaza_overall_backlog),
+                color      = SalatOnPrimaryContainer.copy(alpha = 0.8f),
+                fontSize   = 13.sp,
+                fontWeight = FontWeight.Medium,
+                fontFamily = InterFamily,
+            )
+            Spacer(modifier = Modifier.height(10.dp))
             Box(
                 modifier = Modifier
                     .width(64.dp)
@@ -222,45 +233,34 @@ private fun PrayerBalanceGrid(
     balances: List<QazaBalanceUi>,
     isLoading: Boolean,
 ) {
-    // 2 rows, auto-fill: first row 2 cols, second row 3 cols on small screens
-    // We use a simple LazyVerticalGrid equivalent with two manual rows
+    // 2x2 grid for the first four prayers, with the last (Isha) spanning the full width below.
     val shimmerAlpha by rememberInfiniteTransition(label = "sk")
         .animateFloat(0.3f, 0.7f, infiniteRepeatable(tween(800), RepeatMode.Reverse), label = "a")
 
-    Row(
-        modifier              = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        val displayList = if (isLoading) List(5) { null } else balances.map { it as QazaBalanceUi? }
+    val displayList = if (isLoading) List(5) { null } else balances.map { it as QazaBalanceUi? }
+    val gridItems = displayList.take(4)
+    val fullWidthItem = displayList.getOrNull(4)
 
-        // Split into two rows: first 2, then 3
-        val row1 = displayList.take(2)
-        val row2 = displayList.drop(2)
-
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            row1.forEach { balance ->
-                if (balance == null || isLoading) {
-                    PrayerBalanceCardSkeleton(shimmerAlpha, Modifier.fillMaxWidth())
-                } else {
-                    PrayerBalanceCard(balance, Modifier.fillMaxWidth())
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        gridItems.chunked(2).forEach { rowItems ->
+            Row(
+                modifier              = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                rowItems.forEach { balance ->
+                    if (balance == null || isLoading) {
+                        PrayerBalanceCardSkeleton(shimmerAlpha, Modifier.weight(1f))
+                    } else {
+                        PrayerBalanceCard(balance, Modifier.weight(1f))
+                    }
                 }
             }
         }
 
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            row2.forEach { balance ->
-                if (balance == null || isLoading) {
-                    PrayerBalanceCardSkeleton(shimmerAlpha, Modifier.fillMaxWidth())
-                } else {
-                    PrayerBalanceCard(balance, Modifier.fillMaxWidth())
-                }
-            }
+        if (fullWidthItem == null || isLoading) {
+            PrayerBalanceCardSkeleton(shimmerAlpha, Modifier.fillMaxWidth())
+        } else {
+            PrayerBalanceCard(fullWidthItem, Modifier.fillMaxWidth())
         }
     }
 }
@@ -287,7 +287,7 @@ private fun PrayerBalanceCard(balance: QazaBalanceUi, modifier: Modifier = Modif
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
-                text       = balance.prayerType.displayName,
+                text       = balance.prayerType.label(),
                 color      = SalatOnSurfaceVariant,
                 fontSize   = 11.sp,
                 fontFamily = InterFamily,
@@ -355,7 +355,7 @@ private fun QazaEntryCard(
             // Prayer name + date
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text       = entry.prayerType.displayName,
+                    text       = entry.prayerType.label(),
                     color      = SalatOnSurface,
                     fontSize   = 16.sp,
                     fontWeight = FontWeight.SemiBold,
@@ -388,7 +388,7 @@ private fun QazaEntryCard(
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text       = "Mark Done",
+                    text       = stringResource(R.string.action_mark_done),
                     fontSize   = 11.sp,
                     fontWeight = FontWeight.SemiBold,
                     fontFamily = InterFamily,
@@ -414,7 +414,7 @@ private fun QazaEntrySkeleton(modifier: Modifier = Modifier) {
 // ── Empty state ───────────────────────────────────────────────────────────────
 
 @Composable
-private fun QazaEmptyState() {
+private fun QazaEmptyState(totalBacklog: Int) {
     Column(
         modifier              = Modifier
             .fillMaxWidth()
@@ -429,7 +429,7 @@ private fun QazaEmptyState() {
             modifier        = Modifier.size(48.dp),
         )
         Text(
-            text       = "No pending Qaza prayers!",
+            text       = stringResource(if (totalBacklog == 0) R.string.qaza_none_pending else R.string.qaza_nothing_today),
             color      = SalatPrimary,
             fontSize   = 20.sp,
             fontWeight = FontWeight.SemiBold,
@@ -437,7 +437,11 @@ private fun QazaEmptyState() {
             textAlign  = TextAlign.Center,
         )
         Text(
-            text       = "MashAllah — keep up the consistency.",
+            text = if (totalBacklog == 0) {
+                stringResource(R.string.qaza_keep_consistency)
+            } else {
+                pluralStringResource(R.plurals.qaza_backlog_remaining, totalBacklog, totalBacklog)
+            },
             color      = SalatOnSurfaceVariant,
             fontSize   = 14.sp,
             fontFamily = InterFamily,
@@ -469,7 +473,7 @@ private fun InsightCard(text: String) {
             )
             Column {
                 Text(
-                    text       = "Consistency Insight",
+                    text       = stringResource(R.string.qaza_insight_title),
                     color      = SalatPrimary,
                     fontSize   = 16.sp,
                     fontWeight = FontWeight.SemiBold,
@@ -490,20 +494,12 @@ private fun InsightCard(text: String) {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-private val PrayerType.iconRes get() = when (this) {
+internal val PrayerType.iconRes get() = when (this) {
     PrayerType.FAJR    -> R.drawable.ic_wb_twilight
     PrayerType.DHUHR   -> R.drawable.ic_light_mode
     PrayerType.ASR     -> R.drawable.ic_wb_sunny
     PrayerType.MAGHRIB -> R.drawable.ic_wb_twilight
     PrayerType.ISHA    -> R.drawable.ic_dark_mode
-}
-
-private val PrayerType.displayName get() = when (this) {
-    PrayerType.FAJR    -> "Fajr"
-    PrayerType.DHUHR   -> "Dhuhr"
-    PrayerType.ASR     -> "Asr"
-    PrayerType.MAGHRIB -> "Maghrib"
-    PrayerType.ISHA    -> "Isha"
 }
 
 // ── Canvas import ─────────────────────────────────────────────────────────────

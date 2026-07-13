@@ -1,10 +1,13 @@
 package com.salattracker.feature.qaza
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.salattracker.R
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.repository.PrayerRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -40,6 +43,7 @@ data class QazaUiState(
 @HiltViewModel
 class QazaViewModel @Inject constructor(
     private val repository: PrayerRepository,
+    @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(QazaUiState())
@@ -71,14 +75,18 @@ class QazaViewModel @Inject constructor(
             repository.observePendingQazaEntries()
                 .catch { e -> _uiState.update { it.copy(error = e.message) } }
                 .collect { entries ->
-                    val rows = entries.map { entry ->
-                        QazaPendingEntryUi(
-                            id          = "${entry.date}_${entry.prayerType}",
-                            prayerType  = entry.prayerType,
-                            date        = entry.date,
-                            dateLabel   = entry.date.format(dateFormatter),
-                        )
-                    }
+                    // The dashboard only surfaces today's Qaza — the "View All" screen covers the full backlog.
+                    val today = LocalDate.now()
+                    val rows = entries
+                        .filter { it.date == today }
+                        .map { entry ->
+                            QazaPendingEntryUi(
+                                id          = "${entry.date}_${entry.prayerType}",
+                                prayerType  = entry.prayerType,
+                                date        = entry.date,
+                                dateLabel   = entry.date.format(dateFormatter),
+                            )
+                        }
                     _uiState.update { state ->
                         state.copy(
                             pendingEntries = rows,
@@ -120,9 +128,9 @@ class QazaViewModel @Inject constructor(
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private fun buildInsight(total: Int): String = when {
-        total == 0  -> "MashAllah! You have no outstanding Qaza prayers. Keep maintaining your streak!"
-        total <= 5  -> "Almost there — only $total prayers remaining. Consistency is key!"
-        total <= 15 -> "You've been making progress. At one Qaza per day you'll be clear in $total days."
-        else        -> "Breaking it into a few prayers each week makes it manageable. You've got this!"
+        total == 0  -> context.getString(R.string.qaza_insight_none)
+        total <= 5  -> context.getString(R.string.qaza_insight_almost, total)
+        total <= 15 -> context.getString(R.string.qaza_insight_progress, total)
+        else        -> context.getString(R.string.qaza_insight_many)
     }
 }

@@ -1,0 +1,94 @@
+package com.salattracker.notification
+
+import android.app.KeyguardManager
+import android.content.Intent
+import android.os.Bundle
+import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.core.app.NotificationManagerCompat
+import androidx.lifecycle.lifecycleScope
+import com.salattracker.core.theme.SalatTrackerTheme
+import com.salattracker.domain.model.PrayerStatus
+import com.salattracker.domain.model.PrayerType
+import com.salattracker.domain.model.VerseInfo
+import com.salattracker.domain.repository.PrayerRepository
+import com.salattracker.domain.repository.VerseRepository
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.LocalTime
+import javax.inject.Inject
+
+/** Alarm-style full-screen reminder — shows over the lock screen when a prayer's time arrives. */
+@AndroidEntryPoint
+class PrayerReminderActivity : AppCompatActivity() {
+
+    @Inject lateinit var prayerRepository: PrayerRepository
+    @Inject lateinit var verseRepository: VerseRepository
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        setShowWhenLocked(true)
+        setTurnScreenOn(true)
+        getSystemService(KeyguardManager::class.java)?.requestDismissKeyguard(this, null)
+
+        val type = intent.prayerTypeOrNull()
+        if (type == null) {
+            finish()
+            return
+        }
+
+        setContent {
+            var scheduledTime by mutableStateOf<LocalTime?>(null)
+            var verse by mutableStateOf<VerseInfo?>(null)
+
+            LaunchedEffect(type) {
+                scheduledTime = prayerRepository.getCachedPrayerTimes(LocalDate.now())?.get(type)
+                verse = verseRepository.getRandomVerse()
+            }
+
+            SalatTrackerTheme {
+                PrayerReminderScreen(
+                    prayerType    = type,
+                    scheduledTime = scheduledTime,
+                    verse         = verse,
+                    onMark        = { status -> markAndFinish(type, status) },
+                    onSnooze      = { snoozeAndFinish(type) },
+                    onDismiss     = { finish() },
+                )
+            }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        // A new prayer's alarm fired while this screen was already up — simplest
+        // correct behavior is to restart onto the new prayer rather than merge state.
+        recreate()
+    }
+
+    private fun markAndFinish(type: PrayerType, status: PrayerStatus) {
+        lifecycleScope.launch {
+            runCatching { prayerRepository.upsertPrayerStatus(LocalDate.now(), type, status) }
+            NotificationManagerCompat.from(this@PrayerReminderActivity).cancel(type.ordinal)
+            finish()
+        }
+    }
+
+    private fun snoozeAndFinish(type: PrayerType) {
+        NotificationManagerCompat.from(this).cancel(type.ordinal)
+        PrayerReminderReceiver.scheduleSnooze(this, type)
+        finish()
+    }
+
+    private fun Intent.prayerTypeOrNull(): PrayerType? =
+        getStringExtra(AlarmScheduler.EXTRA_PRAYER_TYPE)?.let { name ->
+            runCatching { PrayerType.valueOf(name) }.getOrNull()
+        }
+}

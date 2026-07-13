@@ -12,9 +12,11 @@ import com.salattracker.data.local.entity.*
         StreakSnapshotEntity::class,
         QazaBalanceEntity::class,
         PrayerTimeCacheEntity::class,
-        SyncQueueEntity::class,
+        VerseCacheEntity::class,
+        SpiritualGoalEntity::class,
+        GoalCheckInEntity::class,
     ],
-    version  = 1,
+    version  = 5,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -22,5 +24,6 @@ abstract class SalatDatabase : RoomDatabase() {
     abstract fun prayerDao(): PrayerDao
     abstract fun streakDao(): StreakDao
     abstract fun prayerTimesDao(): PrayerTimesDao
-    abstract fun syncQueueDao(): SyncQueueDao
+    abstract fun verseDao(): VerseDao
+    abstract fun goalDao(): GoalDao
 }

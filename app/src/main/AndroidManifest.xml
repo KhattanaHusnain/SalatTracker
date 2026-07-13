@@ -2,6 +2,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+
     <application
         android:name=".SalatTrackerApp"
         android:allowBackup="true"
@@ -13,8 +22,20 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SalatTracker">
 
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
+
         <activity
-            android:name=".feature.splash.SplashActivity"
+            android:name=".feature.main.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.SalatTracker"
             android:windowSoftInputMode="adjustResize">
@@ -26,15 +47,43 @@
         </activity>
 
         <activity
-            android:name=".feature.auth.LoginActivity"
+            android:name=".notification.PrayerReminderActivity"
             android:exported="false"
-            android:theme="@style/Theme.SalatTracker"
-            android:windowSoftInputMode="adjustResize" />
-        <activity
-            android:name=".feature.main.MainActivity"
-            android:exported="false"
-            android:theme="@style/Theme.SalatTracker"
-            android:windowSoftInputMode="adjustResize" />
+            android:excludeFromRecents="true"
+            android:launchMode="singleTask"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
+            android:theme="@style/Theme.SalatTracker" />
+
+        <receiver
+            android:name=".notification.PrayerReminderReceiver"
+            android:enabled="true"
+            android:exported="false" />
+
+        <receiver
+            android:name=".notification.GoalReminderReceiver"
+            android:enabled="true"
+            android:exported="false" />
+
+        <receiver
+            android:name=".notification.BootReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Enables AppCompat per-app language: persists & restores the chosen locale across
+             restarts (incl. below API 33) so AppCompatDelegate.setApplicationLocales() sticks. -->
+        <service
+            android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
+            android:enabled="false"
+            android:exported="false">
+            <meta-data
+                android:name="autoStoreLocales"
+                android:value="true" />
+        </service>
     </application>
 
 </manifest>

@@ -9,10 +9,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -30,6 +32,7 @@ data class DayDetailPrayerRow(
     val type: PrayerType,
     val timeLabel: String,          // e.g. "05:42 AM"
     val status: PrayerStatus,
+    val isMarkable: Boolean = true,
 )
 
 // ── Day Detail Bottom Sheet ───────────────────────────────────────────────────
@@ -113,7 +116,7 @@ fun DayDetailBottomSheet(
                 prayers.forEach { row ->
                     DayDetailPrayerRowItem(
                         row     = row,
-                        onClick = { sheetTarget = row.type },
+                        onClick = { if (row.isMarkable) sheetTarget = row.type },
                     )
                 }
             }
@@ -150,7 +153,7 @@ fun DayDetailBottomSheet(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text       = "Done",
+                    text       = stringResource(R.string.action_done),
                     fontSize   = 20.sp,
                     fontWeight = FontWeight.SemiBold,
                     fontFamily = MontserratFamily,
@@ -208,7 +211,7 @@ private fun DayDetailHeader(
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text     = "$hijriLabel  •  ${if (allDone) "All prayers logged" else "$completedCount of $totalCount logged"}",
+                text     = "$hijriLabel  •  ${if (allDone) stringResource(R.string.sheet_all_logged) else stringResource(R.string.sheet_n_of_m_logged, completedCount, totalCount)}",
                 color    = SalatOnSurfaceVariant,
                 fontSize = 14.sp,
                 fontFamily = InterFamily,
@@ -238,7 +241,7 @@ private fun DayDetailHeader(
                     )
                 }
                 Text(
-                    text       = "$completedCount/$totalCount Complete",
+                    text       = stringResource(R.string.sheet_complete_count, completedCount, totalCount),
                     color      = SalatOnPrimaryContainer,
                     fontSize   = 11.sp,
                     fontWeight = FontWeight.SemiBold,
@@ -261,11 +264,12 @@ private fun DayDetailPrayerRowItem(
 
     Surface(
         onClick      = onClick,
+        enabled      = row.isMarkable,
         shape        = RoundedCornerShape(12.dp),
         color        = SalatSurface,
         border       = BorderStroke(1.dp, SalatSecondaryContainer),
         shadowElevation = 1.dp,
-        modifier     = Modifier.fillMaxWidth(),
+        modifier     = Modifier.fillMaxWidth().alpha(if (row.isMarkable) 1f else 0.6f),
     ) {
         Row(
             modifier          = Modifier
@@ -294,7 +298,7 @@ private fun DayDetailPrayerRowItem(
             // Name + time
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text       = row.type.displayName,
+                    text       = row.type.label(),
                     color      = SalatPrimary,
                     fontSize   = 20.sp,
                     fontWeight = FontWeight.SemiBold,
@@ -309,7 +313,7 @@ private fun DayDetailPrayerRowItem(
             }
 
             // Status chip
-            PrayerStatusChip(status = row.status)
+            PrayerStatusChip(status = row.status, isUpcoming = !row.isMarkable)
         }
     }
 }
@@ -317,31 +321,33 @@ private fun DayDetailPrayerRowItem(
 // ── Richer status chip (matches the HTML design tokens exactly) ───────────────
 
 @Composable
-private fun PrayerStatusChip(status: PrayerStatus) {
-    val (bg, fg, iconRes, label) = when (status) {
+private fun PrayerStatusChip(status: PrayerStatus, isUpcoming: Boolean = false) {
+    val (bg, fg, iconRes, label) = if (status == PrayerStatus.NOT_RECORDED && isUpcoming) {
+        StatusChipStyle(SalatSurfaceContainerHigh, SalatOnSurfaceVariant, R.drawable.ic_schedule, stringResource(R.string.status_upcoming))
+    } else when (status) {
         PrayerStatus.CONGREGATION   -> StatusChipStyle(
             SalatPrimaryFixed, SalatOnPrimaryFixedVariant,
-            R.drawable.ic_groups, "Jamā'at"
+            R.drawable.ic_groups, stringResource(R.string.status_jamaat)
         )
         PrayerStatus.INDIVIDUAL     -> StatusChipStyle(
             SalatSecondaryContainer, SalatOnSecondaryContainer,
-            R.drawable.ic_person, "Alone"
+            R.drawable.ic_person, stringResource(R.string.status_alone)
         )
         PrayerStatus.QAZA_PENDING   -> StatusChipStyle(
             Color(0xFFFFDCC3), Color(0xFF6E3900),
-            R.drawable.ic_history_edu, "Qaza"
+            R.drawable.ic_history_edu, stringResource(R.string.status_qaza)
         )
         PrayerStatus.QAZA_COMPLETED -> StatusChipStyle(
             Color(0xFFFFDCC3), Color(0xFF6E3900),
-            R.drawable.ic_check_circle_filled, "Qaza Done"
+            R.drawable.ic_check_circle_filled, stringResource(R.string.status_qaza_done)
         )
         PrayerStatus.MENSTRUATION   -> StatusChipStyle(
             SalatErrorContainer, SalatOnErrorContainer,
-            R.drawable.ic_female, "Excused"
+            R.drawable.ic_female, stringResource(R.string.status_excused)
         )
         PrayerStatus.NOT_RECORDED   -> StatusChipStyle(
             SalatSurfaceContainerHigh, SalatOnSurfaceVariant,
-            R.drawable.ic_radio_unchecked, "Not Set"
+            R.drawable.ic_radio_unchecked, stringResource(R.string.status_not_set)
         )
     }
 
@@ -389,14 +395,6 @@ private val PrayerType.iconRes get() = when (this) {
     PrayerType.ASR     -> R.drawable.ic_wb_sunny
     PrayerType.MAGHRIB -> R.drawable.ic_wb_twilight
     PrayerType.ISHA    -> R.drawable.ic_dark_mode
-}
-
-val PrayerType.displayName get() = when (this) {
-    PrayerType.FAJR    -> "Fajr"
-    PrayerType.DHUHR   -> "Dhuhr"
-    PrayerType.ASR     -> "Asr"
-    PrayerType.MAGHRIB -> "Maghrib"
-    PrayerType.ISHA    -> "Isha"
 }
 
 // ── Preview ───────────────────────────────────────────────────────────────────

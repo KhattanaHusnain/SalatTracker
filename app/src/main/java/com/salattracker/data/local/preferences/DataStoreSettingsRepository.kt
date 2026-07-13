@@ -2,7 +2,9 @@ package com.salattracker.data.local.preferences
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
+import com.salattracker.domain.model.AppLanguage
 import com.salattracker.domain.model.PrayerType
+import com.salattracker.domain.model.ThemeMode
 import com.salattracker.domain.repository.SettingsRepository
 import com.salattracker.domain.repository.UserPrefs
 import kotlinx.coroutines.flow.Flow
@@ -27,7 +29,10 @@ class DataStoreSettingsRepository @Inject constructor(
         val TIMEZONE              = stringPreferencesKey("timezone")
         val CALCULATION_METHOD_ID = intPreferencesKey("calculation_method_id")
         val USE_24_HOUR           = booleanPreferencesKey("use_24_hour")
-        val LAST_SYNC_AT          = longPreferencesKey("last_sync_at")
+        val LANGUAGE              = stringPreferencesKey("language")
+        val THEME_MODE            = stringPreferencesKey("theme_mode")
+        val DAILY_TIPS_ENABLED    = booleanPreferencesKey("daily_tips_enabled")
+        val ONBOARDING_COMPLETED  = booleanPreferencesKey("onboarding_completed")
 
         // Per-prayer reminder toggle: "reminder_enabled_FAJR" etc.
         fun reminderEnabled(type: PrayerType) =
@@ -63,7 +68,12 @@ class DataStoreSettingsRepository @Inject constructor(
             this[Keys.reminderOffset(type)] ?: 0
         },
         use24HourFormat      = this[Keys.USE_24_HOUR]            ?: false,
-        lastSyncAt           = this[Keys.LAST_SYNC_AT]           ?: 0L,
+        language             = this[Keys.LANGUAGE]?.let { runCatching { AppLanguage.valueOf(it) }.getOrNull() }
+            ?: AppLanguage.ENGLISH,
+        themeMode            = this[Keys.THEME_MODE]?.let { runCatching { ThemeMode.valueOf(it) }.getOrNull() }
+            ?: ThemeMode.SYSTEM,
+        dailyTipsEnabled     = this[Keys.DAILY_TIPS_ENABLED]     ?: false,
+        onboardingCompleted  = this[Keys.ONBOARDING_COMPLETED]   ?: false,
     )
 
     // ── Write ─────────────────────────────────────────────────────────────────
@@ -76,6 +86,9 @@ class DataStoreSettingsRepository @Inject constructor(
         reminderEnabled: Map<PrayerType, Boolean>,
         reminderOffsetMinutes: Map<PrayerType, Int>,
         use24HourFormat: Boolean,
+        language: AppLanguage,
+        themeMode: ThemeMode,
+        dailyTipsEnabled: Boolean,
     ) {
         dataStore.edit { prefs ->
             prefs[Keys.USE_DEVICE_LOCATION]   = useDeviceLocation
@@ -83,6 +96,9 @@ class DataStoreSettingsRepository @Inject constructor(
             prefs[Keys.LONGITUDE]             = longitude
             prefs[Keys.CALCULATION_METHOD_ID] = calculationMethodId
             prefs[Keys.USE_24_HOUR]           = use24HourFormat
+            prefs[Keys.LANGUAGE]              = language.name
+            prefs[Keys.THEME_MODE]            = themeMode.name
+            prefs[Keys.DAILY_TIPS_ENABLED]    = dailyTipsEnabled
             PrayerType.values().forEach { type ->
                 prefs[Keys.reminderEnabled(type)] = reminderEnabled[type] ?: true
                 prefs[Keys.reminderOffset(type)]  = reminderOffsetMinutes[type] ?: 0
@@ -90,8 +106,25 @@ class DataStoreSettingsRepository @Inject constructor(
         }
     }
 
-    /** Called by SyncWorker after a successful sync to record the timestamp. */
-    suspend fun updateLastSyncAt(epochMs: Long) {
-        dataStore.edit { prefs -> prefs[Keys.LAST_SYNC_AT] = epochMs }
+    override suspend fun setLanguage(language: AppLanguage) {
+        dataStore.edit { it[Keys.LANGUAGE] = language.name }
+    }
+
+    override suspend fun setThemeMode(themeMode: ThemeMode) {
+        dataStore.edit { it[Keys.THEME_MODE] = themeMode.name }
+    }
+
+    override suspend fun setDailyTipsEnabled(enabled: Boolean) {
+        dataStore.edit { it[Keys.DAILY_TIPS_ENABLED] = enabled }
+    }
+
+    override suspend fun setAllRemindersEnabled(enabled: Boolean) {
+        dataStore.edit { prefs ->
+            PrayerType.values().forEach { type -> prefs[Keys.reminderEnabled(type)] = enabled }
+        }
+    }
+
+    override suspend fun setOnboardingCompleted(completed: Boolean) {
+        dataStore.edit { it[Keys.ONBOARDING_COMPLETED] = completed }
     }
 }

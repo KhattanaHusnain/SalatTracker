@@ -1,6 +1,8 @@
 package com.salattracker.domain.repository
 
+import com.salattracker.domain.model.AppLanguage
 import com.salattracker.domain.model.PrayerType
+import com.salattracker.domain.model.ThemeMode
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -28,10 +30,27 @@ interface SettingsRepository {
         reminderEnabled: Map<PrayerType, Boolean>,
         reminderOffsetMinutes: Map<PrayerType, Int>,
         use24HourFormat: Boolean,
+        language: AppLanguage,
+        themeMode: ThemeMode,
+        dailyTipsEnabled: Boolean,
     )
 
     /** One-shot read, used when prayer times need refreshing. */
     suspend fun getCurrentPrefs(): UserPrefs
+
+    // ── Onboarding / app-preference granular writes ────────────────────────────
+
+    suspend fun setLanguage(language: AppLanguage)
+
+    suspend fun setThemeMode(themeMode: ThemeMode)
+
+    suspend fun setDailyTipsEnabled(enabled: Boolean)
+
+    /** Master toggle used by onboarding — enables/disables every per-prayer reminder at once. */
+    suspend fun setAllRemindersEnabled(enabled: Boolean)
+
+    /** Marks first-run onboarding as finished so it never shows again. */
+    suspend fun setOnboardingCompleted(completed: Boolean)
 }
 
 /**
@@ -49,5 +68,9 @@ data class UserPrefs(
     val reminderOffsetMinutes: Map<PrayerType, Int> = PrayerType.values()
         .associateWith { 0 },
     val use24HourFormat: Boolean = false,
-    val lastSyncAt: Long = 0L,                  // epoch ms, used by SyncWorker
+    // App preferences collected at onboarding (language/theme stored but not yet applied).
+    val language: AppLanguage = AppLanguage.ENGLISH,
+    val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val dailyTipsEnabled: Boolean = false,
+    val onboardingCompleted: Boolean = false,
 )

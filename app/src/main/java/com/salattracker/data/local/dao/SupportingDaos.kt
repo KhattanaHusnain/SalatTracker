@@ -2,7 +2,6 @@ package com.salattracker.data.local.dao
 
 import androidx.room.*
 import com.salattracker.data.local.entity.*
-import com.salattracker.domain.model.PrayerType
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
@@ -11,7 +10,13 @@ import java.time.LocalDate
 @Dao
 interface StreakDao {
     @Query("SELECT * FROM streak_snapshots WHERE user_id = :userId")
-    suspend fun getSnapshot(userId: String): StreakSnapshotEntity?
+    suspend fun getAllSnapshots(userId: String): List<StreakSnapshotEntity>
+
+    // Room invalidates this automatically on ANY write to streak_snapshots, from
+    // any screen/worker — needed so Home's tiles don't go stale when a prayer is
+    // marked from Calendar, Qaza, or the auto-Qaza background worker.
+    @Query("SELECT * FROM streak_snapshots WHERE user_id = :userId")
+    fun observeAllSnapshots(userId: String): Flow<List<StreakSnapshotEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertSnapshot(snapshot: StreakSnapshotEntity)
@@ -40,25 +45,16 @@ interface PrayerTimesDao {
     suspend fun evictOlderThan(before: Long)
 }
 
-// ── Sync queue DAO ────────────────────────────────────────────────────────────
+// ── Verse cache DAO ───────────────────────────────────────────────────────────
 
 @Dao
-interface SyncQueueDao {
-    @Query("SELECT * FROM sync_queue ORDER BY created_at ASC LIMIT :limit")
-    suspend fun fetchBatch(limit: Int = 50): List<SyncQueueEntity>
+interface VerseDao {
+    @Query("SELECT * FROM verse_cache")
+    suspend fun getAll(): List<VerseCacheEntity>
+
+    @Query("SELECT verse_key FROM verse_cache")
+    suspend fun getCachedKeys(): List<String>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun enqueue(item: SyncQueueEntity): Long
-
-    @Query("DELETE FROM sync_queue WHERE id IN (:ids)")
-    suspend fun deleteProcessed(ids: List<Long>)
-
-    @Query("UPDATE sync_queue SET retry_count = retry_count + 1 WHERE id IN (:ids)")
-    suspend fun incrementRetry(ids: List<Long>)
-
-    @Query("DELETE FROM sync_queue WHERE retry_count >= :maxRetries")
-    suspend fun purgeExhausted(maxRetries: Int = 5)
-
-    @Query("SELECT COUNT(*) FROM sync_queue")
-    fun observeQueueSize(): Flow<Int>
+    suspend fun upsert(entity: VerseCacheEntity)
 }

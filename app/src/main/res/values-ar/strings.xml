@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Salat Tracker</string>
+
+    <string name="nav_home">الرئيسية</string>
+    <string name="nav_calendar">التقويم</string>
+    <string name="nav_qaza">القضاء</string>
+    <string name="nav_stats">الإحصائيات</string>
+    <string name="nav_settings">الإعدادات</string>
+
+    <string name="topbar_today">اليوم</string>
+    <string name="topbar_calendar">التقويم</string>
+    <string name="topbar_qaza">متتبّع القضاء</string>
+    <string name="topbar_stats">الإحصائيات والتقدّم</string>
+    <string name="topbar_settings">الإعدادات</string>
+    <string name="topbar_bulk_update">تحديث جماعي</string>
+    <string name="topbar_goals">الأهداف الروحية</string>
+    <string name="topbar_new_goal">هدف جديد</string>
+    <string name="topbar_edit_goal">تعديل الهدف</string>
+    <string name="topbar_missed_prayers">الصلوات الفائتة</string>
+    <string name="topbar_default">Salat Tracker</string>
+    <string name="cd_menu">القائمة</string>
+    <string name="action_add_goal">إضافة هدف</string>
+    <string name="action_bulk_update">تحديث جماعي</string>
+
+    <string name="prayer_fajr">الفجر</string>
+    <string name="prayer_dhuhr">الظهر</string>
+    <string name="prayer_asr">العصر</string>
+    <string name="prayer_maghrib">المغرب</string>
+    <string name="prayer_maghrib_short">مغرب</string>
+    <string name="prayer_isha">العشاء</string>
+
+    <string name="status_congregation">جماعة</string>
+    <string name="status_individual">فردي</string>
+    <string name="status_qaza_pending">قضاء معلّق</string>
+    <string name="status_qaza_completed">قضاء مكتمل</string>
+    <string name="status_menstruation">حيض</string>
+    <string name="status_not_recorded">غير مسجّل</string>
+    <string name="status_qaza">قضاء</string>
+    <string name="status_qaza_done">تم القضاء</string>
+    <string name="status_jamaat">جماعة</string>
+    <string name="status_alone">منفرد</string>
+    <string name="status_excused">معذور</string>
+    <string name="status_not_set">غير محدد</string>
+    <string name="status_upcoming">قادمة</string>
+
+    <string name="category_salat">الصلاة</string>
+    <string name="category_quran">القرآن</string>
+    <string name="category_fasting">الصيام</string>
+    <string name="category_charity">الصدقة</string>
+    <string name="category_dhikr">الذكر</string>
+
+    <string name="frequency_daily">يومي</string>
+    <string name="frequency_weekly">أسبوعي</string>
+    <string name="frequency_monthly">شهري</string>
+
+    <string name="weekday_sun">أحد</string>
+    <string name="weekday_mon">إثنين</string>
+    <string name="weekday_tue">ثلاثاء</string>
+    <string name="weekday_wed">أربعاء</string>
+    <string name="weekday_thu">خميس</string>
+    <string name="weekday_fri">جمعة</string>
+    <string name="weekday_sat">سبت</string>
+
+    <string name="action_ok">حسنًا</string>
+    <string name="action_cancel">إلغاء</string>
+    <string name="action_delete">حذف</string>
+    <string name="action_done">تم</string>
+    <string name="action_continue">متابعة</string>
+    <string name="action_next">التالي</string>
+    <string name="action_get_started">ابدأ الآن</string>
+    <string name="action_view_all">عرض الكل</string>
+    <string name="action_mark_done">تحديد كمُنجز</string>
+
+    <string name="onboarding_welcome_title">مرحبًا بك في Salat Tracker</string>
+    <string name="onboarding_welcome_subtitle">يرجى اختيار لغتك المفضّلة لبدء رحلتك.</string>
+    <string name="onboarding_change_later">يمكنك تغيير ذلك لاحقًا في الإعدادات.</string>
+    <string name="onboarding_theme_title">اختر أجواءك</string>
+    <string name="onboarding_theme_subtitle">اختر مظهرًا يمنحك السكينة.</string>
+    <string name="theme_light">فاتح</string>
+    <string name="theme_light_desc">نقيّ ومشرق</string>
+    <string name="theme_dark">داكن</string>
+    <string name="theme_dark_desc">هادئ وعميق</string>
+    <string name="theme_system">النظام</string>
+    <string name="theme_system_desc">مزامنة مع الجهاز</string>
+    <string name="onboarding_location_title">أوقات صلاة دقيقة</string>
+    <string name="onboarding_location_desc">نحتاج إلى موقعك لحساب أوقات الصلاة بدقّة بناءً على مدينتك الحالية. يضمن ذلك بقاء صلواتك اليومية متزامنة مع موضع الشمس.</string>
+    <string name="onboarding_allow_location">السماح بالوصول للموقع</string>
+    <string name="onboarding_location_privacy">تُخزَّن بياناتك محليًا ولا تُشارَك أبدًا.</string>
+    <string name="onboarding_notifications_title">ابقَ على تواصل</string>
+    <string name="onboarding_notifications_subtitle">فعّل التذكيرات حتى لا تفوتك صلاة أو محطة روحية.</string>
+    <string name="prayer_reminders">تذكيرات الصلاة</string>
+    <string name="daily_spiritual_tips">نصائح روحية يومية</string>
+
+    <string name="home_daily_stack">صلوات اليوم</string>
+    <string name="home_daily_goals">الأهداف اليومية</string>
+    <string name="home_percent_completed">%1$d%% مكتمل</string>
+    <string name="home_set_first_goal">حدّد هدفك الروحي الأول</string>
+    <string name="home_best_streak">الأفضل %1$d</string>
+    <string name="home_reminder_at">تذكير %1$s</string>
+
+    <string name="qaza_today_missed">صلوات اليوم الفائتة</string>
+    <string name="qaza_total_outstanding">إجمالي المتبقّي</string>
+    <string name="qaza_overall_backlog">إجمالي القضاء</string>
+    <string name="qaza_none_pending">لا توجد صلوات قضاء معلّقة!</string>
+    <string name="qaza_nothing_today">لم تفُتك صلاة اليوم!</string>
+    <string name="qaza_keep_consistency">ما شاء الله — واصِل الاستمرارية.</string>
+    <string name="qaza_insight_title">رؤية الاستمرارية</string>
+    <string name="qaza_insight_none">ما شاء الله! ليس لديك صلوات قضاء متبقية. واصِل الحفاظ على تسلسلك!</string>
+    <string name="qaza_insight_almost">اقتربت — بقيت %1$d صلوات فقط. الاستمرارية هي المفتاح!</string>
+    <string name="qaza_insight_progress">أنت تُحرز تقدمًا. بمعدّل قضاء واحد يوميًا ستنتهي خلال %1$d أيام.</string>
+    <string name="qaza_insight_many">تقسيمها إلى بضع صلوات كل أسبوع يجعلها سهلة. أنت قادر على ذلك!</string>
+    <string name="error_goal_name">أعطِ هدفك اسمًا.</string>
+    <string name="error_goal_not_found">لم يتم العثور على الهدف.</string>
+    <plurals name="qaza_backlog_remaining">
+        <item quantity="one">لا يزال لديك %1$d صلاة معلّقة من أيام سابقة.</item>
+        <item quantity="other">لا يزال لديك %1$d صلوات معلّقة من أيام سابقة.</item>
+    </plurals>
+
+    <string name="filter_all">الكل</string>
+    <string name="missed_total_pending">%1$d إجمالي المعلّق</string>
+    <string name="sort_newest">الأحدث أولًا</string>
+    <string name="sort_oldest">الأقدم أولًا</string>
+    <string name="action_deselect_all">إلغاء تحديد الكل</string>
+    <string name="action_select_multiple">تحديد متعدد</string>
+    <string name="action_select_all">تحديد الكل</string>
+    <string name="selected_label">المحدَّد</string>
+    <string name="action_complete_all">إكمال الكل</string>
+    <string name="missed_empty_title">الصبر مُثمِر</string>
+    <string name="missed_empty_desc">لقد أكملت جميع صلواتك الفائتة! انضباطك مُلهِم.</string>
+    <string name="action_back_dashboard">العودة إلى اللوحة</string>
+    <plurals name="selected_prayers">
+        <item quantity="one">%1$d صلاة</item>
+        <item quantity="other">%1$d صلوات</item>
+    </plurals>
+
+    <string name="settings_location">الموقع</string>
+    <string name="settings_prayer_calc">حساب الصلاة</string>
+    <string name="settings_minutes_offset">فرق الدقائق</string>
+    <string name="settings_display">العرض</string>
+    <string name="settings_appearance_language">المظهر واللغة</string>
+    <string name="settings_saving">جارٍ الحفظ…</string>
+    <string name="settings_save">حفظ الإعدادات</string>
+    <string name="settings_saved">تم حفظ الإعدادات.</string>
+    <string name="settings_device_location">موقع الجهاز</string>
+    <string name="settings_latitude">خط العرض</string>
+    <string name="settings_longitude">خط الطول</string>
+    <string name="settings_calc_method">طريقة الحساب</string>
+    <string name="settings_language">اللغة</string>
+    <string name="settings_theme">المظهر</string>
+    <string name="settings_24hour">تنسيق 24 ساعة</string>
+
+    <string name="stats_highest_streaks">أعلى المتتاليات</string>
+    <string name="stats_best_per_prayer">أفضل سلسلة لكل صلاة</string>
+    <string name="stats_congregation_pct">نسبة الجماعة</string>
+    <string name="stats_individual_pct">نسبة الفردي</string>
+    <string name="stats_missed_qaza">الفائتة / القضاء</string>
+    <string name="stats_vs_last">%1$s%% مقارنة بالسابق</string>
+    <string name="stats_prayer_trend">اتجاه الصلاة</string>
+    <string name="stats_composition_over">التوزيع خلال %1$s</string>
+    <string name="stats_daily_goals">الأهداف اليومية</string>
+    <string name="stats_completion_rate">معدّل الإنجاز</string>
+    <string name="stats_no_active_goals">لا توجد أهداف نشطة بعد — حدّد واحدًا من شاشة الأهداف.</string>
+    <string name="stats_achievement_title">روح ثابتة</string>
+    <string name="stats_achievement_desc">لقد أكملت جميع الصلوات لمدة %1$d أيام متتالية. جعل الله ثباتك في ميزان حسناتك.</string>
+
+    <string name="goals_active">الأهداف النشطة</string>
+    <string name="goals_in_progress">%1$d قيد التنفيذ</string>
+    <string name="goals_todays_focus">تركيز اليوم</string>
+    <string name="goals_progress_glance">تقدّمك الروحي في لمحة</string>
+    <string name="goals_completed_caps">مكتمل</string>
+    <string name="goals_none_yet">لا توجد أهداف بعد — اضغط + لتحديد هدفك الروحي الأول.</string>
+    <string name="goals_progress">التقدّم</string>
+    <string name="goal_completed">مكتمل</string>
+    <string name="goal_checkin">تسجيل</string>
+    <string name="cd_edit_goal">تعديل الهدف</string>
+    <string name="cd_delete_goal">حذف الهدف</string>
+    <string name="goal_delete_title">حذف الهدف؟</string>
+    <string name="goal_delete_desc">سيؤدي هذا إلى إزالة تقدّمك وسلاسلك لهذا الهدف نهائيًا. لا يمكن التراجع عن هذا الإجراء.</string>
+    <string name="goal_deleting">جارٍ حذف الهدف</string>
+
+    <string name="addgoal_name">اسم الهدف</string>
+    <string name="addgoal_name_hint">مثال: صلاة التهجّد</string>
+    <string name="addgoal_category">الفئة</string>
+    <string name="addgoal_target_freq">التكرار المستهدف</string>
+    <string name="addgoal_amount">الكمية</string>
+    <string name="addgoal_unit">الوحدة</string>
+    <string name="addgoal_reminder">تذكير</string>
+    <string name="addgoal_notify_at">ذكّرني عند:</string>
+    <string name="addgoal_duration">المدة (أيام)</string>
+    <string name="addgoal_create">إنشاء الهدف</string>
+    <string name="addgoal_created">تم إنشاء الهدف!</string>
+    <string name="editgoal_delete">حذف الهدف</string>
+    <string name="editgoal_save">حفظ التغييرات</string>
+    <string name="editgoal_updated">تم تحديث الهدف!</string>
+
+    <string name="bulk_dur_day">يوم</string>
+    <string name="bulk_dur_week">أسبوع</string>
+    <string name="bulk_dur_month">شهر</string>
+    <string name="bulk_dur_custom">مخصص</string>
+    <string name="bulk_select_duration">اختر المدة</string>
+    <string name="bulk_select_prayers">اختر الصلوات</string>
+    <string name="bulk_set_status">تعيين الحالة</string>
+    <string name="bulk_apply_changes">تطبيق التغييرات</string>
+    <string name="bulk_date_range">النطاق الزمني</string>
+    <string name="bulk_start">من: %1$s</string>
+    <string name="bulk_end">إلى: %1$s</string>
+    <string name="bulk_previous">السابق</string>
+    <string name="bulk_next">التالي</string>
+    <string name="bulk_confirm_title">تأكيد التحديث الجماعي</string>
+    <string name="bulk_confirm_desc">لا يمكن التراجع عن هذا الإجراء. سيتم استبدال سجلات الحالة الحالية لهذه الصلوات.</string>
+    <string name="bulk_confirm_update">تأكيد التحديث</string>
+    <string name="bulk_applied">تم تطبيق التحديث الجماعي.</string>
+    <string name="bulk_applied_skipped">تم تطبيق التحديث الجماعي. تم تخطّي %1$d صلاة لم يحن وقتها بعد.</string>
+    <string name="bulk_apply_summary">تطبيق %1$s على %2$s</string>
+    <string name="bulk_confirm_summary">أنت على وشك تطبيق حالة %1$s على %2$s.</string>
+    <plurals name="bulk_prayers_count">
+        <item quantity="one">%1$d صلاة</item>
+        <item quantity="other">%1$d صلوات</item>
+    </plurals>
+    <plurals name="bulk_days_count">
+        <item quantity="one">لمدة %1$d يوم</item>
+        <item quantity="other">لمدة %1$d أيام</item>
+    </plurals>
+
+    <string name="sheet_complete_count">%1$d/%2$d مكتمل</string>
+    <string name="sheet_all_logged">تم تسجيل جميع الصلوات</string>
+    <string name="sheet_n_of_m_logged">تم تسجيل %1$d من %2$d</string>
+
+    <string name="sheet_update_status">حدّث حالة صلاتك</string>
+    <string name="sheet_updating">جارٍ التحديث…</string>
+    <string name="sheet_save_status">حفظ الحالة</string>
+
+    <string name="reminder_prayer_title">صلاة %1$s</string>
+    <string name="reminder_scheduled_for">مجدولة في %1$s</string>
+    <string name="reminder_snooze">تأجيل 10 د</string>
+    <string name="reminder_dismiss">تجاهل التنبيه</string>
+
+    <string name="notification_channel_prayer_id">prayer_reminders</string>
+    <string name="notification_channel_prayer_name">تذكيرات الصلاة</string>
+    <string name="notification_channel_prayer_desc">تذكيرات بأوقات الصلاة اليومية</string>
+    <string name="notification_prayer_title">حان وقت %1$s</string>
+    <string name="notification_prayer_body">حان وقت صلاة %1$s</string>
+
+    <string name="notification_channel_goal_id">goal_reminders</string>
+    <string name="notification_channel_goal_name">تذكيرات الأهداف</string>
+    <string name="notification_channel_goal_desc">تذكيرات بأهدافك الروحية</string>
+    <string name="notification_goal_title">حان وقت: %1$s</string>
+    <string name="notification_goal_body">اضغط لتسجيل تقدّمك في الهدف.</string>
+</resources>

@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Salat Tracker</string>
+
+    <string name="nav_home">ہوم</string>
+    <string name="nav_calendar">کیلنڈر</string>
+    <string name="nav_qaza">قضا</string>
+    <string name="nav_stats">شماریات</string>
+    <string name="nav_settings">ترتیبات</string>
+
+    <string name="topbar_today">آج</string>
+    <string name="topbar_calendar">کیلنڈر</string>
+    <string name="topbar_qaza">قضا ٹریکر</string>
+    <string name="topbar_stats">شماریات و پیش رفت</string>
+    <string name="topbar_settings">ترتیبات</string>
+    <string name="topbar_bulk_update">اجتماعی اپ ڈیٹ</string>
+    <string name="topbar_goals">روحانی اہداف</string>
+    <string name="topbar_new_goal">نیا ہدف</string>
+    <string name="topbar_edit_goal">ہدف میں ترمیم</string>
+    <string name="topbar_missed_prayers">چھوٹی ہوئی نمازیں</string>
+    <string name="topbar_default">Salat Tracker</string>
+    <string name="cd_menu">مینو</string>
+    <string name="action_add_goal">ہدف شامل کریں</string>
+    <string name="action_bulk_update">اجتماعی اپ ڈیٹ</string>
+
+    <string name="prayer_fajr">فجر</string>
+    <string name="prayer_dhuhr">ظہر</string>
+    <string name="prayer_asr">عصر</string>
+    <string name="prayer_maghrib">مغرب</string>
+    <string name="prayer_maghrib_short">مغرب</string>
+    <string name="prayer_isha">عشاء</string>
+
+    <string name="status_congregation">باجماعت</string>
+    <string name="status_individual">انفرادی</string>
+    <string name="status_qaza_pending">قضا باقی</string>
+    <string name="status_qaza_completed">قضا مکمل</string>
+    <string name="status_menstruation">حیض</string>
+    <string name="status_not_recorded">درج نہیں</string>
+    <string name="status_qaza">قضا</string>
+    <string name="status_qaza_done">قضا مکمل</string>
+    <string name="status_jamaat">باجماعت</string>
+    <string name="status_alone">تنہا</string>
+    <string name="status_excused">معذور</string>
+    <string name="status_not_set">مقرر نہیں</string>
+    <string name="status_upcoming">آنے والی</string>
+
+    <string name="category_salat">نماز</string>
+    <string name="category_quran">قرآن</string>
+    <string name="category_fasting">روزہ</string>
+    <string name="category_charity">صدقہ</string>
+    <string name="category_dhikr">ذکر</string>
+
+    <string name="frequency_daily">روزانہ</string>
+    <string name="frequency_weekly">ہفتہ وار</string>
+    <string name="frequency_monthly">ماہانہ</string>
+
+    <string name="weekday_sun">اتوار</string>
+    <string name="weekday_mon">پیر</string>
+    <string name="weekday_tue">منگل</string>
+    <string name="weekday_wed">بدھ</string>
+    <string name="weekday_thu">جمعرات</string>
+    <string name="weekday_fri">جمعہ</string>
+    <string name="weekday_sat">ہفتہ</string>
+
+    <string name="action_ok">ٹھیک ہے</string>
+    <string name="action_cancel">منسوخ</string>
+    <string name="action_delete">حذف</string>
+    <string name="action_done">ہو گیا</string>
+    <string name="action_continue">جاری رکھیں</string>
+    <string name="action_next">اگلا</string>
+    <string name="action_get_started">شروع کریں</string>
+    <string name="action_view_all">سب دیکھیں</string>
+    <string name="action_mark_done">مکمل نشان زد کریں</string>
+
+    <string name="onboarding_welcome_title">Salat Tracker میں خوش آمدید</string>
+    <string name="onboarding_welcome_subtitle">اپنے سفر کا آغاز کرنے کے لیے براہ کرم اپنی پسندیدہ زبان منتخب کریں۔</string>
+    <string name="onboarding_change_later">آپ اسے بعد میں ترتیبات میں تبدیل کر سکتے ہیں۔</string>
+    <string name="onboarding_theme_title">اپنا انداز منتخب کریں</string>
+    <string name="onboarding_theme_subtitle">ایسا تھیم منتخب کریں جو آپ کو سکون دے۔</string>
+    <string name="theme_light">روشن</string>
+    <string name="theme_light_desc">خالص اور چمکدار</string>
+    <string name="theme_dark">گہرا</string>
+    <string name="theme_dark_desc">پُرسکون اور گہرا</string>
+    <string name="theme_system">سسٹم</string>
+    <string name="theme_system_desc">آلے کے ساتھ ہم آہنگ</string>
+    <string name="onboarding_location_title">درست اوقاتِ نماز</string>
+    <string name="onboarding_location_desc">آپ کے موجودہ شہر کی بنیاد پر نماز کے درست اوقات کے حساب کے لیے ہمیں آپ کے مقام کی ضرورت ہے۔ اس سے آپ کی روزانہ نمازیں سورج کی پوزیشن کے ساتھ ہم آہنگ رہتی ہیں۔</string>
+    <string name="onboarding_allow_location">مقام کی اجازت دیں</string>
+    <string name="onboarding_location_privacy">آپ کا ڈیٹا مقامی طور پر محفوظ رہتا ہے اور کبھی شیئر نہیں کیا جاتا۔</string>
+    <string name="onboarding_notifications_title">جڑے رہیں</string>
+    <string name="onboarding_notifications_subtitle">یاد دہانیاں فعال کریں تاکہ آپ کوئی نماز یا روحانی سنگِ میل نہ چھوڑیں۔</string>
+    <string name="prayer_reminders">نماز کی یاد دہانیاں</string>
+    <string name="daily_spiritual_tips">روزانہ روحانی نکات</string>
+
+    <string name="home_daily_stack">آج کی نمازیں</string>
+    <string name="home_daily_goals">روزانہ اہداف</string>
+    <string name="home_percent_completed">%1$d%% مکمل</string>
+    <string name="home_set_first_goal">اپنا پہلا روحانی ہدف مقرر کریں</string>
+    <string name="home_best_streak">بہترین %1$d</string>
+    <string name="home_reminder_at">یاد دہانی %1$s</string>
+
+    <string name="qaza_today_missed">آج کی چھوٹی ہوئی نمازیں</string>
+    <string name="qaza_total_outstanding">کل باقی</string>
+    <string name="qaza_overall_backlog">مجموعی قضا</string>
+    <string name="qaza_none_pending">کوئی قضا نماز باقی نہیں!</string>
+    <string name="qaza_nothing_today">آج کوئی نماز نہیں چھوٹی!</string>
+    <string name="qaza_keep_consistency">ماشاءاللہ — تسلسل جاری رکھیں۔</string>
+    <string name="qaza_insight_title">تسلسل کی بصیرت</string>
+    <string name="qaza_insight_none">ماشاءاللہ! آپ کی کوئی قضا نماز باقی نہیں۔ اپنا تسلسل برقرار رکھیں!</string>
+    <string name="qaza_insight_almost">بس تھوڑا سا — صرف %1$d نمازیں باقی ہیں۔ تسلسل ہی کلید ہے!</string>
+    <string name="qaza_insight_progress">آپ پیش رفت کر رہے ہیں۔ روزانہ ایک قضا کے حساب سے آپ %1$d دنوں میں مکمل کر لیں گے۔</string>
+    <string name="qaza_insight_many">اسے ہر ہفتے چند نمازوں میں تقسیم کرنا اسے قابلِ عمل بنا دیتا ہے۔ آپ یہ کر سکتے ہیں!</string>
+    <string name="error_goal_name">اپنے ہدف کو نام دیں۔</string>
+    <string name="error_goal_not_found">ہدف نہیں ملا۔</string>
+    <plurals name="qaza_backlog_remaining">
+        <item quantity="one">آپ کے پاس اب بھی پچھلے دنوں کی %1$d نماز باقی ہے۔</item>
+        <item quantity="other">آپ کے پاس اب بھی پچھلے دنوں کی %1$d نمازیں باقی ہیں۔</item>
+    </plurals>
+
+    <string name="filter_all">سب</string>
+    <string name="missed_total_pending">%1$d کل باقی</string>
+    <string name="sort_newest">نئی پہلے</string>
+    <string name="sort_oldest">پرانی پہلے</string>
+    <string name="action_deselect_all">سب غیر منتخب کریں</string>
+    <string name="action_select_multiple">متعدد منتخب کریں</string>
+    <string name="action_select_all">سب منتخب کریں</string>
+    <string name="selected_label">منتخب شدہ</string>
+    <string name="action_complete_all">سب مکمل کریں</string>
+    <string name="missed_empty_title">صبر باعثِ اجر ہے</string>
+    <string name="missed_empty_desc">آپ نے اپنی تمام چھوٹی ہوئی نمازیں مکمل کر لیں! آپ کا نظم و ضبط قابلِ تعریف ہے۔</string>
+    <string name="action_back_dashboard">ڈیش بورڈ پر واپس</string>
+    <plurals name="selected_prayers">
+        <item quantity="one">%1$d نماز</item>
+        <item quantity="other">%1$d نمازیں</item>
+    </plurals>
+
+    <string name="settings_location">مقام</string>
+    <string name="settings_prayer_calc">نماز کا حساب</string>
+    <string name="settings_minutes_offset">منٹ کا فرق</string>
+    <string name="settings_display">ڈسپلے</string>
+    <string name="settings_appearance_language">ظاہری شکل و زبان</string>
+    <string name="settings_saving">محفوظ ہو رہا ہے…</string>
+    <string name="settings_save">ترتیبات محفوظ کریں</string>
+    <string name="settings_saved">ترتیبات محفوظ ہو گئیں۔</string>
+    <string name="settings_device_location">آلے کا مقام</string>
+    <string name="settings_latitude">عرض بلد</string>
+    <string name="settings_longitude">طول بلد</string>
+    <string name="settings_calc_method">حساب کا طریقہ</string>
+    <string name="settings_language">زبان</string>
+    <string name="settings_theme">تھیم</string>
+    <string name="settings_24hour">24 گھنٹے کی شکل</string>
+
+    <string name="stats_highest_streaks">بلند ترین تسلسل</string>
+    <string name="stats_best_per_prayer">ہر نماز کا بہترین تسلسل</string>
+    <string name="stats_congregation_pct">باجماعت %</string>
+    <string name="stats_individual_pct">انفرادی %</string>
+    <string name="stats_missed_qaza">چھوٹی / قضا</string>
+    <string name="stats_vs_last">%1$s%% پچھلے کے مقابلے</string>
+    <string name="stats_prayer_trend">نماز کا رجحان</string>
+    <string name="stats_composition_over">%1$s کے دوران تناسب</string>
+    <string name="stats_daily_goals">روزانہ اہداف</string>
+    <string name="stats_completion_rate">تکمیل کی شرح</string>
+    <string name="stats_no_active_goals">ابھی کوئی فعال ہدف نہیں — اہداف اسکرین سے ایک مقرر کریں۔</string>
+    <string name="stats_achievement_title">ثابت قدم روح</string>
+    <string name="stats_achievement_desc">آپ نے مسلسل %1$d دن تمام نمازیں مکمل کیں۔ اللہ آپ کی استقامت کو قبول فرمائے۔</string>
+
+    <string name="goals_active">فعال اہداف</string>
+    <string name="goals_in_progress">%1$d جاری</string>
+    <string name="goals_todays_focus">آج کی توجہ</string>
+    <string name="goals_progress_glance">ایک نظر میں آپ کی روحانی پیش رفت</string>
+    <string name="goals_completed_caps">مکمل</string>
+    <string name="goals_none_yet">ابھی کوئی ہدف نہیں — اپنا پہلا روحانی ہدف مقرر کرنے کے لیے + دبائیں۔</string>
+    <string name="goals_progress">پیش رفت</string>
+    <string name="goal_completed">مکمل</string>
+    <string name="goal_checkin">چیک اِن</string>
+    <string name="cd_edit_goal">ہدف میں ترمیم</string>
+    <string name="cd_delete_goal">ہدف حذف کریں</string>
+    <string name="goal_delete_title">ہدف حذف کریں؟</string>
+    <string name="goal_delete_desc">اس سے اس ہدف کی آپ کی پیش رفت اور تسلسل مستقل طور پر حذف ہو جائیں گے۔ یہ عمل واپس نہیں ہو سکتا۔</string>
+    <string name="goal_deleting">ہدف حذف ہو رہا ہے</string>
+
+    <string name="addgoal_name">ہدف کا نام</string>
+    <string name="addgoal_name_hint">مثلاً: تہجد کی نماز</string>
+    <string name="addgoal_category">زمرہ</string>
+    <string name="addgoal_target_freq">ہدف کی تکرار</string>
+    <string name="addgoal_amount">مقدار</string>
+    <string name="addgoal_unit">اکائی</string>
+    <string name="addgoal_reminder">یاد دہانی</string>
+    <string name="addgoal_notify_at">مجھے یاد دلائیں:</string>
+    <string name="addgoal_duration">مدت (دن)</string>
+    <string name="addgoal_create">ہدف بنائیں</string>
+    <string name="addgoal_created">ہدف بن گیا!</string>
+    <string name="editgoal_delete">ہدف حذف کریں</string>
+    <string name="editgoal_save">تبدیلیاں محفوظ کریں</string>
+    <string name="editgoal_updated">ہدف اپ ڈیٹ ہو گیا!</string>
+
+    <string name="bulk_dur_day">دن</string>
+    <string name="bulk_dur_week">ہفتہ</string>
+    <string name="bulk_dur_month">مہینہ</string>
+    <string name="bulk_dur_custom">حسبِ ضرورت</string>
+    <string name="bulk_select_duration">مدت منتخب کریں</string>
+    <string name="bulk_select_prayers">نمازیں منتخب کریں</string>
+    <string name="bulk_set_status">حیثیت مقرر کریں</string>
+    <string name="bulk_apply_changes">تبدیلیاں لاگو کریں</string>
+    <string name="bulk_date_range">تاریخ کی حد</string>
+    <string name="bulk_start">شروع: %1$s</string>
+    <string name="bulk_end">اختتام: %1$s</string>
+    <string name="bulk_previous">پچھلا</string>
+    <string name="bulk_next">اگلا</string>
+    <string name="bulk_confirm_title">اجتماعی اپ ڈیٹ کی تصدیق</string>
+    <string name="bulk_confirm_desc">یہ عمل واپس نہیں ہو سکتا۔ ان نمازوں کے موجودہ ریکارڈ تبدیل ہو جائیں گے۔</string>
+    <string name="bulk_confirm_update">اپ ڈیٹ کی تصدیق</string>
+    <string name="bulk_applied">اجتماعی اپ ڈیٹ لاگو ہو گئی۔</string>
+    <string name="bulk_applied_skipped">اجتماعی اپ ڈیٹ لاگو ہو گئی۔ %1$d نمازیں چھوڑ دی گئیں جن کا وقت ابھی نہیں ہوا۔</string>
+    <string name="bulk_apply_summary">%2$s پر %1$s لاگو کریں</string>
+    <string name="bulk_confirm_summary">آپ %2$s پر %1$s حیثیت لاگو کرنے والے ہیں۔</string>
+    <plurals name="bulk_prayers_count">
+        <item quantity="one">%1$d نماز</item>
+        <item quantity="other">%1$d نمازیں</item>
+    </plurals>
+    <plurals name="bulk_days_count">
+        <item quantity="one">%1$d دن کے لیے</item>
+        <item quantity="other">%1$d دنوں کے لیے</item>
+    </plurals>
+
+    <string name="sheet_complete_count">%1$d/%2$d مکمل</string>
+    <string name="sheet_all_logged">تمام نمازیں درج ہو گئیں</string>
+    <string name="sheet_n_of_m_logged">%2$d میں سے %1$d درج</string>
+
+    <string name="sheet_update_status">اپنی نماز کی حیثیت اپ ڈیٹ کریں</string>
+    <string name="sheet_updating">اپ ڈیٹ ہو رہا ہے…</string>
+    <string name="sheet_save_status">حیثیت محفوظ کریں</string>
+
+    <string name="reminder_prayer_title">%1$s کی نماز</string>
+    <string name="reminder_scheduled_for">%1$s کے لیے طے شدہ</string>
+    <string name="reminder_snooze">10 منٹ التوا</string>
+    <string name="reminder_dismiss">الرٹ برخاست کریں</string>
+
+    <string name="notification_channel_prayer_id">prayer_reminders</string>
+    <string name="notification_channel_prayer_name">نماز کی یاد دہانیاں</string>
+    <string name="notification_channel_prayer_desc">روزانہ نماز کے اوقات کی یاد دہانیاں</string>
+    <string name="notification_prayer_title">%1$s کا وقت ہو گیا</string>
+    <string name="notification_prayer_body">%1$s کی نماز کا وقت آ گیا ہے</string>
+
+    <string name="notification_channel_goal_id">goal_reminders</string>
+    <string name="notification_channel_goal_name">اہداف کی یاد دہانیاں</string>
+    <string name="notification_channel_goal_desc">آپ کے روحانی اہداف کی یاد دہانیاں</string>
+    <string name="notification_goal_title">وقت ہو گیا: %1$s</string>
+    <string name="notification_goal_body">اپنے ہدف پر چیک اِن کے لیے دبائیں۔</string>
+</resources>

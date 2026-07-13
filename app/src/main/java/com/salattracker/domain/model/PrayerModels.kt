@@ -36,3 +36,10 @@ data class StreakInfo(
     val currentStreak: Int,
     val highestStreak: Int,
 )
+
+// ── Verse ─────────────────────────────────────────────────────────────────────
+
+data class VerseInfo(
+    val text: String,
+    val citation: String,   // e.g. "Al-Baqarah 2:238"
+)

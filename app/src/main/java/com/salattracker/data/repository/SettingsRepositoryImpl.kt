@@ -1,7 +1,9 @@
 package com.salattracker.data.repository
 
 import com.salattracker.data.local.preferences.DataStoreSettingsRepository
+import com.salattracker.domain.model.AppLanguage
 import com.salattracker.domain.model.PrayerType
+import com.salattracker.domain.model.ThemeMode
 import com.salattracker.domain.repository.SettingsRepository
 import com.salattracker.domain.repository.UserPrefs
 import kotlinx.coroutines.flow.Flow
@@ -32,6 +34,9 @@ class SettingsRepositoryImpl @Inject constructor(
         reminderEnabled: Map<PrayerType, Boolean>,
         reminderOffsetMinutes: Map<PrayerType, Int>,
         use24HourFormat: Boolean,
+        language: AppLanguage,
+        themeMode: ThemeMode,
+        dailyTipsEnabled: Boolean,
     ) = dataStore.saveSettings(
         useDeviceLocation     = useDeviceLocation,
         latitude              = latitude,
@@ -40,5 +45,18 @@ class SettingsRepositoryImpl @Inject constructor(
         reminderEnabled       = reminderEnabled,
         reminderOffsetMinutes = reminderOffsetMinutes,
         use24HourFormat       = use24HourFormat,
+        language              = language,
+        themeMode             = themeMode,
+        dailyTipsEnabled      = dailyTipsEnabled,
     )
+
+    override suspend fun setLanguage(language: AppLanguage) = dataStore.setLanguage(language)
+
+    override suspend fun setThemeMode(themeMode: ThemeMode) = dataStore.setThemeMode(themeMode)
+
+    override suspend fun setDailyTipsEnabled(enabled: Boolean) = dataStore.setDailyTipsEnabled(enabled)
+
+    override suspend fun setAllRemindersEnabled(enabled: Boolean) = dataStore.setAllRemindersEnabled(enabled)
+
+    override suspend fun setOnboardingCompleted(completed: Boolean) = dataStore.setOnboardingCompleted(completed)
 }

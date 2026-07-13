@@ -1,7 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.google.gms.google.services)
 
     id("com.google.dagger.hilt.android")
 
@@ -24,11 +23,6 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField(
-            "String",
-            "GOOGLE_WEB_CLIENT_ID",
-            "\"${project.findProperty("GOOGLE_WEB_CLIENT_ID") ?: ""}\"",
-        )
         buildConfigField(
             "Boolean",
             "ENABLE_LOGGING",
@@ -64,12 +58,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.credentials)
-    implementation(libs.androidx.credentials.play.services.auth)
-    implementation(libs.play.services.auth)
     implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.firebase.auth)
-    implementation(libs.googleid)
     implementation(libs.material)
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -78,15 +67,6 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
-
-
-    // Firestore
-    implementation(libs.firebase.firestore)
-
-    // Google Sign In (Credential Manager)
-    implementation(libs.androidx.credentials.v150)
-    implementation(libs.androidx.credentials.play.services.auth.v150)
-    implementation(libs.googleid.v111)
 
     // Hilt
     implementation(libs.hilt.android)
@@ -116,10 +96,12 @@ dependencies {
 
     // Material
     implementation(libs.material.v1130)
-    implementation(libs.coil.compose)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.okhttp)
     implementation(libs.logging.interceptor)
+
+    // Location
+    implementation(libs.play.services.location)
 
 
 }

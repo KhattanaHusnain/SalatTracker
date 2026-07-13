@@ -1,42 +1,35 @@
 package com.salattracker.data.repository
 
-import com.google.firebase.auth.FirebaseAuth
 import com.salattracker.data.local.dao.*
 import com.salattracker.data.local.entity.*
 import com.salattracker.data.local.preferences.DataStoreSettingsRepository
 import com.salattracker.data.remote.api.AlAdhanService
-import com.salattracker.data.remote.dto.*
-import com.salattracker.data.remote.firestore.FirestoreDataSource
-import com.salattracker.data.sync.SyncOrchestrator
 import com.salattracker.domain.model.*
 import com.salattracker.domain.repository.*
 import kotlinx.coroutines.flow.*
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
+import java.time.temporal.ChronoUnit
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
+
+/** Single-device, no-login app — every prayer entry belongs to this constant local user. */
+const val LOCAL_USER_ID = "local"
 
 @Singleton
 class PrayerRepositoryImpl @Inject constructor(
     private val prayerDao: PrayerDao,
     private val streakDao: StreakDao,
     private val prayerTimesDao: PrayerTimesDao,
-    private val syncQueueDao: SyncQueueDao,
-    private val firestoreDs: FirestoreDataSource,
     private val alAdhanService: AlAdhanService,
     private val settingsRepo: DataStoreSettingsRepository,
-    private val auth: FirebaseAuth,
-    private val syncOrchestrator: SyncOrchestrator,
 ) : PrayerRepository {
 
-    // ── Auth helper ───────────────────────────────────────────────────────────
-
-    private val userId: String
-        get() = auth.currentUser?.email
-            ?: throw IllegalStateException("User not signed in")
+    private val userId: String get() = LOCAL_USER_ID
 
     // ── Today / single day ────────────────────────────────────────────────────
 
@@ -59,20 +52,26 @@ class PrayerRepositoryImpl @Inject constructor(
             prayerType = prayerType,
             status     = status,
             updatedAt  = System.currentTimeMillis(),
-            syncState  = SyncState.PENDING,
         )
         prayerDao.upsertEntry(entity)
+        recalculateAndCacheStreak()
+    }
 
-        val dto = entity.toDto()
-        syncQueueDao.enqueue(
-            SyncQueueEntity(
-                opType         = "UPSERT",
-                collectionPath = "users/$userId/prayers",
-                documentId     = dto.documentId,
-                payloadJson    = dto.toJson(),
+    override suspend fun bulkUpsertPrayerStatus(
+        entries: List<Pair<LocalDate, PrayerType>>,
+        status: PrayerStatus,
+    ) {
+        val now = System.currentTimeMillis()
+        val entities = entries.map { (date, type) ->
+            PrayerEntryEntity(
+                userId     = userId,
+                date       = date,
+                prayerType = type,
+                status     = status,
+                updatedAt  = now,
             )
-        )
-        syncOrchestrator.triggerOneTimeSync()
+        }
+        prayerDao.upsertEntries(entities)
         recalculateAndCacheStreak()
     }
 
@@ -118,10 +117,22 @@ class PrayerRepositoryImpl @Inject constructor(
 
     // ── Streak ────────────────────────────────────────────────────────────────
 
-    override suspend fun getStreakSnapshot(): Pair<Int, Int> {
-        val snap = streakDao.getSnapshot(userId)
-        return (snap?.currentStreak ?: 0) to (snap?.highestStreak ?: 0)
+    override suspend fun getStreakSnapshot(): Map<PrayerType, StreakInfo> {
+        val byType = streakDao.getAllSnapshots(userId).associateBy { it.prayerType }
+        return PrayerType.values().associateWith { type ->
+            val snap = byType[type]
+            StreakInfo(currentStreak = snap?.currentStreak ?: 0, highestStreak = snap?.highestStreak ?: 0)
+        }
     }
+
+    override fun observeStreaks(): Flow<Map<PrayerType, StreakInfo>> =
+        streakDao.observeAllSnapshots(userId).map { snapshots ->
+            val byType = snapshots.associateBy { it.prayerType }
+            PrayerType.values().associateWith { type ->
+                val snap = byType[type]
+                StreakInfo(currentStreak = snap?.currentStreak ?: 0, highestStreak = snap?.highestStreak ?: 0)
+            }
+        }
 
     // ── Qaza ──────────────────────────────────────────────────────────────────
 
@@ -148,24 +159,53 @@ class PrayerRepositoryImpl @Inject constructor(
         )
     }
 
-    // FIXED: parameter renamed from StatsPeriod enum to String to match domain interface
-    override suspend fun getStreakPoints(from: LocalDate, to: LocalDate, periodLabel: String): List<StreakPoint> {
-        val rows = prayerDao.getDailyCompletionPoints(userId, from, to)
-        val fmt  = when (periodLabel) {
-            "week"  -> DateTimeFormatter.ofPattern("EEE")
-            "year"  -> DateTimeFormatter.ofPattern("MMM")
-            else    -> DateTimeFormatter.ofPattern("d")    // month
-        }
-        val byDate = rows.associateBy { it.date }
-        return generateSequence(from) { it.plusDays(1) }
+    override suspend fun getStatusTrendPoints(from: LocalDate, to: LocalDate, days: Int): List<StatusTrendPoint> {
+        val byDate = prayerDao.getDailyStatusCounts(userId, from, to).associateBy { it.date }
+        // (date, congregation, individual, qaza) for every day in range — missing days count as zero.
+        val dailyPoints = generateSequence(from) { it.plusDays(1) }
             .takeWhile { !it.isAfter(to) }
-            .map { date ->
-                StreakPoint(
-                    label          = date.format(fmt),
-                    completedCount = byDate[date]?.completedCount ?: 0,
-                )
-            }
+            .map { date -> byDate[date] ?: DailyStatusCountRow(date, 0, 0, 0) }
             .toList()
+
+        // Long ranges (> 120 days: 6-month, year): one point per month.
+        if (days > 120) {
+            val fmt = DateTimeFormatter.ofPattern("MMM")
+            return dailyPoints
+                .groupBy { YearMonth.from(it.date) }
+                .toSortedMap()
+                .map { (month, entries) -> entries.toTrendPoint(month.atDay(1).format(fmt)) }
+        }
+
+        // Medium ranges (41-120 days: 90-day): 7-day buckets counted backward from [to], so the
+        // most recent bucket ends exactly on [to] (the oldest may be a partial week).
+        if (days > 40) {
+            val fmt = DateTimeFormatter.ofPattern("d MMM")
+            return dailyPoints
+                .groupBy { ChronoUnit.DAYS.between(it.date, to) / 7 }  // 0 = most recent week
+                .toList()
+                .sortedByDescending { (bucket, _) -> bucket }          // oldest bucket first
+                .map { (_, entries) -> entries.toTrendPoint(entries.minOf { it.date }.format(fmt)) }
+        }
+
+        // Short ranges (≤ 40 days): one point per day. Two-line label — "d/M" over the weekday
+        // abbreviation — matching the Daily Goals bar chart.
+        val dateFmt = DateTimeFormatter.ofPattern("d/M")
+        val nameFmt = DateTimeFormatter.ofPattern("EEE")
+        return dailyPoints.map { listOf(it).toTrendPoint("${it.date.format(dateFmt)}\n${it.date.format(nameFmt)}") }
+    }
+
+    /** Sums the status counts of the bucket and converts them to percentages of recorded prayers. */
+    private fun List<DailyStatusCountRow>.toTrendPoint(label: String): StatusTrendPoint {
+        val cong = sumOf { it.congregation }
+        val indiv = sumOf { it.individual }
+        val qaza = sumOf { it.qaza }
+        val total = (cong + indiv + qaza).takeIf { it > 0 } ?: 1
+        return StatusTrendPoint(
+            label           = label,
+            congregationPct = cong * 100 / total,
+            individualPct   = indiv * 100 / total,
+            qazaPct         = qaza * 100 / total,
+        )
     }
 
     override suspend fun getPrayerBreakdown(from: LocalDate, to: LocalDate): List<PrayerBreakdown> =
@@ -176,68 +216,65 @@ class PrayerRepositoryImpl @Inject constructor(
             )
         }
 
-    // ── Initial Firestore pull on login ───────────────────────────────────────
+    // ── Streak recalculation ──────────────────────────────────────────────────
+    // Each of the 5 prayer types gets its own independent streak, walked
+    // backward day-by-day from today until every type has "locked in" (hit a
+    // breaking day). One DAO query per date, shared across all still-active types.
 
-    suspend fun pullFromFirestoreOnLogin() {
-        val prefs   = settingsRepo.getCurrentPrefs()
-        val sinceMs = prefs.lastSyncAt
-        val entries = if (sinceMs == 0L)
-            firestoreDs.fetchAllEntries(userId)
-        else
-            firestoreDs.fetchEntriesUpdatedSince(userId, sinceMs)
+    private class StreakTrack(var highest: Int) {
+        var current: Int = 0
+        var active: Boolean = true
+    }
 
-        if (entries.isNotEmpty()) {
-            prayerDao.upsertEntries(entries.map { it.toEntity() })
+    private suspend fun recalculateAndCacheStreak() {
+        val today = LocalDate.now()
+        val existing = streakDao.getAllSnapshots(userId).associateBy { it.prayerType }
+        val tracks = PrayerType.values().associateWith { type ->
+            StreakTrack(highest = existing[type]?.highestStreak ?: 0)
         }
 
-        firestoreDs.fetchStreak(userId)?.let { dto ->
+        var date = today
+        var isToday = true
+        while (tracks.values.any { it.active }) {
+            val entries = prayerDao.getEntriesForDate(userId, date)
+
+            PrayerType.values().forEach { type ->
+                val track = tracks.getValue(type)
+                if (!track.active) return@forEach
+
+                when (entries.find { it.prayerType == type }?.status ?: PrayerStatus.NOT_RECORDED) {
+                    PrayerStatus.CONGREGATION, PrayerStatus.INDIVIDUAL -> {
+                        track.current++
+                        if (track.current > track.highest) track.highest = track.current
+                    }
+                    PrayerStatus.MENSTRUATION -> { /* neutral: doesn't count, doesn't break */ }
+                    PrayerStatus.QAZA_PENDING, PrayerStatus.QAZA_COMPLETED -> {
+                        track.active = false
+                    }
+                    PrayerStatus.NOT_RECORDED -> {
+                        // Today: not yet resolved (not due yet, or awaiting the auto-Qaza
+                        // worker) — leave the streak as-is until it's actually decided.
+                        // Any earlier day: no record ever landed here, so it's a break.
+                        if (!isToday) track.active = false
+                    }
+                }
+            }
+
+            date = date.minusDays(1)
+            isToday = false
+        }
+
+        tracks.forEach { (type, track) ->
             streakDao.upsertSnapshot(
                 StreakSnapshotEntity(
                     userId           = userId,
-                    currentStreak    = dto.currentStreak,
-                    highestStreak    = dto.highestStreak,
-                    lastCalculatedAt = dto.updatedAt,
+                    prayerType       = type,
+                    currentStreak    = track.current,
+                    highestStreak    = track.highest,
+                    lastCalculatedAt = System.currentTimeMillis(),
                 )
             )
         }
-
-        settingsRepo.updateLastSyncAt(System.currentTimeMillis())
-    }
-
-    // ── Streak recalculation ──────────────────────────────────────────────────
-
-    private suspend fun recalculateAndCacheStreak() {
-        val today    = LocalDate.now()
-        var date     = today
-        var current  = 0
-        val existing = streakDao.getSnapshot(userId)
-        var highest  = existing?.highestStreak ?: 0
-
-        while (true) {
-            val entries  = prayerDao.getEntriesForDate(userId, date)
-            if (entries.isEmpty()) break
-            val statuses = PrayerType.values().map { type ->
-                entries.find { it.prayerType == type }?.status ?: PrayerStatus.NOT_RECORDED
-            }
-            when {
-                statuses.all { it == PrayerStatus.MENSTRUATION } -> { /* neutral */ }
-                statuses.all { it == PrayerStatus.CONGREGATION || it == PrayerStatus.INDIVIDUAL } -> {
-                    current++
-                    if (current > highest) highest = current
-                }
-                else -> break
-            }
-            date = date.minusDays(1)
-        }
-
-        streakDao.upsertSnapshot(
-            StreakSnapshotEntity(
-                userId           = userId,
-                currentStreak    = current,
-                highestStreak    = highest,
-                lastCalculatedAt = System.currentTimeMillis(),
-            )
-        )
     }
 }
 
@@ -259,6 +296,3 @@ private fun PrayerTimeCacheEntity.toTimesMap(): Map<PrayerType, LocalTime> {
         parse(isha)?.let    { put(PrayerType.ISHA,    it) }
     }
 }
-
-private fun PrayerEntryDto.toJson(): String =
-    """{"userId":"$userId","date":"$date","prayerType":"$prayerType","status":"$status","updatedAt":$updatedAt}"""

@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -92,7 +93,7 @@ fun PrayerStatusBottomSheet(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = "${args.prayerType.displayName} \u2013 ${args.date.format(DateTimeFormatter.ofPattern("d MMM"))}",
+                    text = "${args.prayerType.label()} \u2013 ${args.date.format(DateTimeFormatter.ofPattern("d MMM"))}",
                     color = SalatPrimary,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.SemiBold,
@@ -100,7 +101,7 @@ fun PrayerStatusBottomSheet(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Update your prayer status",
+                    text = stringResource(R.string.sheet_update_status),
                     color = SalatOnSurfaceVariant,
                     fontSize = 14.sp,
                     fontFamily = InterFamily,
@@ -141,7 +142,7 @@ fun PrayerStatusBottomSheet(
                         color = SalatOnPrimary,
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Updating\u2026", fontFamily = InterFamily, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.sheet_updating), fontFamily = InterFamily, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                 } else {
                     Icon(
                         painter = painterResource(R.drawable.ic_save),
@@ -149,7 +150,7 @@ fun PrayerStatusBottomSheet(
                         modifier = Modifier.size(20.dp),
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Save Status", fontFamily = InterFamily, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.sheet_save_status), fontFamily = InterFamily, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
         }
@@ -193,7 +194,7 @@ private fun StatusOptionRow(
         }
         Spacer(modifier = Modifier.width(16.dp))
         Text(
-            text = item.label,
+            text = stringResource(item.status.labelRes),
             modifier = Modifier.weight(1f),
             color = SalatOnSurface,
             fontSize = 16.sp,
@@ -203,7 +204,7 @@ private fun StatusOptionRow(
         if (isSelected) {
             Icon(
                 painter = painterResource(R.drawable.ic_check_circle_filled),
-                contentDescription = "Selected",
+                contentDescription = stringResource(R.string.selected_label),
                 tint = SalatPrimary,
                 modifier = Modifier.size(24.dp),
             )
@@ -222,17 +223,16 @@ private fun StatusOptionRow(
 
 private data class PrayerStatusItem(
     val status: PrayerStatus,
-    val label: String,
     val iconRes: Int,
     val iconTint: Color,
 ) {
     companion object {
         val all = listOf(
-            PrayerStatusItem(PrayerStatus.CONGREGATION,   "Congregation",   R.drawable.ic_groups,          SalatPrimary),
-            PrayerStatusItem(PrayerStatus.INDIVIDUAL,     "Individual",     R.drawable.ic_person,          SalatPrimary),
-            PrayerStatusItem(PrayerStatus.QAZA_PENDING,   "Qaza Pending",   R.drawable.ic_pending_actions, SalatTertiary),
-            PrayerStatusItem(PrayerStatus.QAZA_COMPLETED, "Qaza Completed", R.drawable.ic_history_edu,     Color(0xFFFF9939)),
-            PrayerStatusItem(PrayerStatus.MENSTRUATION,   "Menstruation",   R.drawable.ic_female,          SalatError),
+            PrayerStatusItem(PrayerStatus.CONGREGATION,   R.drawable.ic_groups,          SalatPrimary),
+            PrayerStatusItem(PrayerStatus.INDIVIDUAL,     R.drawable.ic_person,          SalatPrimary),
+            PrayerStatusItem(PrayerStatus.QAZA_PENDING,   R.drawable.ic_pending_actions, SalatTertiary),
+            PrayerStatusItem(PrayerStatus.QAZA_COMPLETED, R.drawable.ic_history_edu,     Color(0xFFFF9939)),
+            PrayerStatusItem(PrayerStatus.MENSTRUATION,   R.drawable.ic_female,          SalatError),
         )
     }
 }

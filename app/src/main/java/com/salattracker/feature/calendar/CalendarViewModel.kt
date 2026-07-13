@@ -2,10 +2,12 @@ package com.salattracker.feature.calendar
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.salattracker.core.ui.PrayerStatusSheetArgs
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
+import com.salattracker.domain.model.VerseInfo
 import com.salattracker.domain.repository.PrayerRepository
+import com.salattracker.domain.repository.VerseRepository
+import com.salattracker.domain.usecase.isPrayerMarkable
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -34,6 +36,7 @@ data class PrayerDetailUi(
     val type: PrayerType,
     val time: String,
     val status: PrayerStatus,
+    val isMarkable: Boolean,
 )
 
 data class CalendarUiState(
@@ -42,14 +45,15 @@ data class CalendarUiState(
     val selectedDay: DayDetail? = null,
     val isLoadingMonth: Boolean = true,
     val isLoadingDay: Boolean = false,
-    val sheetArgs: PrayerStatusSheetArgs? = null,
     val isSaving: Boolean = false,
     val error: String? = null,
+    val verse: VerseInfo? = null,
 )
 
 @HiltViewModel
 class CalendarViewModel @Inject constructor(
     private val prayerRepository: PrayerRepository,
+    private val verseRepository: VerseRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CalendarUiState())
@@ -57,7 +61,13 @@ class CalendarViewModel @Inject constructor(
 
     init {
         loadMonth(YearMonth.now())
-        onDaySelected(LocalDate.now())
+        loadVerse()
+    }
+
+    private fun loadVerse() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(verse = verseRepository.getRandomVerse()) }
+        }
     }
 
     fun onPreviousMonth() {
@@ -120,6 +130,7 @@ class CalendarViewModel @Inject constructor(
                         time   = times?.get(type)?.toString() ?: "--:--",
                         status = entries.find { it.prayerType == type }?.status
                             ?: PrayerStatus.NOT_RECORDED,
+                        isMarkable = isPrayerMarkable(date, times?.get(type)),
                     )
                 },
             )
@@ -127,34 +138,19 @@ class CalendarViewModel @Inject constructor(
         }
     }
 
-    fun onPrayerRowClick(type: PrayerType) {
-        val day     = _uiState.value.selectedDay ?: return
-        val current = day.prayers.find { it.type == type }?.status ?: PrayerStatus.NOT_RECORDED
-        _uiState.update {
-            it.copy(
-                sheetArgs = PrayerStatusSheetArgs(
-                    prayerType    = type,
-                    date          = day.date,
-                    currentStatus = current,
-                )
-            )
-        }
-    }
-
-    fun onSheetDismiss() = _uiState.update { it.copy(sheetArgs = null) }
-
-    // FIXED: was accidentally appended outside the class body in the previous version
     fun onDayDetailDismiss() = _uiState.update { it.copy(selectedDay = null) }
 
-    fun onStatusSave(newStatus: PrayerStatus) {
-        val args = _uiState.value.sheetArgs ?: return
+    fun onStatusSave(prayerType: PrayerType, newStatus: PrayerStatus) {
+        val day = _uiState.value.selectedDay ?: return
+        val prayerDetail = day.prayers.find { it.type == prayerType } ?: return
+        if (!prayerDetail.isMarkable) return
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true) }
             runCatching {
-                prayerRepository.upsertPrayerStatus(args.date, args.prayerType, newStatus)
+                prayerRepository.upsertPrayerStatus(day.date, prayerType, newStatus)
             }.onSuccess {
-                _uiState.update { it.copy(isSaving = false, sheetArgs = null) }
-                onDaySelected(args.date)
+                _uiState.update { it.copy(isSaving = false) }
+                onDaySelected(day.date)
             }.onFailure { e ->
                 _uiState.update { it.copy(isSaving = false, error = e.message) }
             }
