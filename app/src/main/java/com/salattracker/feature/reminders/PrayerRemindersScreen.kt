@@ -1,5 +1,7 @@
 package com.salattracker.feature.reminders
 
+import android.media.AudioAttributes
+import android.media.AudioManager
 import android.media.MediaPlayer
 import android.media.Ringtone
 import android.media.RingtoneManager
@@ -423,7 +425,16 @@ private fun SoundChooserDialog(
 
     fun previewAzan() {
         stopPreviews()
-        val player = MediaPlayer.create(context, R.raw.azan) ?: return
+        // Explicit notification-usage attributes, matching PrayerReminderChannels' own channel
+        // sound exactly — without this, MediaPlayer defaults to the media/music stream, which
+        // (by design, so music keeps playing when you silence your phone) ignores ringer mode
+        // entirely. The real notification sound already respects silent mode for free via the
+        // channel's own AudioAttributes; the preview button needs the same ones to match it.
+        val attributes = AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+            .build()
+        val player = MediaPlayer.create(context, R.raw.azan, attributes, AudioManager.AUDIO_SESSION_ID_GENERATE) ?: return
         player.setOnCompletionListener { mp -> runCatching { mp.release() } }
         activePlayer = player
         player.start()
