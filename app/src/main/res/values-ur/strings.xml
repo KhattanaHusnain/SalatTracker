@@ -163,6 +163,9 @@
     <string name="reminders_sound">آواز</string>
     <string name="reminders_sound_default">طے شدہ</string>
     <string name="reminders_sound_silent">خاموش</string>
+    <string name="reminders_offset_before_title">نماز کے وقت سے پہلے کے منٹ</string>
+    <string name="reminders_offset_after_title">نماز کے وقت کے بعد کے منٹ</string>
+    <string name="reminders_offset_minutes_value">%1$d منٹ</string>
 
     <string name="stats_highest_streaks">بلند ترین تسلسل</string>
     <string name="stats_best_per_prayer">ہر نماز کا بہترین تسلسل</string>

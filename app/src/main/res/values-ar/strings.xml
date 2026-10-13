@@ -163,6 +163,9 @@
     <string name="reminders_sound">النغمة</string>
     <string name="reminders_sound_default">الافتراضية</string>
     <string name="reminders_sound_silent">صامت</string>
+    <string name="reminders_offset_before_title">دقائق قبل وقت الصلاة</string>
+    <string name="reminders_offset_after_title">دقائق بعد وقت الصلاة</string>
+    <string name="reminders_offset_minutes_value">%1$d د</string>
 
     <string name="stats_highest_streaks">أعلى المتتاليات</string>
     <string name="stats_best_per_prayer">أفضل سلسلة لكل صلاة</string>

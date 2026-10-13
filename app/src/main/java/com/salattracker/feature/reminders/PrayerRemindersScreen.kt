@@ -5,11 +5,12 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -17,15 +18,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.core.ui.label
@@ -172,11 +172,13 @@ private fun ReminderCard(
     }
 }
 
+private val OFFSET_MAGNITUDE_OPTIONS = 0..60
+
 @Composable
 private fun OffsetRow(enabled: Boolean, offsetMinutes: String, onChanged: (String) -> Unit) {
-    val focusManager = LocalFocusManager.current
-    val isNegative   = offsetMinutes.startsWith("-")
-    val magnitude    = offsetMinutes.removePrefix("-")
+    val isNegative = offsetMinutes.startsWith("-")
+    val magnitude  = offsetMinutes.removePrefix("-").toIntOrNull() ?: 0
+    var showPicker by remember { mutableStateOf(false) }
 
     Row(
         modifier              = Modifier.fillMaxWidth(),
@@ -184,47 +186,48 @@ private fun OffsetRow(enabled: Boolean, offsetMinutes: String, onChanged: (Strin
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Text(stringResource(R.string.settings_minutes_offset), color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = InterFamily)
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            // Soft keyboards' number pad has no "-" key, so the sign is a dedicated toggle.
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            // The sign is a dedicated toggle (click to flip before/after) rather than something
+            // typed, both because soft keyboards' number pad has no "-" key and because a bare
+            // "+"/"−" glyph next to a free-typed number isn't obvious on first use — the picker
+            // dialog it opens spells "before"/"after" out in its title instead.
             SignToggleButton(
                 isNegative = isNegative,
                 enabled    = enabled,
                 onClick    = {
-                    val toggled = when {
-                        isNegative                             -> magnitude
-                        magnitude.isEmpty() || magnitude == "0" -> magnitude
-                        else                                    -> "-$magnitude"
-                    }
+                    val toggled = if (isNegative || magnitude == 0) magnitude.toString() else "-$magnitude"
                     onChanged(toggled)
                 },
             )
-            OutlinedTextField(
-                value         = magnitude,
-                onValueChange = { input ->
-                    if (input.isEmpty() || input.all(Char::isDigit)) {
-                        onChanged((if (isNegative) "-" else "") + input)
-                    }
-                },
-                enabled       = enabled,
-                modifier      = Modifier.width(56.dp),
-                singleLine    = true,
-                textStyle     = LocalTextStyle.current.copy(
-                    fontFamily = InterFamily, fontSize = 14.sp,
-                    textAlign  = androidx.compose.ui.text.style.TextAlign.Center,
-                ),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
-                colors          = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor   = SalatPrimary,
-                    unfocusedBorderColor = SalatOutlineVariant,
-                    disabledBorderColor  = SalatOutlineVariant.copy(alpha = 0.4f),
-                    focusedContainerColor   = SalatSurfaceContainerLow,
-                    unfocusedContainerColor = SalatSurfaceContainerLow,
-                    disabledContainerColor  = SalatSurfaceContainerLow.copy(alpha = 0.4f),
-                ),
-                shape = RoundedCornerShape(8.dp),
-            )
+            Surface(
+                onClick  = { showPicker = true },
+                enabled  = enabled,
+                shape    = RoundedCornerShape(8.dp),
+                color    = SalatSurfaceContainerLow,
+                border   = BorderStroke(1.dp, SalatOutlineVariant.copy(alpha = if (enabled) 1f else 0.4f)),
+            ) {
+                Text(
+                    text       = "$magnitude",
+                    modifier   = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).widthIn(min = 24.dp),
+                    color      = if (enabled) SalatOnSurface else SalatOnSurfaceVariant.copy(alpha = 0.4f),
+                    fontSize   = 14.sp,
+                    fontFamily = InterFamily,
+                    textAlign  = TextAlign.Center,
+                )
+            }
         }
+    }
+
+    if (showPicker) {
+        OffsetMagnitudePickerDialog(
+            isNegative = isNegative,
+            current    = magnitude,
+            onSelect   = { minute ->
+                showPicker = false
+                onChanged((if (isNegative) "-" else "") + minute)
+            },
+            onDismiss  = { showPicker = false },
+        )
     }
 }
 
@@ -246,6 +249,62 @@ private fun SignToggleButton(isNegative: Boolean, enabled: Boolean, onClick: () 
                 fontWeight = FontWeight.Bold,
                 fontFamily = InterFamily,
             )
+        }
+    }
+}
+
+@Composable
+private fun OffsetMagnitudePickerDialog(
+    isNegative: Boolean,
+    current: Int,
+    onSelect: (Int) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val options = OFFSET_MAGNITUDE_OPTIONS.toList()
+    // Centers the current value in the visible window rather than pinning it to the top,
+    // so it's immediately visible without an extra scroll.
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = (current - 2).coerceIn(0, options.size - 1))
+
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            color = SalatSurfaceContainerLowest,
+        ) {
+            Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                Text(
+                    text = stringResource(
+                        if (isNegative) R.string.reminders_offset_before_title else R.string.reminders_offset_after_title
+                    ),
+                    modifier   = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
+                    color      = SalatPrimary,
+                    fontSize   = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    fontFamily = MontserratFamily,
+                )
+                LazyColumn(
+                    state    = listState,
+                    modifier = Modifier.width(220.dp).height(220.dp),
+                ) {
+                    items(options) { minute ->
+                        val selected = minute == current
+                        Surface(
+                            onClick  = { onSelect(minute) },
+                            modifier = Modifier.fillMaxWidth(),
+                            color    = if (selected) SalatPrimaryContainer else SalatSurfaceContainerLowest,
+                        ) {
+                            Text(
+                                text       = stringResource(R.string.reminders_offset_minutes_value, minute),
+                                modifier   = Modifier.fillMaxWidth().padding(vertical = 12.dp, horizontal = 24.dp),
+                                color      = if (selected) SalatOnPrimaryContainer else SalatOnSurfaceVariant,
+                                fontSize   = 15.sp,
+                                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                                fontFamily = InterFamily,
+                                textAlign  = TextAlign.Center,
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }
