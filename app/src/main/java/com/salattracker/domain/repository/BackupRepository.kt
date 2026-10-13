@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.Flow
  */
 interface BackupRepository {
 
-    /** Reactive status for the Settings card and the Backup screen. */
+    /** Reactive status for the drawer's attention dot and the Backup screen. */
     fun observeStatus(): Flow<BackupStatus>
 
     /**

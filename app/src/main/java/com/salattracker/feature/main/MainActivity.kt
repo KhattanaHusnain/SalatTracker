@@ -5,9 +5,13 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,6 +31,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
@@ -57,13 +62,21 @@ class MainActivity : AppCompatActivity() {
     @Inject lateinit var settingsRepository: SettingsRepository
 
     /** Set from a notification's EXTRA_OPEN_ROUTE (onCreate for a cold start, onNewIntent for a
-     * running instance — see android:launchMode="singleTask" on this activity in the manifest). */
+     * running instance — see android:launchMode="singleTask" on this activity in the manifest).
+     * Only read from the retained intent on a fresh start (savedInstanceState == null); otherwise
+     * an activity recreation (rotation, the language-change recreation in LocaleManager.apply)
+     * would re-push the same route every time. The still-unconsumed value survives recreation
+     * via onSaveInstanceState below instead. */
     private var pendingRoute by mutableStateOf<String?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        pendingRoute = intent?.getStringExtra(EXTRA_OPEN_ROUTE)
+        pendingRoute = if (savedInstanceState == null) {
+            intent.openRouteOrNull()
+        } else {
+            savedInstanceState.getString(STATE_PENDING_ROUTE)
+        }
 
         // Reconcile the app-wide locale with the saved language on launch. No-op once they match;
         // recreates the activity in the right locale otherwise (e.g. first run after this update,
@@ -140,17 +153,43 @@ class MainActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        pendingRoute = intent.getStringExtra(EXTRA_OPEN_ROUTE)
+        pendingRoute = intent.openRouteOrNull()
     }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(STATE_PENDING_ROUTE, pendingRoute)
+    }
+
+    /** Only known deep-link targets are accepted — an exported, singleTask activity should
+     * never hand an arbitrary caller-supplied string straight to navigate(). */
+    private fun Intent?.openRouteOrNull(): String? =
+        this?.getStringExtra(EXTRA_OPEN_ROUTE)?.takeIf { it == ROUTE_BACKUP || it == ROUTE_GOALS }
 
     companion object {
         /** Intent extra a notification sets to deep-link straight to a route once the app is up. */
         const val EXTRA_OPEN_ROUTE = "open_route"
         const val ROUTE_BACKUP = "backup"
+        const val ROUTE_GOALS = "goals"
+        private const val STATE_PENDING_ROUTE = "pending_route"
     }
 }
 
 // ── Main scaffold ─────────────────────────────────────────────────────────────
+
+/** Tab switches preserve save/restore state across the bottom nav; everything else is a
+ * plain push, deduped against repeat taps by [launchSingleTop]. */
+private fun NavHostController.navigateToTab(route: String) {
+    navigate(route) {
+        popUpTo(graph.findStartDestination().id) { saveState = true }
+        launchSingleTop = true
+        restoreState    = true
+    }
+}
+
+private fun NavHostController.push(route: String) {
+    navigate(route) { launchSingleTop = true }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -158,9 +197,17 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
     val navController = rememberNavController()
     val navBackStack  by navController.currentBackStackEntryAsState()
     val currentDest   = navBackStack?.destination
+    val isTopLevel    = isTabRoute(currentDest?.route)
 
-    // A backup notification's deep link, delivered after this scaffold (and its NavHost)
-    // already exist — navigate once, then let the caller clear it so a config change or
+    val drawerState    = rememberDrawerState(DrawerValue.Closed)
+    val coroutineScope = rememberCoroutineScope()
+    val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+
+    val shellViewModel: MainShellViewModel = hiltViewModel()
+    val backupNeedsAttention by shellViewModel.backupNeedsAttention.collectAsState()
+
+    // A notification's deep link, delivered after this scaffold (and its NavHost) already
+    // exist — navigate once, then let the caller clear it so a config change or
     // recomposition doesn't navigate again.
     LaunchedEffect(initialRoute) {
         if (initialRoute != null) {
@@ -169,81 +216,109 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
         }
     }
 
-    Scaffold(
-        containerColor = SalatBackground,
-        topBar = {
-            TopBar(
-                title             = topBarTitle(currentDest?.route),
-                showAddGoal       = currentDest?.route == "goals",
-                onAddGoalClick    = { navController.navigate("add_goal") },
-                onBulkUpdateClick = { navController.navigate("bulk_update") },
+    // The drawer only ever leads to a pushed (non-tab) screen — close it as soon as we land
+    // on one, so a config change or back-navigation never finds it stuck open.
+    LaunchedEffect(isTopLevel) {
+        if (!isTopLevel) drawerState.close()
+    }
+
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        // Closed -> gestures off, so an edge-swipe on e.g. Stats' horizontally-scrolling
+        // charts can never pull the drawer open; it only opens from the menu icon. Once
+        // open, gestures turn back on so swiping it shut still works.
+        gesturesEnabled = drawerState.isOpen,
+        drawerContent = {
+            AppDrawer(
+                backupNeedsAttention = backupNeedsAttention,
+                onBulkUpdateClick    = { navController.push(Routes.BULK_UPDATE) },
+                onBackupClick        = { navController.push(Routes.BACKUP) },
+                onSettingsClick      = { navController.push(Routes.SETTINGS) },
             )
         },
-        bottomBar = {
-            SalatBottomNavBar(
-                routes      = BottomNavRoute.all,
-                currentDest = currentDest,
-                onNavigate  = { route ->
-                    navController.navigate(route.route) {
-                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                        launchSingleTop = true
-                        restoreState    = true
-                    }
-                },
-            )
-        },
-    ) { innerPadding ->
-        NavHost(
-            navController    = navController,
-            startDestination = BottomNavRoute.Home.route,
-            modifier         = Modifier.padding(innerPadding),
-        ) {
-            composable(BottomNavRoute.Home.route) {
-                val vm: HomeViewModel = hiltViewModel()
-                val state by vm.uiState.collectAsState()
-                HomeScreen(
-                    uiState           = state,
-                    onPrayerCardClick = vm::onPrayerCardClick,
-                    onSheetDismiss    = vm::onSheetDismiss,
-                    onStatusSave      = vm::onStatusSave,
-                    onGoalsClick      = { navController.navigate("goals") },
+    ) {
+        Scaffold(
+            containerColor = SalatBackground,
+            topBar = {
+                TopBar(
+                    title                = topBarTitle(currentDest?.route),
+                    isTopLevel           = isTopLevel,
+                    backupNeedsAttention = backupNeedsAttention,
+                    onMenuClick          = { coroutineScope.launch { drawerState.open() } },
+                    onBackClick          = { backDispatcher?.onBackPressed() },
+                    showAddGoal          = currentDest?.route == BottomNavRoute.Goals.route,
+                    onAddGoalClick       = { navController.push(Routes.ADD_GOAL) },
+                    showBulkUpdate       = currentDest?.route == BottomNavRoute.Calendar.route,
+                    onBulkUpdateClick    = { navController.push(Routes.BULK_UPDATE) },
                 )
-            }
-            composable(BottomNavRoute.Calendar.route) {
-                CalendarEntry()
-            }
-            composable(BottomNavRoute.Qaza.route) {
-                QazaEntry(onViewAllClick = { navController.navigate("missed_prayers") })
-            }
-            composable(BottomNavRoute.Stats.route) {
-                StatsEntry()
-            }
-            composable(BottomNavRoute.Settings.route) {
-                SettingsEntry(onBackupClick = { navController.navigate("backup") })
-            }
-            composable("backup") {
-                BackupEntry()
-            }
-            composable("bulk_update") {
-                BulkUpdateEntry()
-            }
-            composable("goals") {
-                GoalsEntry(onEditGoal = { goalId -> navController.navigate("edit_goal/$goalId") })
-            }
-            composable("add_goal") {
-                AddGoalEntry(onSaved = { navController.popBackStack() })
-            }
-            composable(
-                "edit_goal/{goalId}",
-                arguments = listOf(navArgument("goalId") { type = NavType.LongType }),
+            },
+            bottomBar = {
+                AnimatedVisibility(
+                    visible = isTopLevel,
+                    enter   = slideInVertically(initialOffsetY = { it }),
+                    exit    = slideOutVertically(targetOffsetY = { it }),
+                ) {
+                    SalatBottomNavBar(
+                        routes      = BottomNavRoute.all,
+                        currentDest = currentDest,
+                        onNavigate  = { route -> navController.navigateToTab(route.route) },
+                    )
+                }
+            },
+        ) { innerPadding ->
+            NavHost(
+                navController    = navController,
+                startDestination = BottomNavRoute.Home.route,
+                modifier         = Modifier.padding(innerPadding),
             ) {
-                EditGoalEntry(
-                    onSaved   = { navController.popBackStack() },
-                    onDeleted = { navController.popBackStack() },
-                )
-            }
-            composable("missed_prayers") {
-                MissedPrayersEntry(onBackToDashboard = { navController.popBackStack() })
+                composable(BottomNavRoute.Home.route) {
+                    val vm: HomeViewModel = hiltViewModel()
+                    val state by vm.uiState.collectAsState()
+                    HomeScreen(
+                        uiState           = state,
+                        onPrayerCardClick = vm::onPrayerCardClick,
+                        onSheetDismiss    = vm::onSheetDismiss,
+                        onStatusSave      = vm::onStatusSave,
+                        onGoalsClick      = { navController.navigateToTab(BottomNavRoute.Goals.route) },
+                        onAddGoalClick    = { navController.push(Routes.ADD_GOAL) },
+                    )
+                }
+                composable(BottomNavRoute.Calendar.route) {
+                    CalendarEntry()
+                }
+                composable(BottomNavRoute.Qaza.route) {
+                    QazaEntry(onViewAllClick = { navController.push(Routes.MISSED_PRAYERS) })
+                }
+                composable(BottomNavRoute.Goals.route) {
+                    GoalsEntry(onEditGoal = { goalId -> navController.push(Routes.editGoal(goalId)) })
+                }
+                composable(BottomNavRoute.Stats.route) {
+                    StatsEntry(onAddGoalClick = { navController.push(Routes.ADD_GOAL) })
+                }
+                composable(Routes.SETTINGS) {
+                    SettingsEntry(onDiscardAndBack = { navController.popBackStack() })
+                }
+                composable(Routes.BACKUP) {
+                    BackupEntry()
+                }
+                composable(Routes.BULK_UPDATE) {
+                    BulkUpdateEntry()
+                }
+                composable(Routes.ADD_GOAL) {
+                    AddGoalEntry(onSaved = { navController.popBackStack() })
+                }
+                composable(
+                    Routes.EDIT_GOAL,
+                    arguments = listOf(navArgument("goalId") { type = NavType.LongType }),
+                ) {
+                    EditGoalEntry(
+                        onSaved   = { navController.popBackStack() },
+                        onDeleted = { navController.popBackStack() },
+                    )
+                }
+                composable(Routes.MISSED_PRAYERS) {
+                    MissedPrayersEntry(onBackToDashboard = { navController.popBackStack() })
+                }
             }
         }
     }
@@ -255,8 +330,13 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
 @Composable
 private fun TopBar(
     title: String,
+    isTopLevel: Boolean,
+    backupNeedsAttention: Boolean,
+    onMenuClick: () -> Unit,
+    onBackClick: () -> Unit,
     showAddGoal: Boolean,
     onAddGoalClick: () -> Unit,
+    showBulkUpdate: Boolean,
     onBulkUpdateClick: () -> Unit,
 ) {
     TopAppBar(
@@ -270,8 +350,20 @@ private fun TopBar(
             )
         },
         navigationIcon = {
-            IconButton(onClick = {}) {
-                Icon(painterResource(R.drawable.ic_menu), stringResource(R.string.cd_menu), tint = SalatPrimary)
+            // The five tabs show the menu icon (with an attention dot when backup needs it);
+            // every pushed screen shows a back arrow instead, routed through the same
+            // OnBackPressedDispatcher as the system back gesture so both always agree —
+            // Settings' own BackHandler gets first chance to intercept either one.
+            if (isTopLevel) {
+                IconButton(onClick = onMenuClick) {
+                    BadgedBox(badge = { if (backupNeedsAttention) Badge(containerColor = SalatError) }) {
+                        Icon(painterResource(R.drawable.ic_menu), stringResource(R.string.cd_menu), tint = SalatPrimary)
+                    }
+                }
+            } else {
+                IconButton(onClick = onBackClick) {
+                    Icon(painterResource(R.drawable.ic_arrow_back), stringResource(R.string.cd_back), tint = SalatPrimary)
+                }
             }
         },
         actions = {
@@ -280,8 +372,10 @@ private fun TopBar(
                     Icon(painterResource(R.drawable.ic_add), stringResource(R.string.action_add_goal), tint = SalatPrimary)
                 }
             }
-            IconButton(onClick = onBulkUpdateClick) {
-                Icon(painterResource(R.drawable.ic_edit_square), stringResource(R.string.action_bulk_update), tint = SalatPrimary)
+            if (showBulkUpdate) {
+                IconButton(onClick = onBulkUpdateClick) {
+                    Icon(painterResource(R.drawable.ic_edit_square), stringResource(R.string.action_bulk_update), tint = SalatPrimary)
+                }
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(containerColor = SalatBackground),
@@ -339,13 +433,13 @@ private fun topBarTitle(route: String?): String = stringResource(
         BottomNavRoute.Home.route     -> R.string.topbar_today
         BottomNavRoute.Calendar.route -> R.string.topbar_calendar
         BottomNavRoute.Qaza.route     -> R.string.topbar_qaza
+        BottomNavRoute.Goals.route    -> R.string.topbar_goals
         BottomNavRoute.Stats.route    -> R.string.topbar_stats
-        BottomNavRoute.Settings.route -> R.string.topbar_settings
-        "backup"                      -> R.string.topbar_backup
-        "bulk_update"                 -> R.string.topbar_bulk_update
-        "goals"                       -> R.string.topbar_goals
-        "add_goal"                    -> R.string.topbar_new_goal
-        "missed_prayers"              -> R.string.topbar_missed_prayers
+        Routes.SETTINGS               -> R.string.topbar_settings
+        Routes.BACKUP                 -> R.string.topbar_backup
+        Routes.BULK_UPDATE            -> R.string.topbar_bulk_update
+        Routes.ADD_GOAL               -> R.string.topbar_new_goal
+        Routes.MISSED_PRAYERS         -> R.string.topbar_missed_prayers
         else -> if (route?.startsWith("edit_goal") == true) R.string.topbar_edit_goal else R.string.topbar_default
     }
 )

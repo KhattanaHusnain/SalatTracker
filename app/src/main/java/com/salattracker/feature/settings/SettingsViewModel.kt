@@ -6,12 +6,11 @@ import androidx.work.WorkManager
 import com.salattracker.core.locale.LocaleManager
 import com.salattracker.data.location.LocationProvider
 import com.salattracker.domain.model.AppLanguage
-import com.salattracker.domain.model.BackupAttention
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.ThemeMode
-import com.salattracker.domain.repository.BackupRepository
 import com.salattracker.domain.repository.PrayerRepository
 import com.salattracker.domain.repository.SettingsRepository
+import com.salattracker.domain.repository.UserPrefs
 import com.salattracker.notification.PrayerReminderWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -49,11 +48,9 @@ data class SettingsUiState(
     val isSaving: Boolean = false,
     val error: String? = null,
     val saveSuccess: Boolean = false,
-    // Backup status, for the "Backup & Restore" card's subtitle only — the full
-    // flow (connect/back up/restore) lives in feature/backup, not here.
-    val backupConnected: Boolean = false,
-    val backupAttention: BackupAttention = BackupAttention.NONE,
-    val backupLastBackupAt: Long? = null,
+    /** True while the "discard unsaved changes?" dialog is up, after the user tried to
+     * leave this screen (back arrow or system back) with unsaved edits. */
+    val showDiscardConfirm: Boolean = false,
 )
 
 @HiltViewModel
@@ -61,34 +58,18 @@ class SettingsViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val prayerRepository: PrayerRepository,
     private val locationProvider: LocationProvider,
-    private val backupRepository: BackupRepository,
     private val workManager: WorkManager,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
-    init {
-        loadSettings()
-        observeBackupStatus()
-    }
+    /** The persisted values as of the last DataStore emission (initial load, or right after a
+     * save round-trips back through observeSettings()). Compared against the live form fields
+     * to decide whether leaving the screen now would discard anything. */
+    private var lastKnownPrefs: UserPrefs? = null
 
-    // Separate collector from loadSettings(): backup status lives in its own DataStore
-    // file and changes independently of salat_user_prefs, so it gets its own stream
-    // rather than being folded into the settings-load collector above.
-    private fun observeBackupStatus() {
-        viewModelScope.launch {
-            backupRepository.observeStatus().collect { status ->
-                _uiState.update {
-                    it.copy(
-                        backupConnected   = status.connected,
-                        backupAttention    = status.attention,
-                        backupLastBackupAt = status.lastBackupAt,
-                    )
-                }
-            }
-        }
-    }
+    init { loadSettings() }
 
     private fun loadSettings() {
         viewModelScope.launch {
@@ -96,6 +77,7 @@ class SettingsViewModel @Inject constructor(
                 .onStart { _uiState.update { it.copy(isLoading = true) } }
                 .catch   { e -> _uiState.update { it.copy(isLoading = false, error = e.message) } }
                 .collect { prefs ->
+                    lastKnownPrefs = prefs
                     val times = prayerRepository.getCachedPrayerTimes(LocalDate.now())
                     _uiState.update {
                         it.copy(
@@ -192,4 +174,38 @@ class SettingsViewModel @Inject constructor(
 
     fun clearError()        = _uiState.update { it.copy(error = null) }
     fun clearSaveSuccess()  = _uiState.update { it.copy(saveSuccess = false) }
+
+    // ── Unsaved-changes guard ─────────────────────────────────────────────────
+    // Settings used to be a bottom-nav tab, so its ViewModel just survived a tab switch and
+    // unsaved edits sat there until the user came back. Now it is a screen you navigate away
+    // from, so leaving without saving needs to be an explicit choice instead of a silent loss.
+
+    /** Compares the live form against [lastKnownPrefs]. False before the first load, so the
+     * back arrow/BackHandler never blocks leaving before there is anything to compare against. */
+    fun hasUnsavedChanges(): Boolean {
+        val baseline = lastKnownPrefs ?: return false
+        val state = _uiState.value
+        val sameLocation = state.useDeviceLocation == baseline.useDeviceLocation &&
+            (state.latitude.toDoubleOrNull() ?: 0.0) == baseline.latitude &&
+            (state.longitude.toDoubleOrNull() ?: 0.0) == baseline.longitude
+        val sameMethod = state.calculationMethod.id == baseline.calculationMethodId
+        val sameReminders = state.reminders.all { r ->
+            r.enabled == (baseline.reminderEnabled[r.prayerType] ?: true) &&
+                (r.offsetMinutes.toIntOrNull() ?: 0) == (baseline.reminderOffsetMinutes[r.prayerType] ?: 0)
+        }
+        val sameDisplay = state.use24HourFormat == baseline.use24HourFormat
+        val sameAppearance = state.language == baseline.language &&
+            state.themeMode == baseline.themeMode &&
+            state.dailyTipsEnabled == baseline.dailyTipsEnabled
+        return !(sameLocation && sameMethod && sameReminders && sameDisplay && sameAppearance)
+    }
+
+    /** Called by the screen's BackHandler when [hasUnsavedChanges] is true — shows the
+     * confirmation instead of letting the back press fall through to navigation. */
+    fun onBackRequested() = _uiState.update { it.copy(showDiscardConfirm = true) }
+
+    fun onKeepEditingClick() = _uiState.update { it.copy(showDiscardConfirm = false) }
+
+    /** Only hides the dialog; the Entry performs the actual navigation afterward. */
+    fun onDiscardConfirm() = _uiState.update { it.copy(showDiscardConfirm = false) }
 }

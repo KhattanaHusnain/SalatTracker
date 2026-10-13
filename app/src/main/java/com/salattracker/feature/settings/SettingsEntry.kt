@@ -2,6 +2,7 @@ package com.salattracker.feature.settings
 
 import android.Manifest
 import android.content.pm.PackageManager
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
@@ -12,17 +13,24 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 
 /**
- * Nav entry-point for the Settings tab.
- * Wire into MainActivity NavHost:
- *   composable(BottomNavRoute.Settings.route) { SettingsEntry() }
+ * Nav entry-point for Settings, reached from the drawer. [onDiscardAndBack] is called once
+ * the user has confirmed discarding unsaved changes (or there were none to discard) — it
+ * performs the actual navigation back, which the ViewModel itself has no way to trigger.
  */
 @Composable
 fun SettingsEntry(
-    onBackupClick: () -> Unit = {},
+    onDiscardAndBack: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+
+    // Intercepts the back gesture/button only while there is something to lose — falls through
+    // to the NavHost's normal pop otherwise. The top bar's back arrow goes through the same
+    // OnBackPressedDispatcher (see MainActivity's TopBar), so it is caught here too.
+    BackHandler(enabled = viewModel.hasUnsavedChanges()) {
+        viewModel.onBackRequested()
+    }
 
     val locationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -53,9 +61,10 @@ fun SettingsEntry(
         onLanguageChanged          = viewModel::onLanguageChanged,
         onThemeModeChanged         = viewModel::onThemeModeChanged,
         onDailyTipsChanged         = viewModel::onDailyTipsChanged,
-        onBackupClick              = onBackupClick,
         onSave                     = viewModel::onSave,
         onErrorDismiss             = viewModel::clearError,
         onClearSaveSuccess         = viewModel::clearSaveSuccess,
+        onDiscardConfirm           = { viewModel.onDiscardConfirm(); onDiscardAndBack() },
+        onKeepEditingClick         = viewModel::onKeepEditingClick,
     )
 }

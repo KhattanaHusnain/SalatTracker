@@ -41,6 +41,7 @@ fun HomeScreen(
     onSheetDismiss: () -> Unit,
     onStatusSave: (PrayerStatus) -> Unit,
     onGoalsClick: () -> Unit,
+    onAddGoalClick: () -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
 
@@ -60,7 +61,7 @@ fun HomeScreen(
             if (percent != null) {
                 DailyGoalsCard(percent = percent, onClick = onGoalsClick, modifier = goalsCardModifier)
             } else if (!uiState.isLoading) {
-                NoGoalsYetCard(onClick = onGoalsClick, modifier = goalsCardModifier)
+                NoGoalsYetCard(onClick = onAddGoalClick, modifier = goalsCardModifier)
             }
 
             // ── Per-prayer streaks ─────────────────────────────────────────────
@@ -492,5 +493,6 @@ fun HomeScreenPreview() {
         onSheetDismiss     = {},
         onStatusSave       = {},
         onGoalsClick       = {},
+        onAddGoalClick     = {},
     )
 }

@@ -15,7 +15,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
  * a domain-layer repository can't drive itself (see BackupRepository.connect()).
  *
  * [isOnboarding] hides Switch Account / Disconnect / Replace and is used when this
- * is hosted inside the first-run onboarding flow rather than from Settings.
+ * is hosted inside the first-run onboarding flow rather than from the drawer.
  */
 @Composable
 fun BackupEntry(

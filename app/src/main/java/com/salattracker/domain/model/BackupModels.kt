@@ -27,7 +27,7 @@ data class RemoteBackupInfo(
     val contentSha256: String = "",
 )
 
-/** What the Backup screen and the Settings card observe. */
+/** What the Backup screen and the drawer's attention dot observe. */
 data class BackupStatus(
     val connected: Boolean = false,
     val accountEmail: String? = null,

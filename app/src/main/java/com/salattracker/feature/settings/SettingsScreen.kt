@@ -27,11 +27,8 @@ import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.core.ui.label
 import com.salattracker.domain.model.AppLanguage
-import com.salattracker.domain.model.BackupAttention
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.ThemeMode
-import java.time.Instant
-import java.time.ZoneId
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -50,10 +47,11 @@ fun SettingsScreen(
     onLanguageChanged: (AppLanguage) -> Unit,
     onThemeModeChanged: (ThemeMode) -> Unit,
     onDailyTipsChanged: (Boolean) -> Unit,
-    onBackupClick: () -> Unit,
     onSave: () -> Unit,
     onErrorDismiss: () -> Unit,
     onClearSaveSuccess: () -> Unit,
+    onDiscardConfirm: () -> Unit,
+    onKeepEditingClick: () -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
 
@@ -122,15 +120,6 @@ fun SettingsScreen(
                 onDailyTipsChanged = onDailyTipsChanged,
             )
 
-            // ── Backup & Restore ─────────────────────────────────────────────────
-            SettingsSectionLabel(stringResource(R.string.backup_title))
-            BackupSection(
-                connected    = uiState.backupConnected,
-                attention    = uiState.backupAttention,
-                lastBackupAt = uiState.backupLastBackupAt,
-                onClick      = onBackupClick,
-            )
-
             // ── Save button ───────────────────────────────────────────────────
             Button(
                 onClick  = onSave,
@@ -174,6 +163,36 @@ fun SettingsScreen(
             ) { Text(stringResource(R.string.settings_saved), fontFamily = InterFamily) }
         }
     }
+
+    if (uiState.showDiscardConfirm) {
+        DiscardChangesDialog(onDiscard = onDiscardConfirm, onKeepEditing = onKeepEditingClick)
+    }
+}
+
+// ── Discard changes dialog ─────────────────────────────────────────────────────
+
+@Composable
+private fun DiscardChangesDialog(onDiscard: () -> Unit, onKeepEditing: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onKeepEditing,
+        containerColor    = SalatSurfaceContainerLowest,
+        title = {
+            Text(stringResource(R.string.settings_discard_title), color = SalatOnSurface, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily)
+        },
+        text = {
+            Text(stringResource(R.string.settings_discard_desc), color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = InterFamily)
+        },
+        confirmButton = {
+            Button(
+                onClick = onDiscard,
+                colors  = ButtonDefaults.buttonColors(containerColor = SalatError, contentColor = SalatOnPrimary),
+                shape   = RoundedCornerShape(12.dp),
+            ) { Text(stringResource(R.string.action_discard), fontFamily = InterFamily, fontWeight = FontWeight.SemiBold) }
+        },
+        dismissButton = {
+            TextButton(onClick = onKeepEditing) { Text(stringResource(R.string.action_keep_editing), color = SalatOnSurfaceVariant, fontFamily = InterFamily) }
+        },
+    )
 }
 
 // ── Section label ─────────────────────────────────────────────────────────────
@@ -610,56 +629,6 @@ private val ThemeMode.themeLabelRes get() = when (this) {
     ThemeMode.SYSTEM -> R.string.theme_system
 }
 
-// ── Backup & Restore section ──────────────────────────────────────────────────
-
-@Composable
-private fun BackupSection(
-    connected: Boolean,
-    attention: BackupAttention,
-    lastBackupAt: Long?,
-    onClick: () -> Unit,
-) {
-    val subtitle = when {
-        attention != BackupAttention.NONE -> stringResource(R.string.settings_backup_action_needed)
-        !connected -> stringResource(R.string.settings_backup_status_off)
-        lastBackupAt != null -> stringResource(
-            R.string.settings_backup_status_connected,
-            Instant.ofEpochMilli(lastBackupAt)
-                .atZone(ZoneId.systemDefault())
-                .format(DateTimeFormatter.ofPattern("d MMM, h:mm a")),
-        )
-        else -> stringResource(R.string.backup_last_backup_never)
-    }
-    val subtitleColor = if (attention != BackupAttention.NONE) SalatError else SalatOnSurfaceVariant
-
-    Surface(
-        onClick  = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        shape    = RoundedCornerShape(16.dp),
-        color    = SalatSurfaceContainerLowest,
-        border   = BorderStroke(1.dp, SalatSecondaryContainer),
-        shadowElevation = 2.dp,
-    ) {
-        Row(
-            modifier              = Modifier.fillMaxWidth().padding(16.dp),
-            verticalAlignment     = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Row(
-                verticalAlignment     = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Icon(painterResource(R.drawable.ic_cloud_upload), null, tint = SalatPrimary, modifier = Modifier.size(24.dp))
-                Column {
-                    Text(stringResource(R.string.backup_title), color = SalatOnSurface, fontSize = 16.sp, fontFamily = InterFamily)
-                    Text(subtitle, color = subtitleColor, fontSize = 12.sp, fontFamily = InterFamily)
-                }
-            }
-            Icon(painterResource(R.drawable.ic_chevron_right), null, tint = SalatOnSurfaceVariant, modifier = Modifier.size(20.dp))
-        }
-    }
-}
-
 // ── Display section ───────────────────────────────────────────────────────────
 
 @Composable
@@ -742,9 +711,10 @@ fun SettingsScreenPreview() {
         onLanguageChanged          = {},
         onThemeModeChanged         = {},
         onDailyTipsChanged         = {},
-        onBackupClick              = {},
         onSave                     = {},
         onErrorDismiss             = {},
         onClearSaveSuccess         = {},
+        onDiscardConfirm           = {},
+        onKeepEditingClick         = {},
     )
 }

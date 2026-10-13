@@ -5,6 +5,7 @@
     <string name="nav_home">ہوم</string>
     <string name="nav_calendar">کیلنڈر</string>
     <string name="nav_qaza">قضا</string>
+    <string name="nav_goals">اہداف</string>
     <string name="nav_stats">شماریات</string>
     <string name="nav_settings">ترتیبات</string>
 
@@ -21,6 +22,7 @@
     <string name="topbar_backup">بیک اپ اور بحالی</string>
     <string name="topbar_default">Salat Tracker</string>
     <string name="cd_menu">مینو</string>
+    <string name="cd_back">واپس</string>
     <string name="action_add_goal">ہدف شامل کریں</string>
     <string name="action_bulk_update">اجتماعی اپ ڈیٹ</string>
 
@@ -66,6 +68,8 @@
     <string name="action_ok">ٹھیک ہے</string>
     <string name="action_cancel">منسوخ</string>
     <string name="action_delete">حذف</string>
+    <string name="action_discard">مسترد کریں</string>
+    <string name="action_keep_editing">ترمیم جاری رکھیں</string>
     <string name="action_done">ہو گیا</string>
     <string name="action_continue">جاری رکھیں</string>
     <string name="action_next">اگلا</string>
@@ -150,9 +154,8 @@
     <string name="settings_language">زبان</string>
     <string name="settings_theme">تھیم</string>
     <string name="settings_24hour">24 گھنٹے کی شکل</string>
-    <string name="settings_backup_status_off">بند</string>
-    <string name="settings_backup_status_connected">آخری بیک اپ %1$s</string>
-    <string name="settings_backup_action_needed">توجہ درکار ہے</string>
+    <string name="settings_discard_title">تبدیلیاں مسترد کریں؟</string>
+    <string name="settings_discard_desc">آپ کی تبدیلیاں محفوظ نہیں ہوئیں۔ ابھی جانے سے وہ ضائع ہو جائیں گی۔</string>
 
     <string name="stats_highest_streaks">بلند ترین تسلسل</string>
     <string name="stats_best_per_prayer">ہر نماز کا بہترین تسلسل</string>
@@ -164,7 +167,7 @@
     <string name="stats_composition_over">%1$s کے دوران تناسب</string>
     <string name="stats_daily_goals">روزانہ اہداف</string>
     <string name="stats_completion_rate">تکمیل کی شرح</string>
-    <string name="stats_no_active_goals">ابھی کوئی فعال ہدف نہیں — اہداف اسکرین سے ایک مقرر کریں۔</string>
+    <string name="stats_no_active_goals">ابھی کوئی فعال ہدف نہیں — ایک مقرر کرنے کے لیے دبائیں۔</string>
     <string name="stats_achievement_title">ثابت قدم روح</string>
     <string name="stats_achievement_desc">آپ نے مسلسل %1$d دن تمام نمازیں مکمل کیں۔ اللہ آپ کی استقامت کو قبول فرمائے۔</string>
 
@@ -254,6 +257,7 @@
 
     <!-- Backup & Restore -->
     <string name="backup_title">بیک اپ اور بحالی</string>
+    <string name="backup_action_needed">توجہ درکار ہے</string>
     <string name="backup_subtitle">اپنی نماز کی تاریخ، اہداف اور ترتیبات محفوظ رکھیں۔</string>
     <string name="backup_not_connected_desc">اپنا ڈیٹا اپنے گوگل ڈرائیو پر بیک اپ کریں۔ صرف آپ اسے دیکھ سکتے ہیں — ہم بھی نہیں۔</string>
     <string name="backup_connect">گوگل اکاؤنٹ منسلک کریں</string>
