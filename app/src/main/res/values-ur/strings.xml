@@ -161,8 +161,11 @@
     <string name="reminders_full_screen_alert">فل سکرین الرٹ</string>
     <string name="reminders_vibration">وائبریشن</string>
     <string name="reminders_sound">آواز</string>
-    <string name="reminders_sound_default">طے شدہ</string>
+    <string name="reminders_sound_azan">اذان (ایپ کی طے شدہ)</string>
+    <string name="reminders_sound_default">ڈیوائس کی طے شدہ</string>
     <string name="reminders_sound_silent">خاموش</string>
+    <string name="reminders_sound_choose_device">ڈیوائس سے منتخب کریں…</string>
+    <string name="reminders_sound_preview">آواز سنیں</string>
     <string name="reminders_offset_before_title">نماز کے وقت سے پہلے کے منٹ</string>
     <string name="reminders_offset_after_title">نماز کے وقت کے بعد کے منٹ</string>
     <string name="reminders_offset_minutes_value">%1$d منٹ</string>

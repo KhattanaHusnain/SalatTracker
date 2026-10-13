@@ -7,7 +7,9 @@ import android.media.AudioAttributes
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import com.salattracker.R
 import com.salattracker.domain.model.PrayerType
+import com.salattracker.domain.repository.DEVICE_DEFAULT_SOUND_URI
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -40,8 +42,12 @@ class PrayerReminderChannels @Inject constructor(
         val channel = NotificationChannel(channelId(type), channelName(type), NotificationManager.IMPORTANCE_HIGH)
         channel.description = channelName(type)
         channel.enableVibration(vibrationEnabled)
+        // Null means "never touched" — the app's own default (the bundled Azan) applies, not
+        // the device's. DEVICE_DEFAULT_SOUND_URI is the explicit opt-out into the device's own
+        // default; "" is Silent (see SettingsRepository.setReminderSoundUri for the full encoding).
         val sound = when (soundUri) {
-            null -> Settings.System.DEFAULT_NOTIFICATION_URI
+            null -> azanUri()
+            DEVICE_DEFAULT_SOUND_URI -> Settings.System.DEFAULT_NOTIFICATION_URI
             ""   -> null // Silent
             else -> Uri.parse(soundUri)
         }
@@ -54,6 +60,8 @@ class PrayerReminderChannels @Inject constructor(
     }
 
     private fun channelName(type: PrayerType): String = "${type.channelLabel} Reminders"
+
+    private fun azanUri(): Uri = Uri.parse("android.resource://${context.packageName}/${R.raw.azan}")
 
     private fun manager() = context.getSystemService(NotificationManager::class.java)
 }

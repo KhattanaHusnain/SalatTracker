@@ -1,6 +1,10 @@
 package com.salattracker.feature.reminders
 
+import android.content.Context
+import android.media.Ringtone
 import android.media.RingtoneManager
+import android.net.Uri
+import android.provider.Settings
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -30,6 +34,7 @@ import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.core.ui.label
 import com.salattracker.domain.model.PrayerType
+import com.salattracker.domain.repository.DEVICE_DEFAULT_SOUND_URI
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -45,7 +50,8 @@ fun PrayerRemindersScreen(
     onSnoozeChanged: (PrayerType, Int) -> Unit,
     onFullScreenAlertChanged: (PrayerType, Boolean) -> Unit,
     onVibrationChanged: (PrayerType, Boolean) -> Unit,
-    onSoundClick: (PrayerType) -> Unit,
+    onSoundSelected: (PrayerType, String?) -> Unit,
+    onChooseFromDevice: (PrayerType) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -65,7 +71,8 @@ fun PrayerRemindersScreen(
                 onSnoozeChanged          = { onSnoozeChanged(setting.prayerType, it) },
                 onFullScreenAlertChanged = { onFullScreenAlertChanged(setting.prayerType, it) },
                 onVibrationChanged       = { onVibrationChanged(setting.prayerType, it) },
-                onSoundClick             = { onSoundClick(setting.prayerType) },
+                onSoundSelected          = { onSoundSelected(setting.prayerType, it) },
+                onChooseFromDevice       = { onChooseFromDevice(setting.prayerType) },
             )
         }
     }
@@ -81,7 +88,8 @@ private fun ReminderCard(
     onSnoozeChanged: (Int) -> Unit,
     onFullScreenAlertChanged: (Boolean) -> Unit,
     onVibrationChanged: (Boolean) -> Unit,
-    onSoundClick: () -> Unit,
+    onSoundSelected: (String?) -> Unit,
+    onChooseFromDevice: () -> Unit,
 ) {
     Surface(
         modifier        = Modifier.fillMaxWidth(),
@@ -165,7 +173,11 @@ private fun ReminderCard(
                         onChanged = onVibrationChanged,
                     )
 
-                    SoundRow(soundUri = setting.soundUri, onClick = onSoundClick)
+                    SoundRow(
+                        soundUri           = setting.soundUri,
+                        onSelect           = onSoundSelected,
+                        onChooseFromDevice = onChooseFromDevice,
+                    )
                 }
             }
         }
@@ -363,11 +375,17 @@ private fun SwitchDetailRow(label: String, checked: Boolean, onChanged: (Boolean
 }
 
 @Composable
-private fun SoundRow(soundUri: String?, onClick: () -> Unit) {
+private fun SoundRow(
+    soundUri: String?,
+    onSelect: (String?) -> Unit,
+    onChooseFromDevice: () -> Unit,
+) {
     val context = LocalContext.current
+    var showChooser by remember { mutableStateOf(false) }
     val label = when (soundUri) {
-        null -> stringResource(R.string.reminders_sound_default)
-        ""   -> stringResource(R.string.reminders_sound_silent)
+        null                     -> stringResource(R.string.reminders_sound_azan)
+        DEVICE_DEFAULT_SOUND_URI -> stringResource(R.string.reminders_sound_default)
+        ""                       -> stringResource(R.string.reminders_sound_silent)
         else -> remember(soundUri) {
             runCatching {
                 RingtoneManager.getRingtone(context, android.net.Uri.parse(soundUri))?.getTitle(context)
@@ -375,7 +393,7 @@ private fun SoundRow(soundUri: String?, onClick: () -> Unit) {
         } ?: stringResource(R.string.reminders_sound_default)
     }
     Row(
-        modifier              = Modifier.fillMaxWidth().clickableRow(onClick),
+        modifier              = Modifier.fillMaxWidth().clickableRow { showChooser = true },
         verticalAlignment     = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
@@ -383,6 +401,128 @@ private fun SoundRow(soundUri: String?, onClick: () -> Unit) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(label, color = SalatPrimary, fontSize = 14.sp, fontFamily = InterFamily, maxLines = 1)
             Icon(painterResource(R.drawable.ic_chevron_right), null, tint = SalatOnSurfaceVariant, modifier = Modifier.size(16.dp))
+        }
+    }
+
+    if (showChooser) {
+        SoundChooserDialog(
+            current = soundUri,
+            onAzanSelected          = { showChooser = false; onSelect(null) },
+            onDeviceDefaultSelected = { showChooser = false; onSelect(DEVICE_DEFAULT_SOUND_URI) },
+            onSilentSelected        = { showChooser = false; onSelect("") },
+            onChooseFromDevice      = { showChooser = false; onChooseFromDevice() },
+            onDismiss               = { showChooser = false },
+        )
+    }
+}
+
+/** The system ringtone picker has no way to list a sound bundled inside our own app, so Azan —
+ * the app's own default — is a distinct, always-available choice here rather than something
+ * the system picker could ever surface; "Choose from device..." is the only option that falls
+ * through to that picker. */
+@Composable
+private fun SoundChooserDialog(
+    current: String?,
+    onAzanSelected: () -> Unit,
+    onDeviceDefaultSelected: () -> Unit,
+    onSilentSelected: () -> Unit,
+    onChooseFromDevice: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val context = LocalContext.current
+    var activePreview by remember { mutableStateOf<Ringtone?>(null) }
+
+    fun preview(uri: Uri) {
+        activePreview?.stop()
+        activePreview = runCatching { RingtoneManager.getRingtone(context, uri) }.getOrNull()?.also { it.play() }
+    }
+
+    // A preview must never keep playing after the dialog closes, by any route — a choice
+    // made, tapping outside, or system back all end up here via onDispose.
+    DisposableEffect(Unit) {
+        onDispose { activePreview?.stop() }
+    }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            color = SalatSurfaceContainerLowest,
+        ) {
+            Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                Text(
+                    text       = stringResource(R.string.reminders_sound),
+                    modifier   = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
+                    color      = SalatPrimary,
+                    fontSize   = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    fontFamily = MontserratFamily,
+                )
+                SoundChoiceRow(
+                    label     = stringResource(R.string.reminders_sound_azan),
+                    selected  = current == null,
+                    onClick   = onAzanSelected,
+                    onPreview = { preview(azanUri(context)) },
+                )
+                SoundChoiceRow(
+                    label     = stringResource(R.string.reminders_sound_default),
+                    selected  = current == DEVICE_DEFAULT_SOUND_URI,
+                    onClick   = onDeviceDefaultSelected,
+                    onPreview = { preview(Settings.System.DEFAULT_NOTIFICATION_URI) },
+                )
+                SoundChoiceRow(
+                    label    = stringResource(R.string.reminders_sound_silent),
+                    selected = current == "",
+                    onClick  = onSilentSelected,
+                )
+                HorizontalDivider(color = SalatOutlineVariant.copy(alpha = 0.3f), modifier = Modifier.padding(vertical = 4.dp))
+                SoundChoiceRow(
+                    label       = stringResource(R.string.reminders_sound_choose_device),
+                    selected    = false,
+                    showChevron = true,
+                    onClick     = onChooseFromDevice,
+                )
+            }
+        }
+    }
+}
+
+private fun azanUri(context: Context): Uri = Uri.parse("android.resource://${context.packageName}/${R.raw.azan}")
+
+@Composable
+private fun SoundChoiceRow(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    onPreview: (() -> Unit)? = null,
+    showChevron: Boolean = false,
+) {
+    Row(
+        modifier              = Modifier.fillMaxWidth().clickableRow(onClick).padding(start = 24.dp, end = 16.dp, top = 8.dp, bottom = 8.dp),
+        verticalAlignment     = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(
+            text       = label,
+            color      = if (selected) SalatPrimary else SalatOnSurface,
+            fontSize   = 15.sp,
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+            fontFamily = InterFamily,
+        )
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            if (onPreview != null) {
+                IconButton(onClick = onPreview, modifier = Modifier.size(32.dp)) {
+                    Icon(
+                        painter            = painterResource(R.drawable.ic_play),
+                        contentDescription = stringResource(R.string.reminders_sound_preview),
+                        tint               = SalatOnSurfaceVariant,
+                        modifier           = Modifier.size(16.dp),
+                    )
+                }
+            }
+            when {
+                showChevron -> Icon(painterResource(R.drawable.ic_chevron_right), null, tint = SalatOnSurfaceVariant, modifier = Modifier.size(16.dp))
+                selected    -> Icon(painterResource(R.drawable.ic_check_circle_filled), null, tint = SalatPrimary, modifier = Modifier.size(18.dp))
+            }
         }
     }
 }
@@ -415,6 +555,7 @@ fun PrayerRemindersScreenPreview() {
         onSnoozeChanged          = { _, _ -> },
         onFullScreenAlertChanged = { _, _ -> },
         onVibrationChanged       = { _, _ -> },
-        onSoundClick             = {},
+        onSoundSelected          = { _, _ -> },
+        onChooseFromDevice       = {},
     )
 }

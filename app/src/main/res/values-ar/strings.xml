@@ -161,8 +161,11 @@
     <string name="reminders_full_screen_alert">تنبيه ملء الشاشة</string>
     <string name="reminders_vibration">الاهتزاز</string>
     <string name="reminders_sound">النغمة</string>
-    <string name="reminders_sound_default">الافتراضية</string>
+    <string name="reminders_sound_azan">الأذان (افتراضي التطبيق)</string>
+    <string name="reminders_sound_default">افتراضي الجهاز</string>
     <string name="reminders_sound_silent">صامت</string>
+    <string name="reminders_sound_choose_device">اختر من الجهاز…</string>
+    <string name="reminders_sound_preview">معاينة الصوت</string>
     <string name="reminders_offset_before_title">دقائق قبل وقت الصلاة</string>
     <string name="reminders_offset_after_title">دقائق بعد وقت الصلاة</string>
     <string name="reminders_offset_minutes_value">%1$d د</string>

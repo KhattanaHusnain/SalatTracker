@@ -26,7 +26,7 @@ data class ReminderSetting(
     val snoozeMinutes: Int = 10,
     val fullScreenAlert: Boolean = true,
     val vibrationEnabled: Boolean = true,
-    /** Null = device default, "" = Silent, else a content:// URI — see SettingsRepository. */
+    /** Null = app default (Azan). See SettingsRepository.setReminderSoundUri for the full encoding. */
     val soundUri: String? = null,
 )
 

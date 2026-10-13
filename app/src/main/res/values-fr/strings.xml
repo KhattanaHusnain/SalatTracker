@@ -161,8 +161,11 @@
     <string name="reminders_full_screen_alert">Alerte plein écran</string>
     <string name="reminders_vibration">Vibration</string>
     <string name="reminders_sound">Son</string>
-    <string name="reminders_sound_default">Par défaut</string>
+    <string name="reminders_sound_azan">Azan (par défaut de l\'app)</string>
+    <string name="reminders_sound_default">Par défaut de l\'appareil</string>
     <string name="reminders_sound_silent">Silencieux</string>
+    <string name="reminders_sound_choose_device">Choisir sur l\'appareil…</string>
+    <string name="reminders_sound_preview">Aperçu du son</string>
     <string name="reminders_offset_before_title">Minutes avant l\'heure de prière</string>
     <string name="reminders_offset_after_title">Minutes après l\'heure de prière</string>
     <string name="reminders_offset_minutes_value">%1$d min</string>

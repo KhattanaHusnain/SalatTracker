@@ -5,6 +5,11 @@ import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.ThemeMode
 import kotlinx.coroutines.flow.Flow
 
+/** Sentinel for [UserPrefs.reminderSoundUri]: the user explicitly chose the device's own
+ * default notification sound, as opposed to never having touched the setting (null, which
+ * means the app's own default — the bundled Azan — applies instead). */
+const val DEVICE_DEFAULT_SOUND_URI = "device_default"
+
 /**
  * Domain-layer contract for user preferences.
  * Implemented in the data layer via DataStore.
@@ -64,7 +69,8 @@ interface SettingsRepository {
 
     suspend fun setReminderVibrationEnabled(type: PrayerType, enabled: Boolean)
 
-    /** Null = device default, "" = Silent (the ringtone picker returns a null Uri for Silent,
+    /** Null = app default (Azan), [DEVICE_DEFAULT_SOUND_URI] = the device's own default sound
+     * explicitly chosen, "" = Silent (the ringtone picker returns a null Uri for Silent,
      * re-encoded here so it stays distinguishable from "never touched"), else a content:// URI. */
     suspend fun setReminderSoundUri(type: PrayerType, uri: String?)
 }
@@ -89,7 +95,7 @@ data class UserPrefs(
         .associateWith { true },
     val reminderVibrationEnabled: Map<PrayerType, Boolean> = PrayerType.values()
         .associateWith { true },
-    /** Null = device default, "" = Silent, else a content:// URI. See setReminderSoundUri. */
+    /** Null = app default (Azan). See setReminderSoundUri for the full encoding. */
     val reminderSoundUri: Map<PrayerType, String?> = PrayerType.values()
         .associateWith { null },
     val use24HourFormat: Boolean = false,
