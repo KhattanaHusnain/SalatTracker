@@ -1,9 +1,11 @@
 package com.salattracker.feature.onboarding
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.salattracker.feature.backup.BackupEntry
 
 /**
  * Nav entry-point for the first-run onboarding flow.
@@ -18,6 +20,14 @@ fun OnboardingEntry(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    if (uiState.showRestore) {
+        // A successful restore sets onboarding_completed itself (BackupLocalSource.applySnapshot),
+        // so MainActivity's reactive gate swaps to the main app on its own — nothing to do here.
+        BackHandler(onBack = viewModel::onRestoreDismiss)
+        BackupEntry(isOnboarding = true)
+        return
+    }
+
     OnboardingScreen(
         uiState                  = uiState,
         onLanguageSelected       = viewModel::onLanguageSelected,
@@ -30,5 +40,6 @@ fun OnboardingEntry(
             onRequestNotifications()
             viewModel.onFinish()
         },
+        onRestoreFromBackup      = viewModel::onRestoreClick,
     )
 }

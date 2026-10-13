@@ -26,4 +26,5 @@ abstract class SalatDatabase : RoomDatabase() {
     abstract fun prayerTimesDao(): PrayerTimesDao
     abstract fun verseDao(): VerseDao
     abstract fun goalDao(): GoalDao
+    abstract fun backupDao(): BackupDao
 }

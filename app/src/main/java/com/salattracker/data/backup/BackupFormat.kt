@@ -1,0 +1,367 @@
+package com.salattracker.data.backup
+
+import com.google.gson.GsonBuilder
+import com.google.gson.annotations.SerializedName
+import com.salattracker.domain.model.GoalCategory
+import com.salattracker.domain.model.GoalFrequency
+import com.salattracker.domain.model.PrayerStatus
+import com.salattracker.domain.model.PrayerType
+import com.salattracker.domain.repository.UserPrefs
+import java.io.ByteArrayOutputStream
+import java.security.MessageDigest
+import java.time.LocalDate
+import java.time.LocalTime
+import java.util.zip.GZIPInputStream
+import java.util.zip.GZIPOutputStream
+
+/**
+ * Backup wire format: versioned JSON, independent of the Room schema, so a backup
+ * taken today can still be restored after a future entity/migration change.
+ *
+ * Bump [BACKUP_FORMAT_VERSION] only when the JSON shape itself changes incompatibly.
+ * A device running an older app than the format it downloaded refuses to restore it
+ * (see [BackupCodec.decode]) rather than guessing at an unknown shape.
+ */
+const val BACKUP_FORMAT_VERSION = 1
+
+/** Thrown by [BackupCodec.decode] for anything corrupt, truncated, or from a newer/unknown format. */
+class BackupFormatException(message: String, cause: Throwable? = null) : Exception(message, cause)
+
+// ── Typed snapshot (domain-flavored, no Room imports) ─────────────────────────
+
+data class BackupPrayerEntry(
+    val date: LocalDate,
+    val prayerType: PrayerType,
+    val status: PrayerStatus,
+    val updatedAt: Long,
+)
+
+data class BackupGoal(
+    val id: Long,
+    val name: String,
+    val category: GoalCategory,
+    val frequency: GoalFrequency,
+    val targetAmount: Int,
+    val unit: String,
+    val reminderEnabled: Boolean,
+    val reminderTime: LocalTime?,
+    val startDate: LocalDate,
+    val durationDays: Int,
+    val isActive: Boolean,
+)
+
+data class BackupCheckIn(
+    val goalId: Long,
+    val date: LocalDate,
+    val amount: Int,
+)
+
+data class BackupSnapshot(
+    val prayerEntries: List<BackupPrayerEntry>,
+    val goals: List<BackupGoal>,
+    val checkIns: List<BackupCheckIn>,
+    /** Highest streak per prayer type — current streak is always recomputed after restore, not stored. */
+    val highestStreaks: Map<PrayerType, Int>,
+    val settings: UserPrefs,
+)
+
+/** Everything needed to decide whether a remote backup is safe to overwrite, without downloading it. */
+data class BackupMeta(
+    val formatVersion: Int,
+    val revisionId: String,
+    val createdAt: Long,
+    val appVersionCode: Int,
+    val deviceModel: String,
+    val prayerEntryCount: Int,
+    val oldestPrayerDate: LocalDate?,
+    val contentSha256: String,
+)
+
+// ── Gson DTOs — every field nullable, since Gson bypasses constructors and leaves a
+// missing/corrupt JSON field as null regardless of the Kotlin declared type. ──────
+
+private data class PrayerEntryDto(
+    @SerializedName("date") val date: String?,
+    @SerializedName("prayerType") val prayerType: String?,
+    @SerializedName("status") val status: String?,
+    @SerializedName("updatedAt") val updatedAt: Long?,
+)
+
+private data class GoalDto(
+    @SerializedName("id") val id: Long?,
+    @SerializedName("name") val name: String?,
+    @SerializedName("category") val category: String?,
+    @SerializedName("frequency") val frequency: String?,
+    @SerializedName("targetAmount") val targetAmount: Int?,
+    @SerializedName("unit") val unit: String?,
+    @SerializedName("reminderEnabled") val reminderEnabled: Boolean?,
+    @SerializedName("reminderTime") val reminderTime: String?,
+    @SerializedName("startDate") val startDate: String?,
+    @SerializedName("durationDays") val durationDays: Int?,
+    @SerializedName("isActive") val isActive: Boolean?,
+)
+
+private data class CheckInDto(
+    @SerializedName("goalId") val goalId: Long?,
+    @SerializedName("date") val date: String?,
+    @SerializedName("amount") val amount: Int?,
+)
+
+private data class StreakDto(
+    @SerializedName("prayerType") val prayerType: String?,
+    @SerializedName("highestStreak") val highestStreak: Int?,
+)
+
+private data class SettingsDto(
+    @SerializedName("useDeviceLocation") val useDeviceLocation: Boolean?,
+    @SerializedName("latitude") val latitude: Double?,
+    @SerializedName("longitude") val longitude: Double?,
+    @SerializedName("calculationMethodId") val calculationMethodId: Int?,
+    @SerializedName("reminderEnabled") val reminderEnabled: Map<String, Boolean>?,
+    @SerializedName("reminderOffsetMinutes") val reminderOffsetMinutes: Map<String, Int>?,
+    @SerializedName("use24HourFormat") val use24HourFormat: Boolean?,
+    @SerializedName("language") val language: String?,
+    @SerializedName("themeMode") val themeMode: String?,
+    @SerializedName("dailyTipsEnabled") val dailyTipsEnabled: Boolean?,
+)
+
+private data class PayloadDto(
+    @SerializedName("prayerEntries") val prayerEntries: List<PrayerEntryDto>?,
+    @SerializedName("goals") val goals: List<GoalDto>?,
+    @SerializedName("checkIns") val checkIns: List<CheckInDto>?,
+    @SerializedName("streaks") val streaks: List<StreakDto>?,
+    @SerializedName("settings") val settingsDto: SettingsDto?,
+)
+
+private data class MetaDto(
+    @SerializedName("formatVersion") val formatVersion: Int?,
+    @SerializedName("revisionId") val revisionId: String?,
+    @SerializedName("createdAt") val createdAt: Long?,
+    @SerializedName("appVersionCode") val appVersionCode: Int?,
+    @SerializedName("deviceModel") val deviceModel: String?,
+    @SerializedName("prayerEntryCount") val prayerEntryCount: Int?,
+    @SerializedName("oldestPrayerDate") val oldestPrayerDate: String?,
+    @SerializedName("contentSha256") val contentSha256: String?,
+)
+
+private data class BackupFileDto(
+    @SerializedName("meta") val meta: MetaDto?,
+    @SerializedName("payload") val payload: PayloadDto?,
+)
+
+/**
+ * Encodes/decodes [BackupSnapshot]s to/from the gzipped JSON bytes stored in Drive.
+ * Uses its own [Gson] instance rather than the shared app-wide one, so a future change
+ * to the shared instance (e.g. custom type adapters for a different purpose) can never
+ * silently change the backup wire format.
+ */
+object BackupCodec {
+
+    private val gson = GsonBuilder().create()
+
+    /** Deterministic SHA-256 over the payload only (not meta) — used to decide "did anything change". */
+    fun contentSha256(snapshot: BackupSnapshot): String = payloadSha256(snapshot.toPayloadDto())
+
+    /** Hashes the DTO exactly as it is/would be serialized — used on both the encode
+     * side (via [contentSha256]) and the decode side, so the comparison is byte-for-byte
+     * against what was actually serialized, unaffected by any later semantic filtering
+     * (e.g. dropping an orphaned check-in) applied when building the domain [BackupSnapshot]. */
+    private fun payloadSha256(payload: PayloadDto): String {
+        val bytes = gson.toJson(payload).toByteArray(Charsets.UTF_8)
+        val digest = MessageDigest.getInstance("SHA-256").digest(bytes)
+        return digest.joinToString("") { "%02x".format(it) }
+    }
+
+    fun encode(snapshot: BackupSnapshot, meta: BackupMeta): ByteArray {
+        val fileDto = BackupFileDto(meta = meta.toDto(), payload = snapshot.toPayloadDto())
+        val json = gson.toJson(fileDto)
+        val out = ByteArrayOutputStream()
+        GZIPOutputStream(out).use { it.write(json.toByteArray(Charsets.UTF_8)) }
+        return out.toByteArray()
+    }
+
+    /**
+     * Fully validates before returning anything: a newer format, missing field, unknown
+     * enum, or hash mismatch throws [BackupFormatException]. Callers must treat a thrown
+     * decode as "abort, local data untouched" — nothing here is partially applied.
+     */
+    fun decode(gzipped: ByteArray): Pair<BackupMeta, BackupSnapshot> {
+        val json = try {
+            GZIPInputStream(gzipped.inputStream()).use { it.readBytes() }.toString(Charsets.UTF_8)
+        } catch (e: Exception) {
+            throw BackupFormatException("Backup file is not valid gzip", e)
+        }
+
+        val fileDto = try {
+            gson.fromJson(json, BackupFileDto::class.java)
+                ?: throw BackupFormatException("Backup file is empty")
+        } catch (e: BackupFormatException) {
+            throw e
+        } catch (e: Exception) {
+            throw BackupFormatException("Backup file is not valid JSON", e)
+        }
+
+        val metaDto = fileDto.meta ?: throw BackupFormatException("Backup file has no metadata")
+        val formatVersion = metaDto.formatVersion
+            ?: throw BackupFormatException("Backup file has no format version")
+        if (formatVersion > BACKUP_FORMAT_VERSION) {
+            throw BackupFormatException(
+                "Backup format $formatVersion is newer than this app supports ($BACKUP_FORMAT_VERSION)"
+            )
+        }
+
+        val payloadDto = fileDto.payload ?: throw BackupFormatException("Backup file has no payload")
+
+        val expectedHash = metaDto.contentSha256
+        val actualHash = payloadSha256(payloadDto)
+        if (expectedHash != null && expectedHash != actualHash) {
+            throw BackupFormatException("Backup content hash does not match — file may be corrupt")
+        }
+
+        // Only after the hash is verified do we map to the domain snapshot, which may drop
+        // entries that don't belong (e.g. a check-in whose goal isn't in this same backup).
+        val snapshot = payloadDto.toSnapshot()
+
+        val meta = BackupMeta(
+            formatVersion    = formatVersion,
+            revisionId       = metaDto.revisionId ?: throw BackupFormatException("Backup file has no revision id"),
+            createdAt        = metaDto.createdAt ?: 0L,
+            appVersionCode   = metaDto.appVersionCode ?: 0,
+            deviceModel      = metaDto.deviceModel ?: "",
+            prayerEntryCount = snapshot.prayerEntries.size,
+            oldestPrayerDate = snapshot.prayerEntries.minOfOrNull { it.date },
+            contentSha256    = actualHash,
+        )
+        return meta to snapshot
+    }
+
+    // ── snapshot <-> DTO mapping ────────────────────────────────────────────────
+
+    private fun BackupSnapshot.toPayloadDto() = PayloadDto(
+        prayerEntries = prayerEntries.map {
+            PrayerEntryDto(
+                date       = it.date.toString(),
+                prayerType = it.prayerType.name,
+                status     = it.status.name,
+                updatedAt  = it.updatedAt,
+            )
+        },
+        goals = goals.map {
+            GoalDto(
+                id              = it.id,
+                name            = it.name,
+                category        = it.category.name,
+                frequency       = it.frequency.name,
+                targetAmount    = it.targetAmount,
+                unit            = it.unit,
+                reminderEnabled = it.reminderEnabled,
+                reminderTime    = it.reminderTime?.toString(),
+                startDate       = it.startDate.toString(),
+                durationDays    = it.durationDays,
+                isActive        = it.isActive,
+            )
+        },
+        checkIns = checkIns.map {
+            CheckInDto(goalId = it.goalId, date = it.date.toString(), amount = it.amount)
+        },
+        streaks = PrayerType.values().map { type ->
+            StreakDto(prayerType = type.name, highestStreak = highestStreaks[type] ?: 0)
+        },
+        settingsDto = SettingsDto(
+            useDeviceLocation     = settings.useDeviceLocation,
+            latitude               = settings.latitude,
+            longitude              = settings.longitude,
+            calculationMethodId    = settings.calculationMethodId,
+            reminderEnabled        = PrayerType.values().associate { it.name to (settings.reminderEnabled[it] ?: true) },
+            reminderOffsetMinutes  = PrayerType.values().associate { it.name to (settings.reminderOffsetMinutes[it] ?: 0) },
+            use24HourFormat        = settings.use24HourFormat,
+            language               = settings.language.name,
+            themeMode               = settings.themeMode.name,
+            dailyTipsEnabled        = settings.dailyTipsEnabled,
+        ),
+    )
+
+    private fun PayloadDto.toSnapshot(): BackupSnapshot {
+        val goals = (goals ?: emptyList()).map { it.toDomain() }
+        val goalIds = goals.map { it.id }.toSet()
+
+        return BackupSnapshot(
+            prayerEntries = (prayerEntries ?: emptyList()).map { it.toDomain() },
+            goals         = goals,
+            // Drop check-ins whose goal no longer has a matching entry in this same backup —
+            // never leave a dangling goal_id in restored data.
+            checkIns      = (checkIns ?: emptyList()).map { it.toDomain() }.filter { it.goalId in goalIds },
+            highestStreaks = (streaks ?: emptyList()).associate { dto ->
+                val type = PrayerType.valueOf(
+                    dto.prayerType ?: throw BackupFormatException("Streak entry missing prayerType")
+                )
+                type to (dto.highestStreak ?: 0)
+            },
+            settings = (settingsDto ?: throw BackupFormatException("Backup file has no settings")).toDomain(),
+        )
+    }
+
+    private fun PrayerEntryDto.toDomain() = BackupPrayerEntry(
+        date       = LocalDate.parse(date ?: throw BackupFormatException("Prayer entry missing date")),
+        prayerType = PrayerType.valueOf(prayerType ?: throw BackupFormatException("Prayer entry missing prayerType")),
+        status     = PrayerStatus.valueOf(status ?: throw BackupFormatException("Prayer entry missing status")),
+        updatedAt  = updatedAt ?: throw BackupFormatException("Prayer entry missing updatedAt"),
+    )
+
+    private fun GoalDto.toDomain() = BackupGoal(
+        id              = id ?: throw BackupFormatException("Goal missing id"),
+        name            = name ?: throw BackupFormatException("Goal missing name"),
+        category        = GoalCategory.valueOf(category ?: throw BackupFormatException("Goal missing category")),
+        frequency       = GoalFrequency.valueOf(frequency ?: throw BackupFormatException("Goal missing frequency")),
+        targetAmount    = targetAmount ?: throw BackupFormatException("Goal missing targetAmount"),
+        unit            = unit ?: "",
+        reminderEnabled = reminderEnabled ?: false,
+        reminderTime    = reminderTime?.let(LocalTime::parse),
+        startDate       = LocalDate.parse(startDate ?: throw BackupFormatException("Goal missing startDate")),
+        durationDays    = durationDays ?: 0,
+        isActive        = isActive ?: true,
+    )
+
+    private fun CheckInDto.toDomain() = BackupCheckIn(
+        goalId = goalId ?: throw BackupFormatException("Check-in missing goalId"),
+        date   = LocalDate.parse(date ?: throw BackupFormatException("Check-in missing date")),
+        amount = amount ?: 0,
+    )
+
+    private fun SettingsDto.toDomain(): UserPrefs {
+        fun prayerMapOf(raw: Map<String, Int>?, default: Int): Map<PrayerType, Int> =
+            PrayerType.values().associateWith { type ->
+                raw?.get(type.name) ?: default
+            }
+        fun prayerBoolMapOf(raw: Map<String, Boolean>?, default: Boolean): Map<PrayerType, Boolean> =
+            PrayerType.values().associateWith { type ->
+                raw?.get(type.name) ?: default
+            }
+
+        return UserPrefs(
+            useDeviceLocation     = useDeviceLocation ?: true,
+            latitude               = latitude ?: 0.0,
+            longitude              = longitude ?: 0.0,
+            calculationMethodId    = calculationMethodId ?: 3,
+            reminderEnabled        = prayerBoolMapOf(reminderEnabled, true),
+            reminderOffsetMinutes  = prayerMapOf(reminderOffsetMinutes, 0),
+            use24HourFormat        = use24HourFormat ?: false,
+            language = language?.let { runCatching { com.salattracker.domain.model.AppLanguage.valueOf(it) }.getOrNull() }
+                ?: com.salattracker.domain.model.AppLanguage.ENGLISH,
+            themeMode = themeMode?.let { runCatching { com.salattracker.domain.model.ThemeMode.valueOf(it) }.getOrNull() }
+                ?: com.salattracker.domain.model.ThemeMode.SYSTEM,
+            dailyTipsEnabled       = dailyTipsEnabled ?: false,
+        )
+    }
+
+    private fun BackupMeta.toDto() = MetaDto(
+        formatVersion    = formatVersion,
+        revisionId       = revisionId,
+        createdAt        = createdAt,
+        appVersionCode   = appVersionCode,
+        deviceModel      = deviceModel,
+        prayerEntryCount = prayerEntryCount,
+        oldestPrayerDate = oldestPrayerDate?.toString(),
+        contentSha256    = contentSha256,
+    )
+}

@@ -34,6 +34,7 @@ fun OnboardingScreen(
     onNext: () -> Unit,
     onAllowLocation: () -> Unit,
     onFinish: () -> Unit,
+    onRestoreFromBackup: () -> Unit = {},
 ) {
     Box(
         modifier = Modifier
@@ -42,7 +43,7 @@ fun OnboardingScreen(
             .padding(horizontal = 24.dp),
     ) {
         when (uiState.step) {
-            OnboardingStep.LANGUAGE      -> LanguageStep(uiState.language, onLanguageSelected, onNext)
+            OnboardingStep.LANGUAGE      -> LanguageStep(uiState.language, onLanguageSelected, onNext, onRestoreFromBackup)
             OnboardingStep.THEME         -> ThemeStep(uiState.themeMode, onThemeSelected, onNext)
             OnboardingStep.LOCATION      -> LocationStep(onAllowLocation = { onAllowLocation(); onNext() })
             OnboardingStep.NOTIFICATIONS -> NotificationsStep(
@@ -64,6 +65,7 @@ private fun LanguageStep(
     selected: AppLanguage,
     onSelect: (AppLanguage) -> Unit,
     onContinue: () -> Unit,
+    onRestoreFromBackup: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         Spacer(Modifier.height(48.dp))
@@ -96,7 +98,13 @@ private fun LanguageStep(
         Spacer(Modifier.weight(1f))
 
         PrimaryButton(text = stringResource(R.string.action_continue), onClick = onContinue)
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(12.dp))
+        TextButton(onClick = onRestoreFromBackup, modifier = Modifier.fillMaxWidth()) {
+            Icon(painterResource(R.drawable.ic_cloud_upload), null, tint = SalatPrimary, modifier = Modifier.size(16.dp))
+            Spacer(Modifier.width(6.dp))
+            Text(stringResource(R.string.backup_onboarding_restore_action), color = SalatPrimary, fontSize = 13.sp, fontFamily = InterFamily, fontWeight = FontWeight.Medium)
+        }
+        Spacer(Modifier.height(4.dp))
         Text(
             stringResource(R.string.onboarding_change_later),
             modifier = Modifier.fillMaxWidth(),

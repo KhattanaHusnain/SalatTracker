@@ -221,6 +221,8 @@ class PrayerRepositoryImpl @Inject constructor(
     // backward day-by-day from today until every type has "locked in" (hit a
     // breaking day). One DAO query per date, shared across all still-active types.
 
+    override suspend fun recalculateStreaks() = recalculateAndCacheStreak()
+
     private class StreakTrack(var highest: Int) {
         var current: Int = 0
         var active: Boolean = true

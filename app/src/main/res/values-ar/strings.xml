@@ -18,6 +18,7 @@
     <string name="topbar_new_goal">هدف جديد</string>
     <string name="topbar_edit_goal">تعديل الهدف</string>
     <string name="topbar_missed_prayers">الصلوات الفائتة</string>
+    <string name="topbar_backup">النسخ الاحتياطي والاستعادة</string>
     <string name="topbar_default">Salat Tracker</string>
     <string name="cd_menu">القائمة</string>
     <string name="action_add_goal">إضافة هدف</string>
@@ -86,7 +87,7 @@
     <string name="onboarding_location_title">أوقات صلاة دقيقة</string>
     <string name="onboarding_location_desc">نحتاج إلى موقعك لحساب أوقات الصلاة بدقّة بناءً على مدينتك الحالية. يضمن ذلك بقاء صلواتك اليومية متزامنة مع موضع الشمس.</string>
     <string name="onboarding_allow_location">السماح بالوصول للموقع</string>
-    <string name="onboarding_location_privacy">تُخزَّن بياناتك محليًا ولا تُشارَك أبدًا.</string>
+    <string name="onboarding_location_privacy">تُخزَّن على هذا الجهاز. تُضمَّن في نسخة Google Drive الاحتياطية إذا فعّلتها.</string>
     <string name="onboarding_notifications_title">ابقَ على تواصل</string>
     <string name="onboarding_notifications_subtitle">فعّل التذكيرات حتى لا تفوتك صلاة أو محطة روحية.</string>
     <string name="prayer_reminders">تذكيرات الصلاة</string>
@@ -149,6 +150,9 @@
     <string name="settings_language">اللغة</string>
     <string name="settings_theme">المظهر</string>
     <string name="settings_24hour">تنسيق 24 ساعة</string>
+    <string name="settings_backup_status_off">غير مفعّل</string>
+    <string name="settings_backup_status_connected">آخر نسخة احتياطية %1$s</string>
+    <string name="settings_backup_action_needed">يتطلب إجراء</string>
 
     <string name="stats_highest_streaks">أعلى المتتاليات</string>
     <string name="stats_best_per_prayer">أفضل سلسلة لكل صلاة</string>
@@ -247,4 +251,41 @@
     <string name="notification_channel_goal_desc">تذكيرات بأهدافك الروحية</string>
     <string name="notification_goal_title">حان وقت: %1$s</string>
     <string name="notification_goal_body">اضغط لتسجيل تقدّمك في الهدف.</string>
+
+    <!-- Backup & Restore -->
+    <string name="backup_title">النسخ الاحتياطي والاستعادة</string>
+    <string name="backup_subtitle">حافظ على سجل صلواتك وأهدافك وإعداداتك آمنة.</string>
+    <string name="backup_not_connected_desc">انسخ بياناتك احتياطيًا إلى Google Drive الخاص بك. أنت فقط من يمكنه الوصول إليها — ولا نحن.</string>
+    <string name="backup_connect">ربط حساب Google</string>
+    <string name="backup_switch_account">تبديل الحساب</string>
+    <string name="backup_connected_account">الحساب</string>
+    <string name="backup_last_backup">آخر نسخة احتياطية</string>
+    <string name="backup_last_backup_never">أبدًا</string>
+    <string name="backup_back_up_now">نسخ احتياطي الآن</string>
+    <string name="backup_restore">استعادة</string>
+    <string name="backup_disconnect">إلغاء الربط</string>
+    <string name="backup_disconnect_title">إلغاء ربط حساب Google؟</string>
+    <string name="backup_disconnect_desc">تبقى نسختك الاحتياطية في Google Drive، لكن هذا الجهاز سيتوقف عن النسخ الاحتياطي التلقائي حتى تعيد الربط.</string>
+    <string name="backup_conflict_title">تم العثور على نسخة احتياطية</string>
+    <string name="backup_conflict_desc">توجد نسخة احتياطية لهذا الحساب بالفعل، من %1$s في %2$s. الاستعادة تستبدل بيانات هذا الجهاز بها؛ أما الاستبدال فيستبدل تلك النسخة ببيانات هذا الجهاز.</string>
+    <string name="backup_conflict_restore">استعادة هذه النسخة الاحتياطية</string>
+    <string name="backup_conflict_replace">استبدال ببيانات هذا الجهاز</string>
+    <string name="backup_unknown_device">جهاز آخر</string>
+    <string name="backup_onboarding_restore_action">استعادة من Google Drive</string>
+    <string name="backup_attention_sign_in">يلزم تسجيل الدخول إلى Google — اضغط ربط للمتابعة.</string>
+    <string name="backup_attention_remote_changed">تم العثور على نسخة احتياطية مختلفة. اختر كيفية المتابعة أدناه.</string>
+    <string name="backup_attention_local_missing">هذا الجهاز يحتوي على بيانات أقل من النسخة الاحتياطية. اختر كيفية المتابعة أدناه.</string>
+    <string name="backup_attention_storage_full">مساحة Google Drive الخاصة بك ممتلئة.</string>
+
+    <string name="notification_channel_backup_id">backup_status</string>
+    <string name="notification_channel_backup_name">حالة النسخ الاحتياطي</string>
+    <string name="notification_channel_backup_desc">يُنبّهك عندما تتطلب نسخة Google Drive الاحتياطية إجراءً</string>
+    <string name="backup_notif_sign_in_title">النسخ الاحتياطي يحتاج اهتمامك</string>
+    <string name="backup_notif_sign_in_body">سجّل الدخول مجددًا لمواصلة النسخ الاحتياطي إلى Google Drive.</string>
+    <string name="backup_notif_remote_changed_title">تم العثور على نسخة احتياطية مختلفة</string>
+    <string name="backup_notif_remote_changed_body">افتح Salat Tracker لاختيار كيفية المتابعة.</string>
+    <string name="backup_notif_local_missing_title">تم إيقاف النسخ الاحتياطي مؤقتًا</string>
+    <string name="backup_notif_local_missing_body">هذا الجهاز يحتوي على بيانات أقل من نسختك الاحتياطية. افتح التطبيق لاختيار كيفية المتابعة.</string>
+    <string name="backup_notif_storage_full_title">مساحة Google Drive ممتلئة</string>
+    <string name="backup_notif_storage_full_body">أخلِ مساحة في Google Drive لمواصلة النسخ الاحتياطي.</string>
 </resources>

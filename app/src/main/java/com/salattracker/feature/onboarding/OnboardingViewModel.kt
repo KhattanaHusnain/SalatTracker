@@ -26,6 +26,11 @@ data class OnboardingUiState(
     val prayerRemindersEnabled: Boolean = true,
     val dailyTipsEnabled: Boolean = false,
     val isFinishing: Boolean = false,
+    /** True while the "Restore from Google Drive" flow (feature/backup's BackupEntry) is shown
+     * in place of the normal onboarding steps. A successful restore sets onboarding_completed
+     * itself (see BackupLocalSource.applySnapshot), so MainActivity's reactive gate swaps to the
+     * main app on its own — no extra signal needed here. */
+    val showRestore: Boolean = false,
 )
 
 @HiltViewModel
@@ -51,6 +56,9 @@ class OnboardingViewModel @Inject constructor(
         val prev = OnboardingStep.values().getOrNull(_uiState.value.step.ordinal - 1) ?: return
         _uiState.update { it.copy(step = prev) }
     }
+
+    fun onRestoreClick() = _uiState.update { it.copy(showRestore = true) }
+    fun onRestoreDismiss() = _uiState.update { it.copy(showRestore = false) }
 
     /**
      * Persists every onboarding choice and marks onboarding complete. Setting

@@ -6,8 +6,10 @@ import androidx.work.WorkManager
 import com.salattracker.core.locale.LocaleManager
 import com.salattracker.data.location.LocationProvider
 import com.salattracker.domain.model.AppLanguage
+import com.salattracker.domain.model.BackupAttention
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.ThemeMode
+import com.salattracker.domain.repository.BackupRepository
 import com.salattracker.domain.repository.PrayerRepository
 import com.salattracker.domain.repository.SettingsRepository
 import com.salattracker.notification.PrayerReminderWorker
@@ -47,6 +49,11 @@ data class SettingsUiState(
     val isSaving: Boolean = false,
     val error: String? = null,
     val saveSuccess: Boolean = false,
+    // Backup status, for the "Backup & Restore" card's subtitle only — the full
+    // flow (connect/back up/restore) lives in feature/backup, not here.
+    val backupConnected: Boolean = false,
+    val backupAttention: BackupAttention = BackupAttention.NONE,
+    val backupLastBackupAt: Long? = null,
 )
 
 @HiltViewModel
@@ -54,13 +61,34 @@ class SettingsViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val prayerRepository: PrayerRepository,
     private val locationProvider: LocationProvider,
+    private val backupRepository: BackupRepository,
     private val workManager: WorkManager,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
-    init { loadSettings() }
+    init {
+        loadSettings()
+        observeBackupStatus()
+    }
+
+    // Separate collector from loadSettings(): backup status lives in its own DataStore
+    // file and changes independently of salat_user_prefs, so it gets its own stream
+    // rather than being folded into the settings-load collector above.
+    private fun observeBackupStatus() {
+        viewModelScope.launch {
+            backupRepository.observeStatus().collect { status ->
+                _uiState.update {
+                    it.copy(
+                        backupConnected   = status.connected,
+                        backupAttention    = status.attention,
+                        backupLastBackupAt = status.lastBackupAt,
+                    )
+                }
+            }
+        }
+    }
 
     private fun loadSettings() {
         viewModelScope.launch {
