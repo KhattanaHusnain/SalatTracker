@@ -34,6 +34,7 @@ fun StatsScreen(
     uiState: StatsUiState,
     onStatusTrendPeriodChanged: (StatsPeriod) -> Unit,
     onGoalsBarPeriodChanged: (StatsPeriod) -> Unit,
+    onAddGoalClick: () -> Unit = {},
     onErrorDismiss: () -> Unit = {},
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
@@ -50,7 +51,7 @@ fun StatsScreen(
             HighestStreaksCard(streaks = uiState.highestStreaks)
             MetricsSection(state = uiState.metrics)
             StatusTrendCard(state = uiState.statusTrend, onPeriodChanged = onStatusTrendPeriodChanged)
-            DailyGoalsBarCard(state = uiState.goalsBar, onPeriodChanged = onGoalsBarPeriodChanged)
+            DailyGoalsBarCard(state = uiState.goalsBar, onPeriodChanged = onGoalsBarPeriodChanged, onAddGoalClick = onAddGoalClick)
 
             if (uiState.showAchievement) AchievementBanner(streak = uiState.currentStreak)
         }
@@ -382,7 +383,7 @@ private fun BarChart(items: List<BarChartItem>) {
 // ── Daily goals bar chart ──────────────────────────────────────────────────────
 
 @Composable
-private fun DailyGoalsBarCard(state: GoalsBarUiState, onPeriodChanged: (StatsPeriod) -> Unit) {
+private fun DailyGoalsBarCard(state: GoalsBarUiState, onPeriodChanged: (StatsPeriod) -> Unit, onAddGoalClick: () -> Unit) {
     val perDay = state.period.days <= 28
     val isEmpty = if (perDay) state.dailyPoints.isEmpty() else state.items.isEmpty()
 
@@ -399,7 +400,10 @@ private fun DailyGoalsBarCard(state: GoalsBarUiState, onPeriodChanged: (StatsPer
             if (state.isLoading) {
                 BarChartSkeleton()
             } else if (isEmpty) {
-                Box(Modifier.fillMaxWidth().padding(vertical = 24.dp), contentAlignment = Alignment.Center) {
+                Box(
+                    Modifier.fillMaxWidth().clickable(onClick = onAddGoalClick).padding(vertical = 24.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
                     Text(
                         stringResource(R.string.stats_no_active_goals),
                         color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = InterFamily, textAlign = TextAlign.Center,
@@ -507,5 +511,6 @@ fun StatsScreenPreview() {
         ),
         onStatusTrendPeriodChanged = {},
         onGoalsBarPeriodChanged    = {},
+        onAddGoalClick             = {},
     )
 }

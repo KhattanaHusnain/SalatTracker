@@ -41,6 +41,18 @@ class DataStoreSettingsRepository @Inject constructor(
         // Per-prayer offset: "reminder_offset_FAJR" etc.
         fun reminderOffset(type: PrayerType) =
             intPreferencesKey("reminder_offset_${type.name}")
+
+        fun reminderSnooze(type: PrayerType) =
+            intPreferencesKey("reminder_snooze_${type.name}")
+
+        fun reminderFullScreen(type: PrayerType) =
+            booleanPreferencesKey("reminder_fullscreen_${type.name}")
+
+        fun reminderVibration(type: PrayerType) =
+            booleanPreferencesKey("reminder_vibration_${type.name}")
+
+        fun reminderSound(type: PrayerType) =
+            stringPreferencesKey("reminder_sound_${type.name}")
     }
 
     // ── Read ──────────────────────────────────────────────────────────────────
@@ -66,6 +78,18 @@ class DataStoreSettingsRepository @Inject constructor(
         },
         reminderOffsetMinutes = PrayerType.values().associateWith { type ->
             this[Keys.reminderOffset(type)] ?: 0
+        },
+        reminderSnoozeMinutes = PrayerType.values().associateWith { type ->
+            this[Keys.reminderSnooze(type)] ?: 10
+        },
+        reminderFullScreenAlert = PrayerType.values().associateWith { type ->
+            this[Keys.reminderFullScreen(type)] ?: true
+        },
+        reminderVibrationEnabled = PrayerType.values().associateWith { type ->
+            this[Keys.reminderVibration(type)] ?: true
+        },
+        reminderSoundUri      = PrayerType.values().associateWith { type ->
+            this[Keys.reminderSound(type)]
         },
         use24HourFormat      = this[Keys.USE_24_HOUR]            ?: false,
         language             = this[Keys.LANGUAGE]?.let { runCatching { AppLanguage.valueOf(it) }.getOrNull() }
@@ -126,5 +150,31 @@ class DataStoreSettingsRepository @Inject constructor(
 
     override suspend fun setOnboardingCompleted(completed: Boolean) {
         dataStore.edit { it[Keys.ONBOARDING_COMPLETED] = completed }
+    }
+
+    override suspend fun setReminderEnabled(type: PrayerType, enabled: Boolean) {
+        dataStore.edit { it[Keys.reminderEnabled(type)] = enabled }
+    }
+
+    override suspend fun setReminderOffsetMinutes(type: PrayerType, minutes: Int) {
+        dataStore.edit { it[Keys.reminderOffset(type)] = minutes }
+    }
+
+    override suspend fun setReminderSnoozeMinutes(type: PrayerType, minutes: Int) {
+        dataStore.edit { it[Keys.reminderSnooze(type)] = minutes }
+    }
+
+    override suspend fun setReminderFullScreenAlert(type: PrayerType, enabled: Boolean) {
+        dataStore.edit { it[Keys.reminderFullScreen(type)] = enabled }
+    }
+
+    override suspend fun setReminderVibrationEnabled(type: PrayerType, enabled: Boolean) {
+        dataStore.edit { it[Keys.reminderVibration(type)] = enabled }
+    }
+
+    override suspend fun setReminderSoundUri(type: PrayerType, uri: String?) {
+        dataStore.edit { prefs ->
+            if (uri == null) prefs.remove(Keys.reminderSound(type)) else prefs[Keys.reminderSound(type)] = uri
+        }
     }
 }

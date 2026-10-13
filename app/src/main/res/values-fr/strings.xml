@@ -5,6 +5,7 @@
     <string name="nav_home">Accueil</string>
     <string name="nav_calendar">Calendrier</string>
     <string name="nav_qaza">Qaza</string>
+    <string name="nav_goals">Objectifs</string>
     <string name="nav_stats">Stats</string>
     <string name="nav_settings">Réglages</string>
 
@@ -21,6 +22,7 @@
     <string name="topbar_backup">Sauvegarde et restauration</string>
     <string name="topbar_default">Salat Tracker</string>
     <string name="cd_menu">Menu</string>
+    <string name="cd_back">Retour</string>
     <string name="action_add_goal">Ajouter un objectif</string>
     <string name="action_bulk_update">Mise à jour groupée</string>
 
@@ -66,6 +68,8 @@
     <string name="action_ok">OK</string>
     <string name="action_cancel">Annuler</string>
     <string name="action_delete">Supprimer</string>
+    <string name="action_discard">Abandonner</string>
+    <string name="action_keep_editing">Continuer la modification</string>
     <string name="action_done">Terminé</string>
     <string name="action_continue">Continuer</string>
     <string name="action_next">Suivant</string>
@@ -150,9 +154,20 @@
     <string name="settings_language">Langue</string>
     <string name="settings_theme">Thème</string>
     <string name="settings_24hour">Format 24 heures</string>
-    <string name="settings_backup_status_off">Désactivée</string>
-    <string name="settings_backup_status_connected">Dernière sauvegarde %1$s</string>
-    <string name="settings_backup_action_needed">Action requise</string>
+    <string name="settings_discard_title">Abandonner les modifications ?</string>
+    <string name="settings_discard_desc">Vous avez des modifications non enregistrées. Quitter maintenant les abandonnera.</string>
+
+    <string name="reminders_snooze_length">Durée de report</string>
+    <string name="reminders_full_screen_alert">Alerte plein écran</string>
+    <string name="reminders_vibration">Vibration</string>
+    <string name="reminders_sound">Son</string>
+    <string name="reminders_sound_azan">Azan (par défaut de l\'app)</string>
+    <string name="reminders_sound_default">Par défaut de l\'appareil</string>
+    <string name="reminders_sound_silent">Silencieux</string>
+    <string name="reminders_sound_choose_device">Choisir sur l\'appareil…</string>
+    <string name="reminders_sound_preview">Aperçu du son</string>
+    <string name="reminders_sound_silenced_banner">L\'appareil est en mode silencieux — aucun son ne sera joué maintenant</string>
+    <string name="reminders_offset_minutes_value">%1$d min</string>
 
     <string name="stats_highest_streaks">Meilleures séries</string>
     <string name="stats_best_per_prayer">Votre meilleure série par prière</string>
@@ -164,7 +179,7 @@
     <string name="stats_composition_over">Composition sur %1$s</string>
     <string name="stats_daily_goals">Objectifs du jour</string>
     <string name="stats_completion_rate">Taux d\'achèvement</string>
-    <string name="stats_no_active_goals">Aucun objectif actif — définissez-en un depuis l\'écran Objectifs.</string>
+    <string name="stats_no_active_goals">Aucun objectif actif — appuyez pour en définir un.</string>
     <string name="stats_achievement_title">Esprit constant</string>
     <string name="stats_achievement_desc">Vous avez accompli toutes les prières pendant %1$d jours d\'affilée. Que votre constance soit récompensée.</string>
 
@@ -237,12 +252,9 @@
 
     <string name="reminder_prayer_title">Prière %1$s</string>
     <string name="reminder_scheduled_for">Prévu pour %1$s</string>
-    <string name="reminder_snooze">Reporter 10 min</string>
+    <string name="reminder_snooze">Reporter %1$d min</string>
     <string name="reminder_dismiss">IGNORER L\'ALERTE</string>
 
-    <string name="notification_channel_prayer_id">prayer_reminders</string>
-    <string name="notification_channel_prayer_name">Rappels de prière</string>
-    <string name="notification_channel_prayer_desc">Rappels des horaires de prière quotidiens</string>
     <string name="notification_prayer_title">C\'est l\'heure de %1$s</string>
     <string name="notification_prayer_body">L\'heure de la prière %1$s est arrivée</string>
 
@@ -254,6 +266,7 @@
 
     <!-- Backup & Restore -->
     <string name="backup_title">Sauvegarde et restauration</string>
+    <string name="backup_action_needed">Action requise</string>
     <string name="backup_subtitle">Gardez votre historique de prières, vos objectifs et vos réglages en sécurité.</string>
     <string name="backup_not_connected_desc">Sauvegardez vos données sur votre propre Google Drive. Vous seul pouvez y accéder — pas même nous.</string>
     <string name="backup_connect">Connecter un compte Google</string>

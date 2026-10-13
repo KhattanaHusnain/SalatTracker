@@ -6,18 +6,13 @@ import androidx.work.WorkManager
 import com.salattracker.core.locale.LocaleManager
 import com.salattracker.data.location.LocationProvider
 import com.salattracker.domain.model.AppLanguage
-import com.salattracker.domain.model.BackupAttention
-import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.ThemeMode
-import com.salattracker.domain.repository.BackupRepository
-import com.salattracker.domain.repository.PrayerRepository
 import com.salattracker.domain.repository.SettingsRepository
+import com.salattracker.domain.repository.UserPrefs
 import com.salattracker.notification.PrayerReminderWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.time.LocalDate
-import java.time.LocalTime
 import javax.inject.Inject
 
 enum class CalculationMethod(val id: Int, val label: String) {
@@ -28,20 +23,12 @@ enum class CalculationMethod(val id: Int, val label: String) {
     KARACHI(1,      "University of Islamic Sciences, Karachi"),
 }
 
-data class ReminderSetting(
-    val prayerType: PrayerType,
-    val enabled: Boolean,
-    val offsetMinutes: String,   // raw text as typed; parsed to Int only at save time
-    val prayerTime: LocalTime? = null,
-)
-
 data class SettingsUiState(
     val isLoading: Boolean = true,
     val useDeviceLocation: Boolean = true,
     val latitude: String = "",
     val longitude: String = "",
     val calculationMethod: CalculationMethod = CalculationMethod.MWL,
-    val reminders: List<ReminderSetting> = emptyList(),
     val use24HourFormat: Boolean = false,
     val language: AppLanguage = AppLanguage.ENGLISH,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
@@ -49,46 +36,27 @@ data class SettingsUiState(
     val isSaving: Boolean = false,
     val error: String? = null,
     val saveSuccess: Boolean = false,
-    // Backup status, for the "Backup & Restore" card's subtitle only — the full
-    // flow (connect/back up/restore) lives in feature/backup, not here.
-    val backupConnected: Boolean = false,
-    val backupAttention: BackupAttention = BackupAttention.NONE,
-    val backupLastBackupAt: Long? = null,
+    /** True while the "discard unsaved changes?" dialog is up, after the user tried to
+     * leave this screen (back arrow or system back) with unsaved edits. */
+    val showDiscardConfirm: Boolean = false,
 )
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
-    private val prayerRepository: PrayerRepository,
     private val locationProvider: LocationProvider,
-    private val backupRepository: BackupRepository,
     private val workManager: WorkManager,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
-    init {
-        loadSettings()
-        observeBackupStatus()
-    }
+    /** The persisted values as of the last DataStore emission (initial load, or right after a
+     * save round-trips back through observeSettings()). Compared against the live form fields
+     * to decide whether leaving the screen now would discard anything. */
+    private var lastKnownPrefs: UserPrefs? = null
 
-    // Separate collector from loadSettings(): backup status lives in its own DataStore
-    // file and changes independently of salat_user_prefs, so it gets its own stream
-    // rather than being folded into the settings-load collector above.
-    private fun observeBackupStatus() {
-        viewModelScope.launch {
-            backupRepository.observeStatus().collect { status ->
-                _uiState.update {
-                    it.copy(
-                        backupConnected   = status.connected,
-                        backupAttention    = status.attention,
-                        backupLastBackupAt = status.lastBackupAt,
-                    )
-                }
-            }
-        }
-    }
+    init { loadSettings() }
 
     private fun loadSettings() {
         viewModelScope.launch {
@@ -96,7 +64,7 @@ class SettingsViewModel @Inject constructor(
                 .onStart { _uiState.update { it.copy(isLoading = true) } }
                 .catch   { e -> _uiState.update { it.copy(isLoading = false, error = e.message) } }
                 .collect { prefs ->
-                    val times = prayerRepository.getCachedPrayerTimes(LocalDate.now())
+                    lastKnownPrefs = prefs
                     _uiState.update {
                         it.copy(
                             isLoading         = false,
@@ -106,14 +74,6 @@ class SettingsViewModel @Inject constructor(
                             calculationMethod = CalculationMethod.values()
                                 .firstOrNull { m -> m.id == prefs.calculationMethodId }
                                 ?: CalculationMethod.MWL,
-                            reminders         = PrayerType.values().map { type ->
-                                ReminderSetting(
-                                    prayerType    = type,
-                                    enabled       = prefs.reminderEnabled[type] ?: true,
-                                    offsetMinutes = (prefs.reminderOffsetMinutes[type] ?: 0).toString(),
-                                    prayerTime    = times?.get(type),
-                                )
-                            },
                             use24HourFormat   = prefs.use24HourFormat,
                             language          = prefs.language,
                             themeMode         = prefs.themeMode,
@@ -137,25 +97,6 @@ class SettingsViewModel @Inject constructor(
     }
     fun onCalculationMethodChanged(method: CalculationMethod) = _uiState.update { it.copy(calculationMethod = method) }
 
-    fun onReminderEnabledChanged(prayerType: PrayerType, enabled: Boolean) {
-        _uiState.update { state ->
-            state.copy(reminders = state.reminders.map { r ->
-                if (r.prayerType == prayerType) r.copy(enabled = enabled) else r
-            })
-        }
-    }
-
-    fun onReminderOffsetChanged(prayerType: PrayerType, offset: String) {
-        // Accept any in-progress input (empty, a lone "-", or a valid int) so the
-        // field's text always mirrors exactly what the user typed — parsed at save time.
-        if (offset.isNotEmpty() && offset != "-" && offset.toIntOrNull() == null) return
-        _uiState.update { state ->
-            state.copy(reminders = state.reminders.map { r ->
-                if (r.prayerType == prayerType) r.copy(offsetMinutes = offset) else r
-            })
-        }
-    }
-
     fun on24HourFormatChanged(enabled: Boolean) = _uiState.update { it.copy(use24HourFormat = enabled) }
     fun onLanguageChanged(language: AppLanguage) = _uiState.update { it.copy(language = language) }
     fun onThemeModeChanged(themeMode: ThemeMode) = _uiState.update { it.copy(themeMode = themeMode) }
@@ -166,20 +107,24 @@ class SettingsViewModel @Inject constructor(
             _uiState.update { it.copy(isSaving = true) }
             runCatching {
                 val state = _uiState.value
+                // Reminder enable/offset now live on their own screen (feature/reminders) with
+                // their own granular writes — pass the last-known values through unchanged
+                // rather than lose them, since this form no longer tracks them.
+                val baseline = lastKnownPrefs
                 settingsRepository.saveSettings(
                     useDeviceLocation     = state.useDeviceLocation,
                     latitude              = state.latitude.toDoubleOrNull() ?: 0.0,
                     longitude             = state.longitude.toDoubleOrNull() ?: 0.0,
                     calculationMethodId   = state.calculationMethod.id,
-                    reminderEnabled       = state.reminders.associate { it.prayerType to it.enabled },
-                    reminderOffsetMinutes = state.reminders.associate { it.prayerType to (it.offsetMinutes.toIntOrNull() ?: 0) },
+                    reminderEnabled       = baseline?.reminderEnabled ?: UserPrefs().reminderEnabled,
+                    reminderOffsetMinutes = baseline?.reminderOffsetMinutes ?: UserPrefs().reminderOffsetMinutes,
                     use24HourFormat       = state.use24HourFormat,
                     language              = state.language,
                     themeMode             = state.themeMode,
                     dailyTipsEnabled      = state.dailyTipsEnabled,
                 )
             }.onSuccess {
-                // Reminder settings changed — reschedule alarms with the new values right away.
+                // Location/calculation-method may have changed prayer times — reschedule alarms.
                 PrayerReminderWorker.enqueueOneTime(workManager)
                 _uiState.update { it.copy(isSaving = false, saveSuccess = true) }
                 // Apply language app-wide (no-op if unchanged; recreates the UI if it changed).
@@ -192,4 +137,34 @@ class SettingsViewModel @Inject constructor(
 
     fun clearError()        = _uiState.update { it.copy(error = null) }
     fun clearSaveSuccess()  = _uiState.update { it.copy(saveSuccess = false) }
+
+    // ── Unsaved-changes guard ─────────────────────────────────────────────────
+    // Settings used to be a bottom-nav tab, so its ViewModel just survived a tab switch and
+    // unsaved edits sat there until the user came back. Now it is a screen you navigate away
+    // from, so leaving without saving needs to be an explicit choice instead of a silent loss.
+
+    /** Compares the live form against [lastKnownPrefs]. False before the first load, so the
+     * back arrow/BackHandler never blocks leaving before there is anything to compare against. */
+    fun hasUnsavedChanges(): Boolean {
+        val baseline = lastKnownPrefs ?: return false
+        val state = _uiState.value
+        val sameLocation = state.useDeviceLocation == baseline.useDeviceLocation &&
+            (state.latitude.toDoubleOrNull() ?: 0.0) == baseline.latitude &&
+            (state.longitude.toDoubleOrNull() ?: 0.0) == baseline.longitude
+        val sameMethod = state.calculationMethod.id == baseline.calculationMethodId
+        val sameDisplay = state.use24HourFormat == baseline.use24HourFormat
+        val sameAppearance = state.language == baseline.language &&
+            state.themeMode == baseline.themeMode &&
+            state.dailyTipsEnabled == baseline.dailyTipsEnabled
+        return !(sameLocation && sameMethod && sameDisplay && sameAppearance)
+    }
+
+    /** Called by the screen's BackHandler when [hasUnsavedChanges] is true — shows the
+     * confirmation instead of letting the back press fall through to navigation. */
+    fun onBackRequested() = _uiState.update { it.copy(showDiscardConfirm = true) }
+
+    fun onKeepEditingClick() = _uiState.update { it.copy(showDiscardConfirm = false) }
+
+    /** Only hides the dialog; the Entry performs the actual navigation afterward. */
+    fun onDiscardConfirm() = _uiState.update { it.copy(showDiscardConfirm = false) }
 }

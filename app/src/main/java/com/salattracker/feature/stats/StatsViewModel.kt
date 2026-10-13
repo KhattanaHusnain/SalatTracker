@@ -96,6 +96,7 @@ class StatsViewModel @Inject constructor(
         loadStatusTrend(StatsPeriod.WEEK)
         loadGoalsBar(StatsPeriod.WEEK)
         observeStreaks()
+        observeGoalChanges()
     }
 
     fun onStatusTrendPeriodChanged(period: StatsPeriod) {
@@ -176,6 +177,22 @@ class StatsViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(currentStreak = current, showAchievement = current >= 5, highestStreaks = highest)
                 }
+                // A prayer was marked somewhere (this screen or another) — keep the week's
+                // metrics and trend chart in step. loadMetrics/loadStatusTrend never flip
+                // isLoading themselves (only the explicit period-change handlers above do),
+                // so this never flashes a skeleton over already-visible data.
+                loadMetrics(_uiState.value.metrics.period)
+                loadStatusTrend(_uiState.value.statusTrend.period)
+            }
+        }
+    }
+
+    private fun observeGoalChanges() {
+        viewModelScope.launch {
+            // Live so the goals chart stays fresh when a goal is added, checked in, or edited
+            // from elsewhere — loadGoalsBar never flips isLoading itself either.
+            goalRepository.observeActiveGoalsWithProgress().collect {
+                loadGoalsBar(_uiState.value.goalsBar.period)
             }
         }
     }

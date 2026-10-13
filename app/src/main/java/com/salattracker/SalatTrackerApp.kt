@@ -42,20 +42,11 @@ class SalatTrackerApp : Application(), Configuration.Provider {
         BackupWorker.enqueuePeriodic(workManager)
     }
 
+    // Per-prayer channels (sound/vibration vary by prayer) are created lazily, right before
+    // each prayer's first notification fires — see PrayerReminderChannels.
     private fun createNotificationChannels() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val manager = getSystemService(NotificationManager::class.java)
-
-            manager.createNotificationChannel(
-                NotificationChannel(
-                    getString(R.string.notification_channel_prayer_id),
-                    getString(R.string.notification_channel_prayer_name),
-                    NotificationManager.IMPORTANCE_HIGH
-                ).apply {
-                    description =
-                        getString(R.string.notification_channel_prayer_desc)
-                }
-            )
 
             manager.createNotificationChannel(
                 NotificationChannel(

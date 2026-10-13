@@ -59,4 +59,22 @@ class SettingsRepositoryImpl @Inject constructor(
     override suspend fun setAllRemindersEnabled(enabled: Boolean) = dataStore.setAllRemindersEnabled(enabled)
 
     override suspend fun setOnboardingCompleted(completed: Boolean) = dataStore.setOnboardingCompleted(completed)
+
+    override suspend fun setReminderEnabled(type: PrayerType, enabled: Boolean) =
+        dataStore.setReminderEnabled(type, enabled)
+
+    override suspend fun setReminderOffsetMinutes(type: PrayerType, minutes: Int) =
+        dataStore.setReminderOffsetMinutes(type, minutes)
+
+    override suspend fun setReminderSnoozeMinutes(type: PrayerType, minutes: Int) =
+        dataStore.setReminderSnoozeMinutes(type, minutes)
+
+    override suspend fun setReminderFullScreenAlert(type: PrayerType, enabled: Boolean) =
+        dataStore.setReminderFullScreenAlert(type, enabled)
+
+    override suspend fun setReminderVibrationEnabled(type: PrayerType, enabled: Boolean) =
+        dataStore.setReminderVibrationEnabled(type, enabled)
+
+    override suspend fun setReminderSoundUri(type: PrayerType, uri: String?) =
+        dataStore.setReminderSoundUri(type, uri)
 }

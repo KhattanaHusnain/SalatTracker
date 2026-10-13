@@ -48,6 +48,7 @@ fun PrayerReminderScreen(
     prayerType: PrayerType,
     scheduledTime: LocalTime?,
     verse: VerseInfo?,
+    snoozeMinutes: Int,
     onMark: (PrayerStatus) -> Unit,
     onSnooze: () -> Unit,
     onDismiss: () -> Unit,
@@ -184,7 +185,7 @@ fun PrayerReminderScreen(
                 )
                 ReminderActionTile(
                     iconRes  = R.drawable.ic_schedule,
-                    label    = stringResource(R.string.reminder_snooze),
+                    label    = stringResource(R.string.reminder_snooze, snoozeMinutes),
                     modifier = Modifier.weight(1f),
                     onClick  = onSnooze,
                 )
@@ -262,6 +263,7 @@ fun PrayerReminderScreenPreview() {
             text = "Maintain with care the [obligatory] prayers and [in particular] the middle [i.e., ʿaṣr] prayer and stand before Allāh, devoutly obedient.",
             citation = "Al-Baqarah 2:238",
         ),
+        snoozeMinutes = 10,
         onMark   = {},
         onSnooze = {},
         onDismiss = {},

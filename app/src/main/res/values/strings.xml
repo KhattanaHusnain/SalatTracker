@@ -6,6 +6,7 @@
     <string name="nav_home">Home</string>
     <string name="nav_calendar">Calendar</string>
     <string name="nav_qaza">Qaza</string>
+    <string name="nav_goals">Goals</string>
     <string name="nav_stats">Stats</string>
     <string name="nav_settings">Settings</string>
 
@@ -23,6 +24,7 @@
     <string name="topbar_backup">Backup &amp; Restore</string>
     <string name="topbar_default">Salat Tracker</string>
     <string name="cd_menu">Menu</string>
+    <string name="cd_back">Back</string>
     <string name="action_add_goal">Add Goal</string>
     <string name="action_bulk_update">Bulk Update</string>
 
@@ -74,6 +76,8 @@
     <string name="action_ok">OK</string>
     <string name="action_cancel">Cancel</string>
     <string name="action_delete">Delete</string>
+    <string name="action_discard">Discard</string>
+    <string name="action_keep_editing">Keep Editing</string>
     <string name="action_done">Done</string>
     <string name="action_continue">Continue</string>
     <string name="action_next">Next</string>
@@ -163,9 +167,21 @@
     <string name="settings_language">Language</string>
     <string name="settings_theme">Theme</string>
     <string name="settings_24hour">24-Hour Format</string>
-    <string name="settings_backup_status_off">Off</string>
-    <string name="settings_backup_status_connected">Last backup %1$s</string>
-    <string name="settings_backup_action_needed">Action needed</string>
+    <string name="settings_discard_title">Discard changes?</string>
+    <string name="settings_discard_desc">You have unsaved changes. Leaving now will discard them.</string>
+
+    <!-- Prayer Reminders -->
+    <string name="reminders_snooze_length">Snooze Length</string>
+    <string name="reminders_full_screen_alert">Full-Screen Alert</string>
+    <string name="reminders_vibration">Vibration</string>
+    <string name="reminders_sound">Sound</string>
+    <string name="reminders_sound_azan">Azan (App Default)</string>
+    <string name="reminders_sound_default">Device Default</string>
+    <string name="reminders_sound_silent">Silent</string>
+    <string name="reminders_sound_choose_device">Choose from Device…</string>
+    <string name="reminders_sound_preview">Preview sound</string>
+    <string name="reminders_sound_silenced_banner">Device is on silent — no sound will play right now</string>
+    <string name="reminders_offset_minutes_value">%1$d min</string>
 
     <!-- Stats -->
     <string name="stats_highest_streaks">Highest Streaks</string>
@@ -178,7 +194,7 @@
     <string name="stats_composition_over">Composition over %1$s</string>
     <string name="stats_daily_goals">Daily Goals</string>
     <string name="stats_completion_rate">Completion rate</string>
-    <string name="stats_no_active_goals">No active goals yet — set one from the Goals screen.</string>
+    <string name="stats_no_active_goals">No active goals yet — tap to set one.</string>
     <string name="stats_achievement_title">Consistent Spirit</string>
     <string name="stats_achievement_desc">You\'ve completed all prayers for %1$d days in a row. May your steadfastness be rewarded.</string>
 
@@ -257,13 +273,10 @@
     <!-- Prayer reminder (full screen) -->
     <string name="reminder_prayer_title">%1$s Prayer</string>
     <string name="reminder_scheduled_for">Scheduled for %1$s</string>
-    <string name="reminder_snooze">Snooze 10m</string>
+    <string name="reminder_snooze">Snooze %1$dm</string>
     <string name="reminder_dismiss">DISMISS ALERT</string>
 
     <!-- Notifications -->
-    <string name="notification_channel_prayer_id">prayer_reminders</string>
-    <string name="notification_channel_prayer_name">Prayer Reminders</string>
-    <string name="notification_channel_prayer_desc">Reminders for daily prayer times</string>
     <string name="notification_prayer_title">Time for %1$s</string>
     <string name="notification_prayer_body">%1$s prayer time has arrived</string>
 
@@ -275,6 +288,7 @@
 
     <!-- Backup & Restore -->
     <string name="backup_title">Backup &amp; Restore</string>
+    <string name="backup_action_needed">Action needed</string>
     <string name="backup_subtitle">Keep your prayer history, goals and settings safe.</string>
     <string name="backup_not_connected_desc">Back up your data to your own Google Drive. Only you can access it — not even we can see it.</string>
     <string name="backup_connect">Connect Google Account</string>

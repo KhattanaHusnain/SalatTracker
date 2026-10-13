@@ -5,6 +5,7 @@
     <string name="nav_home">الرئيسية</string>
     <string name="nav_calendar">التقويم</string>
     <string name="nav_qaza">القضاء</string>
+    <string name="nav_goals">الأهداف</string>
     <string name="nav_stats">الإحصائيات</string>
     <string name="nav_settings">الإعدادات</string>
 
@@ -21,6 +22,7 @@
     <string name="topbar_backup">النسخ الاحتياطي والاستعادة</string>
     <string name="topbar_default">Salat Tracker</string>
     <string name="cd_menu">القائمة</string>
+    <string name="cd_back">رجوع</string>
     <string name="action_add_goal">إضافة هدف</string>
     <string name="action_bulk_update">تحديث جماعي</string>
 
@@ -66,6 +68,8 @@
     <string name="action_ok">حسنًا</string>
     <string name="action_cancel">إلغاء</string>
     <string name="action_delete">حذف</string>
+    <string name="action_discard">تجاهل</string>
+    <string name="action_keep_editing">متابعة التعديل</string>
     <string name="action_done">تم</string>
     <string name="action_continue">متابعة</string>
     <string name="action_next">التالي</string>
@@ -150,9 +154,20 @@
     <string name="settings_language">اللغة</string>
     <string name="settings_theme">المظهر</string>
     <string name="settings_24hour">تنسيق 24 ساعة</string>
-    <string name="settings_backup_status_off">غير مفعّل</string>
-    <string name="settings_backup_status_connected">آخر نسخة احتياطية %1$s</string>
-    <string name="settings_backup_action_needed">يتطلب إجراء</string>
+    <string name="settings_discard_title">تجاهل التغييرات؟</string>
+    <string name="settings_discard_desc">لديك تغييرات غير محفوظة. مغادرة الشاشة الآن ستؤدي إلى تجاهلها.</string>
+
+    <string name="reminders_snooze_length">مدة التأجيل</string>
+    <string name="reminders_full_screen_alert">تنبيه ملء الشاشة</string>
+    <string name="reminders_vibration">الاهتزاز</string>
+    <string name="reminders_sound">النغمة</string>
+    <string name="reminders_sound_azan">الأذان (افتراضي التطبيق)</string>
+    <string name="reminders_sound_default">افتراضي الجهاز</string>
+    <string name="reminders_sound_silent">صامت</string>
+    <string name="reminders_sound_choose_device">اختر من الجهاز…</string>
+    <string name="reminders_sound_preview">معاينة الصوت</string>
+    <string name="reminders_sound_silenced_banner">جهازك في الوضع الصامت — لن يتم تشغيل أي صوت الآن</string>
+    <string name="reminders_offset_minutes_value">%1$d د</string>
 
     <string name="stats_highest_streaks">أعلى المتتاليات</string>
     <string name="stats_best_per_prayer">أفضل سلسلة لكل صلاة</string>
@@ -164,7 +179,7 @@
     <string name="stats_composition_over">التوزيع خلال %1$s</string>
     <string name="stats_daily_goals">الأهداف اليومية</string>
     <string name="stats_completion_rate">معدّل الإنجاز</string>
-    <string name="stats_no_active_goals">لا توجد أهداف نشطة بعد — حدّد واحدًا من شاشة الأهداف.</string>
+    <string name="stats_no_active_goals">لا توجد أهداف نشطة بعد — اضغط لتحديد هدف.</string>
     <string name="stats_achievement_title">روح ثابتة</string>
     <string name="stats_achievement_desc">لقد أكملت جميع الصلوات لمدة %1$d أيام متتالية. جعل الله ثباتك في ميزان حسناتك.</string>
 
@@ -237,12 +252,9 @@
 
     <string name="reminder_prayer_title">صلاة %1$s</string>
     <string name="reminder_scheduled_for">مجدولة في %1$s</string>
-    <string name="reminder_snooze">تأجيل 10 د</string>
+    <string name="reminder_snooze">تأجيل %1$d د</string>
     <string name="reminder_dismiss">تجاهل التنبيه</string>
 
-    <string name="notification_channel_prayer_id">prayer_reminders</string>
-    <string name="notification_channel_prayer_name">تذكيرات الصلاة</string>
-    <string name="notification_channel_prayer_desc">تذكيرات بأوقات الصلاة اليومية</string>
     <string name="notification_prayer_title">حان وقت %1$s</string>
     <string name="notification_prayer_body">حان وقت صلاة %1$s</string>
 
@@ -254,6 +266,7 @@
 
     <!-- Backup & Restore -->
     <string name="backup_title">النسخ الاحتياطي والاستعادة</string>
+    <string name="backup_action_needed">يتطلب إجراء</string>
     <string name="backup_subtitle">حافظ على سجل صلواتك وأهدافك وإعداداتك آمنة.</string>
     <string name="backup_not_connected_desc">انسخ بياناتك احتياطيًا إلى Google Drive الخاص بك. أنت فقط من يمكنه الوصول إليها — ولا نحن.</string>
     <string name="backup_connect">ربط حساب Google</string>

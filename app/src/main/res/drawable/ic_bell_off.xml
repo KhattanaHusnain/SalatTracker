@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tabler Icons (MIT) — https://tabler.io/icons, icon: BellOff -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#000000"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M3,3 L21,21" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#000000"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M17,17 h-13 a4,4,0,0,0,2,-3 v-3 a7,7,0,0,1,1.279,-3.716 m2.072,-1.934 c0.209,-0.127,0.425,-0.244,0.649,-0.35 a2,2,0,1,1,4,0 a7,7,0,0,1,4,6 v3" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#000000"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M9,17 v1 a3,3,0,0,0,6,0 v-1" />
+</vector>

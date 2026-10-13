@@ -9,6 +9,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.salattracker.R
 import com.salattracker.domain.repository.GoalRepository
+import com.salattracker.feature.main.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -56,12 +57,22 @@ class GoalReminderReceiver : BroadcastReceiver() {
     }
 
     private fun showNotification(context: Context, goalId: Long, goalName: String) {
+        val contentIntent = Intent(context, MainActivity::class.java).apply {
+            putExtra(MainActivity.EXTRA_OPEN_ROUTE, MainActivity.ROUTE_GOALS)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        val contentPendingIntent = PendingIntent.getActivity(
+            context, notificationIdFor(goalId), contentIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+
         val notification = NotificationCompat.Builder(context, context.getString(R.string.notification_channel_goal_id))
             .setSmallIcon(R.drawable.ic_auto_awesome)
             .setContentTitle(context.getString(R.string.notification_goal_title, goalName))
             .setContentText(context.getString(R.string.notification_goal_body))
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
+            .setContentIntent(contentPendingIntent)
             .addAction(action(context, goalId, goalName, ACTION_CHECK_IN, R.drawable.ic_add, "Check-in"))
             .addAction(action(context, goalId, goalName, ACTION_SNOOZE, R.drawable.ic_schedule, "Snooze 10m"))
             .build()

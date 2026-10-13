@@ -5,6 +5,11 @@ import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.ThemeMode
 import kotlinx.coroutines.flow.Flow
 
+/** Sentinel for [UserPrefs.reminderSoundUri]: the user explicitly chose the device's own
+ * default notification sound, as opposed to never having touched the setting (null, which
+ * means the app's own default — the bundled Azan — applies instead). */
+const val DEVICE_DEFAULT_SOUND_URI = "device_default"
+
 /**
  * Domain-layer contract for user preferences.
  * Implemented in the data layer via DataStore.
@@ -51,6 +56,23 @@ interface SettingsRepository {
 
     /** Marks first-run onboarding as finished so it never shows again. */
     suspend fun setOnboardingCompleted(completed: Boolean)
+
+    // ── Prayer Reminders screen — granular, live-apply writes ──────────────────
+
+    suspend fun setReminderEnabled(type: PrayerType, enabled: Boolean)
+
+    suspend fun setReminderOffsetMinutes(type: PrayerType, minutes: Int)
+
+    suspend fun setReminderSnoozeMinutes(type: PrayerType, minutes: Int)
+
+    suspend fun setReminderFullScreenAlert(type: PrayerType, enabled: Boolean)
+
+    suspend fun setReminderVibrationEnabled(type: PrayerType, enabled: Boolean)
+
+    /** Null = app default (Azan), [DEVICE_DEFAULT_SOUND_URI] = the device's own default sound
+     * explicitly chosen, "" = Silent (the ringtone picker returns a null Uri for Silent,
+     * re-encoded here so it stays distinguishable from "never touched"), else a content:// URI. */
+    suspend fun setReminderSoundUri(type: PrayerType, uri: String?)
 }
 
 /**
@@ -67,6 +89,15 @@ data class UserPrefs(
         .associateWith { true },
     val reminderOffsetMinutes: Map<PrayerType, Int> = PrayerType.values()
         .associateWith { 0 },
+    val reminderSnoozeMinutes: Map<PrayerType, Int> = PrayerType.values()
+        .associateWith { 10 },
+    val reminderFullScreenAlert: Map<PrayerType, Boolean> = PrayerType.values()
+        .associateWith { true },
+    val reminderVibrationEnabled: Map<PrayerType, Boolean> = PrayerType.values()
+        .associateWith { true },
+    /** Null = app default (Azan). See setReminderSoundUri for the full encoding. */
+    val reminderSoundUri: Map<PrayerType, String?> = PrayerType.values()
+        .associateWith { null },
     val use24HourFormat: Boolean = false,
     // App preferences collected at onboarding (language/theme stored but not yet applied).
     val language: AppLanguage = AppLanguage.ENGLISH,
