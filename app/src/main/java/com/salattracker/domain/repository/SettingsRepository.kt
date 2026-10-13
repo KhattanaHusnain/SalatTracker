@@ -51,6 +51,22 @@ interface SettingsRepository {
 
     /** Marks first-run onboarding as finished so it never shows again. */
     suspend fun setOnboardingCompleted(completed: Boolean)
+
+    // ── Prayer Reminders screen — granular, live-apply writes ──────────────────
+
+    suspend fun setReminderEnabled(type: PrayerType, enabled: Boolean)
+
+    suspend fun setReminderOffsetMinutes(type: PrayerType, minutes: Int)
+
+    suspend fun setReminderSnoozeMinutes(type: PrayerType, minutes: Int)
+
+    suspend fun setReminderFullScreenAlert(type: PrayerType, enabled: Boolean)
+
+    suspend fun setReminderVibrationEnabled(type: PrayerType, enabled: Boolean)
+
+    /** Null = device default, "" = Silent (the ringtone picker returns a null Uri for Silent,
+     * re-encoded here so it stays distinguishable from "never touched"), else a content:// URI. */
+    suspend fun setReminderSoundUri(type: PrayerType, uri: String?)
 }
 
 /**
@@ -67,6 +83,15 @@ data class UserPrefs(
         .associateWith { true },
     val reminderOffsetMinutes: Map<PrayerType, Int> = PrayerType.values()
         .associateWith { 0 },
+    val reminderSnoozeMinutes: Map<PrayerType, Int> = PrayerType.values()
+        .associateWith { 10 },
+    val reminderFullScreenAlert: Map<PrayerType, Boolean> = PrayerType.values()
+        .associateWith { true },
+    val reminderVibrationEnabled: Map<PrayerType, Boolean> = PrayerType.values()
+        .associateWith { true },
+    /** Null = device default, "" = Silent, else a content:// URI. See setReminderSoundUri. */
+    val reminderSoundUri: Map<PrayerType, String?> = PrayerType.values()
+        .associateWith { null },
     val use24HourFormat: Boolean = false,
     // App preferences collected at onboarding (language/theme stored but not yet applied).
     val language: AppLanguage = AppLanguage.ENGLISH,

@@ -48,6 +48,7 @@ import com.salattracker.feature.home.HomeViewModel
 import com.salattracker.feature.onboarding.OnboardingEntry
 import com.salattracker.feature.qaza.MissedPrayersEntry
 import com.salattracker.feature.qaza.QazaEntry
+import com.salattracker.feature.reminders.PrayerRemindersEntry
 import com.salattracker.feature.settings.SettingsEntry
 import com.salattracker.feature.stats.StatsEntry
 import com.salattracker.core.locale.LocaleManager
@@ -230,10 +231,11 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
         gesturesEnabled = drawerState.isOpen,
         drawerContent = {
             AppDrawer(
-                backupNeedsAttention = backupNeedsAttention,
-                onBulkUpdateClick    = { navController.push(Routes.BULK_UPDATE) },
-                onBackupClick        = { navController.push(Routes.BACKUP) },
-                onSettingsClick      = { navController.push(Routes.SETTINGS) },
+                backupNeedsAttention   = backupNeedsAttention,
+                onBulkUpdateClick      = { navController.push(Routes.BULK_UPDATE) },
+                onPrayerRemindersClick = { navController.push(Routes.PRAYER_REMINDERS) },
+                onBackupClick          = { navController.push(Routes.BACKUP) },
+                onSettingsClick        = { navController.push(Routes.SETTINGS) },
             )
         },
     ) {
@@ -297,6 +299,9 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                 }
                 composable(Routes.SETTINGS) {
                     SettingsEntry(onDiscardAndBack = { navController.popBackStack() })
+                }
+                composable(Routes.PRAYER_REMINDERS) {
+                    PrayerRemindersEntry()
                 }
                 composable(Routes.BACKUP) {
                     BackupEntry()
@@ -438,6 +443,7 @@ private fun topBarTitle(route: String?): String = stringResource(
         Routes.SETTINGS               -> R.string.topbar_settings
         Routes.BACKUP                 -> R.string.topbar_backup
         Routes.BULK_UPDATE            -> R.string.topbar_bulk_update
+        Routes.PRAYER_REMINDERS       -> R.string.prayer_reminders
         Routes.ADD_GOAL               -> R.string.topbar_new_goal
         Routes.MISSED_PRAYERS         -> R.string.topbar_missed_prayers
         else -> if (route?.startsWith("edit_goal") == true) R.string.topbar_edit_goal else R.string.topbar_default

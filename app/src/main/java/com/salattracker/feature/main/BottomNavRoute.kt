@@ -25,12 +25,13 @@ sealed class BottomNavRoute(
 
 /** Non-tab destinations, reached by pushing onto the back stack rather than switching tabs. */
 object Routes {
-    const val SETTINGS       = "settings"
-    const val BACKUP         = "backup"
-    const val BULK_UPDATE    = "bulk_update"
-    const val ADD_GOAL       = "add_goal"
-    const val EDIT_GOAL      = "edit_goal/{goalId}"
-    const val MISSED_PRAYERS = "missed_prayers"
+    const val SETTINGS         = "settings"
+    const val BACKUP           = "backup"
+    const val BULK_UPDATE      = "bulk_update"
+    const val PRAYER_REMINDERS = "prayer_reminders"
+    const val ADD_GOAL         = "add_goal"
+    const val EDIT_GOAL        = "edit_goal/{goalId}"
+    const val MISSED_PRAYERS   = "missed_prayers"
 
     fun editGoal(goalId: Long) = "edit_goal/$goalId"
 }

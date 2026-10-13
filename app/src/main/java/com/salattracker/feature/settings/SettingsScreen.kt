@@ -3,7 +3,6 @@ package com.salattracker.feature.settings
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -25,12 +24,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.*
-import com.salattracker.core.ui.label
 import com.salattracker.domain.model.AppLanguage
-import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.ThemeMode
-import java.time.LocalTime
-import java.time.format.DateTimeFormatter
 
 // ── Settings Screen ───────────────────────────────────────────────────────────
 
@@ -41,8 +36,6 @@ fun SettingsScreen(
     onLatitudeChanged: (String) -> Unit,
     onLongitudeChanged: (String) -> Unit,
     onCalculationMethodChanged: (CalculationMethod) -> Unit,
-    onReminderEnabledChanged: (PrayerType, Boolean) -> Unit,
-    onReminderOffsetChanged: (PrayerType, String) -> Unit,
     on24HourFormatChanged: (Boolean) -> Unit,
     onLanguageChanged: (AppLanguage) -> Unit,
     onThemeModeChanged: (ThemeMode) -> Unit,
@@ -85,21 +78,6 @@ fun SettingsScreen(
             CalculationSection(
                 selected  = uiState.calculationMethod,
                 onChanged = onCalculationMethodChanged,
-            )
-
-            // ── Reminders ─────────────────────────────────────────────────────
-            Row(
-                modifier              = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment     = Alignment.CenterVertically,
-            ) {
-                SettingsSectionLabel(stringResource(R.string.prayer_reminders), modifier = Modifier)
-                Text(stringResource(R.string.settings_minutes_offset), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily)
-            }
-            RemindersSection(
-                reminders       = uiState.reminders,
-                onToggle        = onReminderEnabledChanged,
-                onOffsetChanged = onReminderOffsetChanged,
             )
 
             // ── Display ───────────────────────────────────────────────────────
@@ -366,151 +344,6 @@ private fun CalculationSection(
     }
 }
 
-// ── Reminders section ─────────────────────────────────────────────────────────
-
-@Composable
-private fun RemindersSection(
-    reminders: List<ReminderSetting>,
-    onToggle: (PrayerType, Boolean) -> Unit,
-    onOffsetChanged: (PrayerType, String) -> Unit,
-) {
-    SettingsCard(contentPadding = PaddingValues(0.dp)) {
-        reminders.forEachIndexed { index, setting ->
-            if (index > 0) {
-                HorizontalDivider(color = SalatOutlineVariant.copy(alpha = 0.3f))
-            }
-            ReminderRow(
-                setting         = setting,
-                onToggle        = { onToggle(setting.prayerType, it) },
-                onOffsetChanged = { onOffsetChanged(setting.prayerType, it) },
-            )
-        }
-    }
-}
-
-private val timeFormatter = DateTimeFormatter.ofPattern("hh:mm a")
-
-@Composable
-private fun ReminderRow(
-    setting: ReminderSetting,
-    onToggle: (Boolean) -> Unit,
-    onOffsetChanged: (String) -> Unit,
-) {
-    val focusManager = LocalFocusManager.current
-    val isNegative   = setting.offsetMinutes.startsWith("-")
-    val magnitude    = setting.offsetMinutes.removePrefix("-")
-
-    Row(
-        modifier              = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment     = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-        Row(
-            verticalAlignment     = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            modifier              = Modifier.weight(1f),
-        ) {
-            Switch(
-                checked         = setting.enabled,
-                onCheckedChange = onToggle,
-                modifier        = Modifier.height(24.dp),
-                colors          = SwitchDefaults.colors(
-                    checkedThumbColor   = SalatOnPrimary,
-                    checkedTrackColor   = SalatPrimary,
-                    uncheckedThumbColor = SalatOutline,
-                    uncheckedTrackColor = SalatOutlineVariant,
-                ),
-            )
-            Column {
-                Text(
-                    text       = setting.prayerType.label(),
-                    color      = if (setting.enabled) SalatPrimary else SalatOnSurfaceVariant,
-                    fontSize   = 16.sp,
-                    fontWeight = FontWeight.Medium,
-                    fontFamily = InterFamily,
-                )
-                Text(
-                    text       = setting.prayerTime?.format(timeFormatter) ?: "--:--",
-                    color      = SalatOnSurfaceVariant,
-                    fontSize   = 12.sp,
-                    fontFamily = InterFamily,
-                )
-            }
-        }
-        Row(
-            verticalAlignment     = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            // Soft keyboards' number pad has no "-" key, so the sign is a dedicated
-            // toggle rather than something typed into the field.
-            SignToggleButton(
-                isNegative = isNegative,
-                enabled    = setting.enabled,
-                onClick    = {
-                    val toggled = when {
-                        isNegative                              -> magnitude
-                        magnitude.isEmpty() || magnitude == "0"  -> magnitude
-                        else                                     -> "-$magnitude"
-                    }
-                    onOffsetChanged(toggled)
-                },
-            )
-            OutlinedTextField(
-                value         = magnitude,
-                onValueChange = { input ->
-                    if (input.isEmpty() || input.all(Char::isDigit)) {
-                        onOffsetChanged((if (isNegative) "-" else "") + input)
-                    }
-                },
-                enabled       = setting.enabled,
-                modifier      = Modifier.width(56.dp),
-                singleLine    = true,
-                textStyle     = LocalTextStyle.current.copy(
-                    fontFamily = InterFamily, fontSize = 14.sp,
-                    textAlign  = androidx.compose.ui.text.style.TextAlign.Center,
-                ),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
-                colors          = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor   = SalatPrimary,
-                    unfocusedBorderColor = SalatOutlineVariant,
-                    disabledBorderColor  = SalatOutlineVariant.copy(alpha = 0.4f),
-                    focusedContainerColor   = SalatSurfaceContainerLow,
-                    unfocusedContainerColor = SalatSurfaceContainerLow,
-                    disabledContainerColor  = SalatSurfaceContainerLow.copy(alpha = 0.4f),
-                ),
-                shape = RoundedCornerShape(8.dp),
-            )
-        }
-    }
-}
-
-@Composable
-private fun SignToggleButton(
-    isNegative: Boolean,
-    enabled: Boolean,
-    onClick: () -> Unit,
-) {
-    Surface(
-        onClick  = onClick,
-        enabled  = enabled,
-        modifier = Modifier.size(32.dp),
-        shape    = CircleShape,
-        color    = if (isNegative) SalatPrimary else SalatSurfaceContainerLow,
-        border   = BorderStroke(1.dp, SalatOutlineVariant.copy(alpha = if (enabled) 1f else 0.4f)),
-    ) {
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-            Text(
-                text       = if (isNegative) "−" else "+",
-                color      = if (isNegative) SalatOnPrimary else SalatOnSurfaceVariant,
-                fontSize   = 16.sp,
-                fontWeight = FontWeight.Bold,
-                fontFamily = InterFamily,
-            )
-        }
-    }
-}
-
 // ── Appearance & language section ─────────────────────────────────────────────
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -688,25 +521,12 @@ fun SettingsScreenPreview() {
             latitude     = "24.4672",
             longitude    = "39.6111",
             calculationMethod = CalculationMethod.MWL,
-            reminders    = PrayerType.values().mapIndexed { i, t ->
-                ReminderSetting(
-                    prayerType    = t,
-                    enabled       = i != 4,
-                    offsetMinutes = listOf(0, -5, 0, 3, 0)[i].toString(),
-                    prayerTime    = listOf(
-                        LocalTime.of(5, 42), LocalTime.of(12, 15), LocalTime.of(15, 30),
-                        LocalTime.of(17, 58), LocalTime.of(19, 15),
-                    )[i],
-                )
-            },
             use24HourFormat = false,
         ),
         onUseDeviceLocationChanged = {},
         onLatitudeChanged          = {},
         onLongitudeChanged         = {},
         onCalculationMethodChanged = {},
-        onReminderEnabledChanged   = { _, _ -> },
-        onReminderOffsetChanged    = { _, _ -> },
         on24HourFormatChanged      = {},
         onLanguageChanged          = {},
         onThemeModeChanged         = {},

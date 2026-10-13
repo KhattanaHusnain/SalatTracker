@@ -26,13 +26,14 @@ import com.salattracker.core.theme.SalatOutlineVariant
 import com.salattracker.core.theme.SalatPrimary
 import com.salattracker.core.theme.SalatSurface
 
-/** Stateless drawer content: Bulk Update, Backup & Restore (with an attention line when
- * [backupNeedsAttention]), Settings. Fixed-width so the dimmed scrim area next to it stays
- * tappable (to close the drawer) even on small phones. */
+/** Stateless drawer content: Bulk Update, Prayer Reminders, Backup & Restore (with an
+ * attention line when [backupNeedsAttention]), Settings. Fixed-width so the dimmed scrim area
+ * next to it stays tappable (to close the drawer) even on small phones. */
 @Composable
 fun AppDrawer(
     backupNeedsAttention: Boolean,
     onBulkUpdateClick: () -> Unit,
+    onPrayerRemindersClick: () -> Unit,
     onBackupClick: () -> Unit,
     onSettingsClick: () -> Unit,
 ) {
@@ -55,6 +56,11 @@ fun AppDrawer(
             iconRes = R.drawable.ic_edit_square,
             label = stringResource(R.string.action_bulk_update),
             onClick = onBulkUpdateClick,
+        )
+        DrawerItem(
+            iconRes = R.drawable.ic_notifications,
+            label = stringResource(R.string.prayer_reminders),
+            onClick = onPrayerRemindersClick,
         )
         DrawerItem(
             iconRes = R.drawable.ic_cloud_upload,
@@ -99,6 +105,7 @@ fun AppDrawerPreview() {
     AppDrawer(
         backupNeedsAttention = true,
         onBulkUpdateClick = {},
+        onPrayerRemindersClick = {},
         onBackupClick = {},
         onSettingsClick = {},
     )

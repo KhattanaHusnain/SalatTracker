@@ -157,6 +157,13 @@
     <string name="settings_discard_title">تجاهل التغييرات؟</string>
     <string name="settings_discard_desc">لديك تغييرات غير محفوظة. مغادرة الشاشة الآن ستؤدي إلى تجاهلها.</string>
 
+    <string name="reminders_snooze_length">مدة التأجيل</string>
+    <string name="reminders_full_screen_alert">تنبيه ملء الشاشة</string>
+    <string name="reminders_vibration">الاهتزاز</string>
+    <string name="reminders_sound">النغمة</string>
+    <string name="reminders_sound_default">الافتراضية</string>
+    <string name="reminders_sound_silent">صامت</string>
+
     <string name="stats_highest_streaks">أعلى المتتاليات</string>
     <string name="stats_best_per_prayer">أفضل سلسلة لكل صلاة</string>
     <string name="stats_congregation_pct">نسبة الجماعة</string>
@@ -240,12 +247,9 @@
 
     <string name="reminder_prayer_title">صلاة %1$s</string>
     <string name="reminder_scheduled_for">مجدولة في %1$s</string>
-    <string name="reminder_snooze">تأجيل 10 د</string>
+    <string name="reminder_snooze">تأجيل %1$d د</string>
     <string name="reminder_dismiss">تجاهل التنبيه</string>
 
-    <string name="notification_channel_prayer_id">prayer_reminders</string>
-    <string name="notification_channel_prayer_name">تذكيرات الصلاة</string>
-    <string name="notification_channel_prayer_desc">تذكيرات بأوقات الصلاة اليومية</string>
     <string name="notification_prayer_title">حان وقت %1$s</string>
     <string name="notification_prayer_body">حان وقت صلاة %1$s</string>
 

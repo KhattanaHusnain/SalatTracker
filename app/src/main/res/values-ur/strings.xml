@@ -157,6 +157,13 @@
     <string name="settings_discard_title">تبدیلیاں مسترد کریں؟</string>
     <string name="settings_discard_desc">آپ کی تبدیلیاں محفوظ نہیں ہوئیں۔ ابھی جانے سے وہ ضائع ہو جائیں گی۔</string>
 
+    <string name="reminders_snooze_length">التوا کی مدت</string>
+    <string name="reminders_full_screen_alert">فل سکرین الرٹ</string>
+    <string name="reminders_vibration">وائبریشن</string>
+    <string name="reminders_sound">آواز</string>
+    <string name="reminders_sound_default">طے شدہ</string>
+    <string name="reminders_sound_silent">خاموش</string>
+
     <string name="stats_highest_streaks">بلند ترین تسلسل</string>
     <string name="stats_best_per_prayer">ہر نماز کا بہترین تسلسل</string>
     <string name="stats_congregation_pct">باجماعت %</string>
@@ -240,12 +247,9 @@
 
     <string name="reminder_prayer_title">%1$s کی نماز</string>
     <string name="reminder_scheduled_for">%1$s کے لیے طے شدہ</string>
-    <string name="reminder_snooze">10 منٹ التوا</string>
+    <string name="reminder_snooze">%1$d منٹ التوا</string>
     <string name="reminder_dismiss">الرٹ برخاست کریں</string>
 
-    <string name="notification_channel_prayer_id">prayer_reminders</string>
-    <string name="notification_channel_prayer_name">نماز کی یاد دہانیاں</string>
-    <string name="notification_channel_prayer_desc">روزانہ نماز کے اوقات کی یاد دہانیاں</string>
     <string name="notification_prayer_title">%1$s کا وقت ہو گیا</string>
     <string name="notification_prayer_body">%1$s کی نماز کا وقت آ گیا ہے</string>
 

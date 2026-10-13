@@ -6,17 +6,13 @@ import androidx.work.WorkManager
 import com.salattracker.core.locale.LocaleManager
 import com.salattracker.data.location.LocationProvider
 import com.salattracker.domain.model.AppLanguage
-import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.ThemeMode
-import com.salattracker.domain.repository.PrayerRepository
 import com.salattracker.domain.repository.SettingsRepository
 import com.salattracker.domain.repository.UserPrefs
 import com.salattracker.notification.PrayerReminderWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.time.LocalDate
-import java.time.LocalTime
 import javax.inject.Inject
 
 enum class CalculationMethod(val id: Int, val label: String) {
@@ -27,20 +23,12 @@ enum class CalculationMethod(val id: Int, val label: String) {
     KARACHI(1,      "University of Islamic Sciences, Karachi"),
 }
 
-data class ReminderSetting(
-    val prayerType: PrayerType,
-    val enabled: Boolean,
-    val offsetMinutes: String,   // raw text as typed; parsed to Int only at save time
-    val prayerTime: LocalTime? = null,
-)
-
 data class SettingsUiState(
     val isLoading: Boolean = true,
     val useDeviceLocation: Boolean = true,
     val latitude: String = "",
     val longitude: String = "",
     val calculationMethod: CalculationMethod = CalculationMethod.MWL,
-    val reminders: List<ReminderSetting> = emptyList(),
     val use24HourFormat: Boolean = false,
     val language: AppLanguage = AppLanguage.ENGLISH,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
@@ -56,7 +44,6 @@ data class SettingsUiState(
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
-    private val prayerRepository: PrayerRepository,
     private val locationProvider: LocationProvider,
     private val workManager: WorkManager,
 ) : ViewModel() {
@@ -78,7 +65,6 @@ class SettingsViewModel @Inject constructor(
                 .catch   { e -> _uiState.update { it.copy(isLoading = false, error = e.message) } }
                 .collect { prefs ->
                     lastKnownPrefs = prefs
-                    val times = prayerRepository.getCachedPrayerTimes(LocalDate.now())
                     _uiState.update {
                         it.copy(
                             isLoading         = false,
@@ -88,14 +74,6 @@ class SettingsViewModel @Inject constructor(
                             calculationMethod = CalculationMethod.values()
                                 .firstOrNull { m -> m.id == prefs.calculationMethodId }
                                 ?: CalculationMethod.MWL,
-                            reminders         = PrayerType.values().map { type ->
-                                ReminderSetting(
-                                    prayerType    = type,
-                                    enabled       = prefs.reminderEnabled[type] ?: true,
-                                    offsetMinutes = (prefs.reminderOffsetMinutes[type] ?: 0).toString(),
-                                    prayerTime    = times?.get(type),
-                                )
-                            },
                             use24HourFormat   = prefs.use24HourFormat,
                             language          = prefs.language,
                             themeMode         = prefs.themeMode,
@@ -119,25 +97,6 @@ class SettingsViewModel @Inject constructor(
     }
     fun onCalculationMethodChanged(method: CalculationMethod) = _uiState.update { it.copy(calculationMethod = method) }
 
-    fun onReminderEnabledChanged(prayerType: PrayerType, enabled: Boolean) {
-        _uiState.update { state ->
-            state.copy(reminders = state.reminders.map { r ->
-                if (r.prayerType == prayerType) r.copy(enabled = enabled) else r
-            })
-        }
-    }
-
-    fun onReminderOffsetChanged(prayerType: PrayerType, offset: String) {
-        // Accept any in-progress input (empty, a lone "-", or a valid int) so the
-        // field's text always mirrors exactly what the user typed — parsed at save time.
-        if (offset.isNotEmpty() && offset != "-" && offset.toIntOrNull() == null) return
-        _uiState.update { state ->
-            state.copy(reminders = state.reminders.map { r ->
-                if (r.prayerType == prayerType) r.copy(offsetMinutes = offset) else r
-            })
-        }
-    }
-
     fun on24HourFormatChanged(enabled: Boolean) = _uiState.update { it.copy(use24HourFormat = enabled) }
     fun onLanguageChanged(language: AppLanguage) = _uiState.update { it.copy(language = language) }
     fun onThemeModeChanged(themeMode: ThemeMode) = _uiState.update { it.copy(themeMode = themeMode) }
@@ -148,20 +107,24 @@ class SettingsViewModel @Inject constructor(
             _uiState.update { it.copy(isSaving = true) }
             runCatching {
                 val state = _uiState.value
+                // Reminder enable/offset now live on their own screen (feature/reminders) with
+                // their own granular writes — pass the last-known values through unchanged
+                // rather than lose them, since this form no longer tracks them.
+                val baseline = lastKnownPrefs
                 settingsRepository.saveSettings(
                     useDeviceLocation     = state.useDeviceLocation,
                     latitude              = state.latitude.toDoubleOrNull() ?: 0.0,
                     longitude             = state.longitude.toDoubleOrNull() ?: 0.0,
                     calculationMethodId   = state.calculationMethod.id,
-                    reminderEnabled       = state.reminders.associate { it.prayerType to it.enabled },
-                    reminderOffsetMinutes = state.reminders.associate { it.prayerType to (it.offsetMinutes.toIntOrNull() ?: 0) },
+                    reminderEnabled       = baseline?.reminderEnabled ?: UserPrefs().reminderEnabled,
+                    reminderOffsetMinutes = baseline?.reminderOffsetMinutes ?: UserPrefs().reminderOffsetMinutes,
                     use24HourFormat       = state.use24HourFormat,
                     language              = state.language,
                     themeMode             = state.themeMode,
                     dailyTipsEnabled      = state.dailyTipsEnabled,
                 )
             }.onSuccess {
-                // Reminder settings changed — reschedule alarms with the new values right away.
+                // Location/calculation-method may have changed prayer times — reschedule alarms.
                 PrayerReminderWorker.enqueueOneTime(workManager)
                 _uiState.update { it.copy(isSaving = false, saveSuccess = true) }
                 // Apply language app-wide (no-op if unchanged; recreates the UI if it changed).
@@ -189,15 +152,11 @@ class SettingsViewModel @Inject constructor(
             (state.latitude.toDoubleOrNull() ?: 0.0) == baseline.latitude &&
             (state.longitude.toDoubleOrNull() ?: 0.0) == baseline.longitude
         val sameMethod = state.calculationMethod.id == baseline.calculationMethodId
-        val sameReminders = state.reminders.all { r ->
-            r.enabled == (baseline.reminderEnabled[r.prayerType] ?: true) &&
-                (r.offsetMinutes.toIntOrNull() ?: 0) == (baseline.reminderOffsetMinutes[r.prayerType] ?: 0)
-        }
         val sameDisplay = state.use24HourFormat == baseline.use24HourFormat
         val sameAppearance = state.language == baseline.language &&
             state.themeMode == baseline.themeMode &&
             state.dailyTipsEnabled == baseline.dailyTipsEnabled
-        return !(sameLocation && sameMethod && sameReminders && sameDisplay && sameAppearance)
+        return !(sameLocation && sameMethod && sameDisplay && sameAppearance)
     }
 
     /** Called by the screen's BackHandler when [hasUnsavedChanges] is true — shows the

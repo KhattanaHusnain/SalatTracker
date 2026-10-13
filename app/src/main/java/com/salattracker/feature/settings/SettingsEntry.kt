@@ -55,8 +55,6 @@ fun SettingsEntry(
         onLatitudeChanged          = viewModel::onLatitudeChanged,
         onLongitudeChanged         = viewModel::onLongitudeChanged,
         onCalculationMethodChanged = viewModel::onCalculationMethodChanged,
-        onReminderEnabledChanged   = viewModel::onReminderEnabledChanged,
-        onReminderOffsetChanged    = viewModel::onReminderOffsetChanged,
         on24HourFormatChanged      = viewModel::on24HourFormatChanged,
         onLanguageChanged          = viewModel::onLanguageChanged,
         onThemeModeChanged         = viewModel::onThemeModeChanged,

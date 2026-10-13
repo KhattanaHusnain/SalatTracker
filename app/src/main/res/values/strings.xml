@@ -170,6 +170,14 @@
     <string name="settings_discard_title">Discard changes?</string>
     <string name="settings_discard_desc">You have unsaved changes. Leaving now will discard them.</string>
 
+    <!-- Prayer Reminders -->
+    <string name="reminders_snooze_length">Snooze Length</string>
+    <string name="reminders_full_screen_alert">Full-Screen Alert</string>
+    <string name="reminders_vibration">Vibration</string>
+    <string name="reminders_sound">Sound</string>
+    <string name="reminders_sound_default">Default</string>
+    <string name="reminders_sound_silent">Silent</string>
+
     <!-- Stats -->
     <string name="stats_highest_streaks">Highest Streaks</string>
     <string name="stats_best_per_prayer">Your best run per prayer</string>
@@ -260,13 +268,10 @@
     <!-- Prayer reminder (full screen) -->
     <string name="reminder_prayer_title">%1$s Prayer</string>
     <string name="reminder_scheduled_for">Scheduled for %1$s</string>
-    <string name="reminder_snooze">Snooze 10m</string>
+    <string name="reminder_snooze">Snooze %1$dm</string>
     <string name="reminder_dismiss">DISMISS ALERT</string>
 
     <!-- Notifications -->
-    <string name="notification_channel_prayer_id">prayer_reminders</string>
-    <string name="notification_channel_prayer_name">Prayer Reminders</string>
-    <string name="notification_channel_prayer_desc">Reminders for daily prayer times</string>
     <string name="notification_prayer_title">Time for %1$s</string>
     <string name="notification_prayer_body">%1$s prayer time has arrived</string>
 

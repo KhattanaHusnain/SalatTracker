@@ -11,6 +11,7 @@ import com.salattracker.R
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.repository.PrayerRepository
+import com.salattracker.domain.repository.SettingsRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -29,6 +30,8 @@ import javax.inject.Inject
 class PrayerReminderReceiver : BroadcastReceiver() {
 
     @Inject lateinit var prayerRepository: PrayerRepository
+    @Inject lateinit var settingsRepository: SettingsRepository
+    @Inject lateinit var channels: PrayerReminderChannels
 
     override fun onReceive(context: Context, intent: Intent) {
         val typeName = intent.getStringExtra(AlarmScheduler.EXTRA_PRAYER_TYPE) ?: return
@@ -42,7 +45,7 @@ class PrayerReminderReceiver : BroadcastReceiver() {
             ACTION_MARK_CONGREGATION -> markAndDismiss(context, type, PrayerStatus.CONGREGATION)
             ACTION_MARK_INDIVIDUAL   -> markAndDismiss(context, type, PrayerStatus.INDIVIDUAL)
             ACTION_MARK_QAZA_PENDING -> markAndDismiss(context, type, PrayerStatus.QAZA_PENDING)
-            ACTION_SNOOZE            -> snooze(context, type)
+            ACTION_SNOOZE            -> snooze(context, type, intent.getIntExtra(EXTRA_SNOOZE_MINUTES, DEFAULT_SNOOZE_MINUTES))
             else                     -> showNotification(context, type)
         }
     }
@@ -59,30 +62,45 @@ class PrayerReminderReceiver : BroadcastReceiver() {
         }
     }
 
-    private fun snooze(context: Context, type: PrayerType) {
+    private fun snooze(context: Context, type: PrayerType, snoozeMinutes: Int) {
         NotificationManagerCompat.from(context).cancel(type.ordinal)
-        scheduleSnooze(context, type)
+        scheduleSnooze(context, type, snoozeMinutes)
     }
 
     private fun showNotification(context: Context, type: PrayerType) {
-        val fullScreenPendingIntent = fullScreenPendingIntent(context, type)
+        val pendingResult = goAsync()
+        CoroutineScope(SupervisorJob() + Dispatchers.Default).launch {
+            try {
+                val prefs = settingsRepository.getCurrentPrefs()
+                val soundUri = prefs.reminderSoundUri[type]
+                val vibrationEnabled = prefs.reminderVibrationEnabled[type] ?: true
+                val fullScreenAlert = prefs.reminderFullScreenAlert[type] ?: true
+                val snoozeMinutes = prefs.reminderSnoozeMinutes[type] ?: DEFAULT_SNOOZE_MINUTES
 
-        val notification = NotificationCompat.Builder(context, context.getString(R.string.notification_channel_prayer_id))
-            .setSmallIcon(R.drawable.ic_mosque)
-            .setContentTitle(context.getString(R.string.notification_prayer_title, type.label))
-            .setContentText(context.getString(R.string.notification_prayer_body, type.label))
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setCategory(NotificationCompat.CATEGORY_ALARM)
-            .setAutoCancel(true)
-            .setContentIntent(fullScreenPendingIntent)
-            .setFullScreenIntent(fullScreenPendingIntent, true)
-            .addAction(action(context, type, ACTION_MARK_CONGREGATION, R.drawable.ic_groups, "Congregation"))
-            .addAction(action(context, type, ACTION_MARK_INDIVIDUAL, R.drawable.ic_person, "Individual"))
-            .addAction(action(context, type, ACTION_MARK_QAZA_PENDING, R.drawable.ic_pending_actions, "Qaza"))
-            .addAction(action(context, type, ACTION_SNOOZE, R.drawable.ic_schedule, "Snooze 10m"))
-            .build()
+                channels.ensure(type, soundUri, vibrationEnabled)
+                val fullScreenPendingIntent = fullScreenPendingIntent(context, type)
 
-        NotificationManagerCompat.from(context).notify(type.ordinal, notification)
+                val builder = NotificationCompat.Builder(context, channels.channelId(type))
+                    .setSmallIcon(R.drawable.ic_mosque)
+                    .setContentTitle(context.getString(R.string.notification_prayer_title, type.label))
+                    .setContentText(context.getString(R.string.notification_prayer_body, type.label))
+                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+                    .setCategory(NotificationCompat.CATEGORY_ALARM)
+                    .setAutoCancel(true)
+                    .setContentIntent(fullScreenPendingIntent)
+                    .addAction(action(context, type, ACTION_MARK_CONGREGATION, R.drawable.ic_groups, "Congregation"))
+                    .addAction(action(context, type, ACTION_MARK_INDIVIDUAL, R.drawable.ic_person, "Individual"))
+                    .addAction(action(context, type, ACTION_MARK_QAZA_PENDING, R.drawable.ic_pending_actions, "Qaza"))
+                    .addAction(action(context, type, ACTION_SNOOZE, R.drawable.ic_schedule, "Snooze ${snoozeMinutes}m", snoozeMinutes))
+                if (fullScreenAlert) {
+                    builder.setFullScreenIntent(fullScreenPendingIntent, true)
+                }
+
+                NotificationManagerCompat.from(context).notify(type.ordinal, builder.build())
+            } finally {
+                pendingResult.finish()
+            }
+        }
     }
 
     private fun fullScreenPendingIntent(context: Context, type: PrayerType): PendingIntent {
@@ -104,10 +122,12 @@ class PrayerReminderReceiver : BroadcastReceiver() {
         actionName: String,
         iconRes: Int,
         label: String,
+        snoozeMinutes: Int? = null,
     ): NotificationCompat.Action {
         val intent = Intent(context, PrayerReminderReceiver::class.java).apply {
             action = actionName
             putExtra(AlarmScheduler.EXTRA_PRAYER_TYPE, type.name)
+            if (snoozeMinutes != null) putExtra(EXTRA_SNOOZE_MINUTES, snoozeMinutes)
         }
         val pendingIntent = PendingIntent.getBroadcast(
             context,
@@ -123,15 +143,16 @@ class PrayerReminderReceiver : BroadcastReceiver() {
         const val ACTION_MARK_INDIVIDUAL   = "com.salattracker.action.MARK_INDIVIDUAL"
         const val ACTION_MARK_QAZA_PENDING = "com.salattracker.action.MARK_QAZA_PENDING"
         const val ACTION_SNOOZE            = "com.salattracker.action.SNOOZE"
+        const val EXTRA_SNOOZE_MINUTES     = "snooze_minutes"
+        const val DEFAULT_SNOOZE_MINUTES   = 10
 
-        private const val SNOOZE_MINUTES = 10L
         private const val SNOOZE_REQUEST_CODE_OFFSET = 1000
         private const val FULLSCREEN_REQUEST_CODE_OFFSET = 2000
 
         /** Shared by the notification's Snooze action and the full-screen reminder Activity. */
-        fun scheduleSnooze(context: Context, type: PrayerType) {
+        fun scheduleSnooze(context: Context, type: PrayerType, snoozeMinutes: Int) {
             val alarmManager = context.getSystemService(AlarmManager::class.java)
-            val triggerAt = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(SNOOZE_MINUTES)
+            val triggerAt = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(snoozeMinutes.toLong())
             val intent = Intent(context, PrayerReminderReceiver::class.java).apply {
                 putExtra(AlarmScheduler.EXTRA_PRAYER_TYPE, type.name)
             }

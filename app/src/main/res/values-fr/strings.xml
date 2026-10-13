@@ -157,6 +157,13 @@
     <string name="settings_discard_title">Abandonner les modifications ?</string>
     <string name="settings_discard_desc">Vous avez des modifications non enregistrées. Quitter maintenant les abandonnera.</string>
 
+    <string name="reminders_snooze_length">Durée de report</string>
+    <string name="reminders_full_screen_alert">Alerte plein écran</string>
+    <string name="reminders_vibration">Vibration</string>
+    <string name="reminders_sound">Son</string>
+    <string name="reminders_sound_default">Par défaut</string>
+    <string name="reminders_sound_silent">Silencieux</string>
+
     <string name="stats_highest_streaks">Meilleures séries</string>
     <string name="stats_best_per_prayer">Votre meilleure série par prière</string>
     <string name="stats_congregation_pct">En groupe %</string>
@@ -240,12 +247,9 @@
 
     <string name="reminder_prayer_title">Prière %1$s</string>
     <string name="reminder_scheduled_for">Prévu pour %1$s</string>
-    <string name="reminder_snooze">Reporter 10 min</string>
+    <string name="reminder_snooze">Reporter %1$d min</string>
     <string name="reminder_dismiss">IGNORER L\'ALERTE</string>
 
-    <string name="notification_channel_prayer_id">prayer_reminders</string>
-    <string name="notification_channel_prayer_name">Rappels de prière</string>
-    <string name="notification_channel_prayer_desc">Rappels des horaires de prière quotidiens</string>
     <string name="notification_prayer_title">C\'est l\'heure de %1$s</string>
     <string name="notification_prayer_body">L\'heure de la prière %1$s est arrivée</string>
 

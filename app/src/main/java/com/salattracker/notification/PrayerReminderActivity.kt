@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.lifecycleScope
@@ -16,6 +17,7 @@ import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.VerseInfo
 import com.salattracker.domain.repository.PrayerRepository
+import com.salattracker.domain.repository.SettingsRepository
 import com.salattracker.domain.repository.VerseRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -29,6 +31,7 @@ class PrayerReminderActivity : AppCompatActivity() {
 
     @Inject lateinit var prayerRepository: PrayerRepository
     @Inject lateinit var verseRepository: VerseRepository
+    @Inject lateinit var settingsRepository: SettingsRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,12 +47,15 @@ class PrayerReminderActivity : AppCompatActivity() {
         }
 
         setContent {
-            var scheduledTime by mutableStateOf<LocalTime?>(null)
-            var verse by mutableStateOf<VerseInfo?>(null)
+            var scheduledTime by remember { mutableStateOf<LocalTime?>(null) }
+            var verse by remember { mutableStateOf<VerseInfo?>(null) }
+            var snoozeMinutes by remember { mutableStateOf(PrayerReminderReceiver.DEFAULT_SNOOZE_MINUTES) }
 
             LaunchedEffect(type) {
                 scheduledTime = prayerRepository.getCachedPrayerTimes(LocalDate.now())?.get(type)
                 verse = verseRepository.getRandomVerse()
+                snoozeMinutes = settingsRepository.getCurrentPrefs().reminderSnoozeMinutes[type]
+                    ?: PrayerReminderReceiver.DEFAULT_SNOOZE_MINUTES
             }
 
             SalatTrackerTheme {
@@ -57,8 +63,9 @@ class PrayerReminderActivity : AppCompatActivity() {
                     prayerType    = type,
                     scheduledTime = scheduledTime,
                     verse         = verse,
+                    snoozeMinutes = snoozeMinutes,
                     onMark        = { status -> markAndFinish(type, status) },
-                    onSnooze      = { snoozeAndFinish(type) },
+                    onSnooze      = { snoozeAndFinish(type, snoozeMinutes) },
                     onDismiss     = { finish() },
                 )
             }
@@ -81,10 +88,12 @@ class PrayerReminderActivity : AppCompatActivity() {
         }
     }
 
-    private fun snoozeAndFinish(type: PrayerType) {
-        NotificationManagerCompat.from(this).cancel(type.ordinal)
-        PrayerReminderReceiver.scheduleSnooze(this, type)
-        finish()
+    private fun snoozeAndFinish(type: PrayerType, snoozeMinutes: Int) {
+        lifecycleScope.launch {
+            NotificationManagerCompat.from(this@PrayerReminderActivity).cancel(type.ordinal)
+            PrayerReminderReceiver.scheduleSnooze(this@PrayerReminderActivity, type, snoozeMinutes)
+            finish()
+        }
     }
 
     private fun Intent.prayerTypeOrNull(): PrayerType? =
