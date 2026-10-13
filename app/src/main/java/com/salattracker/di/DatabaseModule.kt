@@ -31,4 +31,5 @@ object DatabaseModule {
     @Provides fun providePrayerTimesDao(db: SalatDatabase): PrayerTimesDao= db.prayerTimesDao()
     @Provides fun provideVerseDao(db: SalatDatabase): VerseDao            = db.verseDao()
     @Provides fun provideGoalDao(db: SalatDatabase): GoalDao              = db.goalDao()
+    @Provides fun provideBackupDao(db: SalatDatabase): BackupDao          = db.backupDao()
 }

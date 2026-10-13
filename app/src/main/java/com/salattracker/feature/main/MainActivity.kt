@@ -1,6 +1,7 @@
 package com.salattracker.feature.main
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -31,6 +32,7 @@ import androidx.navigation.compose.*
 import androidx.navigation.navArgument
 import com.salattracker.R
 import com.salattracker.core.theme.*
+import com.salattracker.feature.backup.BackupEntry
 import com.salattracker.feature.bulkupdate.BulkUpdateEntry
 import com.salattracker.feature.calendar.CalendarEntry
 import com.salattracker.feature.goals.AddGoalEntry
@@ -54,9 +56,14 @@ class MainActivity : AppCompatActivity() {
 
     @Inject lateinit var settingsRepository: SettingsRepository
 
+    /** Set from a notification's EXTRA_OPEN_ROUTE (onCreate for a cold start, onNewIntent for a
+     * running instance — see android:launchMode="singleTask" on this activity in the manifest). */
+    private var pendingRoute by mutableStateOf<String?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
+        pendingRoute = intent?.getStringExtra(EXTRA_OPEN_ROUTE)
 
         // Reconcile the app-wide locale with the saved language on launch. No-op once they match;
         // recreates the activity in the right locale otherwise (e.g. first run after this update,
@@ -124,10 +131,22 @@ class MainActivity : AppCompatActivity() {
                             }
                         },
                     )
-                    true  -> MainScaffold()
+                    true  -> MainScaffold(initialRoute = pendingRoute, onRouteConsumed = { pendingRoute = null })
                 }
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        pendingRoute = intent.getStringExtra(EXTRA_OPEN_ROUTE)
+    }
+
+    companion object {
+        /** Intent extra a notification sets to deep-link straight to a route once the app is up. */
+        const val EXTRA_OPEN_ROUTE = "open_route"
+        const val ROUTE_BACKUP = "backup"
     }
 }
 
@@ -135,10 +154,20 @@ class MainActivity : AppCompatActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScaffold() {
+fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {}) {
     val navController = rememberNavController()
     val navBackStack  by navController.currentBackStackEntryAsState()
     val currentDest   = navBackStack?.destination
+
+    // A backup notification's deep link, delivered after this scaffold (and its NavHost)
+    // already exist — navigate once, then let the caller clear it so a config change or
+    // recomposition doesn't navigate again.
+    LaunchedEffect(initialRoute) {
+        if (initialRoute != null) {
+            navController.navigate(initialRoute)
+            onRouteConsumed()
+        }
+    }
 
     Scaffold(
         containerColor = SalatBackground,
@@ -190,7 +219,10 @@ fun MainScaffold() {
                 StatsEntry()
             }
             composable(BottomNavRoute.Settings.route) {
-                SettingsEntry()
+                SettingsEntry(onBackupClick = { navController.navigate("backup") })
+            }
+            composable("backup") {
+                BackupEntry()
             }
             composable("bulk_update") {
                 BulkUpdateEntry()
@@ -309,6 +341,7 @@ private fun topBarTitle(route: String?): String = stringResource(
         BottomNavRoute.Qaza.route     -> R.string.topbar_qaza
         BottomNavRoute.Stats.route    -> R.string.topbar_stats
         BottomNavRoute.Settings.route -> R.string.topbar_settings
+        "backup"                      -> R.string.topbar_backup
         "bulk_update"                 -> R.string.topbar_bulk_update
         "goals"                       -> R.string.topbar_goals
         "add_goal"                    -> R.string.topbar_new_goal

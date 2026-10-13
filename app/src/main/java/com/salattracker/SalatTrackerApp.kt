@@ -7,6 +7,7 @@ import android.os.Build
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import androidx.work.WorkManager
+import com.salattracker.notification.BackupWorker
 import com.salattracker.notification.GoalReminderWorker
 import com.salattracker.notification.PrayerReminderWorker
 import com.salattracker.notification.QazaAutoMarkWorker
@@ -38,6 +39,7 @@ class SalatTrackerApp : Application(), Configuration.Provider {
         VerseCacheWorker.enqueuePeriodic(workManager)
         GoalReminderWorker.enqueueOneTime(workManager)
         GoalReminderWorker.enqueuePeriodic(workManager)
+        BackupWorker.enqueuePeriodic(workManager)
     }
 
     private fun createNotificationChannels() {
@@ -63,6 +65,17 @@ class SalatTrackerApp : Application(), Configuration.Provider {
                 ).apply {
                     description =
                         getString(R.string.notification_channel_goal_desc)
+                }
+            )
+
+            manager.createNotificationChannel(
+                NotificationChannel(
+                    getString(R.string.notification_channel_backup_id),
+                    getString(R.string.notification_channel_backup_name),
+                    NotificationManager.IMPORTANCE_LOW
+                ).apply {
+                    description =
+                        getString(R.string.notification_channel_backup_desc)
                 }
             )
         }

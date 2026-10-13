@@ -20,6 +20,7 @@
     <string name="topbar_new_goal">New Goal</string>
     <string name="topbar_edit_goal">Edit Goal</string>
     <string name="topbar_missed_prayers">Missed Prayers</string>
+    <string name="topbar_backup">Backup &amp; Restore</string>
     <string name="topbar_default">Salat Tracker</string>
     <string name="cd_menu">Menu</string>
     <string name="action_add_goal">Add Goal</string>
@@ -95,7 +96,7 @@
     <string name="onboarding_location_title">Precise Prayer Times</string>
     <string name="onboarding_location_desc">We need your location to calculate accurate prayer times based on your current city. This ensures your daily prayers are always in sync with the sun\'s position.</string>
     <string name="onboarding_allow_location">Allow Location</string>
-    <string name="onboarding_location_privacy">Your data is stored locally and never shared.</string>
+    <string name="onboarding_location_privacy">Stored on this device. Included in your Google Drive backup if you turn that on.</string>
     <string name="onboarding_notifications_title">Stay Connected</string>
     <string name="onboarding_notifications_subtitle">Enable reminders so you never miss a prayer or a spiritual milestone.</string>
     <string name="prayer_reminders">Prayer Reminders</string>
@@ -162,6 +163,9 @@
     <string name="settings_language">Language</string>
     <string name="settings_theme">Theme</string>
     <string name="settings_24hour">24-Hour Format</string>
+    <string name="settings_backup_status_off">Off</string>
+    <string name="settings_backup_status_connected">Last backup %1$s</string>
+    <string name="settings_backup_action_needed">Action needed</string>
 
     <!-- Stats -->
     <string name="stats_highest_streaks">Highest Streaks</string>
@@ -268,4 +272,41 @@
     <string name="notification_channel_goal_desc">Reminders for your spiritual goals</string>
     <string name="notification_goal_title">Time for: %1$s</string>
     <string name="notification_goal_body">Tap to check in on your goal.</string>
+
+    <!-- Backup & Restore -->
+    <string name="backup_title">Backup &amp; Restore</string>
+    <string name="backup_subtitle">Keep your prayer history, goals and settings safe.</string>
+    <string name="backup_not_connected_desc">Back up your data to your own Google Drive. Only you can access it — not even we can see it.</string>
+    <string name="backup_connect">Connect Google Account</string>
+    <string name="backup_switch_account">Switch Account</string>
+    <string name="backup_connected_account">Account</string>
+    <string name="backup_last_backup">Last backup</string>
+    <string name="backup_last_backup_never">Never</string>
+    <string name="backup_back_up_now">Back Up Now</string>
+    <string name="backup_restore">Restore</string>
+    <string name="backup_disconnect">Disconnect</string>
+    <string name="backup_disconnect_title">Disconnect Google account?</string>
+    <string name="backup_disconnect_desc">Your existing backup stays in Google Drive, but this device will stop backing up automatically until you reconnect.</string>
+    <string name="backup_conflict_title">Backup Found</string>
+    <string name="backup_conflict_desc">A backup already exists for this account, from %1$s on %2$s. Restoring replaces this device\'s data with it; replacing overwrites that backup with this device\'s data.</string>
+    <string name="backup_conflict_restore">Restore This Backup</string>
+    <string name="backup_conflict_replace">Replace With This Device\'s Data</string>
+    <string name="backup_unknown_device">another device</string>
+    <string name="backup_onboarding_restore_action">Restore from Google Drive</string>
+    <string name="backup_attention_sign_in">Google sign-in needed — tap Connect to continue.</string>
+    <string name="backup_attention_remote_changed">A different backup was found. Choose how to proceed below.</string>
+    <string name="backup_attention_local_missing">This device has less data than the backup. Choose how to proceed below.</string>
+    <string name="backup_attention_storage_full">Your Google Drive storage is full.</string>
+
+    <string name="notification_channel_backup_id">backup_status</string>
+    <string name="notification_channel_backup_name">Backup Status</string>
+    <string name="notification_channel_backup_desc">Notifies you when your Google Drive backup needs attention</string>
+    <string name="backup_notif_sign_in_title">Backup needs your attention</string>
+    <string name="backup_notif_sign_in_body">Sign in again to keep backing up to Google Drive.</string>
+    <string name="backup_notif_remote_changed_title">A different backup was found</string>
+    <string name="backup_notif_remote_changed_body">Open Salat Tracker to choose how to proceed.</string>
+    <string name="backup_notif_local_missing_title">Backup paused</string>
+    <string name="backup_notif_local_missing_body">This device has less data than your backup. Open the app to choose how to proceed.</string>
+    <string name="backup_notif_storage_full_title">Google Drive storage full</string>
+    <string name="backup_notif_storage_full_body">Free up space in Google Drive to keep backing up.</string>
 </resources>

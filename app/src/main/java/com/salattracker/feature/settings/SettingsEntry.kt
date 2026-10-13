@@ -18,6 +18,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
  */
 @Composable
 fun SettingsEntry(
+    onBackupClick: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -52,6 +53,7 @@ fun SettingsEntry(
         onLanguageChanged          = viewModel::onLanguageChanged,
         onThemeModeChanged         = viewModel::onThemeModeChanged,
         onDailyTipsChanged         = viewModel::onDailyTipsChanged,
+        onBackupClick              = onBackupClick,
         onSave                     = viewModel::onSave,
         onErrorDismiss             = viewModel::clearError,
         onClearSaveSuccess         = viewModel::clearSaveSuccess,

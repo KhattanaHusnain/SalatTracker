@@ -18,6 +18,7 @@
     <string name="topbar_new_goal">Nouvel objectif</string>
     <string name="topbar_edit_goal">Modifier l\'objectif</string>
     <string name="topbar_missed_prayers">Prières manquées</string>
+    <string name="topbar_backup">Sauvegarde et restauration</string>
     <string name="topbar_default">Salat Tracker</string>
     <string name="cd_menu">Menu</string>
     <string name="action_add_goal">Ajouter un objectif</string>
@@ -86,7 +87,7 @@
     <string name="onboarding_location_title">Horaires de prière précis</string>
     <string name="onboarding_location_desc">Nous avons besoin de votre position pour calculer des horaires de prière précis selon votre ville actuelle. Cela garantit que vos prières quotidiennes restent synchronisées avec la position du soleil.</string>
     <string name="onboarding_allow_location">Autoriser la localisation</string>
-    <string name="onboarding_location_privacy">Vos données sont stockées localement et jamais partagées.</string>
+    <string name="onboarding_location_privacy">Stockée sur cet appareil. Incluse dans votre sauvegarde Google Drive si vous l\'activez.</string>
     <string name="onboarding_notifications_title">Restez connecté</string>
     <string name="onboarding_notifications_subtitle">Activez les rappels pour ne jamais manquer une prière ou une étape spirituelle.</string>
     <string name="prayer_reminders">Rappels de prière</string>
@@ -149,6 +150,9 @@
     <string name="settings_language">Langue</string>
     <string name="settings_theme">Thème</string>
     <string name="settings_24hour">Format 24 heures</string>
+    <string name="settings_backup_status_off">Désactivée</string>
+    <string name="settings_backup_status_connected">Dernière sauvegarde %1$s</string>
+    <string name="settings_backup_action_needed">Action requise</string>
 
     <string name="stats_highest_streaks">Meilleures séries</string>
     <string name="stats_best_per_prayer">Votre meilleure série par prière</string>
@@ -247,4 +251,41 @@
     <string name="notification_channel_goal_desc">Rappels pour vos objectifs spirituels</string>
     <string name="notification_goal_title">C\'est l\'heure : %1$s</string>
     <string name="notification_goal_body">Appuyez pour pointer votre objectif.</string>
+
+    <!-- Backup & Restore -->
+    <string name="backup_title">Sauvegarde et restauration</string>
+    <string name="backup_subtitle">Gardez votre historique de prières, vos objectifs et vos réglages en sécurité.</string>
+    <string name="backup_not_connected_desc">Sauvegardez vos données sur votre propre Google Drive. Vous seul pouvez y accéder — pas même nous.</string>
+    <string name="backup_connect">Connecter un compte Google</string>
+    <string name="backup_switch_account">Changer de compte</string>
+    <string name="backup_connected_account">Compte</string>
+    <string name="backup_last_backup">Dernière sauvegarde</string>
+    <string name="backup_last_backup_never">Jamais</string>
+    <string name="backup_back_up_now">Sauvegarder maintenant</string>
+    <string name="backup_restore">Restaurer</string>
+    <string name="backup_disconnect">Déconnecter</string>
+    <string name="backup_disconnect_title">Déconnecter le compte Google ?</string>
+    <string name="backup_disconnect_desc">Votre sauvegarde existante reste sur Google Drive, mais cet appareil arrêtera les sauvegardes automatiques jusqu\'à ce que vous vous reconnectiez.</string>
+    <string name="backup_conflict_title">Sauvegarde trouvée</string>
+    <string name="backup_conflict_desc">Une sauvegarde existe déjà pour ce compte, depuis %1$s le %2$s. Restaurer remplace les données de cet appareil par celle-ci ; remplacer écrase cette sauvegarde par les données de cet appareil.</string>
+    <string name="backup_conflict_restore">Restaurer cette sauvegarde</string>
+    <string name="backup_conflict_replace">Remplacer par les données de cet appareil</string>
+    <string name="backup_unknown_device">un autre appareil</string>
+    <string name="backup_onboarding_restore_action">Restaurer depuis Google Drive</string>
+    <string name="backup_attention_sign_in">Connexion Google requise — appuyez sur Connecter pour continuer.</string>
+    <string name="backup_attention_remote_changed">Une sauvegarde différente a été trouvée. Choisissez comment continuer ci-dessous.</string>
+    <string name="backup_attention_local_missing">Cet appareil contient moins de données que la sauvegarde. Choisissez comment continuer ci-dessous.</string>
+    <string name="backup_attention_storage_full">Votre espace de stockage Google Drive est plein.</string>
+
+    <string name="notification_channel_backup_id">backup_status</string>
+    <string name="notification_channel_backup_name">État de la sauvegarde</string>
+    <string name="notification_channel_backup_desc">Vous informe lorsque votre sauvegarde Google Drive nécessite une action</string>
+    <string name="backup_notif_sign_in_title">La sauvegarde a besoin de votre attention</string>
+    <string name="backup_notif_sign_in_body">Reconnectez-vous pour continuer à sauvegarder sur Google Drive.</string>
+    <string name="backup_notif_remote_changed_title">Une sauvegarde différente a été trouvée</string>
+    <string name="backup_notif_remote_changed_body">Ouvrez Salat Tracker pour choisir comment continuer.</string>
+    <string name="backup_notif_local_missing_title">Sauvegarde en pause</string>
+    <string name="backup_notif_local_missing_body">Cet appareil contient moins de données que votre sauvegarde. Ouvrez l\'application pour choisir comment continuer.</string>
+    <string name="backup_notif_storage_full_title">Stockage Google Drive plein</string>
+    <string name="backup_notif_storage_full_body">Libérez de l\'espace sur Google Drive pour continuer à sauvegarder.</string>
 </resources>

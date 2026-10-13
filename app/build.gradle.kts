@@ -103,5 +103,8 @@ dependencies {
     // Location
     implementation(libs.play.services.location)
 
+    // Google Drive backup (AuthorizationClient for the drive.appdata scope)
+    implementation(libs.play.services.auth)
 
+    testImplementation(libs.kotlinx.coroutines.test)
 }

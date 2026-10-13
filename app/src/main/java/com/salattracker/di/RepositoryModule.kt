@@ -1,9 +1,11 @@
 package com.salattracker.di
 
+import com.salattracker.data.repository.BackupRepositoryImpl
 import com.salattracker.data.repository.GoalRepositoryImpl
 import com.salattracker.data.repository.PrayerRepositoryImpl
 import com.salattracker.data.repository.SettingsRepositoryImpl
 import com.salattracker.data.repository.VerseRepositoryImpl
+import com.salattracker.domain.repository.BackupRepository
 import com.salattracker.domain.repository.GoalRepository
 import com.salattracker.domain.repository.PrayerRepository
 import com.salattracker.domain.repository.SettingsRepository
@@ -33,4 +35,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindGoalRepository(impl: GoalRepositoryImpl): GoalRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindBackupRepository(impl: BackupRepositoryImpl): BackupRepository
 }

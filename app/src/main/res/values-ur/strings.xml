@@ -18,6 +18,7 @@
     <string name="topbar_new_goal">نیا ہدف</string>
     <string name="topbar_edit_goal">ہدف میں ترمیم</string>
     <string name="topbar_missed_prayers">چھوٹی ہوئی نمازیں</string>
+    <string name="topbar_backup">بیک اپ اور بحالی</string>
     <string name="topbar_default">Salat Tracker</string>
     <string name="cd_menu">مینو</string>
     <string name="action_add_goal">ہدف شامل کریں</string>
@@ -86,7 +87,7 @@
     <string name="onboarding_location_title">درست اوقاتِ نماز</string>
     <string name="onboarding_location_desc">آپ کے موجودہ شہر کی بنیاد پر نماز کے درست اوقات کے حساب کے لیے ہمیں آپ کے مقام کی ضرورت ہے۔ اس سے آپ کی روزانہ نمازیں سورج کی پوزیشن کے ساتھ ہم آہنگ رہتی ہیں۔</string>
     <string name="onboarding_allow_location">مقام کی اجازت دیں</string>
-    <string name="onboarding_location_privacy">آپ کا ڈیٹا مقامی طور پر محفوظ رہتا ہے اور کبھی شیئر نہیں کیا جاتا۔</string>
+    <string name="onboarding_location_privacy">اس ڈیوائس پر محفوظ ہے۔ اگر آپ گوگل ڈرائیو بیک اپ آن کریں تو یہ اس میں شامل ہوگا۔</string>
     <string name="onboarding_notifications_title">جڑے رہیں</string>
     <string name="onboarding_notifications_subtitle">یاد دہانیاں فعال کریں تاکہ آپ کوئی نماز یا روحانی سنگِ میل نہ چھوڑیں۔</string>
     <string name="prayer_reminders">نماز کی یاد دہانیاں</string>
@@ -149,6 +150,9 @@
     <string name="settings_language">زبان</string>
     <string name="settings_theme">تھیم</string>
     <string name="settings_24hour">24 گھنٹے کی شکل</string>
+    <string name="settings_backup_status_off">بند</string>
+    <string name="settings_backup_status_connected">آخری بیک اپ %1$s</string>
+    <string name="settings_backup_action_needed">توجہ درکار ہے</string>
 
     <string name="stats_highest_streaks">بلند ترین تسلسل</string>
     <string name="stats_best_per_prayer">ہر نماز کا بہترین تسلسل</string>
@@ -247,4 +251,41 @@
     <string name="notification_channel_goal_desc">آپ کے روحانی اہداف کی یاد دہانیاں</string>
     <string name="notification_goal_title">وقت ہو گیا: %1$s</string>
     <string name="notification_goal_body">اپنے ہدف پر چیک اِن کے لیے دبائیں۔</string>
+
+    <!-- Backup & Restore -->
+    <string name="backup_title">بیک اپ اور بحالی</string>
+    <string name="backup_subtitle">اپنی نماز کی تاریخ، اہداف اور ترتیبات محفوظ رکھیں۔</string>
+    <string name="backup_not_connected_desc">اپنا ڈیٹا اپنے گوگل ڈرائیو پر بیک اپ کریں۔ صرف آپ اسے دیکھ سکتے ہیں — ہم بھی نہیں۔</string>
+    <string name="backup_connect">گوگل اکاؤنٹ منسلک کریں</string>
+    <string name="backup_switch_account">اکاؤنٹ بدلیں</string>
+    <string name="backup_connected_account">اکاؤنٹ</string>
+    <string name="backup_last_backup">آخری بیک اپ</string>
+    <string name="backup_last_backup_never">کبھی نہیں</string>
+    <string name="backup_back_up_now">ابھی بیک اپ کریں</string>
+    <string name="backup_restore">بحال کریں</string>
+    <string name="backup_disconnect">منقطع کریں</string>
+    <string name="backup_disconnect_title">گوگل اکاؤنٹ منقطع کریں؟</string>
+    <string name="backup_disconnect_desc">آپ کا موجودہ بیک اپ گوگل ڈرائیو میں رہے گا، لیکن یہ ڈیوائس دوبارہ منسلک ہونے تک خودکار بیک اپ بند کر دے گی۔</string>
+    <string name="backup_conflict_title">بیک اپ مل گیا</string>
+    <string name="backup_conflict_desc">اس اکاؤنٹ کے لیے پہلے سے ایک بیک اپ موجود ہے، %1$s سے %2$s پر۔ بحالی اس ڈیوائس کے ڈیٹا کو اس سے بدل دے گی؛ تبدیلی اس بیک اپ کو اس ڈیوائس کے ڈیٹا سے بدل دے گی۔</string>
+    <string name="backup_conflict_restore">یہ بیک اپ بحال کریں</string>
+    <string name="backup_conflict_replace">اس ڈیوائس کے ڈیٹا سے بدلیں</string>
+    <string name="backup_unknown_device">کسی اور ڈیوائس</string>
+    <string name="backup_onboarding_restore_action">گوگل ڈرائیو سے بحال کریں</string>
+    <string name="backup_attention_sign_in">گوگل سائن اِن درکار ہے — جاری رکھنے کے لیے منسلک کریں پر دبائیں۔</string>
+    <string name="backup_attention_remote_changed">ایک مختلف بیک اپ ملا ہے۔ نیچے آگے بڑھنے کا طریقہ منتخب کریں۔</string>
+    <string name="backup_attention_local_missing">اس ڈیوائس میں بیک اپ سے کم ڈیٹا ہے۔ نیچے آگے بڑھنے کا طریقہ منتخب کریں۔</string>
+    <string name="backup_attention_storage_full">آپ کا گوگل ڈرائیو اسٹوریج بھر گیا ہے۔</string>
+
+    <string name="notification_channel_backup_id">backup_status</string>
+    <string name="notification_channel_backup_name">بیک اپ کی صورتحال</string>
+    <string name="notification_channel_backup_desc">آپ کو مطلع کرتا ہے جب آپ کے گوگل ڈرائیو بیک اپ کو توجہ درکار ہو</string>
+    <string name="backup_notif_sign_in_title">بیک اپ کو آپ کی توجہ درکار ہے</string>
+    <string name="backup_notif_sign_in_body">گوگل ڈرائیو پر بیک اپ جاری رکھنے کے لیے دوبارہ سائن اِن کریں۔</string>
+    <string name="backup_notif_remote_changed_title">ایک مختلف بیک اپ ملا ہے</string>
+    <string name="backup_notif_remote_changed_body">آگے بڑھنے کا طریقہ منتخب کرنے کے لیے Salat Tracker کھولیں۔</string>
+    <string name="backup_notif_local_missing_title">بیک اپ روک دیا گیا</string>
+    <string name="backup_notif_local_missing_body">اس ڈیوائس میں آپ کے بیک اپ سے کم ڈیٹا ہے۔ آگے بڑھنے کا طریقہ منتخب کرنے کے لیے ایپ کھولیں۔</string>
+    <string name="backup_notif_storage_full_title">گوگل ڈرائیو اسٹوریج بھر گیا</string>
+    <string name="backup_notif_storage_full_body">بیک اپ جاری رکھنے کے لیے گوگل ڈرائیو میں جگہ خالی کریں۔</string>
 </resources>

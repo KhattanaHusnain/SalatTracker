@@ -4,6 +4,7 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.salattracker.BuildConfig
 import com.salattracker.data.remote.api.AlAdhanService
+import com.salattracker.data.remote.api.DriveApiService
 import com.salattracker.data.remote.api.QuranApiService
 import dagger.Module
 import dagger.Provides
@@ -21,12 +22,17 @@ import javax.inject.Singleton
 @Retention(AnnotationRetention.BINARY)
 annotation class QuranRetrofit
 
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class DriveRetrofit
+
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
     private const val ALADHAN_BASE_URL = "https://api.aladhan.com/"
     private const val QURAN_API_BASE_URL = "https://api.quran.com/api/v4/"
+    private const val DRIVE_BASE_URL = "https://www.googleapis.com/"
 
     @Provides
     @Singleton
@@ -76,4 +82,33 @@ object NetworkModule {
     @Singleton
     fun provideQuranApiService(@QuranRetrofit retrofit: Retrofit): QuranApiService =
         retrofit.create(QuranApiService::class.java)
+
+    // The shared OkHttpClient logs full request/response bodies whenever ENABLE_LOGGING
+    // is on (true for every build type today) — never acceptable for a client carrying
+    // a bearer token and the user's backed-up prayer/goal data. Drive gets its own
+    // client with no logging interceptor at all, and longer timeouts for the upload.
+    @Provides
+    @Singleton
+    @DriveRetrofit
+    fun provideDriveOkHttpClient(): OkHttpClient =
+        OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
+            .writeTimeout(60, TimeUnit.SECONDS)
+            .build()
+
+    @Provides
+    @Singleton
+    @DriveRetrofit
+    fun provideDriveRetrofit(@DriveRetrofit okHttpClient: OkHttpClient, gson: Gson): Retrofit =
+        Retrofit.Builder()
+            .baseUrl(DRIVE_BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .build()
+
+    @Provides
+    @Singleton
+    fun provideDriveApiService(@DriveRetrofit retrofit: Retrofit): DriveApiService =
+        retrofit.create(DriveApiService::class.java)
 }

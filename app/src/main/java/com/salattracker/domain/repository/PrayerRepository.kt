@@ -89,6 +89,13 @@ interface PrayerRepository {
         from: LocalDate,
         to: LocalDate,
     ): List<PrayerBreakdown>
+
+    /**
+     * Recomputes and re-caches the current/highest streak per prayer type from scratch.
+     * Exposed for backup restore, which replaces prayer_entries directly via BackupDao
+     * and needs the streak cache (and highestStreak carry-forward) recalculated afterward.
+     */
+    suspend fun recalculateStreaks()
 }
 
 // ── Domain result types (no feature-layer imports) ────────────────────────────
