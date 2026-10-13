@@ -166,6 +166,7 @@
     <string name="reminders_sound_silent">Silencieux</string>
     <string name="reminders_sound_choose_device">Choisir sur l\'appareil…</string>
     <string name="reminders_sound_preview">Aperçu du son</string>
+    <string name="reminders_sound_silenced_banner">L\'appareil est en mode silencieux — aucun son ne sera joué maintenant</string>
     <string name="reminders_offset_minutes_value">%1$d min</string>
 
     <string name="stats_highest_streaks">Meilleures séries</string>

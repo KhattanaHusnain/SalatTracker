@@ -166,6 +166,7 @@
     <string name="reminders_sound_silent">صامت</string>
     <string name="reminders_sound_choose_device">اختر من الجهاز…</string>
     <string name="reminders_sound_preview">معاينة الصوت</string>
+    <string name="reminders_sound_silenced_banner">جهازك في الوضع الصامت — لن يتم تشغيل أي صوت الآن</string>
     <string name="reminders_offset_minutes_value">%1$d د</string>
 
     <string name="stats_highest_streaks">أعلى المتتاليات</string>

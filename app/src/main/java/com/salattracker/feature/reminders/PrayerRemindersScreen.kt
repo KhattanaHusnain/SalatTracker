@@ -402,6 +402,12 @@ private fun SoundChooserDialog(
     val context = LocalContext.current
     var activeRingtone by remember { mutableStateOf<Ringtone?>(null) }
     var activePlayer by remember { mutableStateOf<MediaPlayer?>(null) }
+    // Informational only — the saved choice (e.g. Azan) is never overwritten by the device's
+    // current ringer state. Checked once per dialog open rather than observed live; flipping
+    // the ringer mode while this exact dialog instance is already open won't update it.
+    val isRingerSilent = remember {
+        context.getSystemService(AudioManager::class.java)?.ringerMode != AudioManager.RINGER_MODE_NORMAL
+    }
 
     fun stopPreviews() {
         runCatching { activeRingtone?.stop() }
@@ -460,6 +466,27 @@ private fun SoundChooserDialog(
                     fontWeight = FontWeight.SemiBold,
                     fontFamily = MontserratFamily,
                 )
+                if (isRingerSilent) {
+                    Row(
+                        modifier              = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 4.dp),
+                        verticalAlignment     = Alignment.Top,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Icon(
+                            painter            = painterResource(R.drawable.ic_bell_off),
+                            contentDescription = null,
+                            tint               = SalatOnSurfaceVariant,
+                            modifier           = Modifier.size(16.dp),
+                        )
+                        Text(
+                            text       = stringResource(R.string.reminders_sound_silenced_banner),
+                            color      = SalatOnSurfaceVariant,
+                            fontSize   = 12.sp,
+                            fontFamily = InterFamily,
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
                 SoundChoiceRow(
                     label     = stringResource(R.string.reminders_sound_azan),
                     selected  = current == null,
