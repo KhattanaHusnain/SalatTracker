@@ -1,6 +1,6 @@
 package com.salattracker.feature.reminders
 
-import android.content.Context
+import android.media.MediaPlayer
 import android.media.Ringtone
 import android.media.RingtoneManager
 import android.net.Uri
@@ -13,7 +13,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
@@ -184,12 +183,15 @@ private fun ReminderCard(
     }
 }
 
-private val OFFSET_MAGNITUDE_OPTIONS = 0..60
+// A single continuous range rather than a magnitude + separate sign: scrolling down reveals
+// positive values (after prayer time), scrolling up reveals negative ones (before) — the sign
+// comes from scroll direction instead of a separate toggle control.
+private val OFFSET_OPTIONS = -60..60
+private val OFFSET_DIALOG_WIDTH = 240.dp
 
 @Composable
 private fun OffsetRow(enabled: Boolean, offsetMinutes: String, onChanged: (String) -> Unit) {
-    val isNegative = offsetMinutes.startsWith("-")
-    val magnitude  = offsetMinutes.removePrefix("-").toIntOrNull() ?: 0
+    val current = offsetMinutes.toIntOrNull() ?: 0
     var showPicker by remember { mutableStateOf(false) }
 
     Row(
@@ -198,9 +200,6 @@ private fun OffsetRow(enabled: Boolean, offsetMinutes: String, onChanged: (Strin
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Text(stringResource(R.string.settings_minutes_offset), color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = InterFamily)
-        // The sign toggle lives inside the dialog this opens, not out here — a bare "+"/"−"
-        // button next to a number wasn't obvious on first use. One tap target, one dialog that
-        // spells "before"/"after" out in words.
         Surface(
             onClick  = { showPicker = true },
             enabled  = enabled,
@@ -209,7 +208,7 @@ private fun OffsetRow(enabled: Boolean, offsetMinutes: String, onChanged: (Strin
             border   = BorderStroke(1.dp, SalatOutlineVariant.copy(alpha = if (enabled) 1f else 0.4f)),
         ) {
             Text(
-                text       = if (isNegative) "-$magnitude" else "$magnitude",
+                text       = "$current",
                 modifier   = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).widthIn(min = 24.dp),
                 color      = if (enabled) SalatOnSurface else SalatOnSurfaceVariant.copy(alpha = 0.4f),
                 fontSize   = 14.sp,
@@ -220,95 +219,62 @@ private fun OffsetRow(enabled: Boolean, offsetMinutes: String, onChanged: (Strin
     }
 
     if (showPicker) {
-        OffsetMagnitudePickerDialog(
-            initialIsNegative = isNegative,
-            current           = magnitude,
-            onSelect          = { negative, minute ->
+        OffsetPickerDialog(
+            current   = current,
+            onSelect  = { minute ->
                 showPicker = false
-                onChanged((if (negative) "-" else "") + minute)
+                onChanged(minute.toString())
             },
-            onDismiss         = { showPicker = false },
+            onDismiss = { showPicker = false },
         )
     }
 }
 
 @Composable
-private fun SignToggleButton(isNegative: Boolean, enabled: Boolean, onClick: () -> Unit) {
-    Surface(
-        onClick  = onClick,
-        enabled  = enabled,
-        modifier = Modifier.size(32.dp),
-        shape    = CircleShape,
-        color    = if (isNegative) SalatPrimary else SalatSurfaceContainerLow,
-        border   = BorderStroke(1.dp, SalatOutlineVariant.copy(alpha = if (enabled) 1f else 0.4f)),
-    ) {
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-            Text(
-                text       = if (isNegative) "−" else "+",
-                color      = if (isNegative) SalatOnPrimary else SalatOnSurfaceVariant,
-                fontSize   = 16.sp,
-                fontWeight = FontWeight.Bold,
-                fontFamily = InterFamily,
-            )
-        }
-    }
-}
-
-@Composable
-private fun OffsetMagnitudePickerDialog(
-    initialIsNegative: Boolean,
+private fun OffsetPickerDialog(
     current: Int,
-    onSelect: (Boolean, Int) -> Unit,
+    onSelect: (Int) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    // Staged locally — flipping the sign alone commits nothing; only tapping a minute below
-    // does, combining whatever sign is currently showing here with that tap.
-    var isNegative by remember { mutableStateOf(initialIsNegative) }
-    val options = OFFSET_MAGNITUDE_OPTIONS.toList()
+    val options = OFFSET_OPTIONS.toList()
+    val currentIndex = options.indexOf(current).takeIf { it >= 0 } ?: options.indexOf(0)
     // Centers the current value in the visible window rather than pinning it to the top,
     // so it's immediately visible without an extra scroll.
-    val listState = rememberLazyListState(initialFirstVisibleItemIndex = (current - 2).coerceIn(0, options.size - 1))
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = (currentIndex - 2).coerceIn(0, options.lastIndex))
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
-            shape = RoundedCornerShape(16.dp),
-            color = SalatSurfaceContainerLowest,
+            // Width lives on the outer column so every child (title and list alike) shares
+            // it — putting it only on the LazyColumn let the title's own width (or the
+            // dialog's platform-default width) stretch the card wider than the list, leaving
+            // blank space beside the selected row.
+            modifier = Modifier.width(OFFSET_DIALOG_WIDTH),
+            shape    = RoundedCornerShape(16.dp),
+            color    = SalatSurfaceContainerLowest,
         ) {
             Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                Row(
-                    modifier              = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp),
-                    verticalAlignment     = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    SignToggleButton(
-                        isNegative = isNegative,
-                        enabled    = true,
-                        onClick    = { isNegative = !isNegative },
-                    )
-                    Text(
-                        text = stringResource(
-                            if (isNegative) R.string.reminders_offset_before_title else R.string.reminders_offset_after_title
-                        ),
-                        color      = SalatPrimary,
-                        fontSize   = 15.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        fontFamily = MontserratFamily,
-                    )
-                }
+                Text(
+                    text       = stringResource(R.string.settings_minutes_offset),
+                    modifier   = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+                    color      = SalatPrimary,
+                    fontSize   = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    fontFamily = MontserratFamily,
+                )
                 LazyColumn(
                     state    = listState,
-                    modifier = Modifier.width(220.dp).height(220.dp),
+                    modifier = Modifier.height(240.dp),
                 ) {
                     items(options) { minute ->
-                        val selected = minute == current && isNegative == initialIsNegative
+                        val selected = minute == current
                         Surface(
-                            onClick  = { onSelect(isNegative, minute) },
+                            onClick  = { onSelect(minute) },
                             modifier = Modifier.fillMaxWidth(),
                             color    = if (selected) SalatPrimaryContainer else SalatSurfaceContainerLowest,
                         ) {
                             Text(
                                 text       = stringResource(R.string.reminders_offset_minutes_value, minute),
-                                modifier   = Modifier.fillMaxWidth().padding(vertical = 12.dp, horizontal = 24.dp),
+                                modifier   = Modifier.fillMaxWidth().padding(vertical = 12.dp, horizontal = 20.dp),
                                 color      = if (selected) SalatOnPrimaryContainer else SalatOnSurfaceVariant,
                                 fontSize   = 15.sp,
                                 fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
@@ -432,17 +398,41 @@ private fun SoundChooserDialog(
     onDismiss: () -> Unit,
 ) {
     val context = LocalContext.current
-    var activePreview by remember { mutableStateOf<Ringtone?>(null) }
+    var activeRingtone by remember { mutableStateOf<Ringtone?>(null) }
+    var activePlayer by remember { mutableStateOf<MediaPlayer?>(null) }
 
-    fun preview(uri: Uri) {
-        activePreview?.stop()
-        activePreview = runCatching { RingtoneManager.getRingtone(context, uri) }.getOrNull()?.also { it.play() }
+    fun stopPreviews() {
+        runCatching { activeRingtone?.stop() }
+        activeRingtone = null
+        runCatching { activePlayer?.stop() }
+        runCatching { activePlayer?.release() }
+        activePlayer = null
+    }
+
+    // Device Default goes through RingtoneManager/Ringtone — the right abstraction for a
+    // system content:// URI we don't own. Azan does NOT: Ringtone.play() hands the Uri to a
+    // remote system player service to resolve, and that service can't open an
+    // android.resource:// Uri pointing into our own app's APK (unlike NotificationChannel's
+    // sound, which the NotificationManager service resolves itself via PackageManager — a
+    // different, working code path). MediaPlayer.create() plays our own bundled resource
+    // directly and in-process, sidestepping that entirely.
+    fun previewRingtone(uri: Uri) {
+        stopPreviews()
+        activeRingtone = runCatching { RingtoneManager.getRingtone(context, uri) }.getOrNull()?.also { it.play() }
+    }
+
+    fun previewAzan() {
+        stopPreviews()
+        val player = MediaPlayer.create(context, R.raw.azan) ?: return
+        player.setOnCompletionListener { mp -> runCatching { mp.release() } }
+        activePlayer = player
+        player.start()
     }
 
     // A preview must never keep playing after the dialog closes, by any route — a choice
     // made, tapping outside, or system back all end up here via onDispose.
     DisposableEffect(Unit) {
-        onDispose { activePreview?.stop() }
+        onDispose { stopPreviews() }
     }
 
     Dialog(onDismissRequest = onDismiss) {
@@ -463,13 +453,13 @@ private fun SoundChooserDialog(
                     label     = stringResource(R.string.reminders_sound_azan),
                     selected  = current == null,
                     onClick   = onAzanSelected,
-                    onPreview = { preview(azanUri(context)) },
+                    onPreview = { previewAzan() },
                 )
                 SoundChoiceRow(
                     label     = stringResource(R.string.reminders_sound_default),
                     selected  = current == DEVICE_DEFAULT_SOUND_URI,
                     onClick   = onDeviceDefaultSelected,
-                    onPreview = { preview(Settings.System.DEFAULT_NOTIFICATION_URI) },
+                    onPreview = { previewRingtone(Settings.System.DEFAULT_NOTIFICATION_URI) },
                 )
                 SoundChoiceRow(
                     label    = stringResource(R.string.reminders_sound_silent),
@@ -487,8 +477,6 @@ private fun SoundChooserDialog(
         }
     }
 }
-
-private fun azanUri(context: Context): Uri = Uri.parse("android.resource://${context.packageName}/${R.raw.azan}")
 
 @Composable
 private fun SoundChoiceRow(
@@ -511,6 +499,12 @@ private fun SoundChoiceRow(
             fontFamily = InterFamily,
         )
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            when {
+                showChevron -> Icon(painterResource(R.drawable.ic_chevron_right), null, tint = SalatOnSurfaceVariant, modifier = Modifier.size(16.dp))
+                selected    -> Icon(painterResource(R.drawable.ic_check_circle_filled), null, tint = SalatPrimary, modifier = Modifier.size(18.dp))
+            }
+            // Always rightmost, after the selection mark, so its position never moves
+            // depending on whether that row happens to be selected.
             if (onPreview != null) {
                 IconButton(onClick = onPreview, modifier = Modifier.size(32.dp)) {
                     Icon(
@@ -520,10 +514,6 @@ private fun SoundChoiceRow(
                         modifier           = Modifier.size(16.dp),
                     )
                 }
-            }
-            when {
-                showChevron -> Icon(painterResource(R.drawable.ic_chevron_right), null, tint = SalatOnSurfaceVariant, modifier = Modifier.size(16.dp))
-                selected    -> Icon(painterResource(R.drawable.ic_check_circle_filled), null, tint = SalatPrimary, modifier = Modifier.size(18.dp))
             }
         }
     }

@@ -166,8 +166,6 @@
     <string name="reminders_sound_silent">خاموش</string>
     <string name="reminders_sound_choose_device">ڈیوائس سے منتخب کریں…</string>
     <string name="reminders_sound_preview">آواز سنیں</string>
-    <string name="reminders_offset_before_title">نماز کے وقت سے پہلے کے منٹ</string>
-    <string name="reminders_offset_after_title">نماز کے وقت کے بعد کے منٹ</string>
     <string name="reminders_offset_minutes_value">%1$d منٹ</string>
 
     <string name="stats_highest_streaks">بلند ترین تسلسل</string>

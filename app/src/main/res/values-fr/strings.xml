@@ -166,8 +166,6 @@
     <string name="reminders_sound_silent">Silencieux</string>
     <string name="reminders_sound_choose_device">Choisir sur l\'appareil…</string>
     <string name="reminders_sound_preview">Aperçu du son</string>
-    <string name="reminders_offset_before_title">Minutes avant l\'heure de prière</string>
-    <string name="reminders_offset_after_title">Minutes après l\'heure de prière</string>
     <string name="reminders_offset_minutes_value">%1$d min</string>
 
     <string name="stats_highest_streaks">Meilleures séries</string>

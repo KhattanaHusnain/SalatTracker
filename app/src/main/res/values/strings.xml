@@ -180,8 +180,6 @@
     <string name="reminders_sound_silent">Silent</string>
     <string name="reminders_sound_choose_device">Choose from Device…</string>
     <string name="reminders_sound_preview">Preview sound</string>
-    <string name="reminders_offset_before_title">Minutes Before Prayer Time</string>
-    <string name="reminders_offset_after_title">Minutes After Prayer Time</string>
     <string name="reminders_offset_minutes_value">%1$d min</string>
 
     <!-- Stats -->
