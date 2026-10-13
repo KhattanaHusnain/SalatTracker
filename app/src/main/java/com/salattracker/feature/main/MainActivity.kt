@@ -315,7 +315,7 @@ private fun SalatBottomNavBar(
                 },
                 icon = {
                     Icon(
-                        painterResource(if (isSelected) route.iconFilledRes else route.iconOutlinedRes),
+                        painterResource(route.iconRes),
                         stringResource(route.labelRes),
                     )
                 },

@@ -1,7 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tabler Icons (MIT) — https://tabler.io/icons, icon: Award -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
     android:viewportWidth="24"
     android:viewportHeight="24">
-  <path android:fillColor="#000000" android:pathData="M12,2L9.57,7.77L3.4,8.36l4.6,3.99L6.82,18.5L12,15.4l5.18,3.1l-1.18-6.15l4.6-3.99L14.43,7.77L12,2z"/>
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#000000"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M12,9 m-6,0 a6,6 0 1,1 12,0 a6,6 0 1,1 -12,0" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#000000"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M12.002,15.003 l3.4,5.889 l1.598,-3.232 l3.598,0.232 l-3.4,-5.889" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#000000"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M6.802,12.003 l-3.4,5.889 l3.598,-0.232 l1.598,3.232 l3.4,-5.889" />
 </vector>

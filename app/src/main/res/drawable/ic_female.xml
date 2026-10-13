@@ -1,7 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tabler Icons (MIT) — https://tabler.io/icons, icon: Woman -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
     android:viewportWidth="24"
     android:viewportHeight="24">
-  <path android:fillColor="#000000" android:pathData="M12,2c-2.76,0-5,2.24-5,5c0,2.49,1.73,4.58,4.04,5.16L11,20h-2v2h2v2h2v-2h2v-2h-2l-0.04-7.84C15.27,11.58,17,9.49,17,7C17,4.24,14.76,2,12,2zM12,10c-1.65,0-3-1.35-3-3s1.35-3,3-3s3,1.35,3,3S13.65,10,12,10z"/>
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#000000"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M12,5 m-2,0 a2,2 0 1,1 4,0 a2,2 0 1,1 -4,0" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#000000"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M10,22 v-4 h-2 l2,-6 a1,1 0 0,1 1,-1 h2 a1,1 0 0,1 1,1 l2,6 h-2 v4" />
 </vector>
