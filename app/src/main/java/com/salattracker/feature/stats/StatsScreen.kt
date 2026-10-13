@@ -232,10 +232,10 @@ private fun MetricsGridSkeleton() {
 
 // ── Status trend — multi-line %-composition chart (congregation / individual / qaza) ──
 
-// Same status colors used by the Calendar dots/legend.
-private val CongregationColor = Color(0xFF10B981)
-private val IndividualColor   = Color(0xFFEAB308)
-private val QazaColor         = Color(0xFFEF4444)
+// Same status colors used by the Calendar rings/legend — see SalatStatus* in core/theme/Color.kt.
+private val CongregationColor = SalatStatusCongregation
+private val IndividualColor   = SalatStatusIndividual
+private val QazaColor         = SalatStatusQazaPending
 
 @Composable
 private fun StatusTrendCard(state: StatusTrendUiState, onPeriodChanged: (StatsPeriod) -> Unit) {

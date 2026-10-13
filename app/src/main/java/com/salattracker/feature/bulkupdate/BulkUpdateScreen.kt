@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.*
+import com.salattracker.core.ui.DatePickerModal
 import com.salattracker.core.ui.label
 import com.salattracker.core.ui.labelRes
 import com.salattracker.core.ui.nameRes
@@ -578,52 +579,6 @@ private fun BulkUpdateConfirmDialog(
             }
         },
     )
-}
-
-// ── Date picker modal (for Custom range) ─────────────────────────────────────
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun DatePickerModal(
-    initialDate: LocalDate,
-    onDatePicked: (LocalDate) -> Unit,
-    onDismiss: () -> Unit,
-) {
-    val initialMillis = initialDate
-        .atStartOfDay(java.time.ZoneOffset.UTC)
-        .toInstant()
-        .toEpochMilli()
-    val todayEndMillis = remember {
-        LocalDate.now().atStartOfDay(java.time.ZoneOffset.UTC).toInstant().toEpochMilli()
-    }
-    val state = rememberDatePickerState(
-        initialSelectedDateMillis = initialMillis,
-        selectableDates = remember {
-            object : SelectableDates {
-                override fun isSelectableDate(utcTimeMillis: Long): Boolean = utcTimeMillis <= todayEndMillis
-            }
-        },
-    )
-
-    DatePickerDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(onClick = {
-                val millis = state.selectedDateMillis
-                if (millis != null) {
-                    val picked = java.time.Instant.ofEpochMilli(millis).atZone(java.time.ZoneOffset.UTC).toLocalDate()
-                    onDatePicked(picked)
-                } else {
-                    onDismiss()
-                }
-            }) { Text(stringResource(R.string.action_ok)) }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
-        },
-    ) {
-        DatePicker(state = state)
-    }
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
