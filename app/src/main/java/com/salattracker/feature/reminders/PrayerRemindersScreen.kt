@@ -198,47 +198,36 @@ private fun OffsetRow(enabled: Boolean, offsetMinutes: String, onChanged: (Strin
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Text(stringResource(R.string.settings_minutes_offset), color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = InterFamily)
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            // The sign is a dedicated toggle (click to flip before/after) rather than something
-            // typed, both because soft keyboards' number pad has no "-" key and because a bare
-            // "+"/"−" glyph next to a free-typed number isn't obvious on first use — the picker
-            // dialog it opens spells "before"/"after" out in its title instead.
-            SignToggleButton(
-                isNegative = isNegative,
-                enabled    = enabled,
-                onClick    = {
-                    val toggled = if (isNegative || magnitude == 0) magnitude.toString() else "-$magnitude"
-                    onChanged(toggled)
-                },
+        // The sign toggle lives inside the dialog this opens, not out here — a bare "+"/"−"
+        // button next to a number wasn't obvious on first use. One tap target, one dialog that
+        // spells "before"/"after" out in words.
+        Surface(
+            onClick  = { showPicker = true },
+            enabled  = enabled,
+            shape    = RoundedCornerShape(8.dp),
+            color    = SalatSurfaceContainerLow,
+            border   = BorderStroke(1.dp, SalatOutlineVariant.copy(alpha = if (enabled) 1f else 0.4f)),
+        ) {
+            Text(
+                text       = if (isNegative) "-$magnitude" else "$magnitude",
+                modifier   = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).widthIn(min = 24.dp),
+                color      = if (enabled) SalatOnSurface else SalatOnSurfaceVariant.copy(alpha = 0.4f),
+                fontSize   = 14.sp,
+                fontFamily = InterFamily,
+                textAlign  = TextAlign.Center,
             )
-            Surface(
-                onClick  = { showPicker = true },
-                enabled  = enabled,
-                shape    = RoundedCornerShape(8.dp),
-                color    = SalatSurfaceContainerLow,
-                border   = BorderStroke(1.dp, SalatOutlineVariant.copy(alpha = if (enabled) 1f else 0.4f)),
-            ) {
-                Text(
-                    text       = "$magnitude",
-                    modifier   = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).widthIn(min = 24.dp),
-                    color      = if (enabled) SalatOnSurface else SalatOnSurfaceVariant.copy(alpha = 0.4f),
-                    fontSize   = 14.sp,
-                    fontFamily = InterFamily,
-                    textAlign  = TextAlign.Center,
-                )
-            }
         }
     }
 
     if (showPicker) {
         OffsetMagnitudePickerDialog(
-            isNegative = isNegative,
-            current    = magnitude,
-            onSelect   = { minute ->
+            initialIsNegative = isNegative,
+            current           = magnitude,
+            onSelect          = { negative, minute ->
                 showPicker = false
-                onChanged((if (isNegative) "-" else "") + minute)
+                onChanged((if (negative) "-" else "") + minute)
             },
-            onDismiss  = { showPicker = false },
+            onDismiss         = { showPicker = false },
         )
     }
 }
@@ -267,11 +256,14 @@ private fun SignToggleButton(isNegative: Boolean, enabled: Boolean, onClick: () 
 
 @Composable
 private fun OffsetMagnitudePickerDialog(
-    isNegative: Boolean,
+    initialIsNegative: Boolean,
     current: Int,
-    onSelect: (Int) -> Unit,
+    onSelect: (Boolean, Int) -> Unit,
     onDismiss: () -> Unit,
 ) {
+    // Staged locally — flipping the sign alone commits nothing; only tapping a minute below
+    // does, combining whatever sign is currently showing here with that tap.
+    var isNegative by remember { mutableStateOf(initialIsNegative) }
     val options = OFFSET_MAGNITUDE_OPTIONS.toList()
     // Centers the current value in the visible window rather than pinning it to the top,
     // so it's immediately visible without an extra scroll.
@@ -283,24 +275,34 @@ private fun OffsetMagnitudePickerDialog(
             color = SalatSurfaceContainerLowest,
         ) {
             Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                Text(
-                    text = stringResource(
-                        if (isNegative) R.string.reminders_offset_before_title else R.string.reminders_offset_after_title
-                    ),
-                    modifier   = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
-                    color      = SalatPrimary,
-                    fontSize   = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = MontserratFamily,
-                )
+                Row(
+                    modifier              = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp),
+                    verticalAlignment     = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    SignToggleButton(
+                        isNegative = isNegative,
+                        enabled    = true,
+                        onClick    = { isNegative = !isNegative },
+                    )
+                    Text(
+                        text = stringResource(
+                            if (isNegative) R.string.reminders_offset_before_title else R.string.reminders_offset_after_title
+                        ),
+                        color      = SalatPrimary,
+                        fontSize   = 15.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = MontserratFamily,
+                    )
+                }
                 LazyColumn(
                     state    = listState,
                     modifier = Modifier.width(220.dp).height(220.dp),
                 ) {
                     items(options) { minute ->
-                        val selected = minute == current
+                        val selected = minute == current && isNegative == initialIsNegative
                         Surface(
-                            onClick  = { onSelect(minute) },
+                            onClick  = { onSelect(isNegative, minute) },
                             modifier = Modifier.fillMaxWidth(),
                             color    = if (selected) SalatPrimaryContainer else SalatSurfaceContainerLowest,
                         ) {
