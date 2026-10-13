@@ -1,7 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tabler Icons (MIT) — https://tabler.io/icons, icon: ChevronLeft -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
     android:viewportWidth="24"
     android:viewportHeight="24">
-  <path android:fillColor="#000000" android:pathData="M15.41,7.41L14,6l-6,6l6,6l1.41-1.41L10.83,12L15.41,7.41z"/>
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#000000"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M15,6 l-6,6 l6,6" />
 </vector>
