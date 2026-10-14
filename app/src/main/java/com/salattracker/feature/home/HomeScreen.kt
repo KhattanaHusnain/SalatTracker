@@ -71,27 +71,27 @@ fun HomeScreen(
                     modifier         = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp),
                 )
 
-                // Order: today's action first, then motivation (streak + history), then the
+                // Order: motivation (streak + history) first, then today's action, then the
                 // verse as a closing note. Pending Qaza lives in the hero now, next to the
                 // next-prayer countdown, since it's the other "where do I stand right now" fact.
-                SectionTitle(
-                    text     = stringResource(R.string.home_daily_stack),
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp),
-                )
-                PrayerTimeline(
-                    prayers       = uiState.prayers,
-                    currentPrayer = uiState.currentPrayer,
-                    onClick       = onPrayerCardClick,
-                    modifier      = Modifier.fillMaxWidth(),
-                )
-
                 ConsistencyCard(
                     perfectStreak = remember(uiState.streaks) { perfectDayStreak(uiState.streaks) },
                     streaks       = uiState.streaks,
                     todayDate     = uiState.todayDate,
                     lastSevenDays = uiState.lastSevenDays,
                     onDayClick    = onDayClick,
-                    modifier      = Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(top = 16.dp),
+                    modifier      = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+                )
+
+                SectionTitle(
+                    text     = stringResource(R.string.home_daily_stack),
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp).padding(top = 16.dp),
+                )
+                PrayerTimeline(
+                    prayers       = uiState.prayers,
+                    currentPrayer = uiState.currentPrayer,
+                    onClick       = onPrayerCardClick,
+                    modifier      = Modifier.fillMaxWidth(),
                 )
 
                 uiState.verse?.let { verse ->
