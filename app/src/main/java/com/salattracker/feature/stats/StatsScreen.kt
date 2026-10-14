@@ -23,6 +23,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.*
+import com.salattracker.core.ui.ShimmerBox
+import com.salattracker.core.ui.StatTile
 import com.salattracker.core.ui.goalUnitLabel
 import com.salattracker.core.ui.iconRes
 import com.salattracker.core.ui.label
@@ -148,12 +150,6 @@ private fun StatsCard(modifier: Modifier = Modifier, content: @Composable Column
 }
 
 @Composable
-private fun ShimmerBox(modifier: Modifier = Modifier) {
-    val alpha by rememberInfiniteTransition(label = "sk").animateFloat(0.3f, 0.7f, infiniteRepeatable(tween(800), RepeatMode.Reverse), label = "a")
-    Box(modifier.clip(RoundedCornerShape(8.dp)).background(SalatSurfaceContainerHigh.copy(alpha = alpha)))
-}
-
-@Composable
 private fun EmptyStateText(text: String, modifier: Modifier = Modifier, onClick: (() -> Unit)? = null) {
     Box(
         modifier = modifier.fillMaxWidth().let { if (onClick != null) it.clickable(onClick = onClick) else it }.padding(vertical = 24.dp),
@@ -258,17 +254,6 @@ private fun SummaryCard(state: OverviewUiState) {
                 color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily,
             )
         }
-    }
-}
-
-@Composable
-private fun StatTile(label: String, value: String, modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier.clip(RoundedCornerShape(12.dp)).background(SalatSurfaceContainer).padding(vertical = 12.dp, horizontal = 10.dp),
-    ) {
-        Text(value, color = SalatPrimary, fontSize = 18.sp, fontWeight = FontWeight.Bold, fontFamily = MontserratFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        Spacer(Modifier.height(2.dp))
-        Text(label, color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily, maxLines = 2)
     }
 }
 
