@@ -1,15 +1,14 @@
 package com.salattracker.feature.stats
 
-import com.salattracker.domain.model.GoalCompletionStat
 import com.salattracker.domain.model.GoalCategory
-import com.salattracker.domain.model.GoalDailyPoint
-import com.salattracker.domain.repository.PeriodStats
+import com.salattracker.domain.model.GoalFrequency
+import com.salattracker.domain.model.GoalPeriodStat
+import com.salattracker.domain.repository.StatusCounts
 import com.salattracker.testutil.FakeGoalRepository
 import com.salattracker.testutil.FakePrayerRepository
 import com.salattracker.testutil.MainDispatcherRule
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -33,25 +32,25 @@ class StatsViewModelTest {
     private fun createViewModel() = StatsViewModel(prayerRepository, goalRepository)
 
     @Test
-    fun `initial state loads every section for the week period`() = runTest {
-        prayerRepository.periodStats = PeriodStats(congregationPct = 70, individualPct = 20, missedPct = 10, completionPct = 90)
-        goalRepository.dailyPoints = listOf(GoalDailyPoint(LocalDate.now(), 0.5f))
+    fun `initial state loads every section for the month period`() = runTest {
+        prayerRepository.seedDailyCounts(LocalDate.now(), StatusCounts(congregation = 5))
+        goalRepository.periodStats = listOf(GoalPeriodStat("Quran", GoalCategory.QURAN, GoalFrequency.DAILY, "Pages", 10, 5, 10))
         viewModel = createViewModel()
 
         val state = viewModel.uiState.value
-        assertEquals(StatsPeriod.WEEK, state.period)
-        assertEquals(false, state.summary.isLoading)
-        assertEquals(90, state.summary.completionPct)
+        assertEquals(StatsPeriod.MONTH, state.period)
+        assertEquals(false, state.overview.isLoading)
         assertEquals(false, state.prayerBreakdown.isLoading)
         assertEquals(false, state.goals.isLoading)
-        assertEquals(1, state.goals.dailyPoints.size)
+        assertEquals(1, state.goals.items.size)
     }
 
     @Test
     fun `onPeriodChanged queries every section with the new period's date range`() = runTest {
         viewModel = createViewModel()
-        prayerRepository.statsForPeriodCalls.clear()
+        prayerRepository.dailyStatusCountsCalls.clear()
         prayerRepository.prayerBreakdownCalls.clear()
+        goalRepository.periodStatsCalls.clear()
 
         viewModel.onPeriodChanged(StatsPeriod.NINETY_DAYS)
 
@@ -59,44 +58,28 @@ class StatsViewModelTest {
 
         val today = LocalDate.now()
         val expectedFrom = today.minusDays(89)
-        // getStatsForPeriod is called twice: current period, then the previous period for the delta.
-        assertEquals(expectedFrom to today, prayerRepository.statsForPeriodCalls[0])
-        assertEquals(expectedFrom.minusDays(90) to expectedFrom.minusDays(1), prayerRepository.statsForPeriodCalls[1])
+        // getDailyStatusCounts is called twice: current period, then the previous period for the delta.
+        assertEquals(expectedFrom to today, prayerRepository.dailyStatusCountsCalls[0])
+        assertEquals(expectedFrom.minusDays(90) to expectedFrom.minusDays(1), prayerRepository.dailyStatusCountsCalls[1])
 
         assertEquals(expectedFrom to today, prayerRepository.prayerBreakdownCalls.single())
+        assertEquals(expectedFrom to today, goalRepository.periodStatsCalls.single())
     }
 
     @Test
-    fun `onPeriodChanged beyond 40 days switches goals to the per-goal breakdown`() = runTest {
-        goalRepository.completionBreakdown = listOf(GoalCompletionStat("Quran", GoalCategory.QURAN, 0.6f))
+    fun `the delta is null when the previous period has nothing countable`() = runTest {
+        prayerRepository.seedDailyCounts(LocalDate.now(), StatusCounts(congregation = 5))
         viewModel = createViewModel()
-
-        viewModel.onPeriodChanged(StatsPeriod.NINETY_DAYS)
-
-        val goals = viewModel.uiState.value.goals
-        assertTrue(goals.dailyPoints.isEmpty())
-        assertEquals(1, goals.items.size)
-        assertEquals("Quran", goals.items.first().goalName)
-    }
-
-    @Test
-    fun `onPeriodChanged at 40 days or under keeps the daily breakdown`() = runTest {
-        goalRepository.dailyPoints = listOf(GoalDailyPoint(LocalDate.now(), 1f))
-        viewModel = createViewModel()
-
-        viewModel.onPeriodChanged(StatsPeriod.FORTY_DAYS)
-
-        val goals = viewModel.uiState.value.goals
-        assertTrue(goals.items.isEmpty())
-        assertEquals(1, goals.dailyPoints.size)
+        assertEquals(null, viewModel.uiState.value.overview.completionDelta)
     }
 
     @Test
     fun `the delta is computed against the previous period of the same length`() = runTest {
-        prayerRepository.periodStats = PeriodStats(congregationPct = 0, individualPct = 0, missedPct = 0, completionPct = 80)
+        val today = LocalDate.now()
+        prayerRepository.seedDailyCounts(today, StatusCounts(congregation = 8, qazaPending = 2)) // 80%
+        prayerRepository.seedDailyCounts(today.minusDays(StatsPeriod.MONTH.days.toLong()), StatusCounts(congregation = 5, qazaPending = 5)) // 50%
         viewModel = createViewModel()
-        // Same fake stats for both the current and previous call -> delta should be 0.
-        assertEquals(0, viewModel.uiState.value.summary.completionDelta)
+        assertEquals(30, viewModel.uiState.value.overview.completionDelta)
     }
 
     @Test

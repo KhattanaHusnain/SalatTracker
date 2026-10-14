@@ -35,15 +35,23 @@ data class GoalWithProgress(
     val isComplete: Boolean get() = currentAmount >= goal.targetAmount
 }
 
-/** A goal's check-in completion rate over an arbitrary date range, for the Stats bar chart. */
-data class GoalCompletionStat(
-    val goalName: String,
-    val category: GoalCategory,
-    val completionRate: Float,
+/** One check-in event, for Stats to replay against a goal's own day/week/month periods. */
+data class GoalCheckIn(
+    val date: LocalDate,
+    val amount: Int,
 )
 
-/** Average across-goals completion rate for a single day, for the Stats "Week" bar chart. */
-data class GoalDailyPoint(
-    val date: LocalDate,
-    val completionRate: Float,
+/**
+ * How a goal did over an arbitrary Stats date range, judged by the goal's own frequency rather
+ * than averaged per day — see [com.salattracker.domain.usecase.goalPeriodStat]. [periodsCounted]
+ * is 0 (and [periodsHit] meaningless) when the goal didn't exist yet anywhere in the range.
+ */
+data class GoalPeriodStat(
+    val goalName: String,
+    val category: GoalCategory,
+    val frequency: GoalFrequency,
+    val unit: String,
+    val loggedAmount: Int,
+    val periodsHit: Int,
+    val periodsCounted: Int,
 )

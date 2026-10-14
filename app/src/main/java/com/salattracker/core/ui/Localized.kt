@@ -12,6 +12,7 @@ import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.usecase.CalendarViewType
 import com.salattracker.domain.usecase.HijriDate
 import com.salattracker.domain.usecase.IslamicEvent
+import java.time.DayOfWeek
 
 /**
  * Locale-aware display labels for domain enums. Centralised here so the name→string-resource
@@ -68,6 +69,21 @@ val GoalFrequency.labelRes: Int get() = when (this) {
 @Composable fun PrayerStatus.label(): String = stringResource(labelRes)
 @Composable fun GoalCategory.label(): String = stringResource(labelRes)
 @Composable fun GoalFrequency.label(): String = stringResource(labelRes)
+
+/** Reuses Calendar's weekday strings rather than java.time's Locale-based day names, which read
+ * the system locale in a way Compose can't observe for recomposition on locale change. */
+@get:StringRes
+val DayOfWeek.shortLabelRes: Int get() = when (this) {
+    DayOfWeek.SUNDAY    -> R.string.weekday_sun
+    DayOfWeek.MONDAY    -> R.string.weekday_mon
+    DayOfWeek.TUESDAY   -> R.string.weekday_tue
+    DayOfWeek.WEDNESDAY -> R.string.weekday_wed
+    DayOfWeek.THURSDAY  -> R.string.weekday_thu
+    DayOfWeek.FRIDAY    -> R.string.weekday_fri
+    DayOfWeek.SATURDAY  -> R.string.weekday_sat
+}
+
+@Composable fun DayOfWeek.shortLabel(): String = stringResource(shortLabelRes)
 
 @get:StringRes
 val CalendarViewType.labelRes: Int get() = when (this) {

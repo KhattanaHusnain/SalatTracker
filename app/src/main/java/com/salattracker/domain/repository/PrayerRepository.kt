@@ -8,13 +8,6 @@ import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 import java.time.LocalTime
 
-/**
- * CHANGED:
- * - Fixed broken interface body (all methods now inside the interface braces).
- * - Removed cross-layer imports of feature.stats.* types — replaced with domain-
- *   owned types StreakPoint and PrayerBreakdown declared at the bottom of this file.
- * - PeriodStats moved inside this file.
- */
 interface PrayerRepository {
 
     // ── Today / single day ────────────────────────────────────────────────────
@@ -64,22 +57,13 @@ interface PrayerRepository {
 
     // ── Analytics ─────────────────────────────────────────────────────────────
 
-    suspend fun getStatsForPeriod(from: LocalDate, to: LocalDate): PeriodStats
-
     /**
-     * Percentage-composition points for the status-trend multi-line chart over [from]..[to],
-     * where [days] is the range length driving both bucketing and label format:
-     *   - days ≤ 40   → one point per day  (label "EEE" when days == 7, else "d")
-     *   - 40 < days ≤ 120 → weekly buckets counted back from [to] (label "d MMM")
-     *   - days > 120  → monthly buckets     (label "MMM")
-     * Each point carries the % of recorded prayers in that bucket that were congregation /
-     * individual / qaza (the three sum to ≤ 100; the remainder is un-recorded prayers).
+     * One [StatusCounts] per date that has at least one recorded prayer in [from]..[to] —
+     * dates with nothing recorded are omitted rather than returned as all-zero. Every Stats
+     * number (completion %, perfect days, qaza recovery, the trend line, by-weekday) is derived
+     * from this single source so they can never disagree with each other.
      */
-    suspend fun getStatusTrendPoints(
-        from: LocalDate,
-        to: LocalDate,
-        days: Int,
-    ): List<StatusTrendPoint>
+    suspend fun getDailyStatusCounts(from: LocalDate, to: LocalDate): List<DayStatusCounts>
 
     suspend fun getPrayerBreakdown(
         from: LocalDate,
@@ -96,24 +80,46 @@ interface PrayerRepository {
 
 // ── Domain result types (no feature-layer imports) ────────────────────────────
 
-data class PeriodStats(
-    val congregationPct: Int,
-    val individualPct: Int,
-    val missedPct: Int,
-    /** Congregation + individual as a share of recorded, non-excused prayers — see
-     * [com.salattracker.domain.usecase.completionPercent]. */
-    val completionPct: Int,
-)
+/**
+ * How a set of prayer-entry rows (a single prayer's history, or a single day's five prayers)
+ * broke down by status. [excused] (Menstruation) is neutral — it's left out of [countable] and
+ * [completionPercent] the same way the streak calculation treats it, so it never drags either
+ * down. The four counts are mutually exclusive and need not sum to any fixed total, since a
+ * date range can include dates with nothing recorded at all.
+ */
+data class StatusCounts(
+    val congregation: Int = 0,
+    val individual: Int = 0,
+    val qazaPending: Int = 0,
+    val qazaCompleted: Int = 0,
+    val excused: Int = 0,
+) {
+    val prayed: Int get() = congregation + individual
+    val missed: Int get() = qazaPending + qazaCompleted
+    val countable: Int get() = prayed + missed
 
-/** One x-axis bucket of the status-trend chart: the % of recorded prayers of each status. */
-data class StatusTrendPoint(
-    val label: String,
-    val congregationPct: Int,
-    val individualPct: Int,
-    val qazaPct: Int,
+    /** Prayed as a share of countable prayers, 0–100. Null when [countable] is 0 — there's
+     * nothing to compute a percentage of, so the caller should show "—", not "0%". */
+    val completionPercent: Int? get() = if (countable > 0) (prayed * 100) / countable else null
+
+    operator fun plus(other: StatusCounts) = StatusCounts(
+        congregation  = congregation + other.congregation,
+        individual    = individual + other.individual,
+        qazaPending   = qazaPending + other.qazaPending,
+        qazaCompleted = qazaCompleted + other.qazaCompleted,
+        excused       = excused + other.excused,
+    )
+}
+
+/** One date's status counts across all five prayers. */
+data class DayStatusCounts(
+    val date: LocalDate,
+    val counts: StatusCounts,
 )
 
 data class PrayerBreakdown(
     val prayerType: PrayerType,
-    val completionRate: Float,
-)
+    val counts: StatusCounts,
+) {
+    val completionRate: Float? get() = counts.completionPercent?.let { it / 100f }
+}

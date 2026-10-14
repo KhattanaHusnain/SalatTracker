@@ -2,12 +2,17 @@ package com.salattracker.feature.stats
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.salattracker.domain.model.GoalCompletionStat
-import com.salattracker.domain.model.GoalDailyPoint
-import com.salattracker.domain.model.PrayerType
+import com.salattracker.domain.model.GoalPeriodStat
 import com.salattracker.domain.repository.GoalRepository
 import com.salattracker.domain.repository.PrayerBreakdown
 import com.salattracker.domain.repository.PrayerRepository
+import com.salattracker.domain.repository.StatusCounts
+import com.salattracker.domain.usecase.PerfectDays
+import com.salattracker.domain.usecase.completionPercent
+import com.salattracker.domain.usecase.completionTrend
+import com.salattracker.domain.usecase.perfectDays
+import com.salattracker.domain.usecase.trendBucketFor
+import com.salattracker.domain.usecase.weekdayCompletion
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,6 +20,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.DayOfWeek
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -23,9 +29,10 @@ import javax.inject.Inject
 /**
  * The single range selector that drives every period-gated section of Stats. [days] is the
  * length of the range (inclusive of today), and drives both the date-range math and the
- * point/label resolution policy in the repositories (daily ≤ 40, weekly 41–120, monthly > 120).
- * Display labels live in StatsScreen.kt ([labelRes]) since this is a domain-adjacent enum with
- * no feature-layer imports, and localized strings need @Composable / R access.
+ * trend-bucketing policy in [com.salattracker.domain.usecase.trendBucketFor] (daily ≤ 40,
+ * weekly ≤ 120, monthly beyond). Display labels live in StatsScreen.kt ([labelRes]) since this
+ * is a domain-adjacent enum with no feature-layer imports, and localized strings need
+ * @Composable / R access.
  */
 enum class StatsPeriod(val days: Int) {
     WEEK(7),
@@ -37,13 +44,20 @@ enum class StatsPeriod(val days: Int) {
 
 // ── UI state — one shared period, each section owns its own loading + data ────
 
-data class SummaryUiState(
+/** One point of the completion-trend line — unlike the domain's [com.salattracker.domain.usecase.CompletionTrendPoint],
+ * [completionPct] here is never null: empty buckets are already filtered out before this is built. */
+data class TrendPoint(val start: LocalDate, val completionPct: Int)
+
+data class OverviewUiState(
     val isLoading: Boolean = true,
-    val completionPct: Int = 0,
-    val completionDelta: Int = 0,
-    val congregationPct: Int = 0,
-    val individualPct: Int = 0,
-    val missedPct: Int = 0,
+    val counts: StatusCounts = StatusCounts(),
+    val completionPct: Int? = null,
+    /** Null when the previous period had nothing countable to compare against. */
+    val completionDelta: Int? = null,
+    val perfectDays: PerfectDays = PerfectDays(perfect = 0, counted = 0),
+    val trend: List<TrendPoint> = emptyList(),
+    /** All 7 keys always present; a weekday with no countable prayers maps to null. */
+    val weekday: Map<DayOfWeek, Int?> = emptyMap(),
 )
 
 data class PrayerBreakdownUiState(
@@ -53,28 +67,15 @@ data class PrayerBreakdownUiState(
 
 data class GoalsUiState(
     val isLoading: Boolean = true,
-    // Short ranges (days ≤ 40) show a per-day breakdown (dailyPoints); longer ranges show a per-goal breakdown (items).
-    val items: List<GoalCompletionStat> = emptyList(),
-    val dailyPoints: List<GoalDailyPoint> = emptyList(),
-)
-
-/** Best-ever streak for a single prayer, shown in Streak Records. */
-data class PrayerHighestStreak(
-    val prayerType: PrayerType,
-    val highest: Int,
+    val items: List<GoalPeriodStat> = emptyList(),
 )
 
 data class StatsUiState(
-    val period: StatsPeriod = StatsPeriod.WEEK,
+    val period: StatsPeriod = StatsPeriod.MONTH,
 
-    val summary: SummaryUiState = SummaryUiState(),
+    val overview: OverviewUiState = OverviewUiState(),
     val prayerBreakdown: PrayerBreakdownUiState = PrayerBreakdownUiState(),
     val goals: GoalsUiState = GoalsUiState(),
-
-    // Not period-gated — live per-prayer streak snapshot, shown in Streak Records.
-    val currentStreak: Int = 0,
-    val showAchievement: Boolean = false,
-    val highestStreaks: List<PrayerHighestStreak> = emptyList(),
 
     val error: String? = null,
 )
@@ -92,13 +93,13 @@ class StatsViewModel @Inject constructor(
 
     // One Job per section so a fast period switch cancels an in-flight load for the old period
     // instead of risking it landing after (and overwriting) the new period's result.
-    private var summaryJob: Job? = null
+    private var overviewJob: Job? = null
     private var breakdownJob: Job? = null
     private var goalsJob: Job? = null
 
     init {
-        loadAllForPeriod(StatsPeriod.WEEK, showSkeleton = true)
-        observeStreaks()
+        loadAllForPeriod(StatsPeriod.MONTH, showSkeleton = true)
+        observePrayerChanges()
         observeGoalChanges()
     }
 
@@ -108,36 +109,43 @@ class StatsViewModel @Inject constructor(
     }
 
     private fun loadAllForPeriod(period: StatsPeriod, showSkeleton: Boolean) {
-        loadSummary(period, showSkeleton)
+        loadOverview(period, showSkeleton)
         loadBreakdown(period, showSkeleton)
         loadGoals(period, showSkeleton)
     }
 
-    private fun loadSummary(period: StatsPeriod, showSkeleton: Boolean) {
-        summaryJob?.cancel()
-        summaryJob = viewModelScope.launch {
-            if (showSkeleton) _uiState.update { it.copy(summary = it.summary.copy(isLoading = true)) }
+    private fun loadOverview(period: StatsPeriod, showSkeleton: Boolean) {
+        overviewJob?.cancel()
+        overviewJob = viewModelScope.launch {
+            if (showSkeleton) _uiState.update { it.copy(overview = it.overview.copy(isLoading = true)) }
             runCatching {
                 val today = LocalDate.now()
                 val (from, to) = period.dateRange(today)
-                val stats = repository.getStatsForPeriod(from, to)
-                val prevStats = repository.getStatsForPeriod(from.minusDays(period.days.toLong()), from.minusDays(1))
-                stats to prevStats
-            }.onSuccess { (stats, prevStats) ->
+                val currentDays = repository.getDailyStatusCounts(from, to)
+                val previousDays = repository.getDailyStatusCounts(from.minusDays(period.days.toLong()), from.minusDays(1))
+                Triple(currentDays, previousDays, today)
+            }.onSuccess { (currentDays, previousDays, today) ->
+                val counts = currentDays.fold(StatusCounts()) { acc, d -> acc + d.counts }
+                val prevCounts = previousDays.fold(StatusCounts()) { acc, d -> acc + d.counts }
+                val pct = completionPercent(counts)
+                val prevPct = completionPercent(prevCounts)
+                val trend = completionTrend(currentDays, trendBucketFor(period.days), today)
+                    .mapNotNull { point -> point.completionPct?.let { TrendPoint(point.start, it) } }
                 _uiState.update {
                     it.copy(
-                        summary = it.summary.copy(
-                            isLoading         = false,
-                            completionPct     = stats.completionPct,
-                            completionDelta   = stats.completionPct - prevStats.completionPct,
-                            congregationPct   = stats.congregationPct,
-                            individualPct     = stats.individualPct,
-                            missedPct         = stats.missedPct,
+                        overview = it.overview.copy(
+                            isLoading       = false,
+                            counts          = counts,
+                            completionPct   = pct,
+                            completionDelta = if (pct != null && prevPct != null) pct - prevPct else null,
+                            perfectDays     = perfectDays(currentDays, today),
+                            trend           = trend,
+                            weekday         = weekdayCompletion(currentDays),
                         )
                     )
                 }
             }.onFailure { e ->
-                _uiState.update { it.copy(error = e.message, summary = it.summary.copy(isLoading = false)) }
+                _uiState.update { it.copy(error = e.message, overview = it.overview.copy(isLoading = false)) }
             }
         }
     }
@@ -147,8 +155,7 @@ class StatsViewModel @Inject constructor(
         breakdownJob = viewModelScope.launch {
             if (showSkeleton) _uiState.update { it.copy(prayerBreakdown = it.prayerBreakdown.copy(isLoading = true)) }
             runCatching {
-                val today = LocalDate.now()
-                val (from, to) = period.dateRange(today)
+                val (from, to) = period.dateRange(LocalDate.now())
                 repository.getPrayerBreakdown(from, to)
             }.onSuccess { breakdown ->
                 _uiState.update { it.copy(prayerBreakdown = it.prayerBreakdown.copy(isLoading = false, breakdown = breakdown)) }
@@ -163,35 +170,24 @@ class StatsViewModel @Inject constructor(
         goalsJob = viewModelScope.launch {
             if (showSkeleton) _uiState.update { it.copy(goals = it.goals.copy(isLoading = true)) }
             runCatching {
-                val today = LocalDate.now()
-                val (from, to) = period.dateRange(today)
-                if (period.days <= 40) {
-                    goalRepository.getDailyGoalCompletionPoints(from, to) to emptyList()
-                } else {
-                    emptyList<GoalDailyPoint>() to goalRepository.getGoalCompletionBreakdown(from, to)
-                }
-            }.onSuccess { (dailyPoints, items) ->
-                _uiState.update { it.copy(goals = it.goals.copy(isLoading = false, dailyPoints = dailyPoints, items = items)) }
+                val (from, to) = period.dateRange(LocalDate.now())
+                goalRepository.getGoalPeriodStats(from, to)
+            }.onSuccess { items ->
+                _uiState.update { it.copy(goals = it.goals.copy(isLoading = false, items = items)) }
             }.onFailure { e ->
                 _uiState.update { it.copy(error = e.message, goals = it.goals.copy(isLoading = false)) }
             }
         }
     }
 
-    private fun observeStreaks() {
+    private fun observePrayerChanges() {
         viewModelScope.launch {
-            // Live so Streak Records stays fresh when prayers are marked from another screen.
-            repository.observeStreaks().collect { snapshot ->
-                // The combined "current streak" is the weakest link — days ALL 5 held.
-                val current = snapshot.values.minOfOrNull { it.currentStreak } ?: 0
-                val highest = PrayerType.values().map { PrayerHighestStreak(it, snapshot[it]?.highestStreak ?: 0) }
-                _uiState.update {
-                    it.copy(currentStreak = current, showAchievement = current >= 5, highestStreaks = highest)
-                }
-                // A prayer was marked somewhere (this screen or another) — keep summary and the
-                // per-prayer breakdown in step, without flashing a skeleton over already-visible
-                // data.
-                loadSummary(_uiState.value.period, showSkeleton = false)
+            // observeStreaks() re-emits on every prayer write (and after a backup restore) from
+            // any screen — it's used here purely as a change signal, not for its streak payload,
+            // to keep the Overview and By Prayer cards fresh without flashing a skeleton over
+            // already-visible data.
+            repository.observeStreaks().collect {
+                loadOverview(_uiState.value.period, showSkeleton = false)
                 loadBreakdown(_uiState.value.period, showSkeleton = false)
             }
         }
@@ -199,8 +195,8 @@ class StatsViewModel @Inject constructor(
 
     private fun observeGoalChanges() {
         viewModelScope.launch {
-            // Live so the goals chart stays fresh when a goal is added, checked in, or edited
-            // from elsewhere — no skeleton flash either.
+            // Live so the goals card stays fresh when a goal is added, checked in, or edited from
+            // elsewhere — no skeleton flash either.
             goalRepository.observeActiveGoalsWithProgress().collect {
                 loadGoals(_uiState.value.period, showSkeleton = false)
             }

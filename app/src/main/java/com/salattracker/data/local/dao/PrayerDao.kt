@@ -81,27 +81,17 @@ interface PrayerDao {
     fun observeQazaBalance(userId: String): Flow<List<QazaCountRow>>
 
     // ── Analytics ─────────────────────────────────────────────────────────────
-
-    @Query("""
-        SELECT
-            SUM(CASE WHEN status = 'CONGREGATION'   THEN 1 ELSE 0 END) as congregation,
-            SUM(CASE WHEN status = 'INDIVIDUAL'     THEN 1 ELSE 0 END) as individual,
-            SUM(CASE WHEN status IN ('QAZA_PENDING','QAZA_COMPLETED') THEN 1 ELSE 0 END) as missed,
-            SUM(CASE WHEN status = 'MENSTRUATION'   THEN 1 ELSE 0 END) as excused,
-            COUNT(*) as total
-        FROM prayer_entries
-        WHERE user_id = :userId AND date >= :from AND date <= :to
-    """)
-    suspend fun getAggregateStats(
-        userId: String,
-        from: LocalDate,
-        to: LocalDate,
-    ): AggregateStatsRow
+    // Every status-count query returns the same 5 columns (congregation / individual /
+    // qazaPending / qazaCompleted / excused) so the domain layer can build one StatusCounts
+    // from any of them — see PrayerRepository.StatusCounts.
 
     @Query("""
         SELECT prayer_type,
-            SUM(CASE WHEN status IN ('CONGREGATION','INDIVIDUAL') THEN 1 ELSE 0 END) as done,
-            SUM(CASE WHEN status != 'MENSTRUATION' THEN 1 ELSE 0 END) as total
+            SUM(CASE WHEN status = 'CONGREGATION'   THEN 1 ELSE 0 END) as congregation,
+            SUM(CASE WHEN status = 'INDIVIDUAL'     THEN 1 ELSE 0 END) as individual,
+            SUM(CASE WHEN status = 'QAZA_PENDING'   THEN 1 ELSE 0 END) as qazaPending,
+            SUM(CASE WHEN status = 'QAZA_COMPLETED' THEN 1 ELSE 0 END) as qazaCompleted,
+            SUM(CASE WHEN status = 'MENSTRUATION'   THEN 1 ELSE 0 END) as excused
         FROM prayer_entries
         WHERE user_id = :userId AND date >= :from AND date <= :to
         GROUP BY prayer_type
@@ -114,23 +104,11 @@ interface PrayerDao {
 
     @Query("""
         SELECT date,
-            SUM(CASE WHEN status IN ('CONGREGATION','INDIVIDUAL') THEN 1 ELSE 0 END) as completedCount
-        FROM prayer_entries
-        WHERE user_id = :userId AND date >= :from AND date <= :to
-        GROUP BY date
-        ORDER BY date ASC
-    """)
-    suspend fun getDailyCompletionPoints(
-        userId: String,
-        from: LocalDate,
-        to: LocalDate,
-    ): List<DailyCompletionRow>
-
-    @Query("""
-        SELECT date,
-            SUM(CASE WHEN status = 'CONGREGATION' THEN 1 ELSE 0 END) as congregation,
-            SUM(CASE WHEN status = 'INDIVIDUAL'   THEN 1 ELSE 0 END) as individual,
-            SUM(CASE WHEN status IN ('QAZA_PENDING','QAZA_COMPLETED') THEN 1 ELSE 0 END) as qaza
+            SUM(CASE WHEN status = 'CONGREGATION'   THEN 1 ELSE 0 END) as congregation,
+            SUM(CASE WHEN status = 'INDIVIDUAL'     THEN 1 ELSE 0 END) as individual,
+            SUM(CASE WHEN status = 'QAZA_PENDING'   THEN 1 ELSE 0 END) as qazaPending,
+            SUM(CASE WHEN status = 'QAZA_COMPLETED' THEN 1 ELSE 0 END) as qazaCompleted,
+            SUM(CASE WHEN status = 'MENSTRUATION'   THEN 1 ELSE 0 END) as excused
         FROM prayer_entries
         WHERE user_id = :userId AND date >= :from AND date <= :to
         GROUP BY date
@@ -150,28 +128,20 @@ data class QazaCountRow(
     @ColumnInfo(name = "pendingCount") val pendingCount: Int,
 )
 
-data class AggregateStatsRow(
-    @ColumnInfo(name = "congregation") val congregation: Int,
-    @ColumnInfo(name = "individual")   val individual: Int,
-    @ColumnInfo(name = "missed")       val missed: Int,
-    @ColumnInfo(name = "excused")      val excused: Int,
-    @ColumnInfo(name = "total")        val total: Int,
-)
-
 data class PrayerBreakdownRow(
-    @ColumnInfo(name = "prayer_type") val prayerType: PrayerType,
-    @ColumnInfo(name = "done")        val done: Int,
-    @ColumnInfo(name = "total")       val total: Int,
-)
-
-data class DailyCompletionRow(
-    @ColumnInfo(name = "date")           val date: LocalDate,
-    @ColumnInfo(name = "completedCount") val completedCount: Int,
+    @ColumnInfo(name = "prayer_type")   val prayerType: PrayerType,
+    @ColumnInfo(name = "congregation")  val congregation: Int,
+    @ColumnInfo(name = "individual")    val individual: Int,
+    @ColumnInfo(name = "qazaPending")   val qazaPending: Int,
+    @ColumnInfo(name = "qazaCompleted") val qazaCompleted: Int,
+    @ColumnInfo(name = "excused")       val excused: Int,
 )
 
 data class DailyStatusCountRow(
-    @ColumnInfo(name = "date")         val date: LocalDate,
-    @ColumnInfo(name = "congregation") val congregation: Int,
-    @ColumnInfo(name = "individual")   val individual: Int,
-    @ColumnInfo(name = "qaza")         val qaza: Int,
+    @ColumnInfo(name = "date")          val date: LocalDate,
+    @ColumnInfo(name = "congregation")  val congregation: Int,
+    @ColumnInfo(name = "individual")    val individual: Int,
+    @ColumnInfo(name = "qazaPending")   val qazaPending: Int,
+    @ColumnInfo(name = "qazaCompleted") val qazaCompleted: Int,
+    @ColumnInfo(name = "excused")       val excused: Int,
 )
