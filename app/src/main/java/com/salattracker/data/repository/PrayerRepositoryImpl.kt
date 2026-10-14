@@ -6,6 +6,7 @@ import com.salattracker.data.local.preferences.DataStoreSettingsRepository
 import com.salattracker.data.remote.api.AlAdhanService
 import com.salattracker.domain.model.*
 import com.salattracker.domain.repository.*
+import com.salattracker.domain.usecase.completionPercent
 import kotlinx.coroutines.flow.*
 import java.time.LocalDate
 import java.time.LocalTime
@@ -149,6 +150,7 @@ class PrayerRepositoryImpl @Inject constructor(
             congregationPct = (row.congregation * 100) / total,
             individualPct   = (row.individual   * 100) / total,
             missedPct       = (row.missed        * 100) / total,
+            completionPct   = completionPercent(row.congregation, row.individual, row.excused, row.total),
         )
     }
 

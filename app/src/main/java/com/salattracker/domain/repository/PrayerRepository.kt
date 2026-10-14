@@ -100,6 +100,9 @@ data class PeriodStats(
     val congregationPct: Int,
     val individualPct: Int,
     val missedPct: Int,
+    /** Congregation + individual as a share of recorded, non-excused prayers — see
+     * [com.salattracker.domain.usecase.completionPercent]. */
+    val completionPct: Int,
 )
 
 /** One x-axis bucket of the status-trend chart: the % of recorded prayers of each status. */

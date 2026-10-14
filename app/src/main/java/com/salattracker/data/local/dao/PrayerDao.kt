@@ -87,6 +87,7 @@ interface PrayerDao {
             SUM(CASE WHEN status = 'CONGREGATION'   THEN 1 ELSE 0 END) as congregation,
             SUM(CASE WHEN status = 'INDIVIDUAL'     THEN 1 ELSE 0 END) as individual,
             SUM(CASE WHEN status IN ('QAZA_PENDING','QAZA_COMPLETED') THEN 1 ELSE 0 END) as missed,
+            SUM(CASE WHEN status = 'MENSTRUATION'   THEN 1 ELSE 0 END) as excused,
             COUNT(*) as total
         FROM prayer_entries
         WHERE user_id = :userId AND date >= :from AND date <= :to
@@ -100,7 +101,7 @@ interface PrayerDao {
     @Query("""
         SELECT prayer_type,
             SUM(CASE WHEN status IN ('CONGREGATION','INDIVIDUAL') THEN 1 ELSE 0 END) as done,
-            COUNT(*) as total
+            SUM(CASE WHEN status != 'MENSTRUATION' THEN 1 ELSE 0 END) as total
         FROM prayer_entries
         WHERE user_id = :userId AND date >= :from AND date <= :to
         GROUP BY prayer_type
@@ -153,6 +154,7 @@ data class AggregateStatsRow(
     @ColumnInfo(name = "congregation") val congregation: Int,
     @ColumnInfo(name = "individual")   val individual: Int,
     @ColumnInfo(name = "missed")       val missed: Int,
+    @ColumnInfo(name = "excused")      val excused: Int,
     @ColumnInfo(name = "total")        val total: Int,
 )
 
