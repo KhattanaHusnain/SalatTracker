@@ -32,8 +32,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun StatsScreen(
     uiState: StatsUiState,
-    onStatusTrendPeriodChanged: (StatsPeriod) -> Unit,
-    onGoalsBarPeriodChanged: (StatsPeriod) -> Unit,
+    onPeriodChanged: (StatsPeriod) -> Unit,
     onAddGoalClick: () -> Unit = {},
     onErrorDismiss: () -> Unit = {},
 ) {
@@ -48,10 +47,11 @@ fun StatsScreen(
         ) {
             Spacer(modifier = Modifier.height(4.dp))
 
+            PeriodToggle(selected = uiState.period, onSelect = onPeriodChanged)
             HighestStreaksCard(streaks = uiState.highestStreaks)
-            MetricsSection(state = uiState.metrics)
-            StatusTrendCard(state = uiState.statusTrend, onPeriodChanged = onStatusTrendPeriodChanged)
-            DailyGoalsBarCard(state = uiState.goalsBar, onPeriodChanged = onGoalsBarPeriodChanged, onAddGoalClick = onAddGoalClick)
+            MetricsSection(state = uiState.summary)
+            StatusTrendCard(state = uiState.statusMix)
+            DailyGoalsBarCard(state = uiState.goals, period = uiState.period, onAddGoalClick = onAddGoalClick)
 
             if (uiState.showAchievement) AchievementBanner(streak = uiState.currentStreak)
         }
@@ -65,7 +65,16 @@ fun StatsScreen(
     }
 }
 
-// ── Shared period selector — horizontally-scrollable pill chips ─────────────────
+// ── Shared period selector — one row drives every section ───────────────────────
+
+@get:androidx.annotation.StringRes
+private val StatsPeriod.labelRes: Int get() = when (this) {
+    StatsPeriod.WEEK        -> R.string.stats_period_7d
+    StatsPeriod.MONTH       -> R.string.stats_period_30d
+    StatsPeriod.FORTY_DAYS  -> R.string.stats_period_40d
+    StatsPeriod.NINETY_DAYS -> R.string.stats_period_90d
+    StatsPeriod.YEAR        -> R.string.stats_period_1y
+}
 
 @Composable
 private fun PeriodToggle(selected: StatsPeriod, onSelect: (StatsPeriod) -> Unit) {
@@ -75,7 +84,7 @@ private fun PeriodToggle(selected: StatsPeriod, onSelect: (StatsPeriod) -> Unit)
     ) {
         StatsPeriod.values().forEach { period ->
             PeriodChip(
-                label      = period.displayLabel,
+                label      = stringResource(period.labelRes),
                 isSelected = selected == period,
                 onClick    = { onSelect(period) },
             )
@@ -148,20 +157,20 @@ private val PrayerType.streakIconRes get() = when (this) {
 // ── Metrics section (congregation / individual / missed) ─────────────────────
 
 @Composable
-private fun MetricsSection(state: MetricsUiState) {
+private fun MetricsSection(state: SummaryUiState) {
     if (state.isLoading) MetricsGridSkeleton() else MetricsGrid(state)
 }
 
 @Composable
-private fun MetricsGrid(state: MetricsUiState) {
+private fun MetricsGrid(state: SummaryUiState) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         MetricCardPrimary(stringResource(R.string.stats_congregation_pct), "${state.congregationPct}%",
-            state.congregationPct / 100f, state.congregationDelta, R.drawable.ic_groups)
+            state.congregationPct / 100f, state.completionDelta, R.drawable.ic_groups)
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             MetricCardSecondary(Modifier.weight(1f), stringResource(R.string.stats_individual_pct), "${state.individualPct}%",
                 state.individualPct / 100f, SalatOnPrimaryContainer, R.drawable.ic_person)
             MetricCardSecondary(Modifier.weight(1f), stringResource(R.string.stats_missed_qaza), "${state.missedPct}%",
-                state.missedPct / 100f, SalatTertiary, R.drawable.ic_history_edu)
+                state.missedPct / 100f, SalatStatusQazaPending, R.drawable.ic_history_edu)
         }
     }
 }
@@ -238,18 +247,11 @@ private val IndividualColor   = SalatStatusIndividual
 private val QazaColor         = SalatStatusQazaPending
 
 @Composable
-private fun StatusTrendCard(state: StatusTrendUiState, onPeriodChanged: (StatsPeriod) -> Unit) {
+private fun StatusTrendCard(state: StatusMixUiState) {
     Surface(Modifier.fillMaxWidth(), RoundedCornerShape(16.dp), SalatSurface,
         border = BorderStroke(1.dp, SalatSecondaryContainer), shadowElevation = 2.dp) {
         Column(Modifier.padding(20.dp)) {
-            Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.CenterVertically) {
-                Column {
-                    Text(stringResource(R.string.stats_prayer_trend), color = SalatPrimary, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily)
-                    Text(stringResource(R.string.stats_composition_over, state.period.displayLabel.lowercase()), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily)
-                }
-            }
-            Spacer(Modifier.height(12.dp))
-            PeriodToggle(selected = state.period, onSelect = onPeriodChanged)
+            Text(stringResource(R.string.stats_prayer_trend), color = SalatPrimary, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily)
             Spacer(Modifier.height(12.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 TrendLegendItem(CongregationColor, stringResource(R.string.status_congregation))
@@ -383,8 +385,8 @@ private fun BarChart(items: List<BarChartItem>) {
 // ── Daily goals bar chart ──────────────────────────────────────────────────────
 
 @Composable
-private fun DailyGoalsBarCard(state: GoalsBarUiState, onPeriodChanged: (StatsPeriod) -> Unit, onAddGoalClick: () -> Unit) {
-    val perDay = state.period.days <= 28
+private fun DailyGoalsBarCard(state: GoalsUiState, period: StatsPeriod, onAddGoalClick: () -> Unit) {
+    val perDay = period.days <= 40
     val isEmpty = if (perDay) state.dailyPoints.isEmpty() else state.items.isEmpty()
 
     Surface(Modifier.fillMaxWidth(), RoundedCornerShape(16.dp), SalatSurface,
@@ -394,8 +396,6 @@ private fun DailyGoalsBarCard(state: GoalsBarUiState, onPeriodChanged: (StatsPer
                 Text(stringResource(R.string.stats_daily_goals), color = SalatPrimary, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily)
                 Text(stringResource(R.string.stats_completion_rate), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily)
             }
-            Spacer(Modifier.height(12.dp))
-            PeriodToggle(selected = state.period, onSelect = onPeriodChanged)
             Spacer(Modifier.height(20.dp))
             if (state.isLoading) {
                 BarChartSkeleton()
@@ -485,18 +485,19 @@ private fun AchievementBanner(streak: Int) {
 fun StatsScreenPreview() {
     StatsScreen(
         uiState = StatsUiState(
-            metrics = MetricsUiState(
-                isLoading = false, period = StatsPeriod.WEEK,
-                congregationPct = 65, individualPct = 25, missedPct = 10, congregationDelta = 5,
+            period = StatsPeriod.WEEK,
+            summary = SummaryUiState(
+                isLoading = false,
+                congregationPct = 65, individualPct = 25, missedPct = 10, completionPct = 90, completionDelta = 5,
             ),
-            statusTrend = StatusTrendUiState(
-                isLoading = false, period = StatsPeriod.WEEK,
+            statusMix = StatusMixUiState(
+                isLoading = false,
                 points = listOf("Mon","Tue","Wed","Thu","Fri","Sat","Sun").mapIndexed { i, d ->
                     StatusTrendPoint(d, listOf(60,80,70,90,85,75,100)[i], listOf(40,20,20,10,15,25,0)[i], listOf(0,0,10,0,0,0,0)[i])
                 },
             ),
-            goalsBar = GoalsBarUiState(
-                isLoading = false, period = StatsPeriod.WEEK,
+            goals = GoalsUiState(
+                isLoading = false,
                 dailyPoints = (6 downTo 0).map { daysAgo ->
                     GoalDailyPoint(java.time.LocalDate.now().minusDays(daysAgo.toLong()), listOf(0.4f,0.6f,1f,0.8f,0.5f,0.9f,0.74f)[6 - daysAgo])
                 },
@@ -509,8 +510,7 @@ fun StatsScreenPreview() {
             currentStreak = 5, showAchievement = true,
             highestStreaks = PrayerType.values().mapIndexed { i, t -> PrayerHighestStreak(t, listOf(42,20,15,8,30)[i]) },
         ),
-        onStatusTrendPeriodChanged = {},
-        onGoalsBarPeriodChanged    = {},
-        onAddGoalClick             = {},
+        onPeriodChanged = {},
+        onAddGoalClick  = {},
     )
 }
