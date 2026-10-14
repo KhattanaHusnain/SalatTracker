@@ -256,7 +256,7 @@ internal val PrayerType.iconRes get() = when (this) {
 }
 
 internal val GoalCategory.iconRes get() = when (this) {
-    GoalCategory.SALAT   -> R.drawable.ic_mosque
+    GoalCategory.SALAT   -> R.drawable.ic_praying
     GoalCategory.QURAN   -> R.drawable.ic_history_edu
     GoalCategory.FASTING -> R.drawable.ic_schedule
     GoalCategory.CHARITY -> R.drawable.ic_workspace_premium
