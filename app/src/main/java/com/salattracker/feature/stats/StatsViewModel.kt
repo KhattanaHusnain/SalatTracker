@@ -2,6 +2,7 @@ package com.salattracker.feature.stats
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.salattracker.core.util.runCatchingCancellable
 import com.salattracker.domain.model.GoalPeriodStat
 import com.salattracker.domain.repository.GoalRepository
 import com.salattracker.domain.repository.PrayerBreakdown
@@ -118,7 +119,7 @@ class StatsViewModel @Inject constructor(
         overviewJob?.cancel()
         overviewJob = viewModelScope.launch {
             if (showSkeleton) _uiState.update { it.copy(overview = it.overview.copy(isLoading = true)) }
-            runCatching {
+            runCatchingCancellable {
                 val today = LocalDate.now()
                 val (from, to) = period.dateRange(today)
                 val currentDays = repository.getDailyStatusCounts(from, to)
@@ -154,7 +155,7 @@ class StatsViewModel @Inject constructor(
         breakdownJob?.cancel()
         breakdownJob = viewModelScope.launch {
             if (showSkeleton) _uiState.update { it.copy(prayerBreakdown = it.prayerBreakdown.copy(isLoading = true)) }
-            runCatching {
+            runCatchingCancellable {
                 val (from, to) = period.dateRange(LocalDate.now())
                 repository.getPrayerBreakdown(from, to)
             }.onSuccess { breakdown ->
@@ -169,7 +170,7 @@ class StatsViewModel @Inject constructor(
         goalsJob?.cancel()
         goalsJob = viewModelScope.launch {
             if (showSkeleton) _uiState.update { it.copy(goals = it.goals.copy(isLoading = true)) }
-            runCatching {
+            runCatchingCancellable {
                 val (from, to) = period.dateRange(LocalDate.now())
                 goalRepository.getGoalPeriodStats(from, to)
             }.onSuccess { items ->
