@@ -1,12 +1,16 @@
 package com.salattracker.core.ui
 
-import androidx.compose.animation.core.*
-import androidx.compose.foundation.*
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -39,19 +43,24 @@ data class DayDetailPrayerRow(
 /**
  * Full-height modal bottom sheet showing all 5 prayers for a selected day.
  *
- * Tapping any prayer row opens the nested [PrayerStatusBottomSheet].
+ * Tapping a markable row calls [onPrayerClick] with that prayer's type — the caller owns
+ * opening whatever single-prayer status editor it uses (every current caller reuses
+ * [PrayerStatusBottomSheet], stacked independently on top of this one, rather than this sheet
+ * owning a nested picker of its own).
+ *
+ * [hijriLabel] is optional: pass null when a Hijri conversion isn't available (or not wanted)
+ * for this date, and the subtitle falls back to just the completed-count summary.
  *
  * Usage:
  *   var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
  *
  *   selectedDate?.let { date ->
  *       DayDetailBottomSheet(
- *           date        = date,
- *           hijriLabel  = "22 Rajab 1445",
- *           prayers     = uiState.dayPrayers,
- *           isSaving    = uiState.isSaving,
- *           onDismiss   = { selectedDate = null },
- *           onStatusSave = { type, status -> viewModel.save(date, type, status) },
+ *           date         = date,
+ *           hijriLabel   = "22 Rajab 1445 AH",
+ *           prayers      = uiState.dayPrayers,
+ *           onDismiss    = { selectedDate = null },
+ *           onPrayerClick = { type -> viewModel.onPrayerClick(date, type) },
  *       )
  *   }
  */
@@ -59,15 +68,11 @@ data class DayDetailPrayerRow(
 @Composable
 fun DayDetailBottomSheet(
     date: LocalDate,
-    hijriLabel: String,
+    hijriLabel: String?,
     prayers: List<DayDetailPrayerRow>,
-    isSaving: Boolean = false,
     onDismiss: () -> Unit,
-    onStatusSave: (PrayerType, PrayerStatus) -> Unit,
+    onPrayerClick: (PrayerType) -> Unit,
 ) {
-    // Tracks which prayer row is currently open in the nested status sheet
-    var sheetTarget by remember { mutableStateOf<PrayerType?>(null) }
-
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
@@ -116,7 +121,7 @@ fun DayDetailBottomSheet(
                 prayers.forEach { row ->
                     DayDetailPrayerRowItem(
                         row     = row,
-                        onClick = { if (row.isMarkable) sheetTarget = row.type },
+                        onClick = { if (row.isMarkable) onPrayerClick(row.type) },
                     )
                 }
             }
@@ -161,33 +166,14 @@ fun DayDetailBottomSheet(
             }
         }
     }
-
-    // ── Nested status sheet (opens on top of this sheet) ─────────────────────
-    sheetTarget?.let { targetType ->
-        val currentStatus = prayers.find { it.type == targetType }?.status
-            ?: PrayerStatus.NOT_RECORDED
-        PrayerStatusBottomSheet(
-            args = PrayerStatusSheetArgs(
-                prayerType    = targetType,
-                date          = date,
-                currentStatus = currentStatus,
-            ),
-            isSaving  = isSaving,
-            onDismiss = { sheetTarget = null },
-            onSave    = { newStatus ->
-                onStatusSave(targetType, newStatus)
-                sheetTarget = null
-            },
-        )
-    }
 }
 
 // ── Header ────────────────────────────────────────────────────────────────────
 
 @Composable
-private fun DayDetailHeader(
+internal fun DayDetailHeader(
     date: LocalDate,
-    hijriLabel: String,
+    hijriLabel: String?,
     completedCount: Int,
     totalCount: Int,
     modifier: Modifier = Modifier,
@@ -210,8 +196,9 @@ private fun DayDetailHeader(
                 lineHeight = 34.sp,
             )
             Spacer(modifier = Modifier.height(4.dp))
+            val summary = if (allDone) stringResource(R.string.sheet_all_logged) else stringResource(R.string.sheet_n_of_m_logged, completedCount, totalCount)
             Text(
-                text     = "$hijriLabel  •  ${if (allDone) stringResource(R.string.sheet_all_logged) else stringResource(R.string.sheet_n_of_m_logged, completedCount, totalCount)}",
+                text     = if (hijriLabel != null) "$hijriLabel  •  $summary" else summary,
                 color    = SalatOnSurfaceVariant,
                 fontSize = 14.sp,
                 fontFamily = InterFamily,
@@ -256,12 +243,10 @@ private fun DayDetailHeader(
 // ── Single prayer row ─────────────────────────────────────────────────────────
 
 @Composable
-private fun DayDetailPrayerRowItem(
+internal fun DayDetailPrayerRowItem(
     row: DayDetailPrayerRow,
     onClick: () -> Unit,
 ) {
-    val ripple = rememberUpdatedState(onClick)
-
     Surface(
         onClick      = onClick,
         enabled      = row.isMarkable,
@@ -404,7 +389,7 @@ private val PrayerType.iconRes get() = when (this) {
 fun DayDetailBottomSheetPreview() {
     DayDetailBottomSheet(
         date       = LocalDate.of(2024, 1, 22),
-        hijriLabel = "22 Rajab 1445",
+        hijriLabel = "22 Rajab 1445 AH",
         prayers    = listOf(
             DayDetailPrayerRow(PrayerType.FAJR,    "05:42 AM", PrayerStatus.CONGREGATION),
             DayDetailPrayerRow(PrayerType.DHUHR,   "12:15 PM", PrayerStatus.INDIVIDUAL),
@@ -412,7 +397,7 @@ fun DayDetailBottomSheetPreview() {
             DayDetailPrayerRow(PrayerType.MAGHRIB, "05:58 PM", PrayerStatus.QAZA_PENDING),
             DayDetailPrayerRow(PrayerType.ISHA,    "07:15 PM", PrayerStatus.CONGREGATION),
         ),
-        onDismiss    = {},
-        onStatusSave = { _, _ -> },
+        onDismiss     = {},
+        onPrayerClick = {},
     )
 }

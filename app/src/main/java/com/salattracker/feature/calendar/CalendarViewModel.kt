@@ -32,6 +32,9 @@ data class CalendarUiState(
     val marks: Map<LocalDate, Map<PrayerType, PrayerStatus>> = emptyMap(),
     val selectedTimes: Map<PrayerType, LocalTime>? = null,
     val statusSheet: PrayerStatusSheetArgs? = null,
+    /** Month-grid: the full day sheet open for [selectedDate]. Reuses [selectedTimes]/
+     * [selectedDayStatuses] rather than its own copy, so it updates live the same way. */
+    val daySheetOpen: Boolean = false,
     val isSaving: Boolean = false,
     val error: String? = null,
     val verse: VerseInfo? = null,
@@ -114,8 +117,13 @@ class CalendarViewModel @Inject constructor(
 
     fun onDatePicked(date: LocalDate) = _uiState.update { it.copy(selectedDate = date.coerceToCalendarRange()) }
 
-    /** Tapping a day cell in a grid view (Month, and later Month-grid) selects it. */
+    /** Tapping a day cell in the Month view selects it, loading that day into the inline panel. */
     fun onDaySelected(date: LocalDate) = _uiState.update { it.copy(selectedDate = date) }
+
+    /** Tapping a day cell in the Month-grid view opens the full day sheet for it. */
+    fun onGridDayClick(date: LocalDate) = _uiState.update { it.copy(selectedDate = date, daySheetOpen = true) }
+
+    fun onDaySheetDismiss() = _uiState.update { it.copy(daySheetOpen = false) }
 
     // ── Prayer status editing ────────────────────────────────────────────────
 
