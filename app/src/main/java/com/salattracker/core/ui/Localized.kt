@@ -142,3 +142,13 @@ fun hijriMonthRangeLabel(from: HijriDate, to: HijriDate): String {
 fun hijriYearRangeLabel(startYear: Int, endYear: Int): String =
     if (startYear == endYear) stringResource(R.string.hijri_single_year, startYear)
     else stringResource(R.string.hijri_two_years, startYear, endYear)
+
+/** Goal units are stored as their English keys (so existing goals and backups keep working);
+ * this maps a known key to its localized label and shows anything else as-is. */
+@Composable
+fun goalUnitLabel(unit: String): String = when (unit) {
+    "Time(s)" -> stringResource(R.string.unit_times)
+    "Minutes" -> stringResource(R.string.unit_minutes)
+    "Pages"   -> stringResource(R.string.unit_pages)
+    else      -> unit
+}

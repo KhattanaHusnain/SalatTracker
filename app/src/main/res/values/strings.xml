@@ -216,16 +216,15 @@
 
     <!-- Goals dashboard -->
     <string name="goals_active">Active Goals</string>
-    <string name="goals_in_progress">%1$d IN PROGRESS</string>
-    <string name="goals_todays_focus">Today\'s Focus</string>
-    <string name="goals_progress_glance">Your spiritual progress at a glance</string>
-    <string name="goals_completed_caps">COMPLETED</string>
     <string name="goals_none_yet">No goals yet — tap + to set your first spiritual goal.</string>
-    <string name="goals_progress">Progress</string>
-    <string name="goal_completed">Completed</string>
-    <string name="goal_checkin">Check-in</string>
-    <string name="cd_edit_goal">Edit goal</string>
-    <string name="cd_delete_goal">Delete goal</string>
+    <string name="goals_done_today">Done today: %1$d/%2$d</string>
+    <string name="goals_periodic_done">Weekly &amp; monthly: %1$d/%2$d</string>
+    <string name="goals_nothing_due">Nothing due today</string>
+    <string name="goal_today_progress">Today %1$d/%2$d %3$s</string>
+    <string name="goal_week_progress">This week %1$d/%2$d %3$s</string>
+    <string name="goal_month_progress">This month %1$d/%2$d %3$s</string>
+    <string name="goal_not_due_today">Not due today</string>
+    <string name="goals_archived">Archived (%1$d)</string>
     <string name="goal_delete_title">Delete Goal?</string>
     <string name="goal_delete_desc">This will permanently remove your progress and streaks for this goal. This action cannot be undone.</string>
     <string name="goal_deleting">DELETING GOAL</string>
@@ -239,12 +238,64 @@
     <string name="addgoal_unit">Unit</string>
     <string name="addgoal_reminder">Reminder</string>
     <string name="addgoal_notify_at">Notify me at:</string>
-    <string name="addgoal_duration">Duration (days)</string>
+    <string name="addgoal_templates">Start from a template</string>
+    <string name="addgoal_repeat_on">Repeat on</string>
+    <string name="addgoal_every_day">Every day</string>
+    <string name="addgoal_end_after">End after a set number of days</string>
+    <string name="addgoal_duration_days">Number of days</string>
+    <string name="template_read_quran">Read Quran</string>
+    <string name="template_morning_adhkar">Morning Adhkar</string>
+    <string name="template_evening_adhkar">Evening Adhkar</string>
+    <string name="template_fast_mon_thu">Fast Mon &amp; Thu</string>
+    <string name="template_al_kahf">Surah Al-Kahf on Friday</string>
+    <string name="template_tahajjud">Tahajjud Prayer</string>
+    <string name="template_sadaqah">Weekly Sadaqah</string>
+    <string name="unit_times">Time(s)</string>
+    <string name="unit_minutes">Minutes</string>
+    <string name="unit_pages">Pages</string>
     <string name="addgoal_create">Create Goal</string>
     <string name="addgoal_created">Goal created!</string>
     <string name="editgoal_delete">Delete Goal</string>
     <string name="editgoal_save">Save Changes</string>
     <string name="editgoal_updated">Goal updated!</string>
+
+    <!-- Goal details / day logging -->
+    <string name="topbar_goal_details">Goal</string>
+    <string name="goal_day_cd">%1$s: %2$s</string>
+    <string name="goal_day_click_label">Log progress</string>
+    <string name="goal_day_long_click_label">Edit this day</string>
+    <string name="goal_day_done">Done</string>
+    <string name="goal_day_partial">Partly done</string>
+    <string name="goal_day_missed">Missed</string>
+    <string name="goal_day_excused">Excused</string>
+    <string name="goal_day_open">Not logged yet</string>
+    <string name="goal_day_not_due">Not due</string>
+    <string name="goal_day_logged">Logged</string>
+    <string name="goal_day_none">Nothing logged</string>
+    <string name="goal_day_locked">Unavailable</string>
+    <string name="goal_log_amount">Amount</string>
+    <string name="goal_log_excused">Excused (skip this day)</string>
+    <string name="goal_log_clear">Clear day</string>
+    <string name="goal_log_save">Save</string>
+    <string name="goal_status_completed">Completed</string>
+    <string name="goal_status_archived">Archived</string>
+    <string name="goal_no_reminder">No reminder</string>
+    <string name="goal_completed_on">Completed %1$s</string>
+    <string name="goal_span">%1$s – %2$s</string>
+    <string name="goal_span_label">Duration</string>
+    <string name="goal_started_on">Started %1$s</string>
+    <string name="goal_ongoing">Ongoing</string>
+    <string name="goal_day_of">Day %1$d/%2$d</string>
+    <string name="goal_unit_days">days</string>
+    <string name="goal_unit_weeks">weeks</string>
+    <string name="goal_unit_months">months</string>
+    <string name="goal_current_streak">Current streak</string>
+    <string name="goal_best_streak">Best streak</string>
+    <string name="goal_total_logged">Total logged</string>
+    <string name="goal_excused_count">Excused days</string>
+    <string name="goal_action_edit">Edit</string>
+    <string name="goal_action_archive">Archive</string>
+    <string name="goal_action_restore">Restore</string>
 
     <!-- Bulk update -->
     <string name="bulk_dur_day">Day</string>
@@ -301,6 +352,8 @@
     <string name="notification_channel_goal_desc">Reminders for your spiritual goals</string>
     <string name="notification_goal_title">Time for: %1$s</string>
     <string name="notification_goal_body">Tap to check in on your goal.</string>
+    <string name="notification_action_check_in">Check-in</string>
+    <string name="notification_action_snooze">Snooze 10m</string>
 
     <!-- Backup & Restore -->
     <string name="backup_title">Backup &amp; Restore</string>

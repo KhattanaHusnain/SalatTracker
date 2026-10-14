@@ -1,13 +1,14 @@
 package com.salattracker.testutil
 
+import com.salattracker.domain.model.GoalHistory
 import com.salattracker.domain.model.GoalPeriodStat
-import com.salattracker.domain.model.GoalWithProgress
 import com.salattracker.domain.model.PrayerEntry
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.StreakInfo
 import com.salattracker.domain.model.VerseInfo
 import com.salattracker.domain.repository.DayStatusCounts
+import com.salattracker.domain.repository.GoalReminderScheduler
 import com.salattracker.domain.repository.GoalRepository
 import com.salattracker.domain.repository.PrayerBreakdown
 import com.salattracker.domain.repository.PrayerRepository
@@ -16,6 +17,7 @@ import com.salattracker.domain.repository.VerseRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -112,38 +114,72 @@ class FakeVerseRepository(private val verse: VerseInfo = VerseInfo("test verse",
     override suspend fun refreshCache() = throw NotImplementedError("not used by this test")
 }
 
-/** In-memory [GoalRepository] exercising only what StatsViewModel actually calls. */
+/** In-memory [GoalRepository] exercising only what the Stats/Goals ViewModels actually call. */
 class FakeGoalRepository : GoalRepository {
 
-    private val activeGoalsFlow = MutableStateFlow<List<GoalWithProgress>>(emptyList())
+    private val historiesFlow = MutableStateFlow<List<GoalHistory>>(emptyList())
 
     var periodStats: List<GoalPeriodStat> = emptyList()
 
     val periodStatsCalls = mutableListOf<Pair<LocalDate, LocalDate>>()
+    val checkIns = mutableListOf<Triple<Long, Int, LocalDate>>()
+    val dayLogs = mutableListOf<DayLogCall>()
+    val archiveCalls = mutableListOf<Pair<Long, Boolean>>()
+    val deletedGoalIds = mutableListOf<Long>()
 
-    fun seedActiveGoals(goals: List<GoalWithProgress>) {
-        activeGoalsFlow.value = goals
+    data class DayLogCall(val goalId: Long, val date: LocalDate, val amount: Int, val skipped: Boolean)
+
+    fun seedHistories(histories: List<GoalHistory>) {
+        historiesFlow.value = histories
     }
 
-    override fun observeActiveGoalsWithProgress(): Flow<List<GoalWithProgress>> = activeGoalsFlow
+    override fun observeGoalHistories(): Flow<List<GoalHistory>> = historiesFlow
+
+    override fun observeGoalHistory(goalId: Long): Flow<GoalHistory?> =
+        historiesFlow.map { list -> list.firstOrNull { it.goal.id == goalId } }
 
     override suspend fun getGoalPeriodStats(from: LocalDate, to: LocalDate): List<GoalPeriodStat> {
         periodStatsCalls += from to to
         return periodStats
     }
 
+    override suspend fun checkIn(goalId: Long, amount: Int, date: LocalDate) {
+        checkIns += Triple(goalId, amount, date)
+    }
+
+    override suspend fun setDayLog(goalId: Long, date: LocalDate, amount: Int, skipped: Boolean) {
+        dayLogs += DayLogCall(goalId, date, amount, skipped)
+    }
+
+    override suspend fun setArchived(goalId: Long, archived: Boolean) {
+        archiveCalls += goalId to archived
+    }
+
+    override suspend fun deleteGoal(goalId: Long) {
+        deletedGoalIds += goalId
+    }
+
     override suspend fun createGoal(
         name: String, category: com.salattracker.domain.model.GoalCategory, frequency: com.salattracker.domain.model.GoalFrequency,
         targetAmount: Int, unit: String, reminderEnabled: Boolean, reminderTime: LocalTime?, durationDays: Int,
+        daysOfWeek: Set<DayOfWeek>, endsAfterDuration: Boolean,
     ): Long = notUsed()
-    override suspend fun checkIn(goalId: Long, amount: Int) = notUsed()
     override suspend fun getAllActiveGoals() = notUsed()
     override suspend fun getGoal(goalId: Long) = notUsed()
     override suspend fun updateGoal(
         goalId: Long, name: String, category: com.salattracker.domain.model.GoalCategory, frequency: com.salattracker.domain.model.GoalFrequency,
         targetAmount: Int, unit: String, reminderEnabled: Boolean, reminderTime: LocalTime?, durationDays: Int,
+        daysOfWeek: Set<DayOfWeek>, endsAfterDuration: Boolean,
     ) = notUsed()
-    override suspend fun deleteGoal(goalId: Long) = notUsed()
 
     private fun notUsed(): Nothing = throw NotImplementedError("not used by this test")
+}
+
+class FakeGoalReminderScheduler : GoalReminderScheduler {
+    val cancelled = mutableListOf<Long>()
+    var rescheduleCount = 0
+        private set
+
+    override fun cancel(goalId: Long) { cancelled += goalId }
+    override fun rescheduleAll() { rescheduleCount++ }
 }

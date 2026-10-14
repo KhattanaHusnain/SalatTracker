@@ -2,44 +2,59 @@ package com.salattracker.feature.goals
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.*
+import com.salattracker.core.ui.goalUnitLabel
 import com.salattracker.core.ui.iconRes
 import com.salattracker.core.ui.label
 import com.salattracker.domain.model.GoalCategory
 import com.salattracker.domain.model.GoalFrequency
-import com.salattracker.domain.model.GoalWithProgress
 import com.salattracker.domain.model.SpiritualGoal
+import com.salattracker.domain.usecase.GoalDayState
+import com.salattracker.domain.usecase.GoalStatus
 import java.time.LocalDate
 
 // ── Goals Screen ──────────────────────────────────────────────────────────────
+// Today summary, then one card per running goal with a 7-day strip (tap = log, long-press =
+// edit that day), then a collapsible Archived section. Everything else lives on the details screen.
 
 @Composable
 fun GoalsScreen(
     uiState: GoalsUiState,
-    onCheckIn: (Long) -> Unit,
-    onEditClick: (Long) -> Unit,
-    onDeleteClick: (Long) -> Unit,
-    onConfirmDelete: () -> Unit,
-    onDismissDeleteConfirm: () -> Unit,
+    onDayTap: (goalId: Long, date: LocalDate) -> Unit,
+    onDayLongPress: (goalId: Long, date: LocalDate) -> Unit,
+    onGoalClick: (Long) -> Unit,
+    onAddGoalClick: () -> Unit,
+    onLogAmountChanged: (Int) -> Unit,
+    onLogSkippedChanged: (Boolean) -> Unit,
+    onLogMarkDone: () -> Unit,
+    onLogSave: () -> Unit,
+    onLogClear: () -> Unit,
+    onLogDismiss: () -> Unit,
     onErrorDismiss: () -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
@@ -49,46 +64,37 @@ fun GoalsScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp)
                 .padding(bottom = 40.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Spacer(modifier = Modifier.height(4.dp))
 
-            TodaysFocusCard(overallPercent = uiState.overallPercent)
-
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Row(
-                    modifier              = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment     = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text       = stringResource(R.string.goals_active),
-                        color      = SalatPrimary,
-                        fontSize   = 20.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        fontFamily = MontserratFamily,
-                    )
-                    Text(
-                        text       = stringResource(R.string.goals_in_progress, uiState.goals.size),
-                        color      = SalatSecondary,
-                        fontSize   = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = InterFamily,
-                    )
-                }
-
-                if (uiState.isLoading) {
-                    // Nothing to show yet — avoid flashing an empty state during the first load.
-                } else if (uiState.goals.isEmpty()) {
-                    EmptyGoalsCard()
+            // Nothing to show yet while loading — avoids flashing the empty state on first load.
+            if (!uiState.isLoading) {
+                if (!uiState.hasAnyGoals) {
+                    EmptyGoalsCard(onAddGoalClick = onAddGoalClick)
                 } else {
-                    uiState.goals.forEach { goalWithProgress ->
-                        GoalCard(
-                            goalWithProgress = goalWithProgress,
-                            onCheckIn = { onCheckIn(goalWithProgress.goal.id) },
-                            onEditClick = { onEditClick(goalWithProgress.goal.id) },
-                            onDeleteClick = { onDeleteClick(goalWithProgress.goal.id) },
+                    TodayCard(uiState.today)
+
+                    if (uiState.active.isNotEmpty()) {
+                        Text(
+                            text       = stringResource(R.string.goals_active),
+                            color      = SalatPrimary,
+                            fontSize   = 20.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            fontFamily = MontserratFamily,
                         )
+                        uiState.active.forEach { card ->
+                            GoalCard(
+                                card = card,
+                                onClick = { onGoalClick(card.goal.id) },
+                                onDayTap = { date -> onDayTap(card.goal.id, date) },
+                                onDayLongPress = { date -> onDayLongPress(card.goal.id, date) },
+                            )
+                        }
+                    }
+
+                    if (uiState.archived.isNotEmpty()) {
+                        ArchivedSection(uiState.archived, onGoalClick)
                     }
                 }
             }
@@ -104,19 +110,23 @@ fun GoalsScreen(
         }
     }
 
-    uiState.deleteConfirmGoal?.let { goalWithProgress ->
-        DeleteGoalConfirmDialog(
-            goalName  = goalWithProgress.goal.name,
-            onConfirm = onConfirmDelete,
-            onDismiss = onDismissDeleteConfirm,
+    uiState.logSheet?.let { sheet ->
+        LogDaySheet(
+            state = sheet,
+            onAmountChanged = onLogAmountChanged,
+            onSkippedChanged = onLogSkippedChanged,
+            onMarkDone = onLogMarkDone,
+            onSave = onLogSave,
+            onClear = onLogClear,
+            onDismiss = onLogDismiss,
         )
     }
 }
 
-// ── Today's Focus summary card ────────────────────────────────────────────────
+// ── Today summary ─────────────────────────────────────────────────────────────
 
 @Composable
-private fun TodaysFocusCard(overallPercent: Int) {
+private fun TodayCard(summary: TodaySummary) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape    = RoundedCornerShape(16.dp),
@@ -129,38 +139,37 @@ private fun TodaysFocusCard(overallPercent: Int) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment     = Alignment.CenterVertically,
         ) {
-            Column {
-                Text(stringResource(R.string.goals_todays_focus), color = SalatPrimary, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily)
-                Text(stringResource(R.string.goals_progress_glance), color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = InterFamily)
-                Spacer(modifier = Modifier.height(12.dp))
-                Row(verticalAlignment = Alignment.Bottom) {
-                    Text("$overallPercent%", color = SalatPrimary, fontSize = 32.sp, fontWeight = FontWeight.Bold, fontFamily = MontserratFamily)
-                    Spacer(modifier = Modifier.width(6.dp))
+            Column(Modifier.weight(1f)) {
+                if (summary.dailyTotal > 0) {
                     Text(
-                        text = stringResource(R.string.goals_completed_caps),
-                        color = SalatSecondary,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        fontFamily = InterFamily,
-                        letterSpacing = 1.sp,
-                        modifier = Modifier.padding(bottom = 6.dp),
+                        text = stringResource(R.string.goals_done_today, summary.dailyDone, summary.dailyTotal),
+                        color = SalatPrimary, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily,
+                    )
+                } else {
+                    Text(
+                        text = stringResource(R.string.goals_nothing_due),
+                        color = SalatPrimary, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily,
+                    )
+                }
+                if (summary.periodicTotal > 0) {
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = stringResource(R.string.goals_periodic_done, summary.periodicDone, summary.periodicTotal),
+                        color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = InterFamily,
                     )
                 }
             }
-            Box(modifier = Modifier.size(72.dp), contentAlignment = Alignment.Center) {
+            Spacer(Modifier.width(16.dp))
+            val total = summary.dailyTotal
+            val fraction = if (total > 0) summary.dailyDone.toFloat() / total else 0f
+            Box(modifier = Modifier.size(64.dp), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(
-                    progress   = { 1f },
-                    modifier   = Modifier.fillMaxSize(),
-                    color      = SalatSecondaryContainer,
-                    strokeWidth = 6.dp,
-                    strokeCap  = StrokeCap.Round,
+                    progress = { 1f }, modifier = Modifier.fillMaxSize(),
+                    color = SalatSecondaryContainer, strokeWidth = 6.dp, strokeCap = StrokeCap.Round,
                 )
                 CircularProgressIndicator(
-                    progress    = { overallPercent / 100f },
-                    modifier    = Modifier.fillMaxSize(),
-                    color       = SalatOnTertiaryContainer,
-                    strokeWidth = 6.dp,
-                    strokeCap   = StrokeCap.Round,
+                    progress = { fraction }, modifier = Modifier.fillMaxSize(),
+                    color = SalatOnTertiaryContainer, strokeWidth = 6.dp, strokeCap = StrokeCap.Round,
                 )
                 Icon(painterResource(R.drawable.ic_auto_awesome), null, tint = SalatPrimaryContainer)
             }
@@ -171,7 +180,7 @@ private fun TodaysFocusCard(overallPercent: Int) {
 // ── Empty state ───────────────────────────────────────────────────────────────
 
 @Composable
-private fun EmptyGoalsCard() {
+private fun EmptyGoalsCard(onAddGoalClick: () -> Unit) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape    = RoundedCornerShape(16.dp),
@@ -188,8 +197,18 @@ private fun EmptyGoalsCard() {
                 color = SalatOnSurfaceVariant,
                 fontFamily = InterFamily,
                 fontSize = 14.sp,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                textAlign = TextAlign.Center,
             )
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = onAddGoalClick,
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = SalatPrimary, contentColor = SalatOnPrimary),
+            ) {
+                Icon(painterResource(R.drawable.ic_add), null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.action_add_goal), fontFamily = InterFamily, fontWeight = FontWeight.SemiBold)
+            }
         }
     }
 }
@@ -198,14 +217,14 @@ private fun EmptyGoalsCard() {
 
 @Composable
 private fun GoalCard(
-    goalWithProgress: GoalWithProgress,
-    onCheckIn: () -> Unit,
-    onEditClick: () -> Unit,
-    onDeleteClick: () -> Unit,
+    card: GoalCardUi,
+    onClick: () -> Unit,
+    onDayTap: (LocalDate) -> Unit,
+    onDayLongPress: (LocalDate) -> Unit,
 ) {
-    val goal = goalWithProgress.goal
-
+    val goal = card.goal
     Surface(
+        onClick  = onClick,
         modifier = Modifier.fillMaxWidth(),
         shape    = RoundedCornerShape(16.dp),
         color    = SalatSurfaceContainerLowest,
@@ -213,116 +232,90 @@ private fun GoalCard(
         shadowElevation = 1.dp,
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier              = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment     = Alignment.Top,
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Box(
-                        modifier = Modifier.size(48.dp).clip(RoundedCornerShape(12.dp)).background(SalatPrimaryContainer),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Icon(painterResource(goal.category.iconRes), null, tint = SalatOnPrimaryContainer)
-                    }
-                    Column {
-                        Text(goal.name, color = SalatOnSurface, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
-                        Text(goal.category.label(), color = SalatSecondary, fontSize = 11.sp, fontFamily = InterFamily)
-                    }
-                }
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Box(
-                    modifier = Modifier.clip(RoundedCornerShape(50)).background(SalatTertiaryContainer).padding(horizontal = 8.dp, vertical = 4.dp),
+                    modifier = Modifier.size(44.dp).clip(RoundedCornerShape(12.dp)).background(SalatPrimaryContainer),
+                    contentAlignment = Alignment.Center,
                 ) {
-                    Text(
-                        text = goal.frequency.label().uppercase(),
-                        color = SalatOnTertiaryContainer,
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = InterFamily,
-                        letterSpacing = 0.5.sp,
-                    )
+                    Icon(painterResource(goal.category.iconRes), null, tint = SalatOnPrimaryContainer)
                 }
+                Column(Modifier.weight(1f)) {
+                    Text(goal.name, color = SalatOnSurface, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(cardSubtitle(card), color = SalatSecondary, fontSize = 12.sp, fontFamily = InterFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+                if (card.streak > 0) StreakBadge(card.streak)
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(stringResource(R.string.goals_progress), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily)
-                Text(
-                    text = "${goalWithProgress.currentAmount}/${goal.targetAmount} ${goal.unit}",
-                    color = SalatOnSurface,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = InterFamily,
-                )
-            }
-            Spacer(modifier = Modifier.height(6.dp))
-            LinearProgressIndicator(
-                progress   = { goalWithProgress.progressFraction },
-                modifier   = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(50)),
-                color      = SalatPrimaryContainer,
-                trackColor = SalatSurfaceContainerHigh,
+            Spacer(modifier = Modifier.height(14.dp))
+            SevenDayStrip(
+                days = card.strip,
+                target = goal.targetAmount,
+                onDayClick = onDayTap,
+                onDayLongClick = onDayLongPress,
             )
+        }
+    }
+}
 
-            Spacer(modifier = Modifier.height(16.dp))
+@Composable
+private fun cardSubtitle(card: GoalCardUi): String {
+    val goal = card.goal
+    val base = when {
+        goal.frequency == GoalFrequency.DAILY && card.skippedToday -> stringResource(R.string.goal_day_excused)
+        goal.frequency == GoalFrequency.DAILY && !card.dueToday    -> stringResource(R.string.goal_not_due_today)
+        goal.frequency == GoalFrequency.DAILY   -> stringResource(R.string.goal_today_progress, card.currentAmount, goal.targetAmount, goalUnitLabel(goal.unit))
+        goal.frequency == GoalFrequency.WEEKLY  -> stringResource(R.string.goal_week_progress, card.currentAmount, goal.targetAmount, goalUnitLabel(goal.unit))
+        else                                    -> stringResource(R.string.goal_month_progress, card.currentAmount, goal.targetAmount, goalUnitLabel(goal.unit))
+    }
+    val day = card.dayIndex
+    return if (day != null) base + " · " + stringResource(R.string.goal_day_of, day, goal.durationDays) else base
+}
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Button(
-                    onClick  = onCheckIn,
-                    enabled  = !goalWithProgress.isComplete,
-                    modifier = Modifier.weight(1f).height(48.dp),
-                    shape    = RoundedCornerShape(12.dp),
-                    colors   = ButtonDefaults.buttonColors(
-                        containerColor = SalatPrimary,
-                        contentColor   = SalatOnPrimary,
-                        disabledContainerColor = SalatSurfaceContainerHigh,
-                        disabledContentColor   = SalatOnSurfaceVariant,
-                    ),
-                ) {
-                    Icon(
-                        painter = painterResource(if (goalWithProgress.isComplete) R.drawable.ic_check_circle_filled else R.drawable.ic_add),
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp),
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = stringResource(if (goalWithProgress.isComplete) R.string.goal_completed else if (goal.targetAmount > 1) R.string.goal_checkin else R.string.action_mark_done),
-                        fontFamily = InterFamily,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 14.sp,
-                    )
-                }
-                IconButton(
-                    onClick  = onEditClick,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(SalatSurfaceContainerHigh),
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_edit_square),
-                        contentDescription = stringResource(R.string.cd_edit_goal),
-                        tint = SalatOnSurfaceVariant,
-                        modifier = Modifier.size(20.dp),
-                    )
-                }
-                IconButton(
-                    onClick  = onDeleteClick,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(SalatErrorContainer),
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_delete),
-                        contentDescription = stringResource(R.string.cd_delete_goal),
-                        tint = SalatOnErrorContainer,
-                        modifier = Modifier.size(20.dp),
-                    )
+// ── Archived section ──────────────────────────────────────────────────────────
+
+@Composable
+private fun ArchivedSection(archived: List<ArchivedGoalUi>, onGoalClick: (Long) -> Unit) {
+    var expanded by rememberSaveable { mutableStateOf(false) }
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .clickable { expanded = !expanded }
+                .padding(vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text(
+                text = stringResource(R.string.goals_archived, archived.size),
+                color = SalatOnSurfaceVariant, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily,
+            )
+            Icon(
+                painterResource(R.drawable.ic_expand_more), null, tint = SalatOnSurfaceVariant,
+                modifier = Modifier.rotate(if (expanded) 180f else 0f),
+            )
+        }
+        if (expanded) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                archived.forEach { item ->
+                    Surface(
+                        onClick = { onGoalClick(item.goal.id) },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        color = SalatSurfaceContainerLow,
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            Icon(painterResource(item.goal.category.iconRes), null, tint = SalatSecondary, modifier = Modifier.size(20.dp))
+                            Text(item.goal.name, color = SalatOnSurface, fontSize = 14.sp, fontFamily = InterFamily, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                            Text(
+                                text = stringResource(if (item.status == GoalStatus.COMPLETED) R.string.goal_status_completed else R.string.goal_status_archived),
+                                color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily,
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -401,37 +394,57 @@ internal fun DeleteGoalConfirmDialog(goalName: String, onConfirm: () -> Unit, on
     )
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
 // ── Preview ───────────────────────────────────────────────────────────────────
+
+private fun sampleStrip(states: List<GoalDayState>, amounts: List<Int>): List<GoalDayUi> {
+    val today = LocalDate.now()
+    return states.mapIndexed { i, state ->
+        val date = today.minusDays((states.size - 1 - i).toLong())
+        GoalDayUi(date, state, amounts[i], isToday = date == today)
+    }
+}
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun GoalsScreenPreview() {
+    val today = LocalDate.now()
+    val quran = SpiritualGoal(1, "Read 5 Pages of Quran", GoalCategory.QURAN, GoalFrequency.DAILY, 5, "Pages", true, null, today.minusDays(20), 30, true)
+    val fast = SpiritualGoal(2, "Fast Mon & Thu", GoalCategory.FASTING, GoalFrequency.WEEKLY, 2, "Time(s)", false, null, today.minusDays(20), 30, true)
     GoalsScreen(
         uiState = GoalsUiState(
             isLoading = false,
-            overallPercent = 68,
-            goals = listOf(
-                GoalWithProgress(
-                    goal = SpiritualGoal(1, "Read 5 Pages of Quran", GoalCategory.QURAN, GoalFrequency.DAILY, 5, "Pages", true, null, LocalDate.now(), 30, true),
-                    currentAmount = 3,
+            today = TodaySummary(dailyDone = 1, dailyTotal = 2, periodicDone = 0, periodicTotal = 1),
+            active = listOf(
+                GoalCardUi(
+                    goal = quran, streak = 12, currentAmount = 3, dueToday = true, skippedToday = false, dayIndex = null,
+                    strip = sampleStrip(
+                        listOf(GoalDayState.DONE, GoalDayState.DONE, GoalDayState.PARTIAL, GoalDayState.MISSED, GoalDayState.SKIPPED, GoalDayState.DONE, GoalDayState.PARTIAL),
+                        listOf(5, 5, 2, 0, 0, 5, 3),
+                    ),
                 ),
-                GoalWithProgress(
-                    goal = SpiritualGoal(2, "Morning Adhkar", GoalCategory.DHIKR, GoalFrequency.DAILY, 1, "Time(s)", true, null, LocalDate.now(), 30, true),
-                    currentAmount = 0,
-                ),
-                GoalWithProgress(
-                    goal = SpiritualGoal(3, "Fast on Mondays", GoalCategory.FASTING, GoalFrequency.WEEKLY, 4, "Time(s)", false, null, LocalDate.now(), 30, true),
-                    currentAmount = 2,
+                GoalCardUi(
+                    goal = fast, streak = 4, currentAmount = 1, dueToday = true, skippedToday = false, dayIndex = null,
+                    strip = sampleStrip(
+                        listOf(GoalDayState.NONE, GoalDayState.LOGGED, GoalDayState.NONE, GoalDayState.NONE, GoalDayState.LOGGED, GoalDayState.NONE, GoalDayState.OPEN),
+                        listOf(0, 1, 0, 0, 1, 0, 0),
+                    ),
                 ),
             ),
+            archived = listOf(ArchivedGoalUi(quran.copy(id = 3, name = "Ramadan Quran Khatm", isActive = false), GoalStatus.ARCHIVED)),
         ),
-        onCheckIn             = {},
-        onEditClick           = {},
-        onDeleteClick         = {},
-        onConfirmDelete       = {},
-        onDismissDeleteConfirm = {},
-        onErrorDismiss        = {},
+        onDayTap = { _, _ -> }, onDayLongPress = { _, _ -> }, onGoalClick = {}, onAddGoalClick = {},
+        onLogAmountChanged = {}, onLogSkippedChanged = {}, onLogMarkDone = {}, onLogSave = {}, onLogClear = {},
+        onLogDismiss = {}, onErrorDismiss = {},
+    )
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun GoalsScreenEmptyPreview() {
+    GoalsScreen(
+        uiState = GoalsUiState(isLoading = false),
+        onDayTap = { _, _ -> }, onDayLongPress = { _, _ -> }, onGoalClick = {}, onAddGoalClick = {},
+        onLogAmountChanged = {}, onLogSkippedChanged = {}, onLogMarkDone = {}, onLogSave = {}, onLogClear = {},
+        onLogDismiss = {}, onErrorDismiss = {},
     )
 }

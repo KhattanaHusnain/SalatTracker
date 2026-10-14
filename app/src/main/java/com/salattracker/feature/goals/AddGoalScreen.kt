@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.*
@@ -17,13 +16,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.salattracker.R
 import com.salattracker.core.theme.*
+import com.salattracker.core.ui.goalUnitLabel
 import com.salattracker.core.ui.iconRes
 import com.salattracker.core.ui.label
 import com.salattracker.domain.model.GoalCategory
@@ -33,24 +32,14 @@ import java.time.format.DateTimeFormatter
 
 // ── Add Goal Screen ───────────────────────────────────────────────────────────
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddGoalScreen(
     uiState: AddGoalUiState,
-    onNameChanged: (String) -> Unit,
-    onCategoryChanged: (GoalCategory) -> Unit,
-    onFrequencyChanged: (GoalFrequency) -> Unit,
-    onTargetAmountChanged: (String) -> Unit,
-    onUnitChanged: (String) -> Unit,
-    onReminderEnabledChanged: (Boolean) -> Unit,
-    onReminderTimeChanged: (LocalTime) -> Unit,
-    onDurationDaysChanged: (String) -> Unit,
+    actions: GoalFormActions,
     onCreateClick: () -> Unit,
     onErrorDismiss: () -> Unit,
     onClearSaveSuccess: () -> Unit,
 ) {
-    var showTimePicker by remember { mutableStateOf(false) }
-
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -61,122 +50,7 @@ fun AddGoalScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Spacer(modifier = Modifier.height(4.dp))
-
-            // ── Goal name ─────────────────────────────────────────────────────
-            FormCard {
-                Text(stringResource(R.string.addgoal_name), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily)
-                Spacer(modifier = Modifier.height(6.dp))
-                OutlinedTextField(
-                    value         = uiState.name,
-                    onValueChange = onNameChanged,
-                    placeholder   = { Text(stringResource(R.string.addgoal_name_hint), fontFamily = InterFamily) },
-                    modifier      = Modifier.fillMaxWidth(),
-                    singleLine    = true,
-                    colors        = outlinedFieldColors(),
-                    shape         = RoundedCornerShape(8.dp),
-                )
-            }
-
-            // ── Category ──────────────────────────────────────────────────────
-            FormCard {
-                Text(stringResource(R.string.addgoal_category), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily)
-                Spacer(modifier = Modifier.height(12.dp))
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    GoalCategory.values().forEach { category ->
-                        CategoryOption(
-                            category   = category,
-                            isSelected = category == uiState.category,
-                            onClick    = { onCategoryChanged(category) },
-                        )
-                    }
-                }
-            }
-
-            // ── Frequency + target ────────────────────────────────────────────
-            FormCard {
-                Text(stringResource(R.string.addgoal_target_freq), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily)
-                Spacer(modifier = Modifier.height(12.dp))
-                FrequencyTabs(selected = uiState.frequency, onSelected = onFrequencyChanged)
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(stringResource(R.string.addgoal_amount), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily)
-                        Spacer(modifier = Modifier.height(6.dp))
-                        OutlinedTextField(
-                            value = uiState.targetAmount,
-                            onValueChange = onTargetAmountChanged,
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            colors = outlinedFieldColors(),
-                            shape = RoundedCornerShape(8.dp),
-                        )
-                    }
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(stringResource(R.string.addgoal_unit), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily)
-                        Spacer(modifier = Modifier.height(6.dp))
-                        UnitDropdown(selected = uiState.unit, onSelected = onUnitChanged)
-                    }
-                }
-            }
-
-            // ── Reminder ──────────────────────────────────────────────────────
-            FormCard {
-                Row(
-                    modifier              = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment     = Alignment.CenterVertically,
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Icon(painterResource(R.drawable.ic_schedule), null, tint = SalatPrimary, modifier = Modifier.size(20.dp))
-                        Text(stringResource(R.string.addgoal_reminder), color = SalatOnSurface, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
-                    }
-                    Switch(
-                        checked = uiState.reminderEnabled,
-                        onCheckedChange = onReminderEnabledChanged,
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = SalatOnPrimary,
-                            checkedTrackColor = SalatPrimary,
-                            uncheckedThumbColor = SalatOutline,
-                            uncheckedTrackColor = SalatOutlineVariant,
-                        ),
-                    )
-                }
-                if (uiState.reminderEnabled) {
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text(stringResource(R.string.addgoal_notify_at), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily)
-                        Surface(
-                            onClick = { showTimePicker = true },
-                            shape   = RoundedCornerShape(8.dp),
-                            color   = SalatSurfaceContainerLow,
-                        ) {
-                            Text(
-                                text = uiState.reminderTime.format(timeFormatter),
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                                color = SalatPrimaryContainer,
-                                fontWeight = FontWeight.SemiBold,
-                                fontFamily = MontserratFamily,
-                            )
-                        }
-                    }
-                }
-            }
-
-            // ── Duration ──────────────────────────────────────────────────────
-            FormCard {
-                Text(stringResource(R.string.addgoal_duration), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily)
-                Spacer(modifier = Modifier.height(6.dp))
-                OutlinedTextField(
-                    value = uiState.durationDays,
-                    onValueChange = onDurationDaysChanged,
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    colors = outlinedFieldColors(),
-                    shape = RoundedCornerShape(8.dp),
-                )
-            }
+            GoalFormFields(form = uiState.form, actions = actions)
         }
 
         // ── Create button (fixed at bottom) ────────────────────────────────────
@@ -216,17 +90,6 @@ fun AddGoalScreen(
                 contentColor   = SalatOnSecondaryContainer,
             ) { Text(stringResource(R.string.addgoal_created), fontFamily = InterFamily) }
         }
-    }
-
-    if (showTimePicker) {
-        TimePickerModal(
-            initialTime = uiState.reminderTime,
-            onTimePicked = { picked ->
-                onReminderTimeChanged(picked)
-                showTimePicker = false
-            },
-            onDismiss = { showTimePicker = false },
-        )
     }
 }
 
@@ -324,7 +187,7 @@ internal fun UnitDropdown(selected: String, onSelected: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
         OutlinedTextField(
-            value = selected,
+            value = goalUnitLabel(selected),
             onValueChange = {},
             readOnly = true,
             modifier = Modifier.fillMaxWidth().menuAnchor(),
@@ -336,7 +199,7 @@ internal fun UnitDropdown(selected: String, onSelected: (String) -> Unit) {
         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             GOAL_UNITS.forEach { unit ->
                 DropdownMenuItem(
-                    text = { Text(unit, fontFamily = InterFamily) },
+                    text = { Text(goalUnitLabel(unit), fontFamily = InterFamily) },
                     onClick = { onSelected(unit); expanded = false },
                 )
             }
@@ -374,19 +237,19 @@ internal fun TimePickerModal(
 
 // ── Preview ───────────────────────────────────────────────────────────────────
 
+internal fun previewFormActions() = GoalFormActions(
+    onNameChanged = {}, onCategoryChanged = {}, onFrequencyChanged = {}, onTargetAmountChanged = {},
+    onUnitChanged = {}, onDayToggled = {}, onEveryDaySelected = {}, onReminderEnabledChanged = {},
+    onReminderTimeChanged = {}, onEndsAfterChanged = {}, onDurationDaysChanged = {},
+    onTemplateSelected = { _, _ -> },
+)
+
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun AddGoalScreenPreview() {
     AddGoalScreen(
         uiState = AddGoalUiState(),
-        onNameChanged = {},
-        onCategoryChanged = {},
-        onFrequencyChanged = {},
-        onTargetAmountChanged = {},
-        onUnitChanged = {},
-        onReminderEnabledChanged = {},
-        onReminderTimeChanged = {},
-        onDurationDaysChanged = {},
+        actions = previewFormActions(),
         onCreateClick = {},
         onErrorDismiss = {},
         onClearSaveSuccess = {},

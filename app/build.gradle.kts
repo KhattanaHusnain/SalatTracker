@@ -112,3 +112,7 @@ dependencies {
 
     testImplementation(libs.kotlinx.coroutines.test)
 }
+// Export Room schemas (committed under app/schemas) so migrations can be verified against them.
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}

@@ -3,6 +3,7 @@ package com.salattracker.di
 import android.content.Context
 import androidx.room.Room
 import com.salattracker.data.local.dao.*
+import com.salattracker.data.local.db.MIGRATION_5_6
 import com.salattracker.data.local.db.SalatDatabase
 import dagger.Module
 import dagger.Provides
@@ -23,7 +24,8 @@ object DatabaseModule {
             SalatDatabase::class.java,
             "salat_tracker.db",
         )
-            .fallbackToDestructiveMigration()   // replace with proper migrations before release
+            .addMigrations(MIGRATION_5_6)
+            .fallbackToDestructiveMigration()   // only for schemas older than v5 (dev builds)
             .build()
 
     @Provides fun providePrayerDao(db: SalatDatabase): PrayerDao          = db.prayerDao()

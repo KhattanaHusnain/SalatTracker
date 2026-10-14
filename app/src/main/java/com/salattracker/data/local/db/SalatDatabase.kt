@@ -16,7 +16,7 @@ import com.salattracker.data.local.entity.*
         SpiritualGoalEntity::class,
         GoalCheckInEntity::class,
     ],
-    version  = 5,
+    version  = 6,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)

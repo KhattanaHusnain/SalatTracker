@@ -6,7 +6,9 @@ import com.salattracker.data.repository.PrayerRepositoryImpl
 import com.salattracker.data.repository.SettingsRepositoryImpl
 import com.salattracker.data.repository.VerseRepositoryImpl
 import com.salattracker.domain.repository.BackupRepository
+import com.salattracker.domain.repository.GoalReminderScheduler
 import com.salattracker.domain.repository.GoalRepository
+import com.salattracker.notification.GoalReminderSchedulerImpl
 import com.salattracker.domain.repository.PrayerRepository
 import com.salattracker.domain.repository.SettingsRepository
 import com.salattracker.domain.repository.VerseRepository
@@ -35,6 +37,10 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindGoalRepository(impl: GoalRepositoryImpl): GoalRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindGoalReminderScheduler(impl: GoalReminderSchedulerImpl): GoalReminderScheduler
 
     @Binds
     @Singleton

@@ -73,8 +73,8 @@ class GoalReminderReceiver : BroadcastReceiver() {
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
             .setContentIntent(contentPendingIntent)
-            .addAction(action(context, goalId, goalName, ACTION_CHECK_IN, R.drawable.ic_add, "Check-in"))
-            .addAction(action(context, goalId, goalName, ACTION_SNOOZE, R.drawable.ic_schedule, "Snooze 10m"))
+            .addAction(action(context, goalId, goalName, ACTION_CHECK_IN, R.drawable.ic_add, context.getString(R.string.notification_action_check_in)))
+            .addAction(action(context, goalId, goalName, ACTION_SNOOZE, R.drawable.ic_schedule, context.getString(R.string.notification_action_snooze)))
             .build()
 
         NotificationManagerCompat.from(context).notify(notificationIdFor(goalId), notification)

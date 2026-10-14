@@ -64,11 +64,11 @@ class RoomBackupLocalSource @Inject constructor(
                 id = it.id, name = it.name, category = it.category, frequency = it.frequency,
                 targetAmount = it.targetAmount, unit = it.unit, reminderEnabled = it.reminderEnabled,
                 reminderTime = it.reminderTime, startDate = it.startDate, durationDays = it.durationDays,
-                isActive = it.isActive,
+                isActive = it.isActive, daysOfWeek = it.daysOfWeek, endsAfterDuration = it.endsAfterDuration,
             )
         }
         val checkIns = backupDao.getAllCheckIns().map {
-            BackupCheckIn(goalId = it.goalId, date = it.date, amount = it.amount)
+            BackupCheckIn(goalId = it.goalId, date = it.date, amount = it.amount, isSkip = it.isSkip)
         }
         val highestStreaks = streakDao.getAllSnapshots(userId).associate { it.prayerType to it.highestStreak }
         val settings = settingsRepository.getCurrentPrefs()
@@ -108,12 +108,12 @@ class RoomBackupLocalSource @Inject constructor(
                         id = it.id, name = it.name, category = it.category, frequency = it.frequency,
                         targetAmount = it.targetAmount, unit = it.unit, reminderEnabled = it.reminderEnabled,
                         reminderTime = it.reminderTime, startDate = it.startDate, durationDays = it.durationDays,
-                        isActive = it.isActive,
+                        isActive = it.isActive, daysOfWeek = it.daysOfWeek, endsAfterDuration = it.endsAfterDuration,
                     )
                 }
             )
             backupDao.insertCheckIns(
-                snapshot.checkIns.map { GoalCheckInEntity(goalId = it.goalId, date = it.date, amount = it.amount) }
+                snapshot.checkIns.map { GoalCheckInEntity(goalId = it.goalId, date = it.date, amount = it.amount, isSkip = it.isSkip) }
             )
             // Seed highest streak so recalculateStreaks() carries it forward correctly;
             // current streak is always recomputed below, never trusted from the backup.

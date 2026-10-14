@@ -31,9 +31,11 @@ object Routes {
     const val PRAYER_REMINDERS = "prayer_reminders"
     const val ADD_GOAL         = "add_goal"
     const val EDIT_GOAL        = "edit_goal/{goalId}"
+    const val GOAL_DETAILS     = "goal_details/{goalId}"
     const val MISSED_PRAYERS   = "missed_prayers"
 
     fun editGoal(goalId: Long) = "edit_goal/$goalId"
+    fun goalDetails(goalId: Long) = "goal_details/$goalId"
 }
 
 /** True for a tab route — including null, the graph's transient state before the first

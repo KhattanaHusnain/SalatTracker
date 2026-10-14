@@ -121,6 +121,10 @@ data class SpiritualGoalEntity(
     @ColumnInfo(name = "start_date")       val startDate: LocalDate,
     @ColumnInfo(name = "duration_days")    val durationDays: Int,
     @ColumnInfo(name = "is_active")        val isActive: Boolean = true,
+    // Bitmask of due weekdays for DAILY goals (bit = DayOfWeek.value - 1); 0 means every day.
+    @ColumnInfo(name = "days_of_week", defaultValue = "0")         val daysOfWeek: Int = 0,
+    // When false the goal is ongoing and duration_days is ignored.
+    @ColumnInfo(name = "ends_after_duration", defaultValue = "0")  val endsAfterDuration: Boolean = false,
 )
 
 // ── Goal check-in entity ──────────────────────────────────────────────────────
@@ -134,4 +138,6 @@ data class GoalCheckInEntity(
     @ColumnInfo(name = "goal_id") val goalId: Long,
     @ColumnInfo(name = "date")    val date: LocalDate,
     @ColumnInfo(name = "amount")  val amount: Int,
+    // An excused day: neither counted as hit nor as missed, and never breaks a streak.
+    @ColumnInfo(name = "is_skip", defaultValue = "0") val isSkip: Boolean = false,
 )

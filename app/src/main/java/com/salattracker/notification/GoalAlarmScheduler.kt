@@ -5,30 +5,25 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import com.salattracker.domain.model.SpiritualGoal
-import java.time.LocalDate
+import com.salattracker.domain.usecase.nextReminderAt
 import java.time.LocalDateTime
 import java.time.ZoneId
 
-/** Schedules one exact daily-repeating alarm per active goal that has a reminder set. */
+/** Schedules one exact alarm per goal, for its next due reminder (see [nextReminderAt]). */
 class GoalAlarmScheduler(private val context: Context) {
 
     private val alarmManager = context.getSystemService(AlarmManager::class.java) as AlarmManager
 
     fun scheduleAll(goals: List<SpiritualGoal>) {
+        val zoneId = ZoneId.systemDefault()
+        val now = LocalDateTime.now()
         goals.forEach { goal ->
-            val reminderTime = goal.reminderTime
-            if (!goal.reminderEnabled || reminderTime == null) {
+            // Null when the reminder is off, the goal is archived, or it has no further due day
+            // (wrong weekday all week, or past its end date) — nothing to schedule then.
+            val triggerAt = nextReminderAt(goal, now)?.atZone(zoneId)?.toInstant()?.toEpochMilli()
+            if (triggerAt == null) {
                 cancel(goal.id)
                 return@forEach
-            }
-
-            val zoneId = ZoneId.systemDefault()
-            val now = System.currentTimeMillis()
-            val todayTrigger = LocalDateTime.of(LocalDate.now(), reminderTime).atZone(zoneId).toInstant().toEpochMilli()
-            val triggerAt = if (todayTrigger > now) {
-                todayTrigger
-            } else {
-                LocalDateTime.of(LocalDate.now().plusDays(1), reminderTime).atZone(zoneId).toInstant().toEpochMilli()
             }
 
             val pendingIntent = pendingIntentFor(goal.id, goal.name)
