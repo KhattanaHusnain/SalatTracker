@@ -30,7 +30,6 @@ import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.StreakInfo
 import com.salattracker.domain.model.VerseInfo
 import com.salattracker.domain.usecase.*
-import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -580,20 +579,6 @@ private fun HomeSkeleton(modifier: Modifier = Modifier) {
         ShimmerBlock(Modifier.fillMaxWidth(), height = 120.dp)
         ShimmerBlock(Modifier.fillMaxWidth(), height = 90.dp)
     }
-}
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-/** Reuses Calendar's weekday strings rather than java.time's Locale-based day names, which
- * read the system locale in a way Compose can't observe for recomposition on locale change. */
-private val DayOfWeek.shortLabelRes: Int get() = when (this) {
-    DayOfWeek.SUNDAY    -> R.string.weekday_sun
-    DayOfWeek.MONDAY    -> R.string.weekday_mon
-    DayOfWeek.TUESDAY   -> R.string.weekday_tue
-    DayOfWeek.WEDNESDAY -> R.string.weekday_wed
-    DayOfWeek.THURSDAY  -> R.string.weekday_thu
-    DayOfWeek.FRIDAY    -> R.string.weekday_fri
-    DayOfWeek.SATURDAY  -> R.string.weekday_sat
 }
 
 // ── Preview ───────────────────────────────────────────────────────────────────

@@ -17,10 +17,9 @@ fun StatsEntry(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     StatsScreen(
-        uiState                    = uiState,
-        onStatusTrendPeriodChanged = viewModel::onStatusTrendPeriodChanged,
-        onGoalsBarPeriodChanged    = viewModel::onGoalsBarPeriodChanged,
-        onAddGoalClick             = onAddGoalClick,
-        onErrorDismiss             = viewModel::clearError,
+        uiState         = uiState,
+        onPeriodChanged = viewModel::onPeriodChanged,
+        onAddGoalClick  = onAddGoalClick,
+        onErrorDismiss  = viewModel::clearError,
     )
 }

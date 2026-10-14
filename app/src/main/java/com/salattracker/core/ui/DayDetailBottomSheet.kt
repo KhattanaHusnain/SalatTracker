@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.*
+import com.salattracker.domain.model.GoalCategory
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
 import java.time.LocalDate
@@ -252,4 +253,12 @@ internal val PrayerType.iconRes get() = when (this) {
     PrayerType.ASR     -> R.drawable.ic_wb_sunny
     PrayerType.MAGHRIB -> R.drawable.ic_wb_twilight
     PrayerType.ISHA    -> R.drawable.ic_dark_mode
+}
+
+internal val GoalCategory.iconRes get() = when (this) {
+    GoalCategory.SALAT   -> R.drawable.ic_mosque
+    GoalCategory.QURAN   -> R.drawable.ic_history_edu
+    GoalCategory.FASTING -> R.drawable.ic_schedule
+    GoalCategory.CHARITY -> R.drawable.ic_workspace_premium
+    GoalCategory.DHIKR   -> R.drawable.ic_local_fire_department
 }

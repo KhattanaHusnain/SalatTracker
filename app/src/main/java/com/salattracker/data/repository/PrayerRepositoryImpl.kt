@@ -9,9 +9,7 @@ import com.salattracker.domain.repository.*
 import kotlinx.coroutines.flow.*
 import java.time.LocalDate
 import java.time.LocalTime
-import java.time.YearMonth
 import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -140,74 +138,22 @@ class PrayerRepositoryImpl @Inject constructor(
     override suspend fun markQazaCompleted(date: LocalDate, prayerType: PrayerType) =
         upsertPrayerStatus(date, prayerType, PrayerStatus.QAZA_COMPLETED)
 
-    // ── Analytics ─────────────────────────────────────────────────────────────
+    // ── Analytics ──────────────────────────────────────────────────────────────
 
-    override suspend fun getStatsForPeriod(from: LocalDate, to: LocalDate): PeriodStats {
-        val row   = prayerDao.getAggregateStats(userId, from, to)
-        val total = row.total.takeIf { it > 0 } ?: 1
-        return PeriodStats(
-            congregationPct = (row.congregation * 100) / total,
-            individualPct   = (row.individual   * 100) / total,
-            missedPct       = (row.missed        * 100) / total,
-        )
-    }
-
-    override suspend fun getStatusTrendPoints(from: LocalDate, to: LocalDate, days: Int): List<StatusTrendPoint> {
-        val byDate = prayerDao.getDailyStatusCounts(userId, from, to).associateBy { it.date }
-        // (date, congregation, individual, qaza) for every day in range — missing days count as zero.
-        val dailyPoints = generateSequence(from) { it.plusDays(1) }
-            .takeWhile { !it.isAfter(to) }
-            .map { date -> byDate[date] ?: DailyStatusCountRow(date, 0, 0, 0) }
-            .toList()
-
-        // Long ranges (> 120 days: 6-month, year): one point per month.
-        if (days > 120) {
-            val fmt = DateTimeFormatter.ofPattern("MMM")
-            return dailyPoints
-                .groupBy { YearMonth.from(it.date) }
-                .toSortedMap()
-                .map { (month, entries) -> entries.toTrendPoint(month.atDay(1).format(fmt)) }
+    override suspend fun getDailyStatusCounts(from: LocalDate, to: LocalDate): List<DayStatusCounts> =
+        prayerDao.getDailyStatusCounts(userId, from, to).map { row ->
+            DayStatusCounts(date = row.date, counts = row.toCounts())
         }
 
-        // Medium ranges (41-120 days: 90-day): 7-day buckets counted backward from [to], so the
-        // most recent bucket ends exactly on [to] (the oldest may be a partial week).
-        if (days > 40) {
-            val fmt = DateTimeFormatter.ofPattern("d MMM")
-            return dailyPoints
-                .groupBy { ChronoUnit.DAYS.between(it.date, to) / 7 }  // 0 = most recent week
-                .toList()
-                .sortedByDescending { (bucket, _) -> bucket }          // oldest bucket first
-                .map { (_, entries) -> entries.toTrendPoint(entries.minOf { it.date }.format(fmt)) }
+    override suspend fun getPrayerBreakdown(from: LocalDate, to: LocalDate): List<PrayerBreakdown> {
+        val byType = prayerDao.getPrayerBreakdown(userId, from, to).associateBy { it.prayerType }
+        // Always 5 rows, in PrayerType declaration order — the DAO's GROUP BY prayer_type has no
+        // ORDER BY, so SQLite returns rows sorted alphabetically by key; a prayer with nothing
+        // recorded in range also needs a (zero) row rather than being silently dropped.
+        return PrayerType.values().map { type ->
+            PrayerBreakdown(prayerType = type, counts = byType[type]?.toCounts() ?: StatusCounts())
         }
-
-        // Short ranges (≤ 40 days): one point per day. Two-line label — "d/M" over the weekday
-        // abbreviation — matching the Daily Goals bar chart.
-        val dateFmt = DateTimeFormatter.ofPattern("d/M")
-        val nameFmt = DateTimeFormatter.ofPattern("EEE")
-        return dailyPoints.map { listOf(it).toTrendPoint("${it.date.format(dateFmt)}\n${it.date.format(nameFmt)}") }
     }
-
-    /** Sums the status counts of the bucket and converts them to percentages of recorded prayers. */
-    private fun List<DailyStatusCountRow>.toTrendPoint(label: String): StatusTrendPoint {
-        val cong = sumOf { it.congregation }
-        val indiv = sumOf { it.individual }
-        val qaza = sumOf { it.qaza }
-        val total = (cong + indiv + qaza).takeIf { it > 0 } ?: 1
-        return StatusTrendPoint(
-            label           = label,
-            congregationPct = cong * 100 / total,
-            individualPct   = indiv * 100 / total,
-            qazaPct         = qaza * 100 / total,
-        )
-    }
-
-    override suspend fun getPrayerBreakdown(from: LocalDate, to: LocalDate): List<PrayerBreakdown> =
-        prayerDao.getPrayerBreakdown(userId, from, to).map { row ->
-            PrayerBreakdown(
-                prayerType     = row.prayerType,
-                completionRate = if (row.total > 0) row.done.toFloat() / row.total else 0f,
-            )
-        }
 
     // ── Streak recalculation ──────────────────────────────────────────────────
     // Each of the 5 prayer types gets its own independent streak, walked
@@ -274,6 +220,16 @@ class PrayerRepositoryImpl @Inject constructor(
 }
 
 // ── Mappers ───────────────────────────────────────────────────────────────────
+
+private fun DailyStatusCountRow.toCounts() = StatusCounts(
+    congregation = congregation, individual = individual,
+    qazaPending = qazaPending, qazaCompleted = qazaCompleted, excused = excused,
+)
+
+private fun PrayerBreakdownRow.toCounts() = StatusCounts(
+    congregation = congregation, individual = individual,
+    qazaPending = qazaPending, qazaCompleted = qazaCompleted, excused = excused,
+)
 
 private fun PrayerEntryEntity.toDomain() = PrayerEntry(
     id = id, userId = userId, date = date,

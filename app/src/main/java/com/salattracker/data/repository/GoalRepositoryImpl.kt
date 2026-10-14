@@ -4,32 +4,22 @@ import com.salattracker.data.local.dao.GoalDao
 import com.salattracker.data.local.entity.GoalCheckInEntity
 import com.salattracker.data.local.entity.SpiritualGoalEntity
 import com.salattracker.domain.model.GoalCategory
-import com.salattracker.domain.model.GoalCompletionStat
-import com.salattracker.domain.model.GoalDailyPoint
+import com.salattracker.domain.model.GoalCheckIn
 import com.salattracker.domain.model.GoalFrequency
+import com.salattracker.domain.model.GoalPeriodStat
 import com.salattracker.domain.model.GoalWithProgress
 import com.salattracker.domain.model.SpiritualGoal
 import com.salattracker.domain.repository.GoalRepository
+import com.salattracker.domain.usecase.goalPeriodStat
+import com.salattracker.domain.usecase.periodStartFor
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import java.time.LocalDate
 import java.time.LocalTime
-import java.time.YearMonth
-import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.math.ceil
 
-/** Sunday-start week containing [date], matching the Sun–Sat convention used elsewhere in the app. */
-private fun weekStartOf(date: LocalDate): LocalDate = date.minusDays((date.dayOfWeek.value % 7).toLong())
-
-private fun periodStartFor(frequency: GoalFrequency, today: LocalDate): LocalDate = when (frequency) {
-    GoalFrequency.DAILY   -> today
-    GoalFrequency.WEEKLY  -> weekStartOf(today)
-    GoalFrequency.MONTHLY -> YearMonth.from(today).atDay(1)
-}
-
-/** Wide enough to cover a full month's worth of check-ins for any goal's current period. */
+/** Wide enough to cover a full month-long goal period straddling the start of any Stats range. */
 private const val LOOKBACK_DAYS = 31L
 
 @Singleton
@@ -116,40 +106,17 @@ class GoalRepositoryImpl @Inject constructor(
         goalDao.deleteGoal(goalId)
     }
 
-    override suspend fun getGoalCompletionBreakdown(from: LocalDate, to: LocalDate): List<GoalCompletionStat> {
+    override suspend fun getGoalPeriodStats(from: LocalDate, to: LocalDate): List<GoalPeriodStat> {
         val goals = goalDao.getActiveGoals()
         if (goals.isEmpty()) return emptyList()
 
-        val checkIns = goalDao.getCheckInsBetween(from, to)
-        val daysInRange = ChronoUnit.DAYS.between(from, to) + 1
-
+        // Fetch from well before [from] so a weekly/monthly goal's period straddling the start
+        // of the range is judged on its full total, not just the slice inside [from, to].
+        val checkIns = goalDao.getCheckInsBetween(from.minusDays(LOOKBACK_DAYS), to)
         return goals.map { entity ->
             val goal = entity.toDomain()
-            val periods = when (goal.frequency) {
-                GoalFrequency.DAILY   -> daysInRange
-                GoalFrequency.WEEKLY  -> ceil(daysInRange / 7.0).toLong()
-                GoalFrequency.MONTHLY -> ceil(daysInRange / 30.0).toLong()
-            }.coerceAtLeast(1)
-            val expectedAmount = periods * goal.targetAmount
-            val actualAmount = checkIns.filter { it.goalId == goal.id }.sumOf { it.amount }
-            val rate = if (expectedAmount > 0) (actualAmount.toFloat() / expectedAmount).coerceIn(0f, 1f) else 0f
-            GoalCompletionStat(goal.name, goal.category, rate)
-        }
-    }
-
-    override suspend fun getDailyGoalCompletionPoints(from: LocalDate, to: LocalDate): List<GoalDailyPoint> {
-        val goals = goalDao.getActiveGoals()
-        if (goals.isEmpty()) return emptyList()
-
-        val checkIns = goalDao.getCheckInsBetween(from, to)
-        val days = generateSequence(from) { it.plusDays(1) }.takeWhile { !it.isAfter(to) }.toList()
-
-        return days.map { day ->
-            val rate = goals.map { entity ->
-                val amount = checkIns.filter { it.goalId == entity.id && it.date == day }.sumOf { it.amount }
-                (amount.toFloat() / entity.targetAmount).coerceIn(0f, 1f)
-            }.average().toFloat()
-            GoalDailyPoint(day, rate)
+            val goalCheckIns = checkIns.filter { it.goalId == goal.id }.map { GoalCheckIn(it.date, it.amount) }
+            goalPeriodStat(goal, goalCheckIns, from, to)
         }
     }
 }

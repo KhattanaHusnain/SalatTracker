@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.salattracker.R
 import com.salattracker.core.theme.*
+import com.salattracker.core.ui.iconRes
 import com.salattracker.core.ui.label
 import com.salattracker.domain.model.GoalCategory
 import com.salattracker.domain.model.GoalFrequency
@@ -265,7 +266,7 @@ internal fun CategoryOption(category: GoalCategory, isSelected: Boolean, onClick
         ) {
             Box(modifier = Modifier.size(48.dp), contentAlignment = Alignment.Center) {
                 Icon(
-                    painter = painterResource(category.iconResPublic),
+                    painter = painterResource(category.iconRes),
                     contentDescription = null,
                     tint = if (isSelected) SalatOnPrimaryContainer else SalatSecondary,
                 )
@@ -279,14 +280,6 @@ internal fun CategoryOption(category: GoalCategory, isSelected: Boolean, onClick
             fontFamily = InterFamily,
         )
     }
-}
-
-private val GoalCategory.iconResPublic get() = when (this) {
-    GoalCategory.SALAT   -> R.drawable.ic_mosque
-    GoalCategory.QURAN   -> R.drawable.ic_history_edu
-    GoalCategory.FASTING -> R.drawable.ic_schedule
-    GoalCategory.CHARITY -> R.drawable.ic_workspace_premium
-    GoalCategory.DHIKR   -> R.drawable.ic_local_fire_department
 }
 
 // ── Frequency tabs ────────────────────────────────────────────────────────────

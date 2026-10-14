@@ -1,4 +1,4 @@
-package com.salattracker.feature.calendar
+package com.salattracker.testutil
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

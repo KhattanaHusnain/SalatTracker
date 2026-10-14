@@ -5,6 +5,9 @@ import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.usecase.CALENDAR_MIN_DATE
 import com.salattracker.domain.usecase.CalendarViewType
+import com.salattracker.testutil.FakePrayerRepository
+import com.salattracker.testutil.FakeVerseRepository
+import com.salattracker.testutil.MainDispatcherRule
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
