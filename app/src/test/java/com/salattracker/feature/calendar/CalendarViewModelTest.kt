@@ -142,6 +142,20 @@ class CalendarViewModelTest {
     }
 
     @Test
+    fun `onOpenDay jumps to Month view with that date selected, clamped to the calendar range`() = runTest {
+        viewModel = createViewModel()
+        viewModel.onMonthTileClick(java.time.YearMonth.of(viewModel.uiState.value.selectedDate.year, 3)) // sets cameFromYear
+        viewModel.onViewChanged(CalendarViewType.YEAR)
+
+        viewModel.onOpenDay(LocalDate.of(1900, 1, 1))
+
+        val state = viewModel.uiState.value
+        assertEquals(CalendarViewType.MONTH, state.view)
+        assertEquals(CALENDAR_MIN_DATE, state.selectedDate)
+        assertNull(state.cameFromYear)
+    }
+
+    @Test
     fun `clearError resets the error`() = runTest {
         viewModel = createViewModel()
         assertNull(viewModel.uiState.value.error)

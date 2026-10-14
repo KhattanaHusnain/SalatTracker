@@ -121,6 +121,12 @@ class CalendarViewModel @Inject constructor(
     /** Tapping a day cell in the Month view selects it, loading that day into the inline panel. */
     fun onDaySelected(date: LocalDate) = _uiState.update { it.copy(selectedDate = date) }
 
+    /** Jumps straight to Month view with [date] selected — used by Home's week strip, which
+     * lets you tap a day from outside Calendar entirely. */
+    fun onOpenDay(date: LocalDate) = _uiState.update {
+        it.copy(view = CalendarViewType.MONTH, selectedDate = date.coerceToCalendarRange(), cameFromYear = null)
+    }
+
     /** Year: tapping a month tile drills into it, remembering the year to return Back to. */
     fun onMonthTileClick(month: YearMonth) = _uiState.update { state ->
         state.copy(view = CalendarViewType.MONTH, selectedDate = month.atDay(1), cameFromYear = state.selectedDate.year)
