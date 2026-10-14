@@ -296,6 +296,11 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                     HomeEntry(
                         onGoalsClick   = { navController.navigateToTab(BottomNavRoute.Goals.route) },
                         onAddGoalClick = { navController.push(Routes.ADD_GOAL) },
+                        onQazaClick    = { navController.navigateToTab(BottomNavRoute.Qaza.route) },
+                        onDayClick     = { date ->
+                            calendarViewModel.onOpenDay(date)
+                            navController.navigateToTab(BottomNavRoute.Calendar.route)
+                        },
                     )
                 }
                 composable(BottomNavRoute.Calendar.route) {

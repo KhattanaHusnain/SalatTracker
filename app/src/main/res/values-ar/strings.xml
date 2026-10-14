@@ -102,6 +102,18 @@
     <string name="home_set_first_goal">حدّد هدفك الروحي الأول</string>
     <string name="home_best_streak">الأفضل %1$d</string>
     <string name="home_reminder_at">تذكير %1$s</string>
+    <string name="home_next_prayer">الصلاة التالية</string>
+    <string name="home_next_in_hours_minutes">بعد %1$d س %2$d د</string>
+    <string name="home_next_in_minutes">بعد %1$d د</string>
+    <string name="home_tomorrow">غداً</string>
+    <string name="home_day_complete">اكتملت صلوات اليوم</string>
+    <string name="home_ring_count">%1$d/5</string>
+    <string name="home_ring_caption">صُليت اليوم</string>
+    <string name="home_now">الآن</string>
+    <string name="home_streak_caption">حافظت على كل صلاة</string>
+    <string name="home_last_7_days">آخر 7 أيام</string>
+    <string name="home_qaza_pending">قضاء معلّق</string>
+    <string name="home_qaza_none">لا قضاء متبقٍ</string>
 
     <string name="qaza_today_missed">صلوات اليوم الفائتة</string>
     <string name="qaza_total_outstanding">إجمالي المتبقّي</string>

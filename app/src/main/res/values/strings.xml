@@ -112,6 +112,18 @@
     <string name="home_set_first_goal">Set your first spiritual goal</string>
     <string name="home_best_streak">Best %1$d</string>
     <string name="home_reminder_at">Reminder %1$s</string>
+    <string name="home_next_prayer">Next Prayer</string>
+    <string name="home_next_in_hours_minutes">in %1$dh %2$dm</string>
+    <string name="home_next_in_minutes">in %1$d min</string>
+    <string name="home_tomorrow">Tomorrow</string>
+    <string name="home_day_complete">Today\'s prayers are done</string>
+    <string name="home_ring_count">%1$d/5</string>
+    <string name="home_ring_caption">prayed today</string>
+    <string name="home_now">Now</string>
+    <string name="home_streak_caption">every prayer kept</string>
+    <string name="home_last_7_days">Last 7 Days</string>
+    <string name="home_qaza_pending">Qaza Pending</string>
+    <string name="home_qaza_none">All Caught Up</string>
 
     <!-- Qaza dashboard -->
     <string name="qaza_today_missed">Today\'s Missed Prayers</string>

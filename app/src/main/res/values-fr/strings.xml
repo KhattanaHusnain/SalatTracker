@@ -102,6 +102,18 @@
     <string name="home_set_first_goal">Définissez votre premier objectif spirituel</string>
     <string name="home_best_streak">Record %1$d</string>
     <string name="home_reminder_at">Rappel %1$s</string>
+    <string name="home_next_prayer">Prochaine prière</string>
+    <string name="home_next_in_hours_minutes">dans %1$dh %2$dmin</string>
+    <string name="home_next_in_minutes">dans %1$d min</string>
+    <string name="home_tomorrow">Demain</string>
+    <string name="home_day_complete">Les prières du jour sont terminées</string>
+    <string name="home_ring_count">%1$d/5</string>
+    <string name="home_ring_caption">priées aujourd\'hui</string>
+    <string name="home_now">Maintenant</string>
+    <string name="home_streak_caption">chaque prière accomplie</string>
+    <string name="home_last_7_days">7 derniers jours</string>
+    <string name="home_qaza_pending">Qaza en attente</string>
+    <string name="home_qaza_none">Tout est à jour</string>
 
     <string name="qaza_today_missed">Prières manquées aujourd\'hui</string>
     <string name="qaza_total_outstanding">TOTAL RESTANT</string>

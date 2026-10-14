@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
+import java.time.LocalDate
 
 /**
  * Nav entry-point composable for the Home tab.
@@ -16,6 +17,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 fun HomeEntry(
     onGoalsClick: () -> Unit,
     onAddGoalClick: () -> Unit,
+    onQazaClick: () -> Unit,
+    onDayClick: (LocalDate) -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -26,5 +29,7 @@ fun HomeEntry(
         onStatusSave      = viewModel::onStatusSave,
         onGoalsClick      = onGoalsClick,
         onAddGoalClick    = onAddGoalClick,
+        onQazaClick       = onQazaClick,
+        onDayClick        = onDayClick,
     )
 }

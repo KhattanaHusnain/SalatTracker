@@ -102,6 +102,18 @@
     <string name="home_set_first_goal">اپنا پہلا روحانی ہدف مقرر کریں</string>
     <string name="home_best_streak">بہترین %1$d</string>
     <string name="home_reminder_at">یاد دہانی %1$s</string>
+    <string name="home_next_prayer">اگلی نماز</string>
+    <string name="home_next_in_hours_minutes">%1$d گھنٹے %2$d منٹ میں</string>
+    <string name="home_next_in_minutes">%1$d منٹ میں</string>
+    <string name="home_tomorrow">کل</string>
+    <string name="home_day_complete">آج کی نمازیں مکمل ہو گئیں</string>
+    <string name="home_ring_count">%1$d/5</string>
+    <string name="home_ring_caption">آج ادا کی گئیں</string>
+    <string name="home_now">ابھی</string>
+    <string name="home_streak_caption">ہر نماز برقرار رکھی</string>
+    <string name="home_last_7_days">پچھلے 7 دن</string>
+    <string name="home_qaza_pending">قضا باقی</string>
+    <string name="home_qaza_none">کوئی قضا باقی نہیں</string>
 
     <string name="qaza_today_missed">آج کی چھوٹی ہوئی نمازیں</string>
     <string name="qaza_total_outstanding">کل باقی</string>
