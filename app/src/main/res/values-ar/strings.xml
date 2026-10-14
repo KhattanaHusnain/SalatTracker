@@ -301,4 +301,30 @@
     <string name="backup_notif_local_missing_body">هذا الجهاز يحتوي على بيانات أقل من نسختك الاحتياطية. افتح التطبيق لاختيار كيفية المتابعة.</string>
     <string name="backup_notif_storage_full_title">مساحة Google Drive ممتلئة</string>
     <string name="backup_notif_storage_full_body">أخلِ مساحة في Google Drive لمواصلة النسخ الاحتياطي.</string>
+
+    <!-- Calendar redesign -->
+    <string name="view_month">شهر</string>
+    <string name="view_month_grid">شبكة الشهر</string>
+    <string name="view_week">أسبوع</string>
+    <string name="view_year">سنة</string>
+    <string name="cd_change_view">تغيير العرض</string>
+    <string name="calendar_today">اليوم</string>
+    <string name="hijri_date_full">%1$d %2$s %3$d هـ</string>
+    <string name="hijri_single_month_year">%1$s %2$d هـ</string>
+    <string name="hijri_two_months_same_year">%1$s – %2$s %3$d هـ</string>
+    <string name="hijri_two_months_diff_year">%1$s %2$d – %3$s %4$d هـ</string>
+    <string-array name="hijri_months">
+        <item>محرم</item>
+        <item>صفر</item>
+        <item>ربيع الأول</item>
+        <item>ربيع الآخر</item>
+        <item>جمادى الأولى</item>
+        <item>جمادى الآخرة</item>
+        <item>رجب</item>
+        <item>شعبان</item>
+        <item>رمضان</item>
+        <item>شوال</item>
+        <item>ذو القعدة</item>
+        <item>ذو الحجة</item>
+    </string-array>
 </resources>

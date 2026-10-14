@@ -11,9 +11,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
-import java.time.format.TextStyle
 import java.time.temporal.ChronoUnit
-import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -109,11 +107,6 @@ class PrayerRepositoryImpl @Inject constructor(
             null
         }
     }
-
-    // ── Hijri ─────────────────────────────────────────────────────────────────
-
-    override suspend fun getHijriLabel(date: LocalDate): String =
-        "${date.dayOfMonth} ${date.month.getDisplayName(TextStyle.SHORT, Locale.ENGLISH)} ${date.year} AH (approx)"
 
     // ── Streak ────────────────────────────────────────────────────────────────
 

@@ -46,10 +46,6 @@ interface PrayerRepository {
 
     suspend fun getCachedPrayerTimes(date: LocalDate): Map<PrayerType, LocalTime>?
 
-    // ── Hijri ─────────────────────────────────────────────────────────────────
-
-    suspend fun getHijriLabel(date: LocalDate): String
-
     // ── Streak ────────────────────────────────────────────────────────────────
 
     /** Independent current/highest streak per prayer type — missing entries default to StreakInfo(0, 0). */

@@ -323,4 +323,30 @@
     <string name="backup_notif_local_missing_body">This device has less data than your backup. Open the app to choose how to proceed.</string>
     <string name="backup_notif_storage_full_title">Google Drive storage full</string>
     <string name="backup_notif_storage_full_body">Free up space in Google Drive to keep backing up.</string>
+
+    <!-- Calendar redesign -->
+    <string name="view_month">Month</string>
+    <string name="view_month_grid">Month grid</string>
+    <string name="view_week">Week</string>
+    <string name="view_year">Year</string>
+    <string name="cd_change_view">Change view</string>
+    <string name="calendar_today">Today</string>
+    <string name="hijri_date_full">%1$d %2$s %3$d AH</string>
+    <string name="hijri_single_month_year">%1$s %2$d AH</string>
+    <string name="hijri_two_months_same_year">%1$s – %2$s %3$d AH</string>
+    <string name="hijri_two_months_diff_year">%1$s %2$d – %3$s %4$d AH</string>
+    <string-array name="hijri_months">
+        <item>Muharram</item>
+        <item>Safar</item>
+        <item>Rabi\' I</item>
+        <item>Rabi\' II</item>
+        <item>Jumada I</item>
+        <item>Jumada II</item>
+        <item>Rajab</item>
+        <item>Sha\'ban</item>
+        <item>Ramadan</item>
+        <item>Shawwal</item>
+        <item>Dhu al-Qi\'dah</item>
+        <item>Dhu al-Hijjah</item>
+    </string-array>
 </resources>

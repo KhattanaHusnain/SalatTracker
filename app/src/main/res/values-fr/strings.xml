@@ -301,4 +301,30 @@
     <string name="backup_notif_local_missing_body">Cet appareil contient moins de données que votre sauvegarde. Ouvrez l\'application pour choisir comment continuer.</string>
     <string name="backup_notif_storage_full_title">Stockage Google Drive plein</string>
     <string name="backup_notif_storage_full_body">Libérez de l\'espace sur Google Drive pour continuer à sauvegarder.</string>
+
+    <!-- Calendar redesign -->
+    <string name="view_month">Mois</string>
+    <string name="view_month_grid">Grille du mois</string>
+    <string name="view_week">Semaine</string>
+    <string name="view_year">Année</string>
+    <string name="cd_change_view">Changer de vue</string>
+    <string name="calendar_today">Aujourd\'hui</string>
+    <string name="hijri_date_full">%1$d %2$s %3$d AH</string>
+    <string name="hijri_single_month_year">%1$s %2$d AH</string>
+    <string name="hijri_two_months_same_year">%1$s – %2$s %3$d AH</string>
+    <string name="hijri_two_months_diff_year">%1$s %2$d – %3$s %4$d AH</string>
+    <string-array name="hijri_months">
+        <item>Mouharram</item>
+        <item>Safar</item>
+        <item>Rabi al-awwal</item>
+        <item>Rabi ath-thani</item>
+        <item>Joumada al-awwal</item>
+        <item>Joumada ath-thania</item>
+        <item>Rajab</item>
+        <item>Chaabane</item>
+        <item>Ramadan</item>
+        <item>Chawwal</item>
+        <item>Dhou al-Qi\'da</item>
+        <item>Dhou al-Hijja</item>
+    </string-array>
 </resources>

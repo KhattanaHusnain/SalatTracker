@@ -2,12 +2,15 @@ package com.salattracker.core.ui
 
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import com.salattracker.R
 import com.salattracker.domain.model.GoalCategory
 import com.salattracker.domain.model.GoalFrequency
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
+import com.salattracker.domain.usecase.CalendarViewType
+import com.salattracker.domain.usecase.HijriDate
 
 /**
  * Locale-aware display labels for domain enums. Centralised here so the name→string-resource
@@ -64,3 +67,40 @@ val GoalFrequency.labelRes: Int get() = when (this) {
 @Composable fun PrayerStatus.label(): String = stringResource(labelRes)
 @Composable fun GoalCategory.label(): String = stringResource(labelRes)
 @Composable fun GoalFrequency.label(): String = stringResource(labelRes)
+
+@get:StringRes
+val CalendarViewType.labelRes: Int get() = when (this) {
+    CalendarViewType.MONTH       -> R.string.view_month
+    CalendarViewType.MONTH_GRID  -> R.string.view_month_grid
+    CalendarViewType.WEEK        -> R.string.view_week
+    CalendarViewType.YEAR        -> R.string.view_year
+}
+
+@Composable fun CalendarViewType.label(): String = stringResource(labelRes)
+
+// ── Hijri date formatting ──────────────────────────────────────────────────────
+// Pure day/month/year -> display text lives here rather than in the domain layer, since it
+// needs locale-aware string resources (month names, AH suffix) the same way every other
+// enum-to-label mapping above does.
+
+/** "22 Rajab 1445 AH" — a single Hijri date, e.g. Calendar's selected-day panel. */
+@Composable
+fun HijriDate.fullLabel(): String {
+    val months = stringArrayResource(R.array.hijri_months)
+    return stringResource(R.string.hijri_date_full, day, months[month - 1], year)
+}
+
+/** "Rabiʻ II – Jumada I 1448 AH" (or "Rabiʻ II 1448 AH" when [from] and [to] land in the same
+ * Hijri month) — the subtitle under a Month/Month-grid header, spanning the Hijri months
+ * touched by one Gregorian month. */
+@Composable
+fun hijriMonthRangeLabel(from: HijriDate, to: HijriDate): String {
+    val months = stringArrayResource(R.array.hijri_months)
+    val startName = months[from.month - 1]
+    val endName = months[to.month - 1]
+    return when {
+        from.month == to.month && from.year == to.year -> stringResource(R.string.hijri_single_month_year, startName, to.year)
+        from.year == to.year                            -> stringResource(R.string.hijri_two_months_same_year, startName, endName, to.year)
+        else                                              -> stringResource(R.string.hijri_two_months_diff_year, startName, from.year, endName, to.year)
+    }
+}

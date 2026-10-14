@@ -14,11 +14,16 @@ import androidx.hilt.navigation.compose.hiltViewModel
 fun CalendarEntry(viewModel: CalendarViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsState()
     CalendarScreen(
-        uiState            = uiState,
-        onPreviousMonth    = viewModel::onPreviousMonth,
-        onNextMonth        = viewModel::onNextMonth,
-        onDaySelected      = viewModel::onDaySelected,
-        onDayDetailDismiss = viewModel::onDayDetailDismiss,
-        onStatusSave       = viewModel::onStatusSave,
+        uiState              = uiState,
+        onViewChanged        = viewModel::onViewChanged,
+        onPreviousPeriod     = viewModel::onPreviousPeriod,
+        onNextPeriod         = viewModel::onNextPeriod,
+        onTodayClick         = viewModel::onTodayClick,
+        onDatePicked         = viewModel::onDatePicked,
+        onDaySelected        = viewModel::onDaySelected,
+        onPrayerClick        = viewModel::onPrayerClick,
+        onStatusSheetDismiss = viewModel::onStatusSheetDismiss,
+        onStatusSave         = viewModel::onStatusSave,
+        onErrorDismiss       = viewModel::clearError,
     )
 }
