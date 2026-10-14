@@ -315,6 +315,15 @@
     <string name="hijri_two_years">%1$d – %2$d AH</string>
     <string name="year_tone_all_prayed">Toutes priées</string>
     <string name="year_tone_partly">Partiellement</string>
+    <string name="islamic_event_new_year">Nouvel An islamique</string>
+    <string name="islamic_event_ashura">Achoura</string>
+    <string name="islamic_event_mawlid">Mawlid al-Nabi</string>
+    <string name="islamic_event_isra_miraj">Isra et Mi\'raj</string>
+    <string name="islamic_event_ramadan_start">Début du Ramadan</string>
+    <string name="islamic_event_laylat_al_qadr">Laylat al-Qadr</string>
+    <string name="islamic_event_eid_al_fitr">Aïd al-Fitr</string>
+    <string name="islamic_event_arafah_day">Jour d\'Arafat</string>
+    <string name="islamic_event_eid_al_adha">Aïd al-Adha</string>
     <string-array name="hijri_months">
         <item>Mouharram</item>
         <item>Safar</item>

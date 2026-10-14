@@ -877,22 +877,44 @@ private fun SelectedDayPanel(
     times: Map<PrayerType, LocalTime>?,
     onPrayerClick: (PrayerType) -> Unit,
 ) {
-    val hijriText = remember(date) { date.toHijriOrNull() }?.fullLabel()
+    val hijri = remember(date) { date.toHijriOrNull() }
+    val islamicEvent = hijri?.islamicEventOrNull()
     val rows = buildDayDetailRows(date, today, statuses, times)
 
     Column(modifier = Modifier.fillMaxWidth()) {
         DayDetailHeader(
             date           = date,
-            hijriLabel     = hijriText,
+            hijriLabel     = hijri?.fullLabel(),
             completedCount = completedCount(rows.map { it.status }),
             totalCount     = rows.size,
         )
+        if (islamicEvent != null) {
+            Spacer(modifier = Modifier.height(10.dp))
+            IslamicEventBanner(islamicEvent)
+        }
         Spacer(modifier = Modifier.height(16.dp))
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             rows.forEach { row ->
                 DayDetailPrayerRowItem(row = row, onClick = { if (row.isMarkable) onPrayerClick(row.type) })
             }
         }
+    }
+}
+
+/** The Islamic calendar observance (if any) landing on the selected day — see [IslamicEvent]. */
+@Composable
+private fun IslamicEventBanner(event: IslamicEvent) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .background(SalatPrimaryContainer)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment     = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Icon(painterResource(R.drawable.ic_mosque), null, tint = SalatOnPrimaryContainer, modifier = Modifier.size(16.dp))
+        Text(event.label(), color = SalatOnPrimaryContainer, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
     }
 }
 

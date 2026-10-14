@@ -315,6 +315,15 @@
     <string name="hijri_two_years">%1$d – %2$d هـ</string>
     <string name="year_tone_all_prayed">كل الصلوات</string>
     <string name="year_tone_partly">جزئيًا</string>
+    <string name="islamic_event_new_year">رأس السنة الهجرية</string>
+    <string name="islamic_event_ashura">عاشوراء</string>
+    <string name="islamic_event_mawlid">المولد النبوي</string>
+    <string name="islamic_event_isra_miraj">الإسراء والمعراج</string>
+    <string name="islamic_event_ramadan_start">بداية رمضان</string>
+    <string name="islamic_event_laylat_al_qadr">ليلة القدر</string>
+    <string name="islamic_event_eid_al_fitr">عيد الفطر</string>
+    <string name="islamic_event_arafah_day">يوم عرفة</string>
+    <string name="islamic_event_eid_al_adha">عيد الأضحى</string>
     <string-array name="hijri_months">
         <item>محرم</item>
         <item>صفر</item>

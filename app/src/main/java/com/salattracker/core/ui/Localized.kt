@@ -11,6 +11,7 @@ import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.usecase.CalendarViewType
 import com.salattracker.domain.usecase.HijriDate
+import com.salattracker.domain.usecase.IslamicEvent
 
 /**
  * Locale-aware display labels for domain enums. Centralised here so the name→string-resource
@@ -76,6 +77,21 @@ val CalendarViewType.labelRes: Int get() = when (this) {
 }
 
 @Composable fun CalendarViewType.label(): String = stringResource(labelRes)
+
+@get:StringRes
+val IslamicEvent.labelRes: Int get() = when (this) {
+    IslamicEvent.ISLAMIC_NEW_YEAR -> R.string.islamic_event_new_year
+    IslamicEvent.ASHURA           -> R.string.islamic_event_ashura
+    IslamicEvent.MAWLID_AL_NABI   -> R.string.islamic_event_mawlid
+    IslamicEvent.ISRA_AND_MIRAJ   -> R.string.islamic_event_isra_miraj
+    IslamicEvent.RAMADAN_START    -> R.string.islamic_event_ramadan_start
+    IslamicEvent.LAYLAT_AL_QADR   -> R.string.islamic_event_laylat_al_qadr
+    IslamicEvent.EID_AL_FITR      -> R.string.islamic_event_eid_al_fitr
+    IslamicEvent.ARAFAH_DAY       -> R.string.islamic_event_arafah_day
+    IslamicEvent.EID_AL_ADHA      -> R.string.islamic_event_eid_al_adha
+}
+
+@Composable fun IslamicEvent.label(): String = stringResource(labelRes)
 
 // ── Hijri date formatting ──────────────────────────────────────────────────────
 // Pure day/month/year -> display text lives here rather than in the domain layer, since it
