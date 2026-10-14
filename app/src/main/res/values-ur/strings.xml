@@ -177,18 +177,21 @@
     <string name="reminders_sound_silenced_banner">آپ کا ڈیوائس خاموش موڈ میں ہے — ابھی کوئی آواز نہیں چلے گی</string>
     <string name="reminders_offset_minutes_value">%1$d منٹ</string>
 
-    <string name="stats_highest_streaks">بلند ترین تسلسل</string>
     <string name="stats_best_per_prayer">ہر نماز کا بہترین تسلسل</string>
-    <string name="stats_congregation_pct">باجماعت %</string>
-    <string name="stats_individual_pct">انفرادی %</string>
-    <string name="stats_missed_qaza">چھوٹی / قضا</string>
     <string name="stats_vs_last">%1$s%% پچھلے کے مقابلے</string>
-    <string name="stats_prayer_trend">نماز کا رجحان</string>
     <string name="stats_daily_goals">روزانہ اہداف</string>
     <string name="stats_completion_rate">تکمیل کی شرح</string>
     <string name="stats_no_active_goals">ابھی کوئی فعال ہدف نہیں — ایک مقرر کرنے کے لیے دبائیں۔</string>
     <string name="stats_achievement_title">ثابت قدم روح</string>
     <string name="stats_achievement_desc">آپ نے مسلسل %1$d دن تمام نمازیں مکمل کیں۔ اللہ آپ کی استقامت کو قبول فرمائے۔</string>
+    <string name="stats_prayed_on_time">وقت پر ادا کی گئیں</string>
+    <string name="stats_status_mix">صورتحال کا تناسب</string>
+    <string name="stats_by_prayer">نماز کے لحاظ سے</string>
+    <string name="stats_weakest_prayer">%1$s پر سب سے زیادہ توجہ درکار ہے</string>
+    <string name="stats_all_on_track">ہر نماز درست سمت میں ہے</string>
+    <string name="stats_no_data_period">اس مدت میں کوئی نماز درج نہیں</string>
+    <string name="stats_streak_records">تسلسل کے ریکارڈ</string>
+    <string name="stats_all_time">ہمیشہ کا ریکارڈ</string>
     <string name="stats_period_7d">7 دن</string>
     <string name="stats_period_30d">30 دن</string>
     <string name="stats_period_40d">40 دن</string>
