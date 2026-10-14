@@ -112,40 +112,52 @@
     <string name="home_last_7_days">پچھلے 7 دن</string>
     <string name="home_qaza_count_pending">%1$d قضا باقی</string>
 
-    <string name="qaza_today_missed">آج کی چھوٹی ہوئی نمازیں</string>
-    <string name="qaza_total_outstanding">کل باقی</string>
-    <string name="qaza_overall_backlog">مجموعی قضا</string>
-    <string name="qaza_none_pending">کوئی قضا نماز باقی نہیں!</string>
-    <string name="qaza_nothing_today">آج کوئی نماز نہیں چھوٹی!</string>
-    <string name="qaza_keep_consistency">ماشاءاللہ — تسلسل جاری رکھیں۔</string>
-    <string name="qaza_insight_title">تسلسل کی بصیرت</string>
-    <string name="qaza_insight_none">ماشاءاللہ! آپ کی کوئی قضا نماز باقی نہیں۔ اپنا تسلسل برقرار رکھیں!</string>
-    <string name="qaza_insight_almost">بس تھوڑا سا — صرف %1$d نمازیں باقی ہیں۔ تسلسل ہی کلید ہے!</string>
-    <string name="qaza_insight_progress">آپ پیش رفت کر رہے ہیں۔ روزانہ ایک قضا کے حساب سے آپ %1$d دنوں میں مکمل کر لیں گے۔</string>
-    <string name="qaza_insight_many">اسے ہر ہفتے چند نمازوں میں تقسیم کرنا اسے قابلِ عمل بنا دیتا ہے۔ آپ یہ کر سکتے ہیں!</string>
+    <!-- Qaza dashboard -->
+    <string name="qaza_outstanding">باقی</string>
+    <string name="qaza_made_up_of">ادا شدہ: %1$d از %2$d</string>
+    <string name="qaza_stat_today">آج</string>
+    <string name="qaza_stat_week">اس ہفتے</string>
+    <string name="qaza_stat_per_day">یومیہ</string>
+    <string name="qaza_eta_days">اس رفتار سے مکمل ہونے میں دن: %1$d</string>
+    <string name="qaza_eta_weeks">اس رفتار سے مکمل ہونے میں ہفتے: %1$d</string>
+    <string name="qaza_eta_months">اس رفتار سے مکمل ہونے میں مہینے: %1$d</string>
+    <string name="qaza_eta_years">اس رفتار سے مکمل ہونے میں سال: %1$d</string>
+    <string name="qaza_pace_start">اپنی رفتار دیکھنے کے لیے کچھ نمازیں ادا کریں۔</string>
+    <string name="qaza_all_caught_up">تمام قضا مکمل</string>
+    <string name="qaza_action_log">ادا شدہ نمازیں درج کریں</string>
+    <string name="qaza_action_add_missed">چھوٹی ہوئی نمازیں شامل کریں</string>
+    <string name="qaza_latest_missed">تازہ ترین چھوٹی ہوئی نمازیں</string>
+    <string name="qaza_view_all_count">سب دیکھیں (%1$d)</string>
+    <string name="qaza_recently_made_up">حال ہی میں ادا شدہ (%1$d)</string>
+    <string name="qaza_made_up_on">%1$s کو ادا کی گئی</string>
+    <string name="qaza_make_up_all">سب ادا کریں</string>
+    <string name="qaza_undo">واپس کریں</string>
+    <string name="qaza_made_up_one">نماز ادا کر دی گئی</string>
+    <string name="qaza_made_up_many">ادا شدہ نمازیں: %1$d</string>
+    <string name="qaza_cd_pill_pending">%1$s، باقی</string>
+    <string name="qaza_cd_pill_selected">%1$s، منتخب</string>
+    <string name="qaza_cd_pill_made_up">%1$s، ادا شدہ</string>
+    <string name="qaza_cd_open_day">کیلنڈر میں %1$s کھولیں</string>
+    <string name="qaza_log_title">ادا شدہ نمازیں درج کریں</string>
+    <string name="qaza_log_hint">سب سے پرانی چھوٹی ہوئی نمازیں پہلے نشان زد ہوں گی۔</string>
+    <string name="qaza_log_outstanding">باقی: %1$d</string>
+    <string name="qaza_log_confirm">ادا شدہ کے طور پر نشان زد کریں (%1$d)</string>
     <string name="error_goal_name">اپنے ہدف کو نام دیں۔</string>
     <string name="error_goal_not_found">ہدف نہیں ملا۔</string>
-    <plurals name="qaza_backlog_remaining">
-        <item quantity="one">آپ کے پاس اب بھی پچھلے دنوں کی %1$d نماز باقی ہے۔</item>
-        <item quantity="other">آپ کے پاس اب بھی پچھلے دنوں کی %1$d نمازیں باقی ہیں۔</item>
-    </plurals>
 
+    <!-- Missed prayers -->
     <string name="filter_all">سب</string>
-    <string name="missed_total_pending">%1$d کل باقی</string>
     <string name="sort_newest">نئی پہلے</string>
     <string name="sort_oldest">پرانی پہلے</string>
     <string name="action_deselect_all">سب غیر منتخب کریں</string>
-    <string name="action_select_multiple">متعدد منتخب کریں</string>
     <string name="action_select_all">سب منتخب کریں</string>
     <string name="selected_label">منتخب شدہ</string>
-    <string name="action_complete_all">سب مکمل کریں</string>
+    <string name="qaza_select">منتخب کریں</string>
+    <string name="qaza_selected_count">منتخب: %1$d</string>
+    <string name="qaza_clear_selection">صاف کریں</string>
     <string name="missed_empty_title">صبر باعثِ اجر ہے</string>
     <string name="missed_empty_desc">آپ نے اپنی تمام چھوٹی ہوئی نمازیں مکمل کر لیں! آپ کا نظم و ضبط قابلِ تعریف ہے۔</string>
     <string name="action_back_dashboard">ڈیش بورڈ پر واپس</string>
-    <plurals name="selected_prayers">
-        <item quantity="one">%1$d نماز</item>
-        <item quantity="other">%1$d نمازیں</item>
-    </plurals>
 
     <string name="settings_location">مقام</string>
     <string name="settings_prayer_calc">نماز کا حساب</string>

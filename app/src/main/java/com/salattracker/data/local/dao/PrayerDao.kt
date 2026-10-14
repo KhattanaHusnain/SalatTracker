@@ -80,6 +80,31 @@ interface PrayerDao {
     """)
     fun observeQazaBalance(userId: String): Flow<List<QazaCountRow>>
 
+    @Query("""
+        SELECT COUNT(*) FROM prayer_entries
+        WHERE user_id = :userId AND status = 'QAZA_COMPLETED'
+    """)
+    fun observeQazaMadeUpCount(userId: String): Flow<Int>
+
+    /** Every prayer made up (status = QAZA_COMPLETED) on or after [sinceMillis] — [updated_at] is
+     * each row's "made up at" timestamp, newest first. Used to compute the pace window on the
+     * Qaza tab (see [com.salattracker.domain.usecase.qazaProgress]). */
+    @Query("""
+        SELECT * FROM prayer_entries
+        WHERE user_id = :userId AND status = 'QAZA_COMPLETED' AND updated_at >= :sinceMillis
+        ORDER BY updated_at DESC
+    """)
+    fun observeQazaMadeUpSince(userId: String, sinceMillis: Long): Flow<List<PrayerEntryEntity>>
+
+    /** The most recently made-up prayers, newest first — powers the "Recently made up" section. */
+    @Query("""
+        SELECT * FROM prayer_entries
+        WHERE user_id = :userId AND status = 'QAZA_COMPLETED'
+        ORDER BY updated_at DESC
+        LIMIT :limit
+    """)
+    fun observeRecentQazaMadeUp(userId: String, limit: Int): Flow<List<PrayerEntryEntity>>
+
     // ── Analytics ─────────────────────────────────────────────────────────────
     // Every status-count query returns the same 5 columns (congregation / individual /
     // qazaPending / qazaCompleted / excused) so the domain layer can build one StatusCounts

@@ -1,42 +1,60 @@
 package com.salattracker.feature.qaza
 
-import androidx.compose.animation.*
-import androidx.compose.animation.core.*
-import androidx.compose.foundation.*
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.*
+import com.salattracker.core.ui.ShimmerBox
+import com.salattracker.core.ui.StatTile
+import com.salattracker.core.ui.iconRes
 import com.salattracker.core.ui.label
+import com.salattracker.core.ui.shortLabel
 import com.salattracker.domain.model.PrayerType
+import com.salattracker.domain.usecase.QazaDay
+import com.salattracker.domain.usecase.QazaEtaUnit
+import com.salattracker.domain.usecase.QazaSlot
 import java.time.LocalDate
 
-// ── Qaza Screen ───────────────────────────────────────────────────────────────
+// ── Qaza Screen (progress dashboard) ──────────────────────────────────────────
 
 @Composable
 fun QazaScreen(
     uiState: QazaUiState,
-    onMarkCompleted: (QazaPendingEntryUi) -> Unit,
-    onViewAllClick: () -> Unit = {},
-    onErrorDismiss: () -> Unit = {},
+    onMakeUp: (QazaSlot) -> Unit,
+    onMakeUpDay: (QazaDay) -> Unit,
+    onUndo: () -> Unit,
+    onUndoDismiss: () -> Unit,
+    onRecentUndo: (RecentMadeUpUi) -> Unit,
+    onRecentExpandToggle: () -> Unit,
+    onLogClick: () -> Unit,
+    onLogCountChanged: (PrayerType, Int) -> Unit,
+    onLogConfirm: () -> Unit,
+    onLogDismiss: () -> Unit,
+    onViewAllClick: () -> Unit,
+    onPrayerClick: (PrayerType) -> Unit,
+    onOpenDay: (LocalDate) -> Unit,
+    onAddMissedClick: () -> Unit,
+    onErrorDismiss: () -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -46,488 +64,364 @@ fun QazaScreen(
                 .padding(horizontal = 20.dp)
                 .padding(bottom = 100.dp),
         ) {
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(Modifier.height(12.dp))
 
-            // ── Hero backlog banner ───────────────────────────────────────────
-            BacklogHeroBanner(
-                total     = uiState.totalBacklog,
-                isLoading = uiState.isLoading,
+            ProgressCard(uiState = uiState, onLogClick = onLogClick, onAddMissedClick = onAddMissedClick)
+
+            Spacer(Modifier.height(16.dp))
+
+            PrayerTilesRow(pendingByPrayer = uiState.pendingByPrayer, isLoading = uiState.isLoading, onPrayerClick = onPrayerClick)
+
+            Spacer(Modifier.height(24.dp))
+
+            LatestMissedSection(
+                uiState = uiState,
+                onMakeUp = onMakeUp,
+                onMakeUpDay = onMakeUpDay,
+                onOpenDay = onOpenDay,
+                onViewAllClick = onViewAllClick,
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            if (uiState.recentMadeUp.isNotEmpty()) {
+                Spacer(Modifier.height(24.dp))
+                RecentlyMadeUpSection(
+                    entries = uiState.recentMadeUp,
+                    expanded = uiState.recentExpanded,
+                    onExpandToggle = onRecentExpandToggle,
+                    onUndo = onRecentUndo,
+                )
+            }
+        }
 
-            // ── Per-prayer bento grid ─────────────────────────────────────────
-            PrayerBalanceGrid(
-                balances  = uiState.balances,
-                isLoading = uiState.isLoading,
+        if (uiState.logSheet != null) {
+            QuickLogSheet(
+                state = uiState.logSheet,
+                onCountChanged = onLogCountChanged,
+                onConfirm = onLogConfirm,
+                onDismiss = onLogDismiss,
             )
+        }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // ── Recent missed list header ─────────────────────────────────────
-            Row(
-                modifier              = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment     = Alignment.CenterVertically,
+        // ── Undo snackbar ─────────────────────────────────────────────────────
+        uiState.undo?.let { undo ->
+            Snackbar(
+                modifier = Modifier.align(Alignment.BottomCenter).padding(16.dp),
+                action = {
+                    TextButton(onClick = onUndo) {
+                        Text(stringResource(R.string.qaza_undo), color = SalatPrimaryFixed)
+                    }
+                },
+                containerColor = SalatInverseSurface,
+                contentColor = SalatInverseOnSurface,
             ) {
                 Text(
-                    text       = stringResource(R.string.qaza_today_missed),
-                    color      = SalatOnSurface,
-                    fontSize   = 20.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = MontserratFamily,
+                    text = if (undo.count == 1) stringResource(R.string.qaza_made_up_one) else stringResource(R.string.qaza_made_up_many, undo.count),
+                    fontFamily = InterFamily, fontSize = 14.sp,
                 )
-                TextButton(onClick = onViewAllClick) {
-                    Text(
-                        text       = stringResource(R.string.action_view_all),
-                        color      = SalatPrimary,
-                        fontSize   = 12.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        fontFamily = InterFamily,
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // ── Pending Qaza entries ──────────────────────────────────────────
-            if (uiState.isLoading) {
-                repeat(3) {
-                    QazaEntrySkeleton(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp)
-                    )
-                }
-            } else if (uiState.pendingEntries.isEmpty()) {
-                QazaEmptyState(totalBacklog = uiState.totalBacklog)
-            } else {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    uiState.pendingEntries.forEach { entry ->
-                        val isCompleting = entry.id in uiState.completingIds
-                        AnimatedVisibility(
-                            visible = !isCompleting,
-                            exit    = slideOutHorizontally(
-                                targetOffsetX = { it },
-                                animationSpec = tween(400, easing = FastOutSlowInEasing),
-                            ) + fadeOut(tween(400)),
-                        ) {
-                            QazaEntryCard(
-                                entry           = entry,
-                                onMarkCompleted = { onMarkCompleted(entry) },
-                            )
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // ── Insight card ──────────────────────────────────────────────────
-            if (!uiState.isLoading && uiState.insightText.isNotEmpty()) {
-                InsightCard(text = uiState.insightText)
             }
         }
 
         // ── Error snackbar ────────────────────────────────────────────────────
         uiState.error?.let { message ->
             Snackbar(
-                modifier      = Modifier.align(Alignment.BottomCenter).padding(16.dp),
-                action        = {
-                    TextButton(onClick = onErrorDismiss) {
-                        Text(stringResource(R.string.action_ok), color = SalatPrimaryFixed)
-                    }
-                },
+                modifier = Modifier.align(Alignment.BottomCenter).padding(16.dp),
+                action = { TextButton(onClick = onErrorDismiss) { Text(stringResource(R.string.action_ok), color = SalatPrimaryFixed) } },
                 containerColor = SalatInverseSurface,
-                contentColor   = SalatInverseOnSurface,
+                contentColor = SalatInverseOnSurface,
             ) { Text(message, fontFamily = InterFamily, fontSize = 14.sp) }
         }
     }
 }
 
-// ── Hero backlog banner ───────────────────────────────────────────────────────
+// ── Progress card ──────────────────────────────────────────────────────────────
 
 @Composable
-private fun BacklogHeroBanner(total: Int, isLoading: Boolean) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(
-                Brush.linearGradient(listOf(SalatPrimaryContainer, SalatPrimary))
-            )
-            .padding(vertical = 28.dp, horizontal = 24.dp),
-        contentAlignment = Alignment.Center,
+private fun ProgressCard(uiState: QazaUiState, onLogClick: () -> Unit, onAddMissedClick: () -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape    = RoundedCornerShape(16.dp),
+        color    = SalatSurfaceContainerLowest,
+        border   = BorderStroke(1.dp, SalatSecondaryContainer),
+        shadowElevation = 2.dp,
     ) {
-        // Subtle geometric dot pattern overlay
-        Canvas(modifier = Modifier.matchParentSize()) {
-            val spacing = 20.dp.toPx()
-            var x = 0f
-            while (x <= size.width) {
-                var y = 0f
-                while (y <= size.height) {
-                    drawCircle(
-                        color  = Color.White.copy(alpha = 0.04f),
-                        radius = 1.5f,
-                        center = androidx.compose.ui.geometry.Offset(x, y),
-                    )
-                    y += spacing
-                }
-                x += spacing
+        Column(Modifier.padding(20.dp)) {
+            if (uiState.isLoading) {
+                ShimmerBox(Modifier.fillMaxWidth(0.4f).height(32.dp))
+                Spacer(Modifier.height(16.dp))
+                ShimmerBox(Modifier.fillMaxWidth().height(8.dp))
+                return@Column
             }
-        }
 
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text          = stringResource(R.string.qaza_total_outstanding),
-                color         = SalatOnPrimaryContainer.copy(alpha = 0.8f),
-                fontSize      = 11.sp,
-                fontWeight    = FontWeight.SemiBold,
-                fontFamily    = InterFamily,
-                letterSpacing = 2.sp,
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            if (isLoading) {
-                Box(
-                    modifier = Modifier
-                        .width(100.dp)
-                        .height(40.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color.White.copy(alpha = 0.15f))
-                )
+            val progress = uiState.progress
+            if (!uiState.hasOutstanding) {
+                Text(stringResource(R.string.qaza_all_caught_up), color = SalatPrimary, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily)
             } else {
-                Text(
-                    text       = total.toString(),
-                    color      = Color.White,
-                    fontSize   = 40.sp,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = MontserratFamily,
-                    textAlign  = TextAlign.Center,
-                    lineHeight = 44.sp,
-                )
+                Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(stringResource(R.string.qaza_outstanding), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily, modifier = Modifier.padding(bottom = 6.dp))
+                }
+                Text("${progress.outstanding}", color = SalatPrimary, fontSize = 34.sp, fontWeight = FontWeight.Bold, fontFamily = MontserratFamily)
             }
-            Spacer(modifier = Modifier.height(2.dp))
+
+            Spacer(Modifier.height(10.dp))
+            val fraction = (progress.madeUpPercent ?: 100) / 100f
+            LinearProgressIndicator(
+                progress = { fraction },
+                modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
+                color = SalatStatusQazaCompleted,
+                trackColor = SalatSurfaceContainerHigh,
+            )
+            Spacer(Modifier.height(6.dp))
             Text(
-                text       = stringResource(R.string.qaza_overall_backlog),
-                color      = SalatOnPrimaryContainer.copy(alpha = 0.8f),
-                fontSize   = 13.sp,
-                fontWeight = FontWeight.Medium,
-                fontFamily = InterFamily,
+                text = stringResource(R.string.qaza_made_up_of, progress.madeUpTotal, progress.madeUpTotal + progress.outstanding),
+                color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily,
             )
-            Spacer(modifier = Modifier.height(10.dp))
-            Box(
-                modifier = Modifier
-                    .width(64.dp)
-                    .height(4.dp)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(Color.White.copy(alpha = 0.3f))
+
+            Spacer(Modifier.height(16.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                StatTile(label = stringResource(R.string.qaza_stat_today), value = "${progress.madeUpToday}", modifier = Modifier.weight(1f))
+                StatTile(label = stringResource(R.string.qaza_stat_week), value = "${progress.madeUpThisWeek}", modifier = Modifier.weight(1f))
+                val locale = LocalConfiguration.current.locales[0]
+                StatTile(label = stringResource(R.string.qaza_stat_per_day), value = String.format(locale, "%.1f", progress.perDay), modifier = Modifier.weight(1f))
+            }
+
+            Spacer(Modifier.height(10.dp))
+            Text(
+                text = etaText(progress.eta, progress.hasEnoughSamplesForEta),
+                color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily,
             )
+
+            if (uiState.hasOutstanding) {
+                Spacer(Modifier.height(16.dp))
+                Button(
+                    onClick = onLogClick,
+                    modifier = Modifier.fillMaxWidth().height(48.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = SalatPrimary, contentColor = SalatOnPrimary),
+                ) {
+                    Text(stringResource(R.string.qaza_action_log), fontFamily = InterFamily, fontWeight = FontWeight.SemiBold)
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+            TextButton(onClick = onAddMissedClick, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.qaza_action_add_missed), color = SalatPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
+            }
         }
     }
 }
 
-// ── Per-prayer bento grid ─────────────────────────────────────────────────────
+@Composable
+private fun etaText(eta: com.salattracker.domain.usecase.QazaEta?, hasEnoughSamples: Boolean): String {
+    if (!hasEnoughSamples) return stringResource(R.string.qaza_pace_start)
+    if (eta == null) return stringResource(R.string.qaza_pace_start)
+    return when (eta.unit) {
+        QazaEtaUnit.DAYS   -> stringResource(R.string.qaza_eta_days, eta.value)
+        QazaEtaUnit.WEEKS  -> stringResource(R.string.qaza_eta_weeks, eta.value)
+        QazaEtaUnit.MONTHS -> stringResource(R.string.qaza_eta_months, eta.value)
+        QazaEtaUnit.YEARS  -> stringResource(R.string.qaza_eta_years, eta.value)
+    }
+}
+
+// ── Prayer tiles row ───────────────────────────────────────────────────────────
 
 @Composable
-private fun PrayerBalanceGrid(
-    balances: List<QazaBalanceUi>,
-    isLoading: Boolean,
-) {
-    // 2x2 grid for the first four prayers, with the last (Isha) spanning the full width below.
-    val shimmerAlpha by rememberInfiniteTransition(label = "sk")
-        .animateFloat(0.3f, 0.7f, infiniteRepeatable(tween(800), RepeatMode.Reverse), label = "a")
-
-    val displayList = if (isLoading) List(5) { null } else balances.map { it as QazaBalanceUi? }
-    val gridItems = displayList.take(4)
-    val fullWidthItem = displayList.getOrNull(4)
-
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        gridItems.chunked(2).forEach { rowItems ->
-            Row(
-                modifier              = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
+private fun PrayerTilesRow(pendingByPrayer: Map<PrayerType, Int>, isLoading: Boolean, onPrayerClick: (PrayerType) -> Unit) {
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        PrayerType.values().forEach { type ->
+            val count = pendingByPrayer[type] ?: 0
+            Surface(
+                onClick = { onPrayerClick(type) },
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(12.dp),
+                color = SalatSurface,
+                border = BorderStroke(1.dp, SalatSecondaryContainer),
             ) {
-                rowItems.forEach { balance ->
-                    if (balance == null || isLoading) {
-                        PrayerBalanceCardSkeleton(shimmerAlpha, Modifier.weight(1f))
+                Column(
+                    modifier = Modifier.padding(vertical = 10.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    if (isLoading) {
+                        ShimmerBox(Modifier.size(18.dp))
+                        Spacer(Modifier.height(6.dp))
+                        ShimmerBox(Modifier.width(24.dp).height(14.dp))
                     } else {
-                        PrayerBalanceCard(balance, Modifier.weight(1f))
+                        val alpha = if (count == 0) 0.4f else 1f
+                        Icon(painterResource(type.iconRes), null, tint = SalatSecondary.copy(alpha = alpha), modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.height(4.dp))
+                        Text(type.shortLabel(), color = SalatOnSurfaceVariant.copy(alpha = alpha), fontSize = 10.sp, fontFamily = InterFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text("$count", color = if (count == 0) SalatOutline else SalatPrimary, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily)
                     }
                 }
             }
         }
-
-        if (fullWidthItem == null || isLoading) {
-            PrayerBalanceCardSkeleton(shimmerAlpha, Modifier.fillMaxWidth())
-        } else {
-            PrayerBalanceCard(fullWidthItem, Modifier.fillMaxWidth())
-        }
     }
 }
 
-@Composable
-private fun PrayerBalanceCard(balance: QazaBalanceUi, modifier: Modifier = Modifier) {
-    Surface(
-        modifier        = modifier,
-        shape           = RoundedCornerShape(12.dp),
-        color           = SalatSurface,
-        border          = BorderStroke(1.dp, SalatSecondaryContainer),
-        shadowElevation = 2.dp,
-    ) {
-        Column(
-            modifier              = Modifier.padding(16.dp),
-            horizontalAlignment   = Alignment.CenterHorizontally,
-            verticalArrangement   = Arrangement.Center,
-        ) {
-            Icon(
-                painter         = painterResource(balance.prayerType.iconRes),
-                contentDescription = null,
-                tint            = SalatPrimary,
-                modifier        = Modifier.size(24.dp),
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                text       = balance.prayerType.label(),
-                color      = SalatOnSurfaceVariant,
-                fontSize   = 11.sp,
-                fontFamily = InterFamily,
-                fontWeight = FontWeight.Medium,
-            )
-            Text(
-                text       = balance.pendingCount.toString(),
-                color      = SalatPrimary,
-                fontSize   = 20.sp,
-                fontWeight = FontWeight.SemiBold,
-                fontFamily = MontserratFamily,
-            )
-        }
-    }
-}
+// ── Latest missed prayers ─────────────────────────────────────────────────────
 
 @Composable
-private fun PrayerBalanceCardSkeleton(alpha: Float, modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier
-            .height(88.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(SalatSurfaceContainerHigh.copy(alpha = alpha))
-    )
-}
-
-// ── Pending Qaza entry card ───────────────────────────────────────────────────
-
-@Composable
-private fun QazaEntryCard(
-    entry: QazaPendingEntryUi,
-    onMarkCompleted: () -> Unit,
+private fun LatestMissedSection(
+    uiState: QazaUiState,
+    onMakeUp: (QazaSlot) -> Unit,
+    onMakeUpDay: (QazaDay) -> Unit,
+    onOpenDay: (LocalDate) -> Unit,
+    onViewAllClick: () -> Unit,
 ) {
-    Surface(
-        modifier        = Modifier.fillMaxWidth(),
-        shape           = RoundedCornerShape(12.dp),
-        color           = SalatSurface,
-        border          = BorderStroke(1.dp, SalatSecondaryContainer),
-        shadowElevation = 2.dp,
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            modifier          = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            // Icon circle
-            Box(
-                modifier         = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(SalatSecondaryContainer),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    painter         = painterResource(entry.prayerType.iconRes),
-                    contentDescription = null,
-                    tint            = SalatOnSecondaryContainer,
-                    modifier        = Modifier.size(24.dp),
+        Text(
+            text = stringResource(R.string.qaza_latest_missed),
+            color = SalatOnSurface, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily,
+        )
+        if (!uiState.isLoading && uiState.totalPendingDays > 0) {
+            TextButton(onClick = onViewAllClick) {
+                Text(
+                    text = stringResource(R.string.qaza_view_all_count, uiState.progress.outstanding),
+                    color = SalatPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily,
                 )
             }
+        }
+    }
+    Spacer(Modifier.height(8.dp))
 
-            Spacer(modifier = Modifier.width(16.dp))
-
-            // Prayer name + date
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text       = entry.prayerType.label(),
-                    color      = SalatOnSurface,
-                    fontSize   = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = InterFamily,
-                )
-                Text(
-                    text     = entry.dateLabel,
-                    color    = SalatOnSurfaceVariant,
-                    fontSize = 11.sp,
-                    fontFamily = InterFamily,
-                )
-            }
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            // Mark Completed button
-            Button(
-                onClick  = onMarkCompleted,
-                shape    = RoundedCornerShape(8.dp),
-                colors   = ButtonDefaults.buttonColors(
-                    containerColor = SalatPrimary,
-                    contentColor   = SalatOnPrimary,
-                ),
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_check_circle_filled),
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp),
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text       = stringResource(R.string.action_mark_done),
-                    fontSize   = 11.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = InterFamily,
-                    letterSpacing = 0.3.sp,
-                )
+    when {
+        uiState.isLoading -> {
+            repeat(3) { QazaDayCardSkeleton(Modifier.fillMaxWidth().padding(vertical = 4.dp)) }
+        }
+        uiState.latestDays.isEmpty() -> {
+            QazaEmptyState()
+        }
+        else -> {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                uiState.latestDays.forEach { day ->
+                    QazaDayCard(
+                        day = day,
+                        selectionMode = false,
+                        selectedPrayers = emptySet(),
+                        onPillClick = { prayer -> onMakeUp(QazaSlot(day.date, prayer)) },
+                        onPillLongClick = { },
+                        onMakeUpAll = { onMakeUpDay(day) },
+                        onOpenDay = { onOpenDay(day.date) },
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-private fun QazaEntrySkeleton(modifier: Modifier = Modifier) {
-    val alpha by rememberInfiniteTransition(label = "sk")
-        .animateFloat(0.3f, 0.7f, infiniteRepeatable(tween(800), RepeatMode.Reverse), label = "a")
-    Box(
-        modifier = modifier
-            .height(80.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(SalatSurfaceContainerHigh.copy(alpha = alpha))
-    )
+private fun QazaDayCardSkeleton(modifier: Modifier = Modifier) {
+    ShimmerBox(modifier.height(92.dp).clip(RoundedCornerShape(12.dp)))
 }
 
-// ── Empty state ───────────────────────────────────────────────────────────────
-
 @Composable
-private fun QazaEmptyState(totalBacklog: Int) {
+private fun QazaEmptyState() {
     Column(
-        modifier              = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 32.dp),
-        horizontalAlignment   = Alignment.CenterHorizontally,
-        verticalArrangement   = Arrangement.spacedBy(12.dp),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Icon(
-            painter         = painterResource(R.drawable.ic_check_circle_filled),
+            painter = painterResource(R.drawable.ic_check_circle_filled),
             contentDescription = null,
-            tint            = SalatPrimary.copy(alpha = 0.4f),
-            modifier        = Modifier.size(48.dp),
+            tint = SalatPrimary.copy(alpha = 0.4f),
+            modifier = Modifier.size(48.dp),
         )
         Text(
-            text       = stringResource(if (totalBacklog == 0) R.string.qaza_none_pending else R.string.qaza_nothing_today),
-            color      = SalatPrimary,
-            fontSize   = 20.sp,
-            fontWeight = FontWeight.SemiBold,
-            fontFamily = MontserratFamily,
-            textAlign  = TextAlign.Center,
-        )
-        Text(
-            text = if (totalBacklog == 0) {
-                stringResource(R.string.qaza_keep_consistency)
-            } else {
-                pluralStringResource(R.plurals.qaza_backlog_remaining, totalBacklog, totalBacklog)
-            },
-            color      = SalatOnSurfaceVariant,
-            fontSize   = 14.sp,
-            fontFamily = InterFamily,
-            textAlign  = TextAlign.Center,
+            text = stringResource(R.string.qaza_all_caught_up),
+            color = SalatPrimary, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily,
         )
     }
 }
 
-// ── Insight card ──────────────────────────────────────────────────────────────
+// ── Recently made up ───────────────────────────────────────────────────────────
 
 @Composable
-private fun InsightCard(text: String) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape    = RoundedCornerShape(16.dp),
-        color    = SalatSurfaceContainerLow,
-        border   = BorderStroke(1.dp, SalatOutlineVariant.copy(alpha = 0.3f)),
-    ) {
+private fun RecentlyMadeUpSection(
+    entries: List<RecentMadeUpUi>,
+    expanded: Boolean,
+    onExpandToggle: () -> Unit,
+    onUndo: (RecentMadeUpUi) -> Unit,
+) {
+    Column {
         Row(
-            modifier = Modifier.padding(20.dp),
-            verticalAlignment = Alignment.Top,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .clickable { onExpandToggle() }
+                .padding(vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Icon(
-                painter         = painterResource(R.drawable.ic_auto_awesome),
-                contentDescription = null,
-                tint            = SalatSurfaceTint,
-                modifier        = Modifier.size(32.dp),
+            Text(
+                text = stringResource(R.string.qaza_recently_made_up, entries.size),
+                color = SalatOnSurfaceVariant, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily,
             )
-            Column {
-                Text(
-                    text       = stringResource(R.string.qaza_insight_title),
-                    color      = SalatPrimary,
-                    fontSize   = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = InterFamily,
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text       = text,
-                    color      = SalatOnSurfaceVariant,
-                    fontSize   = 14.sp,
-                    fontFamily = InterFamily,
-                    lineHeight = 20.sp,
-                )
+            Icon(
+                painterResource(R.drawable.ic_expand_more), null, tint = SalatOnSurfaceVariant,
+                modifier = Modifier.rotate(if (expanded) 180f else 0f),
+            )
+        }
+        if (expanded) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                entries.forEach { entry -> RecentMadeUpRow(entry, onUndo = { onUndo(entry) }) }
             }
         }
     }
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-internal val PrayerType.iconRes get() = when (this) {
-    PrayerType.FAJR    -> R.drawable.ic_wb_twilight
-    PrayerType.DHUHR   -> R.drawable.ic_light_mode
-    PrayerType.ASR     -> R.drawable.ic_wb_sunny
-    PrayerType.MAGHRIB -> R.drawable.ic_wb_twilight
-    PrayerType.ISHA    -> R.drawable.ic_dark_mode
+@Composable
+private fun RecentMadeUpRow(entry: RecentMadeUpUi, onUndo: () -> Unit) {
+    val dateFormatter = rememberQazaDateFormatter()
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        color = SalatSurfaceContainerLow,
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Icon(painterResource(entry.slot.prayerType.iconRes), null, tint = SalatSecondary, modifier = Modifier.size(20.dp))
+            Column(Modifier.weight(1f)) {
+                Text(entry.slot.prayerType.label(), color = SalatOnSurface, fontSize = 14.sp, fontWeight = FontWeight.Medium, fontFamily = InterFamily)
+                Text(
+                    stringResource(R.string.qaza_made_up_on, entry.madeUpOn.format(dateFormatter)),
+                    color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily,
+                )
+            }
+            TextButton(onClick = onUndo) {
+                Text(stringResource(R.string.qaza_undo), color = SalatPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
+            }
+        }
+    }
 }
-
-// ── Canvas import ─────────────────────────────────────────────────────────────
-//// (needed for the dot-pattern overlay in BacklogHeroBanner)
-//@Suppress("unused")
-//private val canvasImport = androidx.compose.foundation.Canvas
 
 // ── Previews ──────────────────────────────────────────────────────────────────
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun QazaScreenPreview() {
+    val pending = listOf(
+        QazaSlot(LocalDate.now(), PrayerType.FAJR), QazaSlot(LocalDate.now(), PrayerType.ISHA),
+        QazaSlot(LocalDate.now().minusDays(1), PrayerType.DHUHR), QazaSlot(LocalDate.now().minusDays(1), PrayerType.ASR), QazaSlot(LocalDate.now().minusDays(1), PrayerType.MAGHRIB),
+    )
+    val latestDays = com.salattracker.domain.usecase.groupPendingByDay(pending)
     QazaScreen(
         uiState = QazaUiState(
-            isLoading    = false,
-            totalBacklog = 25,
-            balances     = PrayerType.values().mapIndexed { i, t ->
-                QazaBalanceUi(t, listOf(3, 7, 4, 5, 6)[i])
-            },
-            pendingEntries = listOf(
-                QazaPendingEntryUi("1", PrayerType.DHUHR,   LocalDate.now().minusDays(1), "Tuesday, 23 Rajab"),
-                QazaPendingEntryUi("2", PrayerType.ISHA,    LocalDate.now().minusDays(2), "Monday, 22 Rajab"),
-                QazaPendingEntryUi("3", PrayerType.MAGHRIB, LocalDate.now().minusDays(3), "Sunday, 21 Rajab"),
-                QazaPendingEntryUi("4", PrayerType.ASR,     LocalDate.now().minusDays(3), "Sunday, 21 Rajab"),
-            ),
-            insightText = "You've cleared 5 prayers this week! Maintaining this pace will clear your Dhuhr backlog in approximately 10 days.",
+            isLoading = false,
+            progress = com.salattracker.domain.usecase.qazaProgress(outstanding = 58, madeUpTotal = 156, madeUpAtMillis = List(10) { System.currentTimeMillis() }),
+            pendingByPrayer = com.salattracker.domain.usecase.pendingByPrayer(pending) + (PrayerType.FAJR to 14),
+            latestDays = latestDays,
+            totalPendingDays = 12,
+            recentMadeUp = listOf(RecentMadeUpUi(QazaSlot(LocalDate.now().minusDays(1), PrayerType.FAJR), LocalDate.now())),
         ),
-        onMarkCompleted = {},
+        onMakeUp = {}, onMakeUpDay = {}, onUndo = {}, onUndoDismiss = {}, onRecentUndo = {}, onRecentExpandToggle = {},
+        onLogClick = {}, onLogCountChanged = { _, _ -> }, onLogConfirm = {}, onLogDismiss = {},
+        onViewAllClick = {}, onPrayerClick = {}, onOpenDay = {}, onAddMissedClick = {}, onErrorDismiss = {},
     )
 }
 
@@ -535,13 +429,9 @@ fun QazaScreenPreview() {
 @Composable
 fun QazaScreenEmptyPreview() {
     QazaScreen(
-        uiState = QazaUiState(
-            isLoading    = false,
-            totalBacklog = 0,
-            balances     = PrayerType.values().map { QazaBalanceUi(it, 0) },
-            pendingEntries = emptyList(),
-            insightText  = "MashAllah! You have no outstanding Qaza prayers.",
-        ),
-        onMarkCompleted = {},
+        uiState = QazaUiState(isLoading = false),
+        onMakeUp = {}, onMakeUpDay = {}, onUndo = {}, onUndoDismiss = {}, onRecentUndo = {}, onRecentExpandToggle = {},
+        onLogClick = {}, onLogCountChanged = { _, _ -> }, onLogConfirm = {}, onLogDismiss = {},
+        onViewAllClick = {}, onPrayerClick = {}, onOpenDay = {}, onAddMissedClick = {}, onErrorDismiss = {},
     )
 }

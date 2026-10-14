@@ -1,5 +1,6 @@
 package com.salattracker.feature.bulkupdate
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.salattracker.R
@@ -65,9 +66,19 @@ data class BulkUpdateUiState(
 @HiltViewModel
 class BulkUpdateViewModel @Inject constructor(
     private val prayerRepository: PrayerRepository,
+    savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(BulkUpdateUiState())
+    /** The Qaza tab's "Add missed prayers" shortcut arrives here with `status = QAZA_PENDING`
+     * preselected (via [com.salattracker.feature.main.Routes.bulkUpdate]); any other entry point
+     * (the drawer, Calendar's top bar) has no `status` arg and keeps the Congregation default. A
+     * blank or unrecognised value falls back to the default rather than crashing. */
+    private val initialStatus: PrayerStatus = savedStateHandle.get<String>("status")
+        ?.takeIf { it.isNotBlank() }
+        ?.let { runCatching { PrayerStatus.valueOf(it) }.getOrNull() }
+        ?: PrayerStatus.CONGREGATION
+
+    private val _uiState = MutableStateFlow(BulkUpdateUiState(selectedStatus = initialStatus))
     val uiState: StateFlow<BulkUpdateUiState> = _uiState.asStateFlow()
 
     fun onDurationChanged(duration: DurationOption) {

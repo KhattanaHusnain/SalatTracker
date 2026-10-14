@@ -44,6 +44,7 @@ import androidx.navigation.navArgument
 import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.core.ui.label
+import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.usecase.CalendarViewType
 import com.salattracker.feature.backup.BackupEntry
 import com.salattracker.feature.bulkupdate.BulkUpdateEntry
@@ -248,7 +249,7 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
         drawerContent = {
             AppDrawer(
                 backupNeedsAttention   = backupNeedsAttention,
-                onBulkUpdateClick      = { navController.push(Routes.BULK_UPDATE) },
+                onBulkUpdateClick      = { navController.push(Routes.bulkUpdate()) },
                 onPrayerRemindersClick = { navController.push(Routes.PRAYER_REMINDERS) },
                 onBackupClick          = { navController.push(Routes.BACKUP) },
                 onSettingsClick        = { navController.push(Routes.SETTINGS) },
@@ -267,7 +268,7 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                     showAddGoal          = currentDest?.route == BottomNavRoute.Goals.route,
                     onAddGoalClick       = { navController.push(Routes.ADD_GOAL) },
                     showBulkUpdate       = currentDest?.route == BottomNavRoute.Calendar.route,
-                    onBulkUpdateClick    = { navController.push(Routes.BULK_UPDATE) },
+                    onBulkUpdateClick    = { navController.push(Routes.bulkUpdate()) },
                     calendarView             = calendarUiState.view,
                     onCalendarViewChanged    = calendarViewModel::onViewChanged,
                     calendarAwayFromToday    = calendarUiState.awayFromToday,
@@ -306,7 +307,15 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                     CalendarEntry(calendarViewModel)
                 }
                 composable(BottomNavRoute.Qaza.route) {
-                    QazaEntry(onViewAllClick = { navController.push(Routes.MISSED_PRAYERS) })
+                    QazaEntry(
+                        onViewAllClick   = { navController.push(Routes.missedPrayers()) },
+                        onPrayerClick    = { prayer -> navController.push(Routes.missedPrayers(prayer)) },
+                        onOpenDay        = { date ->
+                            calendarViewModel.onOpenDay(date)
+                            navController.navigateToTab(BottomNavRoute.Calendar.route)
+                        },
+                        onAddMissedClick = { navController.push(Routes.bulkUpdate(PrayerStatus.QAZA_PENDING)) },
+                    )
                 }
                 composable(BottomNavRoute.Goals.route) {
                     GoalsEntry(
@@ -326,7 +335,10 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                 composable(Routes.BACKUP) {
                     BackupEntry()
                 }
-                composable(Routes.BULK_UPDATE) {
+                composable(
+                    Routes.BULK_UPDATE,
+                    arguments = listOf(navArgument("status") { type = NavType.StringType; nullable = true; defaultValue = null }),
+                ) {
                     BulkUpdateEntry()
                 }
                 composable(Routes.ADD_GOAL) {
@@ -347,8 +359,17 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                 ) {
                     EditGoalEntry(onSaved = { navController.popBackStack() })
                 }
-                composable(Routes.MISSED_PRAYERS) {
-                    MissedPrayersEntry(onBackToDashboard = { navController.popBackStack() })
+                composable(
+                    Routes.MISSED_PRAYERS,
+                    arguments = listOf(navArgument("prayer") { type = NavType.StringType; nullable = true; defaultValue = null }),
+                ) {
+                    MissedPrayersEntry(
+                        onBackToDashboard = { navController.popBackStack() },
+                        onOpenDay         = { date ->
+                            calendarViewModel.onOpenDay(date)
+                            navController.navigateToTab(BottomNavRoute.Calendar.route)
+                        },
+                    )
                 }
             }
         }

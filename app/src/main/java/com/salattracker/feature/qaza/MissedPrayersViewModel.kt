@@ -1,11 +1,20 @@
 package com.salattracker.feature.qaza
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.repository.PrayerRepository
+import com.salattracker.domain.usecase.QazaMonth
+import com.salattracker.domain.usecase.QazaSlot
+import com.salattracker.domain.usecase.groupByMonth
+import com.salattracker.domain.usecase.groupPendingByDay
+import com.salattracker.domain.usecase.pendingByPrayer
+import com.salattracker.domain.usecase.toQazaSlot
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,32 +22,39 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 data class MissedPrayersUiState(
     val isLoading: Boolean = true,
+    val filter: PrayerType? = null,                 // null = All
+    val countsByPrayer: Map<PrayerType, Int> = PrayerType.values().associateWith { 0 },
     val totalPending: Int = 0,
-    val entries: List<QazaPendingEntryUi> = emptyList(),
-    val filter: PrayerType? = null,           // null = All
     val sortNewestFirst: Boolean = true,
+    val months: List<QazaMonth> = emptyList(),
     val isSelectionMode: Boolean = false,
-    val selectedIds: Set<String> = emptySet(),
-    val completingIds: Set<String> = emptySet(),
+    val selectedSlots: Set<QazaSlot> = emptySet(),
+    val undo: QazaUndoUi? = null,
     val error: String? = null,
 )
 
 @HiltViewModel
 class MissedPrayersViewModel @Inject constructor(
     private val repository: PrayerRepository,
+    savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    private var rawEntries: List<QazaPendingEntryUi> = emptyList()
+    /** Arriving from a prayer tile on the Qaza tab preselects that prayer's filter; any other
+     * entry point (the dashboard's "View all") has no arg and starts on All. */
+    private val initialFilter: PrayerType? = savedStateHandle.get<String>("prayer")
+        ?.takeIf { it.isNotBlank() }
+        ?.let { runCatching { PrayerType.valueOf(it) }.getOrNull() }
 
-    private val _uiState = MutableStateFlow(MissedPrayersUiState())
+    private var rawPending: List<QazaSlot> = emptyList()
+    private var pendingUndoSlots: List<QazaSlot>? = null
+    private var undoJob: Job? = null
+
+    private val _uiState = MutableStateFlow(MissedPrayersUiState(filter = initialFilter))
     val uiState: StateFlow<MissedPrayersUiState> = _uiState.asStateFlow()
-
-    private val dateFormatter = DateTimeFormatter.ofPattern("EEEE, d MMM")
 
     init { observeEntries() }
 
@@ -48,82 +64,120 @@ class MissedPrayersViewModel @Inject constructor(
                 .onStart { _uiState.update { it.copy(isLoading = true) } }
                 .catch { e -> _uiState.update { it.copy(isLoading = false, error = e.message) } }
                 .collect { entries ->
-                    rawEntries = entries.map { entry ->
-                        QazaPendingEntryUi(
-                            id         = "${entry.date}_${entry.prayerType}",
-                            prayerType = entry.prayerType,
-                            date       = entry.date,
-                            dateLabel  = entry.date.format(dateFormatter),
-                        )
-                    }
-                    _uiState.update { it.copy(isLoading = false) }
-                    applyFilterAndSort()
+                    rawPending = entries.map { it.toQazaSlot() }
+                    _uiState.update { it.copy(isLoading = false, countsByPrayer = pendingByPrayer(rawPending), totalPending = rawPending.size) }
+                    regroup()
                 }
         }
     }
 
-    private fun applyFilterAndSort() {
+    private fun regroup() {
         _uiState.update { state ->
-            val filtered = state.filter?.let { f -> rawEntries.filter { it.prayerType == f } } ?: rawEntries
-            val sorted = if (state.sortNewestFirst) filtered.sortedByDescending { it.date } else filtered.sortedBy { it.date }
-            state.copy(entries = sorted, totalPending = filtered.size)
+            val days = groupPendingByDay(rawPending, prayer = state.filter, newestFirst = state.sortNewestFirst)
+            state.copy(months = groupByMonth(days))
         }
     }
 
+    // ── Filter / sort ─────────────────────────────────────────────────────────
+
     fun onFilterSelected(type: PrayerType?) {
         _uiState.update { it.copy(filter = type) }
-        applyFilterAndSort()
+        regroup()
     }
 
     fun onToggleSortOrder() {
         _uiState.update { it.copy(sortNewestFirst = !it.sortNewestFirst) }
-        applyFilterAndSort()
+        regroup()
     }
 
-    /** First tap enters selection mode; subsequent taps toggle select-all/none (mirrors the mockup's button behavior). */
-    fun onSelectMultipleClick() {
+    // ── Selection mode ────────────────────────────────────────────────────────
+
+    fun onSelectClick() = _uiState.update { it.copy(isSelectionMode = true) }
+
+    fun onCancelSelection() = _uiState.update { it.copy(isSelectionMode = false, selectedSlots = emptySet()) }
+
+    fun onSelectAll() = _uiState.update { state ->
+        val allVisible = state.months.flatMap { month -> month.days.flatMap { day -> day.prayers.map { QazaSlot(day.date, it) } } }
+        state.copy(selectedSlots = allVisible.toSet())
+    }
+
+    fun onClearSelection() = _uiState.update { it.copy(selectedSlots = emptySet()) }
+
+    fun onPillClick(slot: QazaSlot) {
         val state = _uiState.value
-        if (!state.isSelectionMode) {
-            _uiState.update { it.copy(isSelectionMode = true) }
+        if (state.isSelectionMode) {
+            toggleSelected(slot)
         } else {
-            val allSelected = state.entries.isNotEmpty() && state.selectedIds.containsAll(state.entries.map { it.id })
-            _uiState.update { it.copy(selectedIds = if (allSelected) emptySet() else state.entries.map { it.id }.toSet()) }
+            makeUp(listOf(slot))
         }
     }
 
-    fun onCancelSelection() = _uiState.update { it.copy(isSelectionMode = false, selectedIds = emptySet()) }
+    /** Long-pressing a pill outside selection mode starts selection with that pill selected. */
+    fun onPillLongClick(slot: QazaSlot) {
+        if (_uiState.value.isSelectionMode) return
+        _uiState.update { it.copy(isSelectionMode = true, selectedSlots = setOf(slot)) }
+    }
 
-    fun onToggleEntrySelected(id: String) {
+    private fun toggleSelected(slot: QazaSlot) {
         _uiState.update { state ->
-            state.copy(selectedIds = if (id in state.selectedIds) state.selectedIds - id else state.selectedIds + id)
+            state.copy(selectedSlots = if (slot in state.selectedSlots) state.selectedSlots - slot else state.selectedSlots + slot)
         }
     }
 
-    fun onMarkCompleted(entry: QazaPendingEntryUi) {
-        _uiState.update { it.copy(completingIds = it.completingIds + entry.id) }
-        viewModelScope.launch {
-            runCatching { repository.markQazaCompleted(entry.date, entry.prayerType) }
-                .onFailure { e ->
-                    _uiState.update { it.copy(completingIds = it.completingIds - entry.id, error = e.message) }
-                }
-        }
+    fun onMakeUpSelected() {
+        val slots = _uiState.value.selectedSlots.toList()
+        if (slots.isEmpty()) return
+        _uiState.update { it.copy(isSelectionMode = false, selectedSlots = emptySet()) }
+        makeUp(slots)
     }
 
-    fun onCompleteSelected() {
-        val state = _uiState.value
-        val selected = state.entries.filter { it.id in state.selectedIds }
-        if (selected.isEmpty()) return
+    // ── Day card actions (mirrors the dashboard) ─────────────────────────────
 
+    fun onMakeUpDay(day: com.salattracker.domain.usecase.QazaDay) = makeUp(day.prayers.map { QazaSlot(day.date, it) })
+
+    private fun makeUp(slots: List<QazaSlot>) {
+        if (slots.isEmpty()) return
         viewModelScope.launch {
             runCatching {
-                repository.bulkUpsertPrayerStatus(selected.map { it.date to it.prayerType }, PrayerStatus.QAZA_COMPLETED)
+                repository.bulkUpsertPrayerStatus(slots.map { it.date to it.prayerType }, PrayerStatus.QAZA_COMPLETED)
             }.onSuccess {
-                _uiState.update { it.copy(isSelectionMode = false, selectedIds = emptySet()) }
-            }.onFailure { e ->
-                _uiState.update { it.copy(error = e.message) }
-            }
+                showUndo(slots)
+            }.onFailure { e -> _uiState.update { it.copy(error = e.message) } }
+        }
+    }
+
+    fun onUndo() {
+        val slots = pendingUndoSlots ?: return
+        pendingUndoSlots = null
+        undoJob?.cancel()
+        _uiState.update { it.copy(undo = null) }
+        viewModelScope.launch {
+            runCatching {
+                repository.bulkUpsertPrayerStatus(slots.map { it.date to it.prayerType }, PrayerStatus.QAZA_PENDING)
+            }.onFailure { e -> _uiState.update { it.copy(error = e.message) } }
+        }
+    }
+
+    fun onUndoDismiss() {
+        undoJob?.cancel()
+        pendingUndoSlots = null
+        _uiState.update { it.copy(undo = null) }
+    }
+
+    private fun showUndo(slots: List<QazaSlot>) {
+        pendingUndoSlots = slots
+        undoJob?.cancel()
+        _uiState.update { it.copy(undo = QazaUndoUi(count = slots.size)) }
+        undoJob = viewModelScope.launch {
+            delay(UNDO_WINDOW_MILLIS)
+            pendingUndoSlots = null
+            _uiState.update { it.copy(undo = null) }
         }
     }
 
     fun clearError() = _uiState.update { it.copy(error = null) }
+
+    companion object {
+        private const val UNDO_WINDOW_MILLIS = 6_000L
+    }
 }

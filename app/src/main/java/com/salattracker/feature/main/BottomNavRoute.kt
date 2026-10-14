@@ -1,6 +1,8 @@
 package com.salattracker.feature.main
 
 import com.salattracker.R
+import com.salattracker.domain.model.PrayerStatus
+import com.salattracker.domain.model.PrayerType
 
 // Tabler Icons (MIT, https://tabler.io/icons) has no filled/outlined pairs, so each tab
 // now has a single icon; the active tab is shown by the pill indicator + colour instead
@@ -27,15 +29,23 @@ sealed class BottomNavRoute(
 object Routes {
     const val SETTINGS         = "settings"
     const val BACKUP           = "backup"
-    const val BULK_UPDATE      = "bulk_update"
+    const val BULK_UPDATE      = "bulk_update?status={status}"
     const val PRAYER_REMINDERS = "prayer_reminders"
     const val ADD_GOAL         = "add_goal"
     const val EDIT_GOAL        = "edit_goal/{goalId}"
     const val GOAL_DETAILS     = "goal_details/{goalId}"
-    const val MISSED_PRAYERS   = "missed_prayers"
+    const val MISSED_PRAYERS   = "missed_prayers?prayer={prayer}"
 
     fun editGoal(goalId: Long) = "edit_goal/$goalId"
     fun goalDetails(goalId: Long) = "goal_details/$goalId"
+
+    /** Opens the full Qaza backlog, optionally pre-filtered to one prayer (e.g. tapping a prayer
+     * tile on the Qaza dashboard). Omit [prayer] for the unfiltered list ("View all"). */
+    fun missedPrayers(prayer: PrayerType? = null) = "missed_prayers?prayer=${prayer?.name ?: ""}"
+
+    /** Opens Bulk Update with [status] preselected — used by the Qaza tab's "Add missed prayers"
+     * shortcut, which preselects [PrayerStatus.QAZA_PENDING]. */
+    fun bulkUpdate(status: PrayerStatus? = null) = "bulk_update?status=${status?.name ?: ""}"
 }
 
 /** True for a tab route — including null, the graph's transient state before the first

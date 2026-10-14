@@ -55,6 +55,16 @@ interface PrayerRepository {
 
     suspend fun markQazaCompleted(date: LocalDate, prayerType: PrayerType)
 
+    /** All-time count of prayers ever marked made up (status QAZA_COMPLETED). */
+    fun observeQazaMadeUpCount(): Flow<Int>
+
+    /** Every prayer made up on or after [since] (inclusive, start of that local day), newest
+     * first — the pace window for [com.salattracker.domain.usecase.qazaProgress]. */
+    fun observeQazaMadeUpSince(since: LocalDate): Flow<List<PrayerEntry>>
+
+    /** The most recently made-up prayers, newest first, capped at [limit]. */
+    fun observeRecentQazaMadeUp(limit: Int): Flow<List<PrayerEntry>>
+
     // ── Analytics ─────────────────────────────────────────────────────────────
 
     /**

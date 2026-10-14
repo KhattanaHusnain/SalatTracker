@@ -112,40 +112,52 @@
     <string name="home_last_7_days">آخر 7 أيام</string>
     <string name="home_qaza_count_pending">%1$d قضاء معلّق</string>
 
-    <string name="qaza_today_missed">صلوات اليوم الفائتة</string>
-    <string name="qaza_total_outstanding">إجمالي المتبقّي</string>
-    <string name="qaza_overall_backlog">إجمالي القضاء</string>
-    <string name="qaza_none_pending">لا توجد صلوات قضاء معلّقة!</string>
-    <string name="qaza_nothing_today">لم تفُتك صلاة اليوم!</string>
-    <string name="qaza_keep_consistency">ما شاء الله — واصِل الاستمرارية.</string>
-    <string name="qaza_insight_title">رؤية الاستمرارية</string>
-    <string name="qaza_insight_none">ما شاء الله! ليس لديك صلوات قضاء متبقية. واصِل الحفاظ على تسلسلك!</string>
-    <string name="qaza_insight_almost">اقتربت — بقيت %1$d صلوات فقط. الاستمرارية هي المفتاح!</string>
-    <string name="qaza_insight_progress">أنت تُحرز تقدمًا. بمعدّل قضاء واحد يوميًا ستنتهي خلال %1$d أيام.</string>
-    <string name="qaza_insight_many">تقسيمها إلى بضع صلوات كل أسبوع يجعلها سهلة. أنت قادر على ذلك!</string>
+    <!-- Qaza dashboard -->
+    <string name="qaza_outstanding">المتبقّي</string>
+    <string name="qaza_made_up_of">تم قضاء: %1$d من %2$d</string>
+    <string name="qaza_stat_today">اليوم</string>
+    <string name="qaza_stat_week">هذا الأسبوع</string>
+    <string name="qaza_stat_per_day">لكل يوم</string>
+    <string name="qaza_eta_days">أيام للإنهاء بهذا المعدّل: %1$d</string>
+    <string name="qaza_eta_weeks">أسابيع للإنهاء بهذا المعدّل: %1$d</string>
+    <string name="qaza_eta_months">أشهر للإنهاء بهذا المعدّل: %1$d</string>
+    <string name="qaza_eta_years">سنوات للإنهاء بهذا المعدّل: %1$d</string>
+    <string name="qaza_pace_start">اقضِ بعض الصلوات لمعرفة معدّلك.</string>
+    <string name="qaza_all_caught_up">لا يوجد قضاء متبقٍ</string>
+    <string name="qaza_action_log">تسجيل صلوات مقضية</string>
+    <string name="qaza_action_add_missed">إضافة صلوات فائتة</string>
+    <string name="qaza_latest_missed">آخر الصلوات الفائتة</string>
+    <string name="qaza_view_all_count">عرض الكل (%1$d)</string>
+    <string name="qaza_recently_made_up">قُضيت مؤخرًا (%1$d)</string>
+    <string name="qaza_made_up_on">قُضيت في %1$s</string>
+    <string name="qaza_make_up_all">قضاء الكل</string>
+    <string name="qaza_undo">تراجع</string>
+    <string name="qaza_made_up_one">تم قضاء الصلاة</string>
+    <string name="qaza_made_up_many">عدد الصلوات المقضية: %1$d</string>
+    <string name="qaza_cd_pill_pending">%1$s، معلّقة</string>
+    <string name="qaza_cd_pill_selected">%1$s، محدَّدة</string>
+    <string name="qaza_cd_pill_made_up">%1$s، مقضية</string>
+    <string name="qaza_cd_open_day">فتح %1$s في التقويم</string>
+    <string name="qaza_log_title">تسجيل صلوات مقضية</string>
+    <string name="qaza_log_hint">تُحدَّد أقدم الصلوات الفائتة أولًا.</string>
+    <string name="qaza_log_outstanding">المتبقّي: %1$d</string>
+    <string name="qaza_log_confirm">وضع علامة كمقضية (%1$d)</string>
     <string name="error_goal_name">أعطِ هدفك اسمًا.</string>
     <string name="error_goal_not_found">لم يتم العثور على الهدف.</string>
-    <plurals name="qaza_backlog_remaining">
-        <item quantity="one">لا يزال لديك %1$d صلاة معلّقة من أيام سابقة.</item>
-        <item quantity="other">لا يزال لديك %1$d صلوات معلّقة من أيام سابقة.</item>
-    </plurals>
 
+    <!-- Missed prayers -->
     <string name="filter_all">الكل</string>
-    <string name="missed_total_pending">%1$d إجمالي المعلّق</string>
     <string name="sort_newest">الأحدث أولًا</string>
     <string name="sort_oldest">الأقدم أولًا</string>
     <string name="action_deselect_all">إلغاء تحديد الكل</string>
-    <string name="action_select_multiple">تحديد متعدد</string>
     <string name="action_select_all">تحديد الكل</string>
     <string name="selected_label">المحدَّد</string>
-    <string name="action_complete_all">إكمال الكل</string>
+    <string name="qaza_select">تحديد</string>
+    <string name="qaza_selected_count">المحدَّد: %1$d</string>
+    <string name="qaza_clear_selection">إلغاء</string>
     <string name="missed_empty_title">الصبر مُثمِر</string>
     <string name="missed_empty_desc">لقد أكملت جميع صلواتك الفائتة! انضباطك مُلهِم.</string>
     <string name="action_back_dashboard">العودة إلى اللوحة</string>
-    <plurals name="selected_prayers">
-        <item quantity="one">%1$d صلاة</item>
-        <item quantity="other">%1$d صلوات</item>
-    </plurals>
 
     <string name="settings_location">الموقع</string>
     <string name="settings_prayer_calc">حساب الصلاة</string>

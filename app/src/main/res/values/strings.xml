@@ -123,42 +123,51 @@
     <string name="home_qaza_count_pending">%1$d Qaza pending</string>
 
     <!-- Qaza dashboard -->
-    <string name="qaza_today_missed">Today\'s Missed Prayers</string>
-    <string name="qaza_total_outstanding">TOTAL OUTSTANDING</string>
-    <string name="qaza_overall_backlog">Overall Backlog</string>
-    <string name="qaza_none_pending">No pending Qaza prayers!</string>
-    <string name="qaza_nothing_today">Nothing missed today!</string>
-    <string name="qaza_keep_consistency">MashAllah — keep up the consistency.</string>
-    <string name="qaza_insight_title">Consistency Insight</string>
-    <string name="qaza_insight_none">MashAllah! You have no outstanding Qaza prayers. Keep maintaining your streak!</string>
-    <string name="qaza_insight_almost">Almost there — only %1$d prayers remaining. Consistency is key!</string>
-    <string name="qaza_insight_progress">You\'ve been making progress. At one Qaza per day you\'ll be clear in %1$d days.</string>
-    <string name="qaza_insight_many">Breaking it into a few prayers each week makes it manageable. You\'ve got this!</string>
+    <string name="qaza_outstanding">Outstanding</string>
+    <string name="qaza_made_up_of">Made up: %1$d of %2$d</string>
+    <string name="qaza_stat_today">Today</string>
+    <string name="qaza_stat_week">This week</string>
+    <string name="qaza_stat_per_day">Per day</string>
+    <string name="qaza_eta_days">Days to clear at this pace: %1$d</string>
+    <string name="qaza_eta_weeks">Weeks to clear at this pace: %1$d</string>
+    <string name="qaza_eta_months">Months to clear at this pace: %1$d</string>
+    <string name="qaza_eta_years">Years to clear at this pace: %1$d</string>
+    <string name="qaza_pace_start">Make up a few prayers to see your pace.</string>
+    <string name="qaza_all_caught_up">All caught up</string>
+    <string name="qaza_action_log">Log made-up prayers</string>
+    <string name="qaza_action_add_missed">Add missed prayers</string>
+    <string name="qaza_latest_missed">Latest missed prayers</string>
+    <string name="qaza_view_all_count">View all (%1$d)</string>
+    <string name="qaza_recently_made_up">Recently made up (%1$d)</string>
+    <string name="qaza_made_up_on">Made up on %1$s</string>
+    <string name="qaza_make_up_all">Make up all</string>
+    <string name="qaza_undo">Undo</string>
+    <string name="qaza_made_up_one">Prayer made up</string>
+    <string name="qaza_made_up_many">Prayers made up: %1$d</string>
+    <string name="qaza_cd_pill_pending">%1$s, pending</string>
+    <string name="qaza_cd_pill_selected">%1$s, selected</string>
+    <string name="qaza_cd_pill_made_up">%1$s, made up</string>
+    <string name="qaza_cd_open_day">Open %1$s in Calendar</string>
+    <string name="qaza_log_title">Log made-up prayers</string>
+    <string name="qaza_log_hint">The oldest missed prayers are marked first.</string>
+    <string name="qaza_log_outstanding">Outstanding: %1$d</string>
+    <string name="qaza_log_confirm">Mark as made up (%1$d)</string>
     <string name="error_goal_name">Give your goal a name.</string>
     <string name="error_goal_not_found">Goal not found.</string>
-    <plurals name="qaza_backlog_remaining">
-        <item quantity="one">You still have %1$d prayer pending from previous days.</item>
-        <item quantity="other">You still have %1$d prayers pending from previous days.</item>
-    </plurals>
 
     <!-- Missed prayers -->
     <string name="filter_all">All</string>
-    <string name="missed_total_pending">%1$d Total Pending</string>
     <string name="sort_newest">Newest First</string>
     <string name="sort_oldest">Oldest First</string>
     <string name="action_deselect_all">Deselect All</string>
-    <string name="action_select_multiple">Select Multiple</string>
     <string name="action_select_all">Select All</string>
     <string name="selected_label">Selected</string>
-    <string name="action_complete_all">Complete All</string>
+    <string name="qaza_select">Select</string>
+    <string name="qaza_selected_count">Selected: %1$d</string>
+    <string name="qaza_clear_selection">Clear</string>
     <string name="missed_empty_title">Patience is rewarding</string>
     <string name="missed_empty_desc">You\'ve completed all your missed prayers! Your discipline is inspiring.</string>
     <string name="action_back_dashboard">Back to Dashboard</string>
-    <plurals name="selected_prayers">
-        <item quantity="one">%1$d Prayer</item>
-        <item quantity="other">%1$d Prayers</item>
-    </plurals>
-
     <!-- Settings -->
     <string name="settings_location">Location</string>
     <string name="settings_prayer_calc">Prayer Calculation</string>
