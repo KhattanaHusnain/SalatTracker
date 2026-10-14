@@ -129,3 +129,33 @@ fun nextReminderAt(goal: SpiritualGoal, now: LocalDateTime): LocalDateTime? {
     }
     return null
 }
+
+// ── Status & totals (details screen / archived section) ──────────────────────
+
+enum class GoalStatus { ACTIVE, ARCHIVED, COMPLETED }
+
+/** COMPLETED wins over ARCHIVED: a goal that ran its course reads as completed even if later archived. */
+fun SpiritualGoal.statusOn(today: LocalDate): GoalStatus = when {
+    isFinished(today) -> GoalStatus.COMPLETED
+    !isActive         -> GoalStatus.ARCHIVED
+    else              -> GoalStatus.ACTIVE
+}
+
+/** Whole-life totals of a goal, from its start up to today (or its end date). */
+data class GoalTotals(
+    val loggedAmount: Int,
+    val periodsHit: Int,
+    val periodsCounted: Int,
+    val excusedDays: Int,
+)
+
+fun goalTotals(goal: SpiritualGoal, checkIns: List<GoalCheckIn>, today: LocalDate): GoalTotals {
+    val end = goal.endDate?.let { if (it.isBefore(today)) it else today } ?: today
+    val stat = goalPeriodStat(goal, checkIns, goal.startDate, end, today)
+    return GoalTotals(
+        loggedAmount   = stat.loggedAmount,
+        periodsHit     = stat.periodsHit,
+        periodsCounted = stat.periodsCounted,
+        excusedDays    = checkIns.count { it.isSkip },
+    )
+}

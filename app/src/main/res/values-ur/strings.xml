@@ -229,6 +229,44 @@
     <string name="editgoal_save">تبدیلیاں محفوظ کریں</string>
     <string name="editgoal_updated">ہدف اپ ڈیٹ ہو گیا!</string>
 
+    <!-- Goal details / day logging -->
+    <string name="topbar_goal_details">ہدف</string>
+    <string name="goal_day_cd">%1$s: %2$s</string>
+    <string name="goal_day_click_label">پیش رفت درج کریں</string>
+    <string name="goal_day_long_click_label">اس دن میں ترمیم</string>
+    <string name="goal_day_done">مکمل</string>
+    <string name="goal_day_partial">جزوی طور پر مکمل</string>
+    <string name="goal_day_missed">چھوٹ گیا</string>
+    <string name="goal_day_excused">معذور</string>
+    <string name="goal_day_open">ابھی درج نہیں</string>
+    <string name="goal_day_not_due">مقرر نہیں</string>
+    <string name="goal_day_logged">درج شدہ</string>
+    <string name="goal_day_none">کچھ درج نہیں</string>
+    <string name="goal_day_locked">دستیاب نہیں</string>
+    <string name="goal_log_amount">مقدار</string>
+    <string name="goal_log_excused">معذور (اس دن کو چھوڑیں)</string>
+    <string name="goal_log_clear">دن صاف کریں</string>
+    <string name="goal_log_save">محفوظ کریں</string>
+    <string name="goal_status_completed">مکمل</string>
+    <string name="goal_status_archived">محفوظ شدہ</string>
+    <string name="goal_no_reminder">کوئی یاد دہانی نہیں</string>
+    <string name="goal_completed_on">%1$s کو مکمل ہوا</string>
+    <string name="goal_span">%1$s – %2$s</string>
+    <string name="goal_span_label">مدت</string>
+    <string name="goal_started_on">%1$s کو شروع ہوا</string>
+    <string name="goal_ongoing">جاری</string>
+    <string name="goal_day_of">دن %1$d/%2$d</string>
+    <string name="goal_unit_days">دن</string>
+    <string name="goal_unit_weeks">ہفتے</string>
+    <string name="goal_unit_months">مہینے</string>
+    <string name="goal_current_streak">موجودہ تسلسل</string>
+    <string name="goal_best_streak">بہترین تسلسل</string>
+    <string name="goal_total_logged">کل درج شدہ</string>
+    <string name="goal_excused_count">معذور دن</string>
+    <string name="goal_action_edit">ترمیم</string>
+    <string name="goal_action_archive">محفوظ کریں</string>
+    <string name="goal_action_restore">بحال کریں</string>
+
     <string name="bulk_dur_day">دن</string>
     <string name="bulk_dur_week">ہفتہ</string>
     <string name="bulk_dur_month">مہینہ</string>

@@ -37,6 +37,7 @@ fun GoalsScreen(
     uiState: GoalsUiState,
     onCheckIn: (Long) -> Unit,
     onEditClick: (Long) -> Unit,
+    onGoalClick: (Long) -> Unit,
     onDeleteClick: (Long) -> Unit,
     onConfirmDelete: () -> Unit,
     onDismissDeleteConfirm: () -> Unit,
@@ -87,6 +88,7 @@ fun GoalsScreen(
                             goalWithProgress = goalWithProgress,
                             onCheckIn = { onCheckIn(goalWithProgress.goal.id) },
                             onEditClick = { onEditClick(goalWithProgress.goal.id) },
+                            onClick = { onGoalClick(goalWithProgress.goal.id) },
                             onDeleteClick = { onDeleteClick(goalWithProgress.goal.id) },
                         )
                     }
@@ -201,11 +203,13 @@ private fun GoalCard(
     goalWithProgress: GoalWithProgress,
     onCheckIn: () -> Unit,
     onEditClick: () -> Unit,
+    onClick: () -> Unit,
     onDeleteClick: () -> Unit,
 ) {
     val goal = goalWithProgress.goal
 
     Surface(
+        onClick  = onClick,
         modifier = Modifier.fillMaxWidth(),
         shape    = RoundedCornerShape(16.dp),
         color    = SalatSurfaceContainerLowest,
@@ -429,6 +433,7 @@ fun GoalsScreenPreview() {
         ),
         onCheckIn             = {},
         onEditClick           = {},
+        onGoalClick           = {},
         onDeleteClick         = {},
         onConfirmDelete       = {},
         onDismissDeleteConfirm = {},

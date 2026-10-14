@@ -246,6 +246,44 @@
     <string name="editgoal_save">Save Changes</string>
     <string name="editgoal_updated">Goal updated!</string>
 
+    <!-- Goal details / day logging -->
+    <string name="topbar_goal_details">Goal</string>
+    <string name="goal_day_cd">%1$s: %2$s</string>
+    <string name="goal_day_click_label">Log progress</string>
+    <string name="goal_day_long_click_label">Edit this day</string>
+    <string name="goal_day_done">Done</string>
+    <string name="goal_day_partial">Partly done</string>
+    <string name="goal_day_missed">Missed</string>
+    <string name="goal_day_excused">Excused</string>
+    <string name="goal_day_open">Not logged yet</string>
+    <string name="goal_day_not_due">Not due</string>
+    <string name="goal_day_logged">Logged</string>
+    <string name="goal_day_none">Nothing logged</string>
+    <string name="goal_day_locked">Unavailable</string>
+    <string name="goal_log_amount">Amount</string>
+    <string name="goal_log_excused">Excused (skip this day)</string>
+    <string name="goal_log_clear">Clear day</string>
+    <string name="goal_log_save">Save</string>
+    <string name="goal_status_completed">Completed</string>
+    <string name="goal_status_archived">Archived</string>
+    <string name="goal_no_reminder">No reminder</string>
+    <string name="goal_completed_on">Completed %1$s</string>
+    <string name="goal_span">%1$s – %2$s</string>
+    <string name="goal_span_label">Duration</string>
+    <string name="goal_started_on">Started %1$s</string>
+    <string name="goal_ongoing">Ongoing</string>
+    <string name="goal_day_of">Day %1$d/%2$d</string>
+    <string name="goal_unit_days">days</string>
+    <string name="goal_unit_weeks">weeks</string>
+    <string name="goal_unit_months">months</string>
+    <string name="goal_current_streak">Current streak</string>
+    <string name="goal_best_streak">Best streak</string>
+    <string name="goal_total_logged">Total logged</string>
+    <string name="goal_excused_count">Excused days</string>
+    <string name="goal_action_edit">Edit</string>
+    <string name="goal_action_archive">Archive</string>
+    <string name="goal_action_restore">Restore</string>
+
     <!-- Bulk update -->
     <string name="bulk_dur_day">Day</string>
     <string name="bulk_dur_week">Week</string>

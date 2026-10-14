@@ -189,4 +189,23 @@ class GoalScheduleTest {
         assertNull(nextReminderAt(goal(reminder = LocalTime.of(8, 0), active = false), now))
         assertNull(nextReminderAt(goal(reminder = LocalTime.of(8, 0), endsAfter = true, duration = 5), now))
     }
+
+    // ── status & totals ───────────────────────────────────────────────────────
+
+    @Test
+    fun `status is completed once finished, archived when inactive, else active`() {
+        assertEquals(GoalStatus.ACTIVE, goal().statusOn(today))
+        assertEquals(GoalStatus.ARCHIVED, goal(active = false).statusOn(today))
+        assertEquals(GoalStatus.COMPLETED, goal(endsAfter = true, duration = 5, active = false).statusOn(today))
+    }
+
+    @Test
+    fun `totals sum logged amounts, hit periods and excused days`() {
+        val g = goal(startDate = LocalDate.of(2026, 10, 12), target = 2)
+        val t = goalTotals(g, listOf(ci(12, 2), ci(13, 1), ci(14, 0, skip = true)), today)
+        assertEquals(3, t.loggedAmount)
+        assertEquals(1, t.excusedDays)
+        assertEquals(1, t.periodsHit)      // only Oct 12 reached the target of 2
+        assertEquals(2, t.periodsCounted)  // Oct 12 (hit) + Oct 13 (ended, missed); Oct 14 excused
+    }
 }

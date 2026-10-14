@@ -51,6 +51,7 @@ import com.salattracker.feature.calendar.CalendarEntry
 import com.salattracker.feature.calendar.CalendarViewModel
 import com.salattracker.feature.goals.AddGoalEntry
 import com.salattracker.feature.goals.EditGoalEntry
+import com.salattracker.feature.goals.GoalDetailsEntry
 import com.salattracker.feature.goals.GoalsEntry
 import com.salattracker.feature.home.HomeEntry
 import com.salattracker.feature.onboarding.OnboardingEntry
@@ -308,7 +309,10 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                     QazaEntry(onViewAllClick = { navController.push(Routes.MISSED_PRAYERS) })
                 }
                 composable(BottomNavRoute.Goals.route) {
-                    GoalsEntry(onEditGoal = { goalId -> navController.push(Routes.editGoal(goalId)) })
+                    GoalsEntry(
+                        onEditGoal  = { goalId -> navController.push(Routes.editGoal(goalId)) },
+                        onGoalClick = { goalId -> navController.push(Routes.goalDetails(goalId)) },
+                    )
                 }
                 composable(BottomNavRoute.Stats.route) {
                     StatsEntry(onAddGoalClick = { navController.push(Routes.ADD_GOAL) })
@@ -327,6 +331,15 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                 }
                 composable(Routes.ADD_GOAL) {
                     AddGoalEntry(onSaved = { navController.popBackStack() })
+                }
+                composable(
+                    Routes.GOAL_DETAILS,
+                    arguments = listOf(navArgument("goalId") { type = NavType.LongType }),
+                ) {
+                    GoalDetailsEntry(
+                        onEdit    = { goalId -> navController.push(Routes.editGoal(goalId)) },
+                        onDeleted = { navController.popBackStack() },
+                    )
                 }
                 composable(
                     Routes.EDIT_GOAL,
@@ -516,6 +529,10 @@ private fun topBarTitle(route: String?): String = stringResource(
         Routes.PRAYER_REMINDERS       -> R.string.prayer_reminders
         Routes.ADD_GOAL               -> R.string.topbar_new_goal
         Routes.MISSED_PRAYERS         -> R.string.topbar_missed_prayers
-        else -> if (route?.startsWith("edit_goal") == true) R.string.topbar_edit_goal else R.string.topbar_default
+        else -> when {
+            route?.startsWith("edit_goal") == true    -> R.string.topbar_edit_goal
+            route?.startsWith("goal_details") == true -> R.string.topbar_goal_details
+            else -> R.string.topbar_default
+        }
     }
 )

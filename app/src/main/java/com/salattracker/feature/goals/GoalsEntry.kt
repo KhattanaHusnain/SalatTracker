@@ -11,13 +11,18 @@ import androidx.hilt.navigation.compose.hiltViewModel
  *   composable("goals") { GoalsEntry(onEditGoal = { goalId -> navController.navigate("edit_goal/$goalId") }) }
  */
 @Composable
-fun GoalsEntry(onEditGoal: (Long) -> Unit, viewModel: GoalsViewModel = hiltViewModel()) {
+fun GoalsEntry(
+    onEditGoal: (Long) -> Unit,
+    onGoalClick: (Long) -> Unit,
+    viewModel: GoalsViewModel = hiltViewModel(),
+) {
     val uiState by viewModel.uiState.collectAsState()
 
     GoalsScreen(
         uiState                = uiState,
         onCheckIn              = viewModel::onCheckIn,
         onEditClick            = onEditGoal,
+        onGoalClick            = onGoalClick,
         onDeleteClick          = viewModel::onDeleteClick,
         onConfirmDelete        = viewModel::onConfirmDelete,
         onDismissDeleteConfirm = viewModel::onDismissDeleteConfirm,
