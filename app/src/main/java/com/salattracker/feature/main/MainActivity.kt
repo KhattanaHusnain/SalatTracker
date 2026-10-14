@@ -12,12 +12,18 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -37,9 +43,12 @@ import androidx.navigation.compose.*
 import androidx.navigation.navArgument
 import com.salattracker.R
 import com.salattracker.core.theme.*
+import com.salattracker.core.ui.label
+import com.salattracker.domain.usecase.CalendarViewType
 import com.salattracker.feature.backup.BackupEntry
 import com.salattracker.feature.bulkupdate.BulkUpdateEntry
 import com.salattracker.feature.calendar.CalendarEntry
+import com.salattracker.feature.calendar.CalendarViewModel
 import com.salattracker.feature.goals.AddGoalEntry
 import com.salattracker.feature.goals.EditGoalEntry
 import com.salattracker.feature.goals.GoalsEntry
@@ -207,6 +216,13 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
     val shellViewModel: MainShellViewModel = hiltViewModel()
     val backupNeedsAttention by shellViewModel.backupNeedsAttention.collectAsState()
 
+    // Scoped here (not inside the NavHost's Calendar composable) so the exact same instance
+    // backs both CalendarEntry's screen and the Today/Month controls in TopBar below — two
+    // independent hiltViewModel() calls at those different scopes would otherwise create two
+    // unrelated ViewModels with their own separate state.
+    val calendarViewModel: CalendarViewModel = hiltViewModel()
+    val calendarUiState by calendarViewModel.uiState.collectAsState()
+
     // A notification's deep link, delivered after this scaffold (and its NavHost) already
     // exist — navigate once, then let the caller clear it so a config change or
     // recomposition doesn't navigate again.
@@ -252,6 +268,10 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                     onAddGoalClick       = { navController.push(Routes.ADD_GOAL) },
                     showBulkUpdate       = currentDest?.route == BottomNavRoute.Calendar.route,
                     onBulkUpdateClick    = { navController.push(Routes.BULK_UPDATE) },
+                    calendarView             = calendarUiState.view,
+                    onCalendarViewChanged    = calendarViewModel::onViewChanged,
+                    calendarAwayFromToday    = calendarUiState.awayFromToday,
+                    onCalendarTodayClick     = calendarViewModel::onTodayClick,
                 )
             },
             bottomBar = {
@@ -286,7 +306,7 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                     )
                 }
                 composable(BottomNavRoute.Calendar.route) {
-                    CalendarEntry()
+                    CalendarEntry(calendarViewModel)
                 }
                 composable(BottomNavRoute.Qaza.route) {
                     QazaEntry(onViewAllClick = { navController.push(Routes.MISSED_PRAYERS) })
@@ -343,6 +363,10 @@ private fun TopBar(
     onAddGoalClick: () -> Unit,
     showBulkUpdate: Boolean,
     onBulkUpdateClick: () -> Unit,
+    calendarView: CalendarViewType,
+    onCalendarViewChanged: (CalendarViewType) -> Unit,
+    calendarAwayFromToday: Boolean,
+    onCalendarTodayClick: () -> Unit,
 ) {
     TopAppBar(
         title = {
@@ -378,6 +402,12 @@ private fun TopBar(
                 }
             }
             if (showBulkUpdate) {
+                if (calendarAwayFromToday) {
+                    IconButton(onClick = onCalendarTodayClick) {
+                        Icon(painterResource(R.drawable.ic_calendar_today), stringResource(R.string.calendar_today), tint = SalatPrimary)
+                    }
+                }
+                CalendarViewMenu(currentView = calendarView, onViewChanged = onCalendarViewChanged)
                 IconButton(onClick = onBulkUpdateClick) {
                     Icon(painterResource(R.drawable.ic_edit_square), stringResource(R.string.action_bulk_update), tint = SalatPrimary)
                 }
@@ -385,6 +415,50 @@ private fun TopBar(
         },
         colors = TopAppBarDefaults.topAppBarColors(containerColor = SalatBackground),
     )
+}
+
+/** All three calendar views are enabled; grows automatically if CalendarViewType ever does. */
+private val ENABLED_CALENDAR_VIEWS = CalendarViewType.values().toList()
+
+/** Compact "Month ▾" dropdown chip for the top bar's actions row — switches between
+ * Calendar's Month/Week/Year views. Lives here (not in feature.calendar) since this is now
+ * the only place it's used. */
+@Composable
+private fun CalendarViewMenu(
+    currentView: CalendarViewType,
+    onViewChanged: (CalendarViewType) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        Surface(
+            onClick = { expanded = true },
+            shape   = RoundedCornerShape(50),
+            color   = SalatSurfaceContainerLow,
+            border  = BorderStroke(1.dp, SalatOutlineVariant),
+        ) {
+            Row(
+                modifier              = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                verticalAlignment     = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                Text(currentView.label(), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
+                Icon(
+                    painter            = painterResource(R.drawable.ic_expand_more),
+                    contentDescription = stringResource(R.string.cd_change_view),
+                    tint               = SalatOnSurfaceVariant,
+                    modifier           = Modifier.size(14.dp),
+                )
+            }
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            ENABLED_CALENDAR_VIEWS.forEach { view ->
+                DropdownMenuItem(
+                    text    = { Text(view.label()) },
+                    onClick = { onViewChanged(view); expanded = false },
+                )
+            }
+        }
+    }
 }
 
 // ── Bottom navigation bar ─────────────────────────────────────────────────────

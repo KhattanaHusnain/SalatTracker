@@ -70,7 +70,6 @@
     <string name="action_delete">حذف</string>
     <string name="action_discard">مسترد کریں</string>
     <string name="action_keep_editing">ترمیم جاری رکھیں</string>
-    <string name="action_done">ہو گیا</string>
     <string name="action_continue">جاری رکھیں</string>
     <string name="action_next">اگلا</string>
     <string name="action_get_started">شروع کریں</string>
@@ -301,4 +300,42 @@
     <string name="backup_notif_local_missing_body">اس ڈیوائس میں آپ کے بیک اپ سے کم ڈیٹا ہے۔ آگے بڑھنے کا طریقہ منتخب کرنے کے لیے ایپ کھولیں۔</string>
     <string name="backup_notif_storage_full_title">گوگل ڈرائیو اسٹوریج بھر گیا</string>
     <string name="backup_notif_storage_full_body">بیک اپ جاری رکھنے کے لیے گوگل ڈرائیو میں جگہ خالی کریں۔</string>
+
+    <!-- Calendar redesign -->
+    <string name="view_month">مہینہ</string>
+    <string name="view_week">ہفتہ</string>
+    <string name="view_year">سال</string>
+    <string name="cd_change_view">منظر تبدیل کریں</string>
+    <string name="calendar_today">آج</string>
+    <string name="hijri_date_full">%1$d %2$s %3$d ھ</string>
+    <string name="hijri_single_month_year">%1$s %2$d ھ</string>
+    <string name="hijri_two_months_same_year">%1$s – %2$s %3$d ھ</string>
+    <string name="hijri_two_months_diff_year">%1$s %2$d – %3$s %4$d ھ</string>
+    <string name="hijri_single_year">%1$d ھ</string>
+    <string name="hijri_two_years">%1$d – %2$d ھ</string>
+    <string name="year_tone_all_prayed">تمام ادا شدہ</string>
+    <string name="year_tone_partly">جزوی</string>
+    <string name="islamic_event_new_year">اسلامی نیا سال</string>
+    <string name="islamic_event_ashura">عاشورہ</string>
+    <string name="islamic_event_mawlid">میلاد النبی</string>
+    <string name="islamic_event_isra_miraj">اسراء و معراج</string>
+    <string name="islamic_event_ramadan_start">رمضان کا آغاز</string>
+    <string name="islamic_event_laylat_al_qadr">لیلۃ القدر</string>
+    <string name="islamic_event_eid_al_fitr">عید الفطر</string>
+    <string name="islamic_event_arafah_day">یوم عرفہ</string>
+    <string name="islamic_event_eid_al_adha">عید الاضحی</string>
+    <string-array name="hijri_months">
+        <item>محرم</item>
+        <item>صفر</item>
+        <item>ربیع الاول</item>
+        <item>ربیع الثانی</item>
+        <item>جمادی الاول</item>
+        <item>جمادی الثانی</item>
+        <item>رجب</item>
+        <item>شعبان</item>
+        <item>رمضان</item>
+        <item>شوال</item>
+        <item>ذیقعد</item>
+        <item>ذیالحج</item>
+    </string-array>
 </resources>

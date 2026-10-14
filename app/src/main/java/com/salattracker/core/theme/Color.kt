@@ -56,3 +56,12 @@ val SalatSecondaryFixed           = Color(0xFFD5E6DF)
 val SalatOnSecondaryFixedVariant  = Color(0xFF3B4A44)
 val SalatOnPrimaryFixedVariant    = Color(0xFF0B513D)
 val SalatOnSecondaryFixed         = Color(0xFF101E1A)
+
+// ── Status tone palette — shared by the Calendar rings/year tiles, the Stats trend
+// chart and their legends, so a status always reads the same colour everywhere ──
+val SalatStatusCongregation   = Color(0xFF10B981)
+val SalatStatusIndividual     = Color(0xFFEAB308)
+val SalatStatusQazaPending    = Color(0xFFEF4444)
+val SalatStatusQazaCompleted  = Color(0xFFA855F7)
+val SalatStatusExcused        = Color(0xFFF472B6)
+val SalatStatusNotRecorded    = Color(0xFFCBD5E1)

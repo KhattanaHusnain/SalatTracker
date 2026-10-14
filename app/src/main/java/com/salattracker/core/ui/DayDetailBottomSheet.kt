@@ -1,22 +1,21 @@
 package com.salattracker.core.ui
 
-import androidx.compose.animation.core.*
-import androidx.compose.foundation.*
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salattracker.R
@@ -26,7 +25,10 @@ import com.salattracker.domain.model.PrayerType
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-// ── Data model for a single prayer row inside the day detail sheet ────────────
+// ── Data model for a single prayer row in a day's detail ──────────────────────
+// Shared by Calendar's Month view: DayDetailHeader + DayDetailPrayerRowItem render a day's
+// full 5-prayer picture for its inline day panel; there is no modal sheet version of this any
+// more — Month and Month-grid merged into one scrollable view with the panel always visible.
 
 data class DayDetailPrayerRow(
     val type: PrayerType,
@@ -35,159 +37,15 @@ data class DayDetailPrayerRow(
     val isMarkable: Boolean = true,
 )
 
-// ── Day Detail Bottom Sheet ───────────────────────────────────────────────────
-/**
- * Full-height modal bottom sheet showing all 5 prayers for a selected day.
- *
- * Tapping any prayer row opens the nested [PrayerStatusBottomSheet].
- *
- * Usage:
- *   var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
- *
- *   selectedDate?.let { date ->
- *       DayDetailBottomSheet(
- *           date        = date,
- *           hijriLabel  = "22 Rajab 1445",
- *           prayers     = uiState.dayPrayers,
- *           isSaving    = uiState.isSaving,
- *           onDismiss   = { selectedDate = null },
- *           onStatusSave = { type, status -> viewModel.save(date, type, status) },
- *       )
- *   }
- */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun DayDetailBottomSheet(
-    date: LocalDate,
-    hijriLabel: String,
-    prayers: List<DayDetailPrayerRow>,
-    isSaving: Boolean = false,
-    onDismiss: () -> Unit,
-    onStatusSave: (PrayerType, PrayerStatus) -> Unit,
-) {
-    // Tracks which prayer row is currently open in the nested status sheet
-    var sheetTarget by remember { mutableStateOf<PrayerType?>(null) }
-
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState       = sheetState,
-        containerColor   = SalatSurfaceBright,
-        shape            = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-        dragHandle = {
-            Box(
-                modifier = Modifier
-                    .padding(top = 12.dp, bottom = 4.dp)
-                    .width(48.dp)
-                    .height(4.dp)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(SalatSurfaceContainerHighest)
-            )
-        },
-    ) {
-        val completedCount = prayers.count {
-            it.status == PrayerStatus.CONGREGATION || it.status == PrayerStatus.INDIVIDUAL
-        }
-
-        Column(modifier = Modifier.fillMaxWidth()) {
-
-            // ── Header ────────────────────────────────────────────────────────
-            DayDetailHeader(
-                date           = date,
-                hijriLabel     = hijriLabel,
-                completedCount = completedCount,
-                totalCount     = prayers.size,
-                modifier       = Modifier.padding(horizontal = 20.dp, vertical = 4.dp),
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // ── Scrollable prayer rows ─────────────────────────────────────────
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f, fill = false)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 20.dp)
-                    .padding(bottom = 100.dp), // space for footer
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                prayers.forEach { row ->
-                    DayDetailPrayerRowItem(
-                        row     = row,
-                        onClick = { if (row.isMarkable) sheetTarget = row.type },
-                    )
-                }
-            }
-        }
-
-        // ── Sticky "Done" footer ──────────────────────────────────────────────
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    Brush.verticalGradient(
-                        0f   to Color.Transparent,
-                        0.3f to SalatSurfaceBright,
-                        1f   to SalatSurfaceBright,
-                    )
-                )
-                .padding(horizontal = 20.dp, vertical = 16.dp),
-        ) {
-            Button(
-                onClick   = onDismiss,
-                modifier  = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                shape     = RoundedCornerShape(12.dp),
-                colors    = ButtonDefaults.buttonColors(
-                    containerColor = SalatPrimary,
-                    contentColor   = SalatOnPrimary,
-                ),
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_check_circle_filled),
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text       = stringResource(R.string.action_done),
-                    fontSize   = 20.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = MontserratFamily,
-                )
-            }
-        }
-    }
-
-    // ── Nested status sheet (opens on top of this sheet) ─────────────────────
-    sheetTarget?.let { targetType ->
-        val currentStatus = prayers.find { it.type == targetType }?.status
-            ?: PrayerStatus.NOT_RECORDED
-        PrayerStatusBottomSheet(
-            args = PrayerStatusSheetArgs(
-                prayerType    = targetType,
-                date          = date,
-                currentStatus = currentStatus,
-            ),
-            isSaving  = isSaving,
-            onDismiss = { sheetTarget = null },
-            onSave    = { newStatus ->
-                onStatusSave(targetType, newStatus)
-                sheetTarget = null
-            },
-        )
-    }
-}
-
 // ── Header ────────────────────────────────────────────────────────────────────
-
+/**
+ * [hijriLabel] is optional: pass null when a Hijri conversion isn't available (or not wanted)
+ * for this date, and the subtitle falls back to just the completed-count summary.
+ */
 @Composable
-private fun DayDetailHeader(
+internal fun DayDetailHeader(
     date: LocalDate,
-    hijriLabel: String,
+    hijriLabel: String?,
     completedCount: Int,
     totalCount: Int,
     modifier: Modifier = Modifier,
@@ -210,8 +68,9 @@ private fun DayDetailHeader(
                 lineHeight = 34.sp,
             )
             Spacer(modifier = Modifier.height(4.dp))
+            val summary = if (allDone) stringResource(R.string.sheet_all_logged) else stringResource(R.string.sheet_n_of_m_logged, completedCount, totalCount)
             Text(
-                text     = "$hijriLabel  •  ${if (allDone) stringResource(R.string.sheet_all_logged) else stringResource(R.string.sheet_n_of_m_logged, completedCount, totalCount)}",
+                text     = if (hijriLabel != null) "$hijriLabel  •  $summary" else summary,
                 color    = SalatOnSurfaceVariant,
                 fontSize = 14.sp,
                 fontFamily = InterFamily,
@@ -256,12 +115,10 @@ private fun DayDetailHeader(
 // ── Single prayer row ─────────────────────────────────────────────────────────
 
 @Composable
-private fun DayDetailPrayerRowItem(
+internal fun DayDetailPrayerRowItem(
     row: DayDetailPrayerRow,
     onClick: () -> Unit,
 ) {
-    val ripple = rememberUpdatedState(onClick)
-
     Surface(
         onClick      = onClick,
         enabled      = row.isMarkable,
@@ -395,24 +252,4 @@ private val PrayerType.iconRes get() = when (this) {
     PrayerType.ASR     -> R.drawable.ic_wb_sunny
     PrayerType.MAGHRIB -> R.drawable.ic_wb_twilight
     PrayerType.ISHA    -> R.drawable.ic_dark_mode
-}
-
-// ── Preview ───────────────────────────────────────────────────────────────────
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun DayDetailBottomSheetPreview() {
-    DayDetailBottomSheet(
-        date       = LocalDate.of(2024, 1, 22),
-        hijriLabel = "22 Rajab 1445",
-        prayers    = listOf(
-            DayDetailPrayerRow(PrayerType.FAJR,    "05:42 AM", PrayerStatus.CONGREGATION),
-            DayDetailPrayerRow(PrayerType.DHUHR,   "12:15 PM", PrayerStatus.INDIVIDUAL),
-            DayDetailPrayerRow(PrayerType.ASR,     "03:30 PM", PrayerStatus.CONGREGATION),
-            DayDetailPrayerRow(PrayerType.MAGHRIB, "05:58 PM", PrayerStatus.QAZA_PENDING),
-            DayDetailPrayerRow(PrayerType.ISHA,    "07:15 PM", PrayerStatus.CONGREGATION),
-        ),
-        onDismiss    = {},
-        onStatusSave = { _, _ -> },
-    )
 }

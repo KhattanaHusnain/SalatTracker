@@ -2,54 +2,49 @@ package com.salattracker.feature.calendar
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.salattracker.core.ui.PrayerStatusSheetArgs
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.VerseInfo
 import com.salattracker.domain.repository.PrayerRepository
 import com.salattracker.domain.repository.VerseRepository
+import com.salattracker.domain.usecase.CalendarViewType
+import com.salattracker.domain.usecase.coerceToCalendarRange
+import com.salattracker.domain.usecase.isAwayFromToday
 import com.salattracker.domain.usecase.isPrayerMarkable
+import com.salattracker.domain.usecase.observedRange
+import com.salattracker.domain.usecase.shiftPeriod
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.YearMonth
 import javax.inject.Inject
 
-enum class DotColor { GREEN, YELLOW, RED, PURPLE, GREY }
-
-data class DayCell(
-    val date: LocalDate,
-    val dots: List<DotColor>,
-    val completionPct: Int,
-    val isToday: Boolean,
-    val isSelected: Boolean,
-)
-
-data class DayDetail(
-    val date: LocalDate,
-    val hijriLabel: String,
-    val completionPct: Int,
-    val prayers: List<PrayerDetailUi>,
-)
-
-data class PrayerDetailUi(
-    val type: PrayerType,
-    val time: String,
-    val status: PrayerStatus,
-    val isMarkable: Boolean,
-)
-
 data class CalendarUiState(
-    val visibleMonth: YearMonth = YearMonth.now(),
-    val days: List<DayCell> = emptyList(),
-    val selectedDay: DayDetail? = null,
-    val isLoadingMonth: Boolean = true,
-    val isLoadingDay: Boolean = false,
+    val view: CalendarViewType = CalendarViewType.MONTH,
+    val today: LocalDate = LocalDate.now(),
+    val selectedDate: LocalDate = LocalDate.now(),
+    val isLoadingMarks: Boolean = true,
+    /** Only the prayers actually recorded for a date — a type missing from the inner map (or
+     * the date missing entirely) means not-yet-recorded, same convention as every other screen. */
+    val marks: Map<LocalDate, Map<PrayerType, PrayerStatus>> = emptyMap(),
+    val selectedTimes: Map<PrayerType, LocalTime>? = null,
+    val statusSheet: PrayerStatusSheetArgs? = null,
+    /** Set when the Year view drilled into a month, so Back can return there instead of
+     * leaving Calendar entirely; cleared by returning, or by any explicit view switch. */
+    val cameFromYear: Int? = null,
     val isSaving: Boolean = false,
     val error: String? = null,
     val verse: VerseInfo? = null,
-)
+) {
+    val awayFromToday: Boolean get() = isAwayFromToday(view, selectedDate, today)
+    val selectedDayStatuses: Map<PrayerType, PrayerStatus> get() = marks[selectedDate].orEmpty()
+}
 
+@OptIn(ExperimentalCoroutinesApi::class) // flatMapLatest / mapLatest below
 @HiltViewModel
 class CalendarViewModel @Inject constructor(
     private val prayerRepository: PrayerRepository,
@@ -60,7 +55,8 @@ class CalendarViewModel @Inject constructor(
     val uiState: StateFlow<CalendarUiState> = _uiState.asStateFlow()
 
     init {
-        loadMonth(YearMonth.now())
+        observeMarks()
+        observeSelectedTimes()
         loadVerse()
     }
 
@@ -70,87 +66,100 @@ class CalendarViewModel @Inject constructor(
         }
     }
 
-    fun onPreviousMonth() {
-        val prev = _uiState.value.visibleMonth.minusMonths(1)
-        _uiState.update { it.copy(visibleMonth = prev, days = emptyList(), isLoadingMonth = true) }
-        loadMonth(prev)
-    }
-
-    fun onNextMonth() {
-        val next = _uiState.value.visibleMonth.plusMonths(1)
-        _uiState.update { it.copy(visibleMonth = next, days = emptyList(), isLoadingMonth = true) }
-        loadMonth(next)
-    }
-
-    private fun loadMonth(month: YearMonth) {
+    /** Re-fetches whenever the observed range actually changes (view switch, or paging to a
+     * different period) — [flatMapLatest] drops an in-flight query for a range we've since
+     * paged away from, and the Room [Flow] re-emits on its own after every save, so no manual
+     * reload is ever needed after [onStatusSave]. */
+    private fun observeMarks() {
         viewModelScope.launch {
-            val today    = LocalDate.now()
-            val selected = _uiState.value.selectedDay?.date
-            val first    = month.atDay(1)
-            val last     = month.atEndOfMonth()
-
-            prayerRepository.observeMonthEntries(first, last)
-                .catch { e -> _uiState.update { it.copy(isLoadingMonth = false, error = e.message) } }
+            _uiState
+                .map { observedRange(it.view, it.selectedDate) }
+                .distinctUntilChanged()
+                .flatMapLatest { (from, to) -> prayerRepository.observeMonthEntries(from, to) }
+                .onStart { _uiState.update { it.copy(isLoadingMarks = true) } }
+                .catch { e -> _uiState.update { it.copy(isLoadingMarks = false, error = e.message) } }
                 .collect { entriesByDate ->
-                    val days = (1..month.lengthOfMonth()).map { d ->
-                        val date    = month.atDay(d)
-                        val entries = entriesByDate[date] ?: emptyList()
-                        DayCell(
-                            date          = date,
-                            dots          = PrayerType.values().map { type ->
-                                entries.find { it.prayerType == type }?.status.toDotColor()
-                            },
-                            completionPct = calcCompletion(entries.map { it.status }),
-                            isToday       = date == today,
-                            isSelected    = date == selected,
-                        )
+                    val marks = entriesByDate.mapValues { (_, entries) ->
+                        entries.associate { it.prayerType to it.status }
                     }
-                    _uiState.update { it.copy(isLoadingMonth = false, days = days) }
+                    _uiState.update { it.copy(isLoadingMarks = false, marks = marks) }
                 }
         }
     }
 
-    fun onDaySelected(date: LocalDate) {
-        _uiState.update { state ->
-            state.copy(
-                isLoadingDay = true,
-                days = state.days.map { it.copy(isSelected = it.date == date) },
-            )
-        }
+    /** Prayer times for the selected day only. [mapLatest] means a fast swipe cancels a lookup
+     * for a date we've already left before it resolves; the inner guard drops a result for a
+     * date we've since moved on from again, for the same reason. */
+    private fun observeSelectedTimes() {
         viewModelScope.launch {
-            val entries = prayerRepository.getPrayerEntriesForDate(date)
-            val times   = prayerRepository.getCachedPrayerTimes(date)
-            val detail  = DayDetail(
-                date          = date,
-                hijriLabel    = prayerRepository.getHijriLabel(date),
-                completionPct = calcCompletion(entries.map { it.status }),
-                prayers       = PrayerType.values().map { type ->
-                    PrayerDetailUi(
-                        type   = type,
-                        time   = times?.get(type)?.toString() ?: "--:--",
-                        status = entries.find { it.prayerType == type }?.status
-                            ?: PrayerStatus.NOT_RECORDED,
-                        isMarkable = isPrayerMarkable(date, times?.get(type)),
-                    )
-                },
-            )
-            _uiState.update { it.copy(isLoadingDay = false, selectedDay = detail) }
+            _uiState
+                .map { it.selectedDate }
+                .distinctUntilChanged()
+                .mapLatest { date -> date to prayerRepository.getCachedPrayerTimes(date) }
+                .collect { (date, times) ->
+                    _uiState.update { if (it.selectedDate == date) it.copy(selectedTimes = times) else it }
+                }
         }
     }
 
-    fun onDayDetailDismiss() = _uiState.update { it.copy(selectedDay = null) }
+    // ── View & navigation ─────────────────────────────────────────────────────
 
-    fun onStatusSave(prayerType: PrayerType, newStatus: PrayerStatus) {
-        val day = _uiState.value.selectedDay ?: return
-        val prayerDetail = day.prayers.find { it.type == prayerType } ?: return
-        if (!prayerDetail.isMarkable) return
+    fun onViewChanged(view: CalendarViewType) = _uiState.update { it.copy(view = view, cameFromYear = null) }
+
+    fun onPreviousPeriod() = shiftSelected(-1)
+
+    fun onNextPeriod() = shiftSelected(1)
+
+    private fun shiftSelected(direction: Int) = _uiState.update { state ->
+        state.copy(selectedDate = shiftPeriod(state.view, state.selectedDate, direction))
+    }
+
+    fun onTodayClick() = _uiState.update { it.copy(selectedDate = it.today) }
+
+    fun onDatePicked(date: LocalDate) = _uiState.update { it.copy(selectedDate = date.coerceToCalendarRange()) }
+
+    /** Tapping a day cell in the Month view selects it, loading that day into the inline panel. */
+    fun onDaySelected(date: LocalDate) = _uiState.update { it.copy(selectedDate = date) }
+
+    /** Year: tapping a month tile drills into it, remembering the year to return Back to. */
+    fun onMonthTileClick(month: YearMonth) = _uiState.update { state ->
+        state.copy(view = CalendarViewType.MONTH, selectedDate = month.atDay(1), cameFromYear = state.selectedDate.year)
+    }
+
+    fun onBackFromMonthDrillDown() = _uiState.update { state ->
+        val year = state.cameFromYear ?: return@update state
+        state.copy(view = CalendarViewType.YEAR, selectedDate = LocalDate.of(year, state.selectedDate.monthValue, 1), cameFromYear = null)
+    }
+
+    // ── Prayer status editing ────────────────────────────────────────────────
+
+    /**
+     * Opens the status picker for one (date, prayer) — used by the Month view's inline rows
+     * and the Week view's squares. Markability only needs the actual prayer time for
+     * *today* (any earlier date is always markable, any later date never is — see
+     * [isPrayerMarkable]'s own rules), so this only fetches times when [date] is today, rather
+     * than requiring every visible date's times to already be loaded.
+     */
+    fun onPrayerClick(date: LocalDate, type: PrayerType) {
+        viewModelScope.launch {
+            val today = _uiState.value.today
+            val prayerTime = if (date == today) prayerRepository.getCachedPrayerTimes(date)?.get(type) else null
+            if (!isPrayerMarkable(date, prayerTime, today)) return@launch
+            val current = _uiState.value.marks[date]?.get(type) ?: PrayerStatus.NOT_RECORDED
+            _uiState.update { it.copy(statusSheet = PrayerStatusSheetArgs(type, date, current)) }
+        }
+    }
+
+    fun onStatusSheetDismiss() = _uiState.update { it.copy(statusSheet = null) }
+
+    fun onStatusSave(newStatus: PrayerStatus) {
+        val args = _uiState.value.statusSheet ?: return
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true) }
             runCatching {
-                prayerRepository.upsertPrayerStatus(day.date, prayerType, newStatus)
+                prayerRepository.upsertPrayerStatus(args.date, args.prayerType, newStatus)
             }.onSuccess {
-                _uiState.update { it.copy(isSaving = false) }
-                onDaySelected(day.date)
+                _uiState.update { it.copy(isSaving = false, statusSheet = null) }
             }.onFailure { e ->
                 _uiState.update { it.copy(isSaving = false, error = e.message) }
             }
@@ -158,20 +167,4 @@ class CalendarViewModel @Inject constructor(
     }
 
     fun clearError() = _uiState.update { it.copy(error = null) }
-
-    private fun PrayerStatus?.toDotColor() = when (this) {
-        PrayerStatus.CONGREGATION   -> DotColor.GREEN
-        PrayerStatus.INDIVIDUAL     -> DotColor.YELLOW
-        PrayerStatus.QAZA_PENDING   -> DotColor.RED
-        PrayerStatus.QAZA_COMPLETED -> DotColor.PURPLE
-        else                        -> DotColor.GREY
-    }
-
-    private fun calcCompletion(statuses: List<PrayerStatus>): Int {
-        if (statuses.isEmpty()) return 0
-        val done = statuses.count {
-            it == PrayerStatus.CONGREGATION || it == PrayerStatus.INDIVIDUAL
-        }
-        return (done * 100) / 5
-    }
 }
