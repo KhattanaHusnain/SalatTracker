@@ -44,6 +44,7 @@ import androidx.navigation.navArgument
 import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.core.ui.label
+import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.usecase.CalendarViewType
 import com.salattracker.feature.backup.BackupEntry
 import com.salattracker.feature.bulkupdate.BulkUpdateEntry
@@ -306,7 +307,15 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                     CalendarEntry(calendarViewModel)
                 }
                 composable(BottomNavRoute.Qaza.route) {
-                    QazaEntry(onViewAllClick = { navController.push(Routes.missedPrayers()) })
+                    QazaEntry(
+                        onViewAllClick   = { navController.push(Routes.missedPrayers()) },
+                        onPrayerClick    = { prayer -> navController.push(Routes.missedPrayers(prayer)) },
+                        onOpenDay        = { date ->
+                            calendarViewModel.onOpenDay(date)
+                            navController.navigateToTab(BottomNavRoute.Calendar.route)
+                        },
+                        onAddMissedClick = { navController.push(Routes.bulkUpdate(PrayerStatus.QAZA_PENDING)) },
+                    )
                 }
                 composable(BottomNavRoute.Goals.route) {
                     GoalsEntry(
@@ -354,7 +363,13 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                     Routes.MISSED_PRAYERS,
                     arguments = listOf(navArgument("prayer") { type = NavType.StringType; nullable = true; defaultValue = null }),
                 ) {
-                    MissedPrayersEntry(onBackToDashboard = { navController.popBackStack() })
+                    MissedPrayersEntry(
+                        onBackToDashboard = { navController.popBackStack() },
+                        onOpenDay         = { date ->
+                            calendarViewModel.onOpenDay(date)
+                            navController.navigateToTab(BottomNavRoute.Calendar.route)
+                        },
+                    )
                 }
             }
         }

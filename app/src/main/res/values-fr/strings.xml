@@ -112,40 +112,52 @@
     <string name="home_last_7_days">7 derniers jours</string>
     <string name="home_qaza_count_pending">%1$d Qaza en attente</string>
 
-    <string name="qaza_today_missed">Prières manquées aujourd\'hui</string>
-    <string name="qaza_total_outstanding">TOTAL RESTANT</string>
-    <string name="qaza_overall_backlog">Arriéré total</string>
-    <string name="qaza_none_pending">Aucune prière Qaza en attente !</string>
-    <string name="qaza_nothing_today">Rien de manqué aujourd\'hui !</string>
-    <string name="qaza_keep_consistency">MashAllah — gardez la constance.</string>
-    <string name="qaza_insight_title">Aperçu de constance</string>
-    <string name="qaza_insight_none">MashAllah ! Vous n\'avez aucune prière Qaza en attente. Continuez ainsi !</string>
-    <string name="qaza_insight_almost">Presque — plus que %1$d prières. La constance est la clé !</string>
-    <string name="qaza_insight_progress">Vous progressez. À raison d\'un Qaza par jour, vous aurez terminé dans %1$d jours.</string>
-    <string name="qaza_insight_many">La diviser en quelques prières par semaine la rend gérable. Vous pouvez le faire !</string>
+    <!-- Qaza dashboard -->
+    <string name="qaza_outstanding">Restant</string>
+    <string name="qaza_made_up_of">Rattrapées : %1$d sur %2$d</string>
+    <string name="qaza_stat_today">Aujourd\'hui</string>
+    <string name="qaza_stat_week">Cette semaine</string>
+    <string name="qaza_stat_per_day">Par jour</string>
+    <string name="qaza_eta_days">Jours pour terminer à ce rythme : %1$d</string>
+    <string name="qaza_eta_weeks">Semaines pour terminer à ce rythme : %1$d</string>
+    <string name="qaza_eta_months">Mois pour terminer à ce rythme : %1$d</string>
+    <string name="qaza_eta_years">Années pour terminer à ce rythme : %1$d</string>
+    <string name="qaza_pace_start">Rattrapez quelques prières pour voir votre rythme.</string>
+    <string name="qaza_all_caught_up">Tout est rattrapé</string>
+    <string name="qaza_action_log">Enregistrer des prières rattrapées</string>
+    <string name="qaza_action_add_missed">Ajouter des prières manquées</string>
+    <string name="qaza_latest_missed">Dernières prières manquées</string>
+    <string name="qaza_view_all_count">Tout afficher (%1$d)</string>
+    <string name="qaza_recently_made_up">Rattrapées récemment (%1$d)</string>
+    <string name="qaza_made_up_on">Rattrapée le %1$s</string>
+    <string name="qaza_make_up_all">Tout rattraper</string>
+    <string name="qaza_undo">Annuler</string>
+    <string name="qaza_made_up_one">Prière rattrapée</string>
+    <string name="qaza_made_up_many">Prières rattrapées : %1$d</string>
+    <string name="qaza_cd_pill_pending">%1$s, en attente</string>
+    <string name="qaza_cd_pill_selected">%1$s, sélectionnée</string>
+    <string name="qaza_cd_pill_made_up">%1$s, rattrapée</string>
+    <string name="qaza_cd_open_day">Ouvrir %1$s dans le calendrier</string>
+    <string name="qaza_log_title">Enregistrer des prières rattrapées</string>
+    <string name="qaza_log_hint">Les prières les plus anciennes sont marquées en premier.</string>
+    <string name="qaza_log_outstanding">Restant : %1$d</string>
+    <string name="qaza_log_confirm">Marquer comme rattrapées (%1$d)</string>
     <string name="error_goal_name">Donnez un nom à votre objectif.</string>
     <string name="error_goal_not_found">Objectif introuvable.</string>
-    <plurals name="qaza_backlog_remaining">
-        <item quantity="one">Il vous reste %1$d prière en attente des jours précédents.</item>
-        <item quantity="other">Il vous reste %1$d prières en attente des jours précédents.</item>
-    </plurals>
 
+    <!-- Missed prayers -->
     <string name="filter_all">Tout</string>
-    <string name="missed_total_pending">%1$d au total en attente</string>
     <string name="sort_newest">Plus récentes d\'abord</string>
     <string name="sort_oldest">Plus anciennes d\'abord</string>
     <string name="action_deselect_all">Tout désélectionner</string>
-    <string name="action_select_multiple">Sélection multiple</string>
     <string name="action_select_all">Tout sélectionner</string>
     <string name="selected_label">Sélectionnées</string>
-    <string name="action_complete_all">Tout compléter</string>
+    <string name="qaza_select">Sélectionner</string>
+    <string name="qaza_selected_count">Sélectionnées : %1$d</string>
+    <string name="qaza_clear_selection">Effacer</string>
     <string name="missed_empty_title">La patience est récompensée</string>
     <string name="missed_empty_desc">Vous avez complété toutes vos prières manquées ! Votre discipline est inspirante.</string>
     <string name="action_back_dashboard">Retour au tableau de bord</string>
-    <plurals name="selected_prayers">
-        <item quantity="one">%1$d prière</item>
-        <item quantity="other">%1$d prières</item>
-    </plurals>
 
     <string name="settings_location">Localisation</string>
     <string name="settings_prayer_calc">Calcul des prières</string>
