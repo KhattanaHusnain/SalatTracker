@@ -36,17 +36,16 @@ import java.time.LocalTime
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
-private val ENABLED_VIEWS = CalendarViewType.values().toList()
-
 // ── Calendar Screen ───────────────────────────────────────────────────────────
+// The view switcher and Today shortcut live in the app's shared top bar now (see
+// MainActivity's TopBar), driven directly off CalendarViewModel rather than through this
+// screen — it only reads uiState.view to decide what to render.
 
 @Composable
 fun CalendarScreen(
     uiState: CalendarUiState,
-    onViewChanged: (CalendarViewType) -> Unit,
     onPreviousPeriod: () -> Unit,
     onNextPeriod: () -> Unit,
-    onTodayClick: () -> Unit,
     onDatePicked: (LocalDate) -> Unit,
     onDaySelected: (LocalDate) -> Unit,
     onMonthTileClick: (YearMonth) -> Unit,
@@ -75,15 +74,11 @@ fun CalendarScreen(
                         .padding(bottom = 100.dp),
                 ) {
                     CalendarHeader(
-                        currentView   = uiState.view,
-                        onViewChanged = onViewChanged,
-                        titleText     = title,
-                        subtitleText  = subtitle,
-                        showToday     = uiState.awayFromToday,
-                        onTodayClick  = onTodayClick,
-                        onPrevious    = onPreviousPeriod,
-                        onNext        = onNextPeriod,
-                        onTitleClick  = { showGoToDate = true },
+                        titleText    = title,
+                        subtitleText = subtitle,
+                        onPrevious   = onPreviousPeriod,
+                        onNext       = onNextPeriod,
+                        onTitleClick = { showGoToDate = true },
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -127,15 +122,11 @@ fun CalendarScreen(
                         .padding(bottom = 100.dp),
                 ) {
                     CalendarHeader(
-                        currentView   = uiState.view,
-                        onViewChanged = onViewChanged,
-                        titleText     = title,
-                        subtitleText  = subtitle,
-                        showToday     = uiState.awayFromToday,
-                        onTodayClick  = onTodayClick,
-                        onPrevious    = onPreviousPeriod,
-                        onNext        = onNextPeriod,
-                        onTitleClick  = { showGoToDate = true },
+                        titleText    = title,
+                        subtitleText = subtitle,
+                        onPrevious   = onPreviousPeriod,
+                        onNext       = onNextPeriod,
+                        onTitleClick = { showGoToDate = true },
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -168,15 +159,11 @@ fun CalendarScreen(
                         .padding(bottom = 100.dp),
                 ) {
                     CalendarHeader(
-                        currentView   = uiState.view,
-                        onViewChanged = onViewChanged,
-                        titleText     = title,
-                        subtitleText  = subtitle,
-                        showToday     = uiState.awayFromToday,
-                        onTodayClick  = onTodayClick,
-                        onPrevious    = onPreviousPeriod,
-                        onNext        = onNextPeriod,
-                        onTitleClick  = { showGoToDate = true },
+                        titleText    = title,
+                        subtitleText = subtitle,
+                        onPrevious   = onPreviousPeriod,
+                        onNext       = onNextPeriod,
+                        onTitleClick = { showGoToDate = true },
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -287,116 +274,48 @@ private fun yearHeaderTexts(year: Int): Pair<String, String?> {
     return year.toString() to subtitle
 }
 
+/** Just the chevron/title/subtitle row now — the view switcher and Today shortcut moved to
+ * the shared top bar (MainActivity's TopBar), which drives CalendarViewModel directly. */
 @Composable
 private fun CalendarHeader(
-    currentView: CalendarViewType,
-    onViewChanged: (CalendarViewType) -> Unit,
     titleText: String,
     subtitleText: String?,
-    showToday: Boolean,
-    onTodayClick: () -> Unit,
     onPrevious: () -> Unit,
     onNext: () -> Unit,
     onTitleClick: () -> Unit,
 ) {
-    var menuExpanded by remember { mutableStateOf(false) }
-
-    Column(modifier = Modifier.fillMaxWidth().padding(top = 12.dp)) {
-        Row(
-            modifier              = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment     = Alignment.CenterVertically,
-        ) {
-            ViewChip(
-                currentView   = currentView,
-                expanded      = menuExpanded,
-                onExpandedChange = { menuExpanded = it },
-                onViewChanged = onViewChanged,
-            )
-            if (showToday) {
-                TextButton(onClick = onTodayClick) {
-                    Icon(painterResource(R.drawable.ic_calendar_today), null, tint = SalatPrimary, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(stringResource(R.string.calendar_today), color = SalatPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
-                }
-            }
+    Row(
+        modifier              = Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment     = Alignment.CenterVertically,
+    ) {
+        IconButton(onClick = onPrevious) {
+            Icon(painterResource(R.drawable.ic_chevron_left), stringResource(R.string.bulk_previous), tint = SalatOnSurfaceVariant)
         }
-
-        Row(
-            modifier              = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment     = Alignment.CenterVertically,
+        Column(
+            modifier            = Modifier.weight(1f).clickable(onClick = onTitleClick),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            IconButton(onClick = onPrevious) {
-                Icon(painterResource(R.drawable.ic_chevron_left), stringResource(R.string.bulk_previous), tint = SalatOnSurfaceVariant)
-            }
-            Column(
-                modifier            = Modifier.weight(1f).clickable(onClick = onTitleClick),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
+            Text(
+                text       = titleText,
+                color      = SalatPrimary,
+                fontSize   = 20.sp,
+                fontWeight = FontWeight.SemiBold,
+                fontFamily = MontserratFamily,
+                textAlign  = TextAlign.Center,
+            )
+            if (subtitleText != null) {
                 Text(
-                    text       = titleText,
-                    color      = SalatPrimary,
-                    fontSize   = 20.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = MontserratFamily,
+                    text       = subtitleText,
+                    color      = SalatOnSurfaceVariant,
+                    fontSize   = 11.sp,
+                    fontFamily = InterFamily,
                     textAlign  = TextAlign.Center,
                 )
-                if (subtitleText != null) {
-                    Text(
-                        text       = subtitleText,
-                        color      = SalatOnSurfaceVariant,
-                        fontSize   = 11.sp,
-                        fontFamily = InterFamily,
-                        textAlign  = TextAlign.Center,
-                    )
-                }
-            }
-            IconButton(onClick = onNext) {
-                Icon(painterResource(R.drawable.ic_chevron_right), stringResource(R.string.bulk_next), tint = SalatOnSurfaceVariant)
             }
         }
-    }
-}
-
-@Composable
-private fun ViewChip(
-    currentView: CalendarViewType,
-    expanded: Boolean,
-    onExpandedChange: (Boolean) -> Unit,
-    onViewChanged: (CalendarViewType) -> Unit,
-) {
-    val canSwitch = ENABLED_VIEWS.size > 1
-    Box {
-        Surface(
-            onClick = { if (canSwitch) onExpandedChange(true) },
-            shape   = RoundedCornerShape(50),
-            color   = SalatSurfaceContainerLow,
-            border  = BorderStroke(1.dp, SalatOutlineVariant),
-        ) {
-            Row(
-                modifier              = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                verticalAlignment     = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                Text(currentView.label(), color = SalatOnSurfaceVariant, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
-                if (canSwitch) {
-                    Icon(
-                        painter            = painterResource(R.drawable.ic_expand_more),
-                        contentDescription = stringResource(R.string.cd_change_view),
-                        tint               = SalatOnSurfaceVariant,
-                        modifier           = Modifier.size(16.dp),
-                    )
-                }
-            }
-        }
-        DropdownMenu(expanded = expanded, onDismissRequest = { onExpandedChange(false) }) {
-            ENABLED_VIEWS.forEach { view ->
-                DropdownMenuItem(
-                    text    = { Text(view.label()) },
-                    onClick = { onViewChanged(view); onExpandedChange(false) },
-                )
-            }
+        IconButton(onClick = onNext) {
+            Icon(painterResource(R.drawable.ic_chevron_right), stringResource(R.string.bulk_next), tint = SalatOnSurfaceVariant)
         }
     }
 }
@@ -963,10 +882,8 @@ fun CalendarScreenYearPreview() = PreviewCalendarScreen(sampleUiState(CalendarVi
 private fun PreviewCalendarScreen(uiState: CalendarUiState) {
     CalendarScreen(
         uiState                 = uiState,
-        onViewChanged           = {},
         onPreviousPeriod        = {},
         onNextPeriod            = {},
-        onTodayClick            = {},
         onDatePicked            = {},
         onDaySelected           = {},
         onMonthTileClick        = {},
