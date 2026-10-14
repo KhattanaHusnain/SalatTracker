@@ -290,20 +290,24 @@ private fun WeekdayChips(
                 fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily,
             )
         }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Row(Modifier.fillMaxWidth()) {
             SUNDAY_FIRST.forEach { day ->
                 val isSelected = day in selected
-                Surface(
-                    onClick = { onDayToggled(day) },
-                    shape = CircleShape,
-                    color = if (isSelected) SalatPrimaryContainer else Color.Transparent,
-                    border = BorderStroke(1.dp, if (isSelected) SalatPrimaryContainer else SalatOutlineVariant),
-                ) {
-                    Box(Modifier.size(42.dp), contentAlignment = Alignment.Center) {
-                        Text(
-                            day.shortLabel(), color = if (isSelected) SalatOnPrimaryContainer else SalatSecondary,
-                            fontSize = 10.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily, maxLines = 1,
-                        )
+                // weight(1f) so 7 columns always fit the card width, however narrow the screen —
+                // a fixed-width circle per day here previously overflowed and got clipped.
+                Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                    Surface(
+                        onClick = { onDayToggled(day) },
+                        shape = CircleShape,
+                        color = if (isSelected) SalatPrimaryContainer else Color.Transparent,
+                        border = BorderStroke(1.dp, if (isSelected) SalatPrimaryContainer else SalatOutlineVariant),
+                    ) {
+                        Box(Modifier.size(36.dp), contentAlignment = Alignment.Center) {
+                            Text(
+                                day.shortLabel(), color = if (isSelected) SalatOnPrimaryContainer else SalatSecondary,
+                                fontSize = 9.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily, maxLines = 1,
+                            )
+                        }
                     }
                 }
             }
