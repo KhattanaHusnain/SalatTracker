@@ -345,10 +345,7 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                     Routes.EDIT_GOAL,
                     arguments = listOf(navArgument("goalId") { type = NavType.LongType }),
                 ) {
-                    EditGoalEntry(
-                        onSaved   = { navController.popBackStack() },
-                        onDeleted = { navController.popBackStack() },
-                    )
+                    EditGoalEntry(onSaved = { navController.popBackStack() })
                 }
                 composable(Routes.MISSED_PRAYERS) {
                     MissedPrayersEntry(onBackToDashboard = { navController.popBackStack() })

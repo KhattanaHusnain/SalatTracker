@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.*
+import com.salattracker.core.ui.goalUnitLabel
 import com.salattracker.core.ui.iconRes
 import com.salattracker.core.ui.label
 import com.salattracker.core.ui.shortLabel
@@ -157,7 +158,7 @@ private fun HeaderCard(goal: SpiritualGoal, status: GoalStatus, dayIndex: Int?) 
             goal.daysOfWeek.sortedBy { it.value % 7 }.map { it.shortLabel() }.joinToString(", ")
         } else null
         DetailLine(stringResource(R.string.addgoal_target_freq), listOfNotNull(schedule, weekdays).joinToString(" · "))
-        DetailLine(stringResource(R.string.addgoal_amount), "${goal.targetAmount} ${goal.unit}")
+        DetailLine(stringResource(R.string.addgoal_amount), "${goal.targetAmount} ${goalUnitLabel(goal.unit)}")
         DetailLine(
             stringResource(R.string.addgoal_reminder),
             goal.reminderTime?.takeIf { goal.reminderEnabled }?.format(timeFormatter) ?: stringResource(R.string.goal_no_reminder),
@@ -229,7 +230,7 @@ private fun BigTile(iconRes: Int, value: String, unit: String, label: String, mo
 @Composable
 private fun TotalsTiles(goal: SpiritualGoal, totals: GoalTotals) {
     Row(Modifier.fillMaxWidth().height(IntrinsicSize.Max), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        SmallTile("${totals.loggedAmount} ${goal.unit}", stringResource(R.string.goal_total_logged), Modifier.weight(1f).fillMaxHeight())
+        SmallTile("${totals.loggedAmount} ${goalUnitLabel(goal.unit)}", stringResource(R.string.goal_total_logged), Modifier.weight(1f).fillMaxHeight())
         SmallTile(
             if (totals.periodsCounted > 0) "${totals.periodsHit}/${totals.periodsCounted}" else "—",
             stringResource(R.string.stats_targets_hit),

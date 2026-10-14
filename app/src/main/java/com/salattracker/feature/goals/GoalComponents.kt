@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.*
+import com.salattracker.core.ui.goalUnitLabel
 import com.salattracker.core.ui.shortLabel
 import com.salattracker.domain.usecase.GoalDayState
 import java.time.LocalDate
@@ -241,7 +242,7 @@ fun LogDaySheet(
                         color = if (amountEnabled) SalatPrimary else SalatOutline,
                         fontSize = 36.sp, fontWeight = FontWeight.Bold, fontFamily = MontserratFamily,
                     )
-                    Text("/ ${state.target} ${state.unit}", color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily)
+                    Text("/ ${state.target} ${goalUnitLabel(state.unit)}", color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily)
                 }
                 FilledTonalIconButton(
                     onClick = { onAmountChanged((state.amount + 1).coerceAtMost(MAX_LOG_AMOUNT)) },

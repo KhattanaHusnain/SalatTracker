@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.*
+import com.salattracker.core.ui.goalUnitLabel
 import com.salattracker.core.ui.iconRes
 import com.salattracker.core.ui.label
 import com.salattracker.core.ui.shortLabel
@@ -428,7 +429,7 @@ private fun GoalStatRow(item: GoalPeriodStat) {
             Column(Modifier.weight(1f)) {
                 Text(item.goalName.shortLabel(), color = SalatOnSurface, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(
-                    text = "${item.loggedAmount} ${item.unit} · ${item.frequency.label()}",
+                    text = "${item.loggedAmount} ${goalUnitLabel(item.unit)} · ${item.frequency.label()}",
                     color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily, maxLines = 1, overflow = TextOverflow.Ellipsis,
                 )
             }

@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.*
+import com.salattracker.core.ui.goalUnitLabel
 import com.salattracker.core.ui.iconRes
 import com.salattracker.core.ui.label
 import com.salattracker.domain.model.GoalCategory
@@ -261,9 +262,9 @@ private fun cardSubtitle(card: GoalCardUi): String {
     val base = when {
         goal.frequency == GoalFrequency.DAILY && card.skippedToday -> stringResource(R.string.goal_day_excused)
         goal.frequency == GoalFrequency.DAILY && !card.dueToday    -> stringResource(R.string.goal_not_due_today)
-        goal.frequency == GoalFrequency.DAILY   -> stringResource(R.string.goal_today_progress, card.currentAmount, goal.targetAmount, goal.unit)
-        goal.frequency == GoalFrequency.WEEKLY  -> stringResource(R.string.goal_week_progress, card.currentAmount, goal.targetAmount, goal.unit)
-        else                                    -> stringResource(R.string.goal_month_progress, card.currentAmount, goal.targetAmount, goal.unit)
+        goal.frequency == GoalFrequency.DAILY   -> stringResource(R.string.goal_today_progress, card.currentAmount, goal.targetAmount, goalUnitLabel(goal.unit))
+        goal.frequency == GoalFrequency.WEEKLY  -> stringResource(R.string.goal_week_progress, card.currentAmount, goal.targetAmount, goalUnitLabel(goal.unit))
+        else                                    -> stringResource(R.string.goal_month_progress, card.currentAmount, goal.targetAmount, goalUnitLabel(goal.unit))
     }
     val day = card.dayIndex
     return if (day != null) base + " · " + stringResource(R.string.goal_day_of, day, goal.durationDays) else base
