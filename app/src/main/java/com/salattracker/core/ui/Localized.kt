@@ -104,3 +104,10 @@ fun hijriMonthRangeLabel(from: HijriDate, to: HijriDate): String {
         else                                              -> stringResource(R.string.hijri_two_months_diff_year, startName, from.year, endName, to.year)
     }
 }
+
+/** "1447 – 1448 AH" (or "1448 AH" when [startYear] and [endYear] are the same) — the Year
+ * view's header subtitle. */
+@Composable
+fun hijriYearRangeLabel(startYear: Int, endYear: Int): String =
+    if (startYear == endYear) stringResource(R.string.hijri_single_year, startYear)
+    else stringResource(R.string.hijri_two_years, startYear, endYear)

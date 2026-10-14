@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.YearMonth
 import javax.inject.Inject
 
 data class CalendarUiState(
@@ -35,6 +36,9 @@ data class CalendarUiState(
     /** Month-grid: the full day sheet open for [selectedDate]. Reuses [selectedTimes]/
      * [selectedDayStatuses] rather than its own copy, so it updates live the same way. */
     val daySheetOpen: Boolean = false,
+    /** Set when the Year view drilled into a month, so Back can return there instead of
+     * leaving Calendar entirely; cleared by returning, or by any explicit view switch. */
+    val cameFromYear: Int? = null,
     val isSaving: Boolean = false,
     val error: String? = null,
     val verse: VerseInfo? = null,
@@ -103,7 +107,7 @@ class CalendarViewModel @Inject constructor(
 
     // ── View & navigation ─────────────────────────────────────────────────────
 
-    fun onViewChanged(view: CalendarViewType) = _uiState.update { it.copy(view = view) }
+    fun onViewChanged(view: CalendarViewType) = _uiState.update { it.copy(view = view, cameFromYear = null) }
 
     fun onPreviousPeriod() = shiftSelected(-1)
 
@@ -124,6 +128,16 @@ class CalendarViewModel @Inject constructor(
     fun onGridDayClick(date: LocalDate) = _uiState.update { it.copy(selectedDate = date, daySheetOpen = true) }
 
     fun onDaySheetDismiss() = _uiState.update { it.copy(daySheetOpen = false) }
+
+    /** Year: tapping a month tile drills into it, remembering the year to return Back to. */
+    fun onMonthTileClick(month: YearMonth) = _uiState.update { state ->
+        state.copy(view = CalendarViewType.MONTH, selectedDate = month.atDay(1), cameFromYear = state.selectedDate.year)
+    }
+
+    fun onBackFromMonthDrillDown() = _uiState.update { state ->
+        val year = state.cameFromYear ?: return@update state
+        state.copy(view = CalendarViewType.YEAR, selectedDate = LocalDate.of(year, state.selectedDate.monthValue, 1), cameFromYear = null)
+    }
 
     // ── Prayer status editing ────────────────────────────────────────────────
 

@@ -1,5 +1,6 @@
 package com.salattracker.feature.calendar
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -35,8 +36,7 @@ import java.time.LocalTime
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
-/** Views selectable from the header's chip today — grows as Year lands. */
-private val ENABLED_VIEWS = listOf(CalendarViewType.MONTH, CalendarViewType.MONTH_GRID, CalendarViewType.WEEK)
+private val ENABLED_VIEWS = CalendarViewType.values().toList()
 
 // ── Calendar Screen ───────────────────────────────────────────────────────────
 
@@ -51,6 +51,8 @@ fun CalendarScreen(
     onDaySelected: (LocalDate) -> Unit,
     onGridDayClick: (LocalDate) -> Unit,
     onDaySheetDismiss: () -> Unit,
+    onMonthTileClick: (YearMonth) -> Unit,
+    onBackFromYearDrillDown: () -> Unit,
     onPrayerClick: (LocalDate, PrayerType) -> Unit,
     onStatusSheetDismiss: () -> Unit,
     onStatusSave: (PrayerStatus) -> Unit,
@@ -58,6 +60,10 @@ fun CalendarScreen(
 ) {
     var showGoToDate by remember { mutableStateOf(false) }
     val visibleMonth = YearMonth.from(uiState.selectedDate)
+
+    // Only armed after drilling into a month from the Year view — otherwise Back behaves as it
+    // always has (handled by the NavHost / Activity, outside this screen entirely).
+    BackHandler(enabled = uiState.cameFromYear != null) { onBackFromYearDrillDown() }
 
     Box(modifier = Modifier.fillMaxSize()) {
         when (uiState.view) {
@@ -180,7 +186,41 @@ fun CalendarScreen(
                 }
             }
 
-            CalendarViewType.YEAR -> Unit // not built yet; unreachable — ENABLED_VIEWS excludes it
+            CalendarViewType.YEAR -> {
+                val year = uiState.selectedDate.year
+                val (title, subtitle) = yearHeaderTexts(year)
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = 20.dp)
+                        .padding(bottom = 100.dp),
+                ) {
+                    CalendarHeader(
+                        currentView   = uiState.view,
+                        onViewChanged = onViewChanged,
+                        titleText     = title,
+                        subtitleText  = subtitle,
+                        showToday     = uiState.awayFromToday,
+                        onTodayClick  = onTodayClick,
+                        onPrevious    = onPreviousPeriod,
+                        onNext        = onNextPeriod,
+                        onTitleClick  = { showGoToDate = true },
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    DotLegend(items = yearLegendItems)
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    YearGrid(
+                        year       = year,
+                        today      = uiState.today,
+                        isLoading  = uiState.isLoadingMarks,
+                        marks      = uiState.marks,
+                        onMonthClick = onMonthTileClick,
+                    )
+                }
+            }
         }
 
         uiState.error?.let { msg ->
@@ -276,6 +316,15 @@ private fun weekHeaderTexts(start: LocalDate, end: LocalDate): Pair<String, Stri
     val endHijri = remember(end) { end.toHijriOrNull() }
     val subtitle = if (startHijri != null && endHijri != null) hijriMonthRangeLabel(startHijri, endHijri) else null
     return title to subtitle
+}
+
+/** "2026" + the Hijri years it spans — the Year view's header. */
+@Composable
+private fun yearHeaderTexts(year: Int): Pair<String, String?> {
+    val startHijri = remember(year) { LocalDate.of(year, 1, 1).toHijriOrNull() }
+    val endHijri = remember(year) { LocalDate.of(year, 12, 31).toHijriOrNull() }
+    val subtitle = if (startHijri != null && endHijri != null) hijriYearRangeLabel(startHijri.year, endHijri.year) else null
+    return year.toString() to subtitle
 }
 
 @Composable
@@ -404,8 +453,17 @@ private val legendItems = listOf(
     LegendItem(SalatStatusNotRecorded,   R.string.status_not_recorded),
 )
 
+/** Year view's tones are coarser than a single prayer's status — see [DayTone]/[toneColor]. */
+private val yearLegendItems = listOf(
+    LegendItem(SalatStatusCongregation, R.string.year_tone_all_prayed),
+    LegendItem(SalatStatusIndividual,   R.string.year_tone_partly),
+    LegendItem(SalatStatusQazaPending,  R.string.status_qaza),
+    LegendItem(SalatStatusExcused,      R.string.status_excused),
+    LegendItem(SalatStatusNotRecorded,  R.string.status_not_recorded),
+)
+
 @Composable
-private fun DotLegend() {
+private fun DotLegend(items: List<LegendItem> = legendItems) {
     Surface(
         modifier       = Modifier.fillMaxWidth(),
         shape          = RoundedCornerShape(12.dp),
@@ -416,7 +474,7 @@ private fun DotLegend() {
             modifier            = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            legendItems.chunked(3).forEach { row ->
+            items.chunked(3).forEach { row ->
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     row.forEach { item -> LegendDot(item) }
                 }
@@ -840,6 +898,102 @@ private fun WeekStatusSquare(
     }
 }
 
+// ── Year grid ─────────────────────────────────────────────────────────────────
+// Twelve mini-months, three per row. Each day is a tinted square — the coarser 5-tone summary
+// from DaySummary.kt, not a single prayer's status, since a whole year can't show 5 arcs per
+// day legibly at this size. Tapping a month drills into it as the Month view (onMonthClick);
+// Back out of that returns here via CalendarViewModel's cameFromYear + this screen's BackHandler.
+
+private fun toneColor(tone: DayTone): Color = when (tone) {
+    DayTone.ALL_PRAYED   -> SalatStatusCongregation
+    DayTone.PARTLY       -> SalatStatusIndividual
+    DayTone.QAZA_PENDING -> SalatStatusQazaPending
+    DayTone.EXCUSED      -> SalatStatusExcused
+    DayTone.NOTHING      -> SalatStatusNotRecorded
+}
+
+@Composable
+private fun YearGrid(
+    year: Int,
+    today: LocalDate,
+    isLoading: Boolean,
+    marks: Map<LocalDate, Map<PrayerType, PrayerStatus>>,
+    onMonthClick: (YearMonth) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        (1..12).chunked(3).forEach { monthValues ->
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                monthValues.forEach { monthValue ->
+                    val month = YearMonth.of(year, monthValue)
+                    MiniMonthTile(
+                        month     = month,
+                        today     = today,
+                        isLoading = isLoading,
+                        marks     = marks,
+                        onClick   = { onMonthClick(month) },
+                        modifier  = Modifier.weight(1f),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MiniMonthTile(
+    month: YearMonth,
+    today: LocalDate,
+    isLoading: Boolean,
+    marks: Map<LocalDate, Map<PrayerType, PrayerStatus>>,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val monthNameFormatter = remember { DateTimeFormatter.ofPattern("MMM") }
+    val isCurrentMonth = month == YearMonth.from(today)
+    val firstDayOffset = month.atDay(1).dayOfWeek.value % 7
+    val daysInMonth = month.lengthOfMonth()
+
+    Column(
+        modifier            = modifier.clip(RoundedCornerShape(8.dp)).clickable(onClick = onClick).padding(4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            text       = month.format(monthNameFormatter),
+            color      = if (isCurrentMonth) SalatPrimary else SalatOnSurfaceVariant,
+            fontSize   = 12.sp,
+            fontWeight = if (isCurrentMonth) FontWeight.SemiBold else FontWeight.Medium,
+            fontFamily = InterFamily,
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(1.5.dp)) {
+            (0 until 6).forEach { row ->
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(1.5.dp)) {
+                    (0 until 7).forEach { col ->
+                        val dayNumber = row * 7 + col - firstDayOffset + 1
+                        if (dayNumber in 1..daysInMonth) {
+                            val date = month.atDay(dayNumber)
+                            val tone = if (!isLoading && !date.isAfter(today)) {
+                                dayToneOf(marks[date].orEmpty().values.toList())
+                            } else {
+                                null
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .aspectRatio(1f)
+                                    .clip(RoundedCornerShape(1.dp))
+                                    .background(tone?.let(::toneColor) ?: Color.Transparent),
+                            )
+                        } else {
+                            Spacer(modifier = Modifier.weight(1f).aspectRatio(1f))
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 // ── Selected day panel ─────────────────────────────────────────────────────────
 
 @Composable
@@ -903,6 +1057,8 @@ fun CalendarScreenPreview() {
         onDaySelected        = {},
         onGridDayClick       = {},
         onDaySheetDismiss    = {},
+        onMonthTileClick     = {},
+        onBackFromYearDrillDown = {},
         onPrayerClick        = { _, _ -> },
         onStatusSheetDismiss = {},
         onStatusSave         = {},
