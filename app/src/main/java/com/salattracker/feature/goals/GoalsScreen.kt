@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.*
+import com.salattracker.core.ui.iconRes
 import com.salattracker.core.ui.label
 import com.salattracker.domain.model.GoalCategory
 import com.salattracker.domain.model.GoalFrequency
@@ -401,14 +402,6 @@ internal fun DeleteGoalConfirmDialog(goalName: String, onConfirm: () -> Unit, on
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-private val GoalCategory.iconRes get() = when (this) {
-    GoalCategory.SALAT   -> R.drawable.ic_mosque
-    GoalCategory.QURAN   -> R.drawable.ic_history_edu
-    GoalCategory.FASTING -> R.drawable.ic_schedule
-    GoalCategory.CHARITY -> R.drawable.ic_workspace_premium
-    GoalCategory.DHIKR   -> R.drawable.ic_local_fire_department
-}
 
 // ── Preview ───────────────────────────────────────────────────────────────────
 
