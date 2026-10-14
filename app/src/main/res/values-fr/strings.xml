@@ -279,6 +279,8 @@
     <string name="notification_channel_goal_desc">Rappels pour vos objectifs spirituels</string>
     <string name="notification_goal_title">C\'est l\'heure : %1$s</string>
     <string name="notification_goal_body">Appuyez pour pointer votre objectif.</string>
+    <string name="notification_action_check_in">Pointer</string>
+    <string name="notification_action_snooze">Reporter 10 min</string>
 
     <!-- Backup & Restore -->
     <string name="backup_title">Sauvegarde et restauration</string>

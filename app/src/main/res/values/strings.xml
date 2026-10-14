@@ -301,6 +301,8 @@
     <string name="notification_channel_goal_desc">Reminders for your spiritual goals</string>
     <string name="notification_goal_title">Time for: %1$s</string>
     <string name="notification_goal_body">Tap to check in on your goal.</string>
+    <string name="notification_action_check_in">Check-in</string>
+    <string name="notification_action_snooze">Snooze 10m</string>
 
     <!-- Backup & Restore -->
     <string name="backup_title">Backup &amp; Restore</string>

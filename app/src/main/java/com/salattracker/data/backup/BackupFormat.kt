@@ -48,12 +48,16 @@ data class BackupGoal(
     val startDate: LocalDate,
     val durationDays: Int,
     val isActive: Boolean,
+    /** Weekday bitmask for DAILY goals (bit = DayOfWeek.value - 1); 0 = every day. */
+    val daysOfWeek: Int = 0,
+    val endsAfterDuration: Boolean = false,
 )
 
 data class BackupCheckIn(
     val goalId: Long,
     val date: LocalDate,
     val amount: Int,
+    val isSkip: Boolean = false,
 )
 
 data class BackupSnapshot(
@@ -99,12 +103,16 @@ private data class GoalDto(
     @SerializedName("startDate") val startDate: String?,
     @SerializedName("durationDays") val durationDays: Int?,
     @SerializedName("isActive") val isActive: Boolean?,
+    // Added after format v1 shipped; absent in older backups and then default to every-day / ongoing.
+    @SerializedName("daysOfWeek") val daysOfWeek: Int?,
+    @SerializedName("endsAfterDuration") val endsAfterDuration: Boolean?,
 )
 
 private data class CheckInDto(
     @SerializedName("goalId") val goalId: Long?,
     @SerializedName("date") val date: String?,
     @SerializedName("amount") val amount: Int?,
+    @SerializedName("isSkip") val isSkip: Boolean?,
 )
 
 private data class StreakDto(
@@ -259,10 +267,12 @@ object BackupCodec {
                 startDate       = it.startDate.toString(),
                 durationDays    = it.durationDays,
                 isActive        = it.isActive,
+                daysOfWeek      = it.daysOfWeek,
+                endsAfterDuration = it.endsAfterDuration,
             )
         },
         checkIns = checkIns.map {
-            CheckInDto(goalId = it.goalId, date = it.date.toString(), amount = it.amount)
+            CheckInDto(goalId = it.goalId, date = it.date.toString(), amount = it.amount, isSkip = it.isSkip)
         },
         streaks = PrayerType.values().map { type ->
             StreakDto(prayerType = type.name, highestStreak = highestStreaks[type] ?: 0)
@@ -320,12 +330,15 @@ object BackupCodec {
         startDate       = LocalDate.parse(startDate ?: throw BackupFormatException("Goal missing startDate")),
         durationDays    = durationDays ?: 0,
         isActive        = isActive ?: true,
+        daysOfWeek      = daysOfWeek ?: 0,
+        endsAfterDuration = endsAfterDuration ?: false,
     )
 
     private fun CheckInDto.toDomain() = BackupCheckIn(
         goalId = goalId ?: throw BackupFormatException("Check-in missing goalId"),
         date   = LocalDate.parse(date ?: throw BackupFormatException("Check-in missing date")),
         amount = amount ?: 0,
+        isSkip = isSkip ?: false,
     )
 
     private fun SettingsDto.toDomain(): UserPrefs {

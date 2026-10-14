@@ -1,5 +1,6 @@
 package com.salattracker.domain.model
 
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -22,8 +23,17 @@ data class SpiritualGoal(
     val reminderTime: LocalTime?,
     val startDate: LocalDate,
     val durationDays: Int,
+    /** false = archived by the user (history kept, hidden from the active list). */
     val isActive: Boolean,
-)
+    /** Due weekdays for DAILY goals; empty means every day. Ignored for weekly/monthly. */
+    val daysOfWeek: Set<DayOfWeek> = emptySet(),
+    /** When false the goal is ongoing and [durationDays] is ignored. */
+    val endsAfterDuration: Boolean = false,
+) {
+    /** Last day of the goal, or null when ongoing. */
+    val endDate: LocalDate? get() =
+        if (endsAfterDuration && durationDays > 0) startDate.plusDays(durationDays - 1L) else null
+}
 
 /** A goal plus how much progress has been logged in its current period (today/this week/this month). */
 data class GoalWithProgress(
@@ -39,6 +49,14 @@ data class GoalWithProgress(
 data class GoalCheckIn(
     val date: LocalDate,
     val amount: Int,
+    /** An excused day: neutral — not hit, not missed, never breaks a streak. */
+    val isSkip: Boolean = false,
+)
+
+/** A goal with its full check-in history (archived goals included). */
+data class GoalHistory(
+    val goal: SpiritualGoal,
+    val checkIns: List<GoalCheckIn>,
 )
 
 /**

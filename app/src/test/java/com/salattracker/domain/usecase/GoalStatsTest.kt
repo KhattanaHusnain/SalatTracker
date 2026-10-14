@@ -6,6 +6,7 @@ import com.salattracker.domain.model.GoalFrequency
 import com.salattracker.domain.model.SpiritualGoal
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import java.time.DayOfWeek
 import java.time.LocalDate
 
 class GoalStatsTest {
@@ -102,5 +103,46 @@ class GoalStatsTest {
         assertEquals(0, stat.periodsCounted)
         assertEquals(0, stat.periodsHit)
         assertEquals(0, stat.loggedAmount)
+    }
+
+    @Test
+    fun `a daily goal only counts the weekdays it is due on`() {
+        // Oct 1-10 2026: Thu Oct 1 .. Sat Oct 10. Due Mondays only -> just Oct 5.
+        val goal = dailyGoal(startDate = LocalDate.of(2026, 10, 1)).copy(daysOfWeek = setOf(DayOfWeek.MONDAY))
+        val stat = goalPeriodStat(
+            goal, listOf(GoalCheckIn(LocalDate.of(2026, 10, 5), 1)),
+            from = LocalDate.of(2026, 10, 1), to = LocalDate.of(2026, 10, 10),
+            today = LocalDate.of(2026, 10, 11),
+        )
+        assertEquals(1, stat.periodsCounted)
+        assertEquals(1, stat.periodsHit)
+    }
+
+    @Test
+    fun `excused days are not counted as hit or missed`() {
+        val goal = dailyGoal(startDate = LocalDate.of(2026, 10, 1))
+        val checkIns = listOf(
+            GoalCheckIn(LocalDate.of(2026, 10, 1), 1),
+            GoalCheckIn(LocalDate.of(2026, 10, 2), 0, isSkip = true),
+        )
+        val stat = goalPeriodStat(
+            goal, checkIns,
+            from = LocalDate.of(2026, 10, 1), to = LocalDate.of(2026, 10, 3),
+            today = LocalDate.of(2026, 10, 4),
+        )
+        // Oct 1 hit, Oct 2 excused (ignored), Oct 3 missed.
+        assertEquals(2, stat.periodsCounted)
+        assertEquals(1, stat.periodsHit)
+    }
+
+    @Test
+    fun `nothing counts past the end date`() {
+        val goal = dailyGoal(startDate = LocalDate.of(2026, 10, 1)).copy(endsAfterDuration = true, durationDays = 3)
+        val stat = goalPeriodStat(
+            goal, emptyList(),
+            from = LocalDate.of(2026, 10, 1), to = LocalDate.of(2026, 10, 10),
+            today = LocalDate.of(2026, 10, 11),
+        )
+        assertEquals(3, stat.periodsCounted)
     }
 }

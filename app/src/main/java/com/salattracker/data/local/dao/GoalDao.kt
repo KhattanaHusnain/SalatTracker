@@ -3,6 +3,7 @@ package com.salattracker.data.local.dao
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import com.salattracker.data.local.entity.GoalCheckInEntity
 import com.salattracker.data.local.entity.SpiritualGoalEntity
@@ -10,36 +11,63 @@ import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
 @Dao
-interface GoalDao {
+abstract class GoalDao {
 
     @Insert
-    suspend fun insertGoal(goal: SpiritualGoalEntity): Long
+    abstract suspend fun insertGoal(goal: SpiritualGoalEntity): Long
 
     @Query("SELECT * FROM spiritual_goals WHERE is_active = 1")
-    fun observeActiveGoals(): Flow<List<SpiritualGoalEntity>>
+    abstract fun observeActiveGoals(): Flow<List<SpiritualGoalEntity>>
 
     @Query("SELECT * FROM spiritual_goals WHERE is_active = 1")
-    suspend fun getActiveGoals(): List<SpiritualGoalEntity>
+    abstract suspend fun getActiveGoals(): List<SpiritualGoalEntity>
 
     @Query("SELECT * FROM spiritual_goals WHERE id = :goalId")
-    suspend fun getGoal(goalId: Long): SpiritualGoalEntity?
+    abstract suspend fun getGoal(goalId: Long): SpiritualGoalEntity?
 
     @Update
-    suspend fun updateGoal(goal: SpiritualGoalEntity)
+    abstract suspend fun updateGoal(goal: SpiritualGoalEntity)
 
     @Query("DELETE FROM spiritual_goals WHERE id = :goalId")
-    suspend fun deleteGoal(goalId: Long)
+    abstract suspend fun deleteGoal(goalId: Long)
 
     @Query("DELETE FROM goal_check_ins WHERE goal_id = :goalId")
-    suspend fun deleteCheckInsForGoal(goalId: Long)
+    abstract suspend fun deleteCheckInsForGoal(goalId: Long)
 
     @Insert
-    suspend fun insertCheckIn(checkIn: GoalCheckInEntity)
+    abstract suspend fun insertCheckIn(checkIn: GoalCheckInEntity)
 
     // Room invalidates this automatically on any check-in insert, from any screen/worker.
     @Query("SELECT * FROM goal_check_ins WHERE date >= :since")
-    fun observeCheckInsSince(since: LocalDate): Flow<List<GoalCheckInEntity>>
+    abstract fun observeCheckInsSince(since: LocalDate): Flow<List<GoalCheckInEntity>>
 
     @Query("SELECT * FROM goal_check_ins WHERE date BETWEEN :from AND :to")
-    suspend fun getCheckInsBetween(from: LocalDate, to: LocalDate): List<GoalCheckInEntity>
+    abstract suspend fun getCheckInsBetween(from: LocalDate, to: LocalDate): List<GoalCheckInEntity>
+
+    // ── History / archive (Goals list + details screen) ──────────────────────────────
+
+    @Query("SELECT * FROM spiritual_goals ORDER BY id ASC")
+    abstract fun observeAllGoals(): Flow<List<SpiritualGoalEntity>>
+
+    @Query("SELECT * FROM spiritual_goals WHERE id = :goalId")
+    abstract fun observeGoal(goalId: Long): Flow<SpiritualGoalEntity?>
+
+    @Query("SELECT * FROM goal_check_ins ORDER BY date ASC, id ASC")
+    abstract fun observeAllCheckIns(): Flow<List<GoalCheckInEntity>>
+
+    @Query("SELECT * FROM goal_check_ins WHERE goal_id = :goalId ORDER BY date ASC, id ASC")
+    abstract fun observeCheckInsFor(goalId: Long): Flow<List<GoalCheckInEntity>>
+
+    @Query("DELETE FROM goal_check_ins WHERE goal_id = :goalId AND date = :date")
+    abstract suspend fun deleteCheckInsForDay(goalId: Long, date: LocalDate)
+
+    @Query("UPDATE spiritual_goals SET is_active = :active WHERE id = :goalId")
+    abstract suspend fun setActive(goalId: Long, active: Boolean)
+
+    /** Atomically replaces everything logged for one day with [entry] (or clears the day when null). */
+    @Transaction
+    open suspend fun replaceDay(goalId: Long, date: LocalDate, entry: GoalCheckInEntity?) {
+        deleteCheckInsForDay(goalId, date)
+        if (entry != null) insertCheckIn(entry)
+    }
 }

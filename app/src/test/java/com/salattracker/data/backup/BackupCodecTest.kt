@@ -63,6 +63,38 @@ class BackupCodecTest {
     }
 
     @Test
+    fun `round trip preserves weekdays, end-after and excused days`() {
+        val base = sampleSnapshot()
+        val snapshot = base.copy(
+            goals = listOf(base.goals.single().copy(daysOfWeek = 0b0010010, endsAfterDuration = true)),
+            checkIns = listOf(BackupCheckIn(goalId = 5L, date = LocalDate.of(2026, 1, 2), amount = 0, isSkip = true)),
+        )
+        val (_, decoded) = BackupCodec.decode(BackupCodec.encode(snapshot, sampleMeta(snapshot)))
+
+        assertEquals(0b0010010, decoded.goals.single().daysOfWeek)
+        assertTrue(decoded.goals.single().endsAfterDuration)
+        assertTrue(decoded.checkIns.single().isSkip)
+    }
+
+    @Test
+    fun `a backup written before these fields existed decodes to every-day ongoing goals`() {
+        val json = """{"meta":{"formatVersion":1,"revisionId":"r","createdAt":1,"appVersionCode":1,"deviceModel":"x",
+            "prayerEntryCount":0},"payload":{"prayerEntries":[],"goals":[{"id":1,"name":"G","category":"QURAN",
+            "frequency":"DAILY","targetAmount":1,"unit":"Pages","reminderEnabled":false,"startDate":"2026-01-01",
+            "durationDays":30,"isActive":true}],"checkIns":[{"goalId":1,"date":"2026-01-01","amount":2}],
+            "streaks":[],"settings":{}}}""".trimIndent()
+        val bytes = java.io.ByteArrayOutputStream().also { out ->
+            java.util.zip.GZIPOutputStream(out).use { it.write(json.toByteArray()) }
+        }.toByteArray()
+
+        val (_, decoded) = BackupCodec.decode(bytes)
+
+        assertEquals(0, decoded.goals.single().daysOfWeek)
+        assertFalse(decoded.goals.single().endsAfterDuration)
+        assertFalse(decoded.checkIns.single().isSkip)
+    }
+
+    @Test
     fun `decode drops check-ins whose goal is not present in the same backup`() {
         val snapshot = sampleSnapshot()
         val bytes = BackupCodec.encode(snapshot, sampleMeta(snapshot))
