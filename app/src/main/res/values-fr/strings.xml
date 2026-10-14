@@ -185,7 +185,6 @@
     <string name="stats_achievement_title">Esprit constant</string>
     <string name="stats_achievement_desc">Vous avez accompli toutes les prières pendant %1$d jours d\'affilée. Que votre constance soit récompensée.</string>
     <string name="stats_prayed_on_time">Priées à l\'heure</string>
-    <string name="stats_status_mix">Répartition des statuts</string>
     <string name="stats_by_prayer">Par prière</string>
     <string name="stats_weakest_prayer">%1$s nécessite le plus d\'attention</string>
     <string name="stats_all_on_track">Toutes les prières sont sur la bonne voie</string>

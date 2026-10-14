@@ -185,7 +185,6 @@
     <string name="stats_achievement_title">روح ثابتة</string>
     <string name="stats_achievement_desc">لقد أكملت جميع الصلوات لمدة %1$d أيام متتالية. جعل الله ثباتك في ميزان حسناتك.</string>
     <string name="stats_prayed_on_time">صُليت في وقتها</string>
-    <string name="stats_status_mix">توزيع الحالة</string>
     <string name="stats_by_prayer">حسب الصلاة</string>
     <string name="stats_weakest_prayer">تحتاج %1$s إلى المزيد من الاهتمام</string>
     <string name="stats_all_on_track">كل الصلوات على المسار الصحيح</string>

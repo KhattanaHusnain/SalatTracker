@@ -27,13 +27,12 @@ import com.salattracker.domain.model.GoalCompletionStat
 import com.salattracker.domain.model.GoalDailyPoint
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.repository.PrayerBreakdown
-import com.salattracker.domain.repository.StatusTrendPoint
 import com.salattracker.domain.usecase.weakestPrayer
 
 // ── Stats Screen ─────────────────────────────────────────────────────────────
 // A today-vs-history dashboard: one shared period selector drives everything except Streak
-// Records (which is all-time by definition). Order: summary -> status mix over time -> by
-// prayer -> daily goals -> streak records, reading as "where do I stand" before "what's my
+// Records (which is all-time by definition). Order: summary -> by prayer -> daily goals ->
+// streak records, reading as "where do I stand" before "what's my
 // long-run consistency".
 
 @Composable
@@ -56,7 +55,6 @@ fun StatsScreen(
 
             PeriodToggle(selected = uiState.period, onSelect = onPeriodChanged)
             SummaryCard(state = uiState.summary)
-            StatusMixCard(state = uiState.statusMix)
             PrayerBreakdownCard(state = uiState.prayerBreakdown)
             DailyGoalsCard(state = uiState.goals, period = uiState.period, onAddGoalClick = onAddGoalClick)
             StreakRecordsCard(
@@ -219,28 +217,6 @@ private fun TrendLegendItem(color: Color, label: String) {
     }
 }
 
-// ── Status mix over time (Vico stacked columns) ─────────────────────────────────
-
-@Composable
-private fun StatusMixCard(state: StatusMixUiState) {
-    StatsCard {
-        Text(stringResource(R.string.stats_status_mix), color = SalatPrimary, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily)
-        Spacer(Modifier.height(12.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            TrendLegendItem(CongregationColor, stringResource(R.string.status_congregation))
-            TrendLegendItem(IndividualColor, stringResource(R.string.status_individual))
-            TrendLegendItem(QazaColor, stringResource(R.string.status_qaza))
-        }
-        Spacer(Modifier.height(16.dp))
-        val hasData = state.points.any { it.congregationPct > 0 || it.individualPct > 0 || it.qazaPct > 0 }
-        when {
-            state.isLoading -> ShimmerBox(Modifier.fillMaxWidth().height(200.dp))
-            !hasData         -> EmptyStateText(stringResource(R.string.stats_no_data_period), Modifier.height(200.dp))
-            else              -> StatusMixChart(state.points, Modifier.fillMaxWidth())
-        }
-    }
-}
-
 // ── By prayer (completion rate per prayer, horizontal bars) ────────────────────
 
 @Composable
@@ -400,12 +376,6 @@ fun StatsScreenPreview() {
                 isLoading = false,
                 congregationPct = 65, individualPct = 25, missedPct = 10, completionPct = 90, completionDelta = 5,
             ),
-            statusMix = StatusMixUiState(
-                isLoading = false,
-                points = listOf("Mon","Tue","Wed","Thu","Fri","Sat","Sun").mapIndexed { i, d ->
-                    StatusTrendPoint(d, listOf(60,80,70,90,85,75,100)[i], listOf(40,20,20,10,15,25,0)[i], listOf(0,0,10,0,0,0,0)[i])
-                },
-            ),
             prayerBreakdown = PrayerBreakdownUiState(
                 isLoading = false,
                 breakdown = PrayerType.values().mapIndexed { i, t -> PrayerBreakdown(t, listOf(0.6f,0.9f,0.75f,1f,0.95f)[i]) },
@@ -439,10 +409,6 @@ fun StatsScreenNinetyDaysPreview() {
                 isLoading = false,
                 congregationPct = 40, individualPct = 30, missedPct = 5, completionPct = 70, completionDelta = -3,
             ),
-            statusMix = StatusMixUiState(
-                isLoading = false,
-                points = (0..11).map { StatusTrendPoint("W${it + 1}", (50..95).random(), (5..30).random(), (0..10).random()) },
-            ),
             prayerBreakdown = PrayerBreakdownUiState(
                 isLoading = false,
                 breakdown = PrayerType.values().mapIndexed { i, t -> PrayerBreakdown(t, listOf(0.4f,0.8f,0.7f,0.9f,0.85f)[i]) },
@@ -469,7 +435,6 @@ fun StatsScreenEmptyPreview() {
         uiState = StatsUiState(
             period = StatsPeriod.WEEK,
             summary = SummaryUiState(isLoading = false, congregationPct = 0, individualPct = 0, missedPct = 0, completionPct = 0, completionDelta = 0),
-            statusMix = StatusMixUiState(isLoading = false, points = emptyList()),
             prayerBreakdown = PrayerBreakdownUiState(isLoading = false, breakdown = emptyList()),
             goals = GoalsUiState(isLoading = false),
             currentStreak = 0, showAchievement = false,

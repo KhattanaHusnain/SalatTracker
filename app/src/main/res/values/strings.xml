@@ -200,7 +200,6 @@
     <string name="stats_achievement_title">Consistent Spirit</string>
     <string name="stats_achievement_desc">You\'ve completed all prayers for %1$d days in a row. May your steadfastness be rewarded.</string>
     <string name="stats_prayed_on_time">Prayed on Time</string>
-    <string name="stats_status_mix">Status Mix</string>
     <string name="stats_by_prayer">By Prayer</string>
     <string name="stats_weakest_prayer">%1$s needs the most attention</string>
     <string name="stats_all_on_track">Every prayer on track</string>

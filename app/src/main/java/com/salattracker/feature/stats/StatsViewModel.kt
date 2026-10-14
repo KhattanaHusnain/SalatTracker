@@ -8,7 +8,6 @@ import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.repository.GoalRepository
 import com.salattracker.domain.repository.PrayerBreakdown
 import com.salattracker.domain.repository.PrayerRepository
-import com.salattracker.domain.repository.StatusTrendPoint
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -47,11 +46,6 @@ data class SummaryUiState(
     val missedPct: Int = 0,
 )
 
-data class StatusMixUiState(
-    val isLoading: Boolean = true,
-    val points: List<StatusTrendPoint> = emptyList(),
-)
-
 data class PrayerBreakdownUiState(
     val isLoading: Boolean = true,
     val breakdown: List<PrayerBreakdown> = emptyList(),
@@ -74,7 +68,6 @@ data class StatsUiState(
     val period: StatsPeriod = StatsPeriod.WEEK,
 
     val summary: SummaryUiState = SummaryUiState(),
-    val statusMix: StatusMixUiState = StatusMixUiState(),
     val prayerBreakdown: PrayerBreakdownUiState = PrayerBreakdownUiState(),
     val goals: GoalsUiState = GoalsUiState(),
 
@@ -100,7 +93,6 @@ class StatsViewModel @Inject constructor(
     // One Job per section so a fast period switch cancels an in-flight load for the old period
     // instead of risking it landing after (and overwriting) the new period's result.
     private var summaryJob: Job? = null
-    private var statusMixJob: Job? = null
     private var breakdownJob: Job? = null
     private var goalsJob: Job? = null
 
@@ -117,7 +109,6 @@ class StatsViewModel @Inject constructor(
 
     private fun loadAllForPeriod(period: StatsPeriod, showSkeleton: Boolean) {
         loadSummary(period, showSkeleton)
-        loadStatusMix(period, showSkeleton)
         loadBreakdown(period, showSkeleton)
         loadGoals(period, showSkeleton)
     }
@@ -147,22 +138,6 @@ class StatsViewModel @Inject constructor(
                 }
             }.onFailure { e ->
                 _uiState.update { it.copy(error = e.message, summary = it.summary.copy(isLoading = false)) }
-            }
-        }
-    }
-
-    private fun loadStatusMix(period: StatsPeriod, showSkeleton: Boolean) {
-        statusMixJob?.cancel()
-        statusMixJob = viewModelScope.launch {
-            if (showSkeleton) _uiState.update { it.copy(statusMix = it.statusMix.copy(isLoading = true)) }
-            runCatching {
-                val today = LocalDate.now()
-                val (from, to) = period.dateRange(today)
-                repository.getStatusTrendPoints(from, to, period.days)
-            }.onSuccess { points ->
-                _uiState.update { it.copy(statusMix = it.statusMix.copy(isLoading = false, points = points)) }
-            }.onFailure { e ->
-                _uiState.update { it.copy(error = e.message, statusMix = it.statusMix.copy(isLoading = false)) }
             }
         }
     }
@@ -213,11 +188,10 @@ class StatsViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(currentStreak = current, showAchievement = current >= 5, highestStreaks = highest)
                 }
-                // A prayer was marked somewhere (this screen or another) — keep summary, status
-                // mix and the per-prayer breakdown in step, without flashing a skeleton over
-                // already-visible data.
+                // A prayer was marked somewhere (this screen or another) — keep summary and the
+                // per-prayer breakdown in step, without flashing a skeleton over already-visible
+                // data.
                 loadSummary(_uiState.value.period, showSkeleton = false)
-                loadStatusMix(_uiState.value.period, showSkeleton = false)
                 loadBreakdown(_uiState.value.period, showSkeleton = false)
             }
         }

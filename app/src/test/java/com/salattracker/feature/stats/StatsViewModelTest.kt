@@ -42,7 +42,6 @@ class StatsViewModelTest {
         assertEquals(StatsPeriod.WEEK, state.period)
         assertEquals(false, state.summary.isLoading)
         assertEquals(90, state.summary.completionPct)
-        assertEquals(false, state.statusMix.isLoading)
         assertEquals(false, state.prayerBreakdown.isLoading)
         assertEquals(false, state.goals.isLoading)
         assertEquals(1, state.goals.dailyPoints.size)
@@ -52,7 +51,6 @@ class StatsViewModelTest {
     fun `onPeriodChanged queries every section with the new period's date range`() = runTest {
         viewModel = createViewModel()
         prayerRepository.statsForPeriodCalls.clear()
-        prayerRepository.statusTrendCalls.clear()
         prayerRepository.prayerBreakdownCalls.clear()
 
         viewModel.onPeriodChanged(StatsPeriod.NINETY_DAYS)
@@ -65,7 +63,6 @@ class StatsViewModelTest {
         assertEquals(expectedFrom to today, prayerRepository.statsForPeriodCalls[0])
         assertEquals(expectedFrom.minusDays(90) to expectedFrom.minusDays(1), prayerRepository.statsForPeriodCalls[1])
 
-        assertEquals(Triple(expectedFrom, today, 90), prayerRepository.statusTrendCalls.single())
         assertEquals(expectedFrom to today, prayerRepository.prayerBreakdownCalls.single())
     }
 
