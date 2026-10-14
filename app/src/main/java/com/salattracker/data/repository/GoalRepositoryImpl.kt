@@ -8,12 +8,10 @@ import com.salattracker.domain.model.GoalCheckIn
 import com.salattracker.domain.model.GoalFrequency
 import com.salattracker.domain.model.GoalHistory
 import com.salattracker.domain.model.GoalPeriodStat
-import com.salattracker.domain.model.GoalWithProgress
 import com.salattracker.domain.model.SpiritualGoal
 import com.salattracker.domain.repository.GoalRepository
 import com.salattracker.domain.usecase.daysOfWeekFromMask
 import com.salattracker.domain.usecase.goalPeriodStat
-import com.salattracker.domain.usecase.periodStartFor
 import com.salattracker.domain.usecase.toDaysMask
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -30,21 +28,6 @@ private const val LOOKBACK_DAYS = 31L
 class GoalRepositoryImpl @Inject constructor(
     private val goalDao: GoalDao,
 ) : GoalRepository {
-
-    override fun observeActiveGoalsWithProgress(): Flow<List<GoalWithProgress>> {
-        val since = LocalDate.now().minusDays(LOOKBACK_DAYS)
-        return goalDao.observeActiveGoals().combine(goalDao.observeCheckInsSince(since)) { goals, checkIns ->
-            val today = LocalDate.now()
-            goals.map { entity ->
-                val goal = entity.toDomain()
-                val periodStart = periodStartFor(goal.frequency, today)
-                val currentAmount = checkIns
-                    .filter { it.goalId == goal.id && !it.date.isBefore(periodStart) }
-                    .sumOf { it.amount }
-                GoalWithProgress(goal, currentAmount)
-            }
-        }
-    }
 
     override suspend fun createGoal(
         name: String,

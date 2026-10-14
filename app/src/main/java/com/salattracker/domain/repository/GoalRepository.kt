@@ -4,7 +4,6 @@ import com.salattracker.domain.model.GoalCategory
 import com.salattracker.domain.model.GoalFrequency
 import com.salattracker.domain.model.GoalHistory
 import com.salattracker.domain.model.GoalPeriodStat
-import com.salattracker.domain.model.GoalWithProgress
 import com.salattracker.domain.model.SpiritualGoal
 import kotlinx.coroutines.flow.Flow
 import java.time.DayOfWeek
@@ -12,9 +11,6 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 interface GoalRepository {
-
-    /** Active goals with their current period's progress — live, re-emits on any check-in or edit. */
-    fun observeActiveGoalsWithProgress(): Flow<List<GoalWithProgress>>
 
     suspend fun createGoal(
         name: String,

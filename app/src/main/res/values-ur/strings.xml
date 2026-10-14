@@ -200,16 +200,15 @@
     <string name="stats_targets_hit">پورے کیے گئے اہداف</string>
 
     <string name="goals_active">فعال اہداف</string>
-    <string name="goals_in_progress">%1$d جاری</string>
-    <string name="goals_todays_focus">آج کی توجہ</string>
-    <string name="goals_progress_glance">ایک نظر میں آپ کی روحانی پیش رفت</string>
-    <string name="goals_completed_caps">مکمل</string>
     <string name="goals_none_yet">ابھی کوئی ہدف نہیں — اپنا پہلا روحانی ہدف مقرر کرنے کے لیے + دبائیں۔</string>
-    <string name="goals_progress">پیش رفت</string>
-    <string name="goal_completed">مکمل</string>
-    <string name="goal_checkin">چیک اِن</string>
-    <string name="cd_edit_goal">ہدف میں ترمیم</string>
-    <string name="cd_delete_goal">ہدف حذف کریں</string>
+    <string name="goals_done_today">آج مکمل: %1$d/%2$d</string>
+    <string name="goals_periodic_done">ہفتہ وار اور ماہانہ: %1$d/%2$d</string>
+    <string name="goals_nothing_due">آج کچھ مقرر نہیں</string>
+    <string name="goal_today_progress">آج %1$d/%2$d %3$s</string>
+    <string name="goal_week_progress">اس ہفتے %1$d/%2$d %3$s</string>
+    <string name="goal_month_progress">اس مہینے %1$d/%2$d %3$s</string>
+    <string name="goal_not_due_today">آج مقرر نہیں</string>
+    <string name="goals_archived">محفوظ شدہ (%1$d)</string>
     <string name="goal_delete_title">ہدف حذف کریں؟</string>
     <string name="goal_delete_desc">اس سے اس ہدف کی آپ کی پیش رفت اور تسلسل مستقل طور پر حذف ہو جائیں گے۔ یہ عمل واپس نہیں ہو سکتا۔</string>
     <string name="goal_deleting">ہدف حذف ہو رہا ہے</string>

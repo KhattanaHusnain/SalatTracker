@@ -200,16 +200,15 @@
     <string name="stats_targets_hit">Objectifs atteints</string>
 
     <string name="goals_active">Objectifs actifs</string>
-    <string name="goals_in_progress">%1$d EN COURS</string>
-    <string name="goals_todays_focus">Focus du jour</string>
-    <string name="goals_progress_glance">Votre progrès spirituel en un coup d\'œil</string>
-    <string name="goals_completed_caps">TERMINÉ</string>
     <string name="goals_none_yet">Aucun objectif — appuyez sur + pour définir votre premier objectif spirituel.</string>
-    <string name="goals_progress">Progrès</string>
-    <string name="goal_completed">Terminé</string>
-    <string name="goal_checkin">Pointer</string>
-    <string name="cd_edit_goal">Modifier l\'objectif</string>
-    <string name="cd_delete_goal">Supprimer l\'objectif</string>
+    <string name="goals_done_today">Fait aujourd\'hui : %1$d/%2$d</string>
+    <string name="goals_periodic_done">Hebdo et mensuels : %1$d/%2$d</string>
+    <string name="goals_nothing_due">Rien de prévu aujourd\'hui</string>
+    <string name="goal_today_progress">Aujourd\'hui %1$d/%2$d %3$s</string>
+    <string name="goal_week_progress">Cette semaine %1$d/%2$d %3$s</string>
+    <string name="goal_month_progress">Ce mois-ci %1$d/%2$d %3$s</string>
+    <string name="goal_not_due_today">Non prévu aujourd\'hui</string>
+    <string name="goals_archived">Archivés (%1$d)</string>
     <string name="goal_delete_title">Supprimer l\'objectif ?</string>
     <string name="goal_delete_desc">Cela supprimera définitivement votre progrès et vos séries pour cet objectif. Cette action est irréversible.</string>
     <string name="goal_deleting">SUPPRESSION DE L\'OBJECTIF</string>

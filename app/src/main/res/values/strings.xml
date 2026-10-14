@@ -216,16 +216,15 @@
 
     <!-- Goals dashboard -->
     <string name="goals_active">Active Goals</string>
-    <string name="goals_in_progress">%1$d IN PROGRESS</string>
-    <string name="goals_todays_focus">Today\'s Focus</string>
-    <string name="goals_progress_glance">Your spiritual progress at a glance</string>
-    <string name="goals_completed_caps">COMPLETED</string>
     <string name="goals_none_yet">No goals yet — tap + to set your first spiritual goal.</string>
-    <string name="goals_progress">Progress</string>
-    <string name="goal_completed">Completed</string>
-    <string name="goal_checkin">Check-in</string>
-    <string name="cd_edit_goal">Edit goal</string>
-    <string name="cd_delete_goal">Delete goal</string>
+    <string name="goals_done_today">Done today: %1$d/%2$d</string>
+    <string name="goals_periodic_done">Weekly &amp; monthly: %1$d/%2$d</string>
+    <string name="goals_nothing_due">Nothing due today</string>
+    <string name="goal_today_progress">Today %1$d/%2$d %3$s</string>
+    <string name="goal_week_progress">This week %1$d/%2$d %3$s</string>
+    <string name="goal_month_progress">This month %1$d/%2$d %3$s</string>
+    <string name="goal_not_due_today">Not due today</string>
+    <string name="goals_archived">Archived (%1$d)</string>
     <string name="goal_delete_title">Delete Goal?</string>
     <string name="goal_delete_desc">This will permanently remove your progress and streaks for this goal. This action cannot be undone.</string>
     <string name="goal_deleting">DELETING GOAL</string>

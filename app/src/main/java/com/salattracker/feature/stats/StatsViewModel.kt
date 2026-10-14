@@ -197,7 +197,7 @@ class StatsViewModel @Inject constructor(
         viewModelScope.launch {
             // Live so the goals card stays fresh when a goal is added, checked in, or edited from
             // elsewhere — no skeleton flash either.
-            goalRepository.observeActiveGoalsWithProgress().collect {
+            goalRepository.observeGoalHistories().collect {
                 loadGoals(_uiState.value.period, showSkeleton = false)
             }
         }

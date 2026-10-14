@@ -2,7 +2,6 @@ package com.salattracker.testutil
 
 import com.salattracker.domain.model.GoalHistory
 import com.salattracker.domain.model.GoalPeriodStat
-import com.salattracker.domain.model.GoalWithProgress
 import com.salattracker.domain.model.PrayerEntry
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
@@ -118,7 +117,6 @@ class FakeVerseRepository(private val verse: VerseInfo = VerseInfo("test verse",
 /** In-memory [GoalRepository] exercising only what the Stats/Goals ViewModels actually call. */
 class FakeGoalRepository : GoalRepository {
 
-    private val activeGoalsFlow = MutableStateFlow<List<GoalWithProgress>>(emptyList())
     private val historiesFlow = MutableStateFlow<List<GoalHistory>>(emptyList())
 
     var periodStats: List<GoalPeriodStat> = emptyList()
@@ -131,15 +129,9 @@ class FakeGoalRepository : GoalRepository {
 
     data class DayLogCall(val goalId: Long, val date: LocalDate, val amount: Int, val skipped: Boolean)
 
-    fun seedActiveGoals(goals: List<GoalWithProgress>) {
-        activeGoalsFlow.value = goals
-    }
-
     fun seedHistories(histories: List<GoalHistory>) {
         historiesFlow.value = histories
     }
-
-    override fun observeActiveGoalsWithProgress(): Flow<List<GoalWithProgress>> = activeGoalsFlow
 
     override fun observeGoalHistories(): Flow<List<GoalHistory>> = historiesFlow
 

@@ -35,16 +35,6 @@ data class SpiritualGoal(
         if (endsAfterDuration && durationDays > 0) startDate.plusDays(durationDays - 1L) else null
 }
 
-/** A goal plus how much progress has been logged in its current period (today/this week/this month). */
-data class GoalWithProgress(
-    val goal: SpiritualGoal,
-    val currentAmount: Int,
-) {
-    val progressFraction: Float get() = if (goal.targetAmount <= 0) 0f else
-        (currentAmount.toFloat() / goal.targetAmount).coerceIn(0f, 1f)
-    val isComplete: Boolean get() = currentAmount >= goal.targetAmount
-}
-
 /** One check-in event, for Stats to replay against a goal's own day/week/month periods. */
 data class GoalCheckIn(
     val date: LocalDate,

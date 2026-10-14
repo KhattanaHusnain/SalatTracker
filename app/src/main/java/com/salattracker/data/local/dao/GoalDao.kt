@@ -17,9 +17,6 @@ abstract class GoalDao {
     abstract suspend fun insertGoal(goal: SpiritualGoalEntity): Long
 
     @Query("SELECT * FROM spiritual_goals WHERE is_active = 1")
-    abstract fun observeActiveGoals(): Flow<List<SpiritualGoalEntity>>
-
-    @Query("SELECT * FROM spiritual_goals WHERE is_active = 1")
     abstract suspend fun getActiveGoals(): List<SpiritualGoalEntity>
 
     @Query("SELECT * FROM spiritual_goals WHERE id = :goalId")
@@ -36,10 +33,6 @@ abstract class GoalDao {
 
     @Insert
     abstract suspend fun insertCheckIn(checkIn: GoalCheckInEntity)
-
-    // Room invalidates this automatically on any check-in insert, from any screen/worker.
-    @Query("SELECT * FROM goal_check_ins WHERE date >= :since")
-    abstract fun observeCheckInsSince(since: LocalDate): Flow<List<GoalCheckInEntity>>
 
     @Query("SELECT * FROM goal_check_ins WHERE date BETWEEN :from AND :to")
     abstract suspend fun getCheckInsBetween(from: LocalDate, to: LocalDate): List<GoalCheckInEntity>

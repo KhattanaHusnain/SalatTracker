@@ -1,6 +1,7 @@
 package com.salattracker.feature.goals
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -8,24 +9,31 @@ import androidx.hilt.navigation.compose.hiltViewModel
 /**
  * Nav entry-point for the Spiritual Goals dashboard.
  * Wire into MainActivity NavHost:
- *   composable("goals") { GoalsEntry(onEditGoal = { goalId -> navController.navigate("edit_goal/$goalId") }) }
+ *   composable("goals") { GoalsEntry(onGoalClick = { navController.push(Routes.goalDetails(it)) }, onAddGoalClick = { ... }) }
  */
 @Composable
 fun GoalsEntry(
-    onEditGoal: (Long) -> Unit,
     onGoalClick: (Long) -> Unit,
+    onAddGoalClick: () -> Unit,
     viewModel: GoalsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    // Re-derive "today" each time the tab is entered, so the strip rolls over after midnight.
+    LaunchedEffect(Unit) { viewModel.refresh() }
+
     GoalsScreen(
-        uiState                = uiState,
-        onCheckIn              = viewModel::onCheckIn,
-        onEditClick            = onEditGoal,
-        onGoalClick            = onGoalClick,
-        onDeleteClick          = viewModel::onDeleteClick,
-        onConfirmDelete        = viewModel::onConfirmDelete,
-        onDismissDeleteConfirm = viewModel::onDismissDeleteConfirm,
-        onErrorDismiss         = viewModel::clearError,
+        uiState             = uiState,
+        onDayTap            = viewModel::onDayTap,
+        onDayLongPress      = viewModel::onDayLongPress,
+        onGoalClick         = onGoalClick,
+        onAddGoalClick      = onAddGoalClick,
+        onLogAmountChanged  = viewModel::onLogAmountChanged,
+        onLogSkippedChanged = viewModel::onLogSkippedChanged,
+        onLogMarkDone       = viewModel::onLogMarkDone,
+        onLogSave           = viewModel::onLogSave,
+        onLogClear          = viewModel::onLogClear,
+        onLogDismiss        = viewModel::onLogDismiss,
+        onErrorDismiss      = viewModel::clearError,
     )
 }

@@ -310,8 +310,8 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                 }
                 composable(BottomNavRoute.Goals.route) {
                     GoalsEntry(
-                        onEditGoal  = { goalId -> navController.push(Routes.editGoal(goalId)) },
-                        onGoalClick = { goalId -> navController.push(Routes.goalDetails(goalId)) },
+                        onGoalClick    = { goalId -> navController.push(Routes.goalDetails(goalId)) },
+                        onAddGoalClick = { navController.push(Routes.ADD_GOAL) },
                     )
                 }
                 composable(BottomNavRoute.Stats.route) {
