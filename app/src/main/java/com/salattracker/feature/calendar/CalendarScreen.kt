@@ -538,7 +538,7 @@ private fun MonthRingGrid(
         WeekdayHeaderRow()
         Box {
             FridayBand(modifier = Modifier.matchParentSize())
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 dates.chunked(7).forEach { week ->
                     Row(modifier = Modifier.fillMaxWidth()) {
                         week.forEach { date ->
@@ -564,7 +564,7 @@ private fun MonthRingGrid(
     }
 }
 
-private val RING_DAY_CELL_HEIGHT = 50.dp
+private val RING_DAY_CELL_HEIGHT = 64.dp
 
 /** One grid cell: the 5-arc status ring around the Gregorian day number, with the Hijri day
  * number underneath. [isSelected] tints the whole cell for the Month view's inline day panel;
@@ -589,11 +589,11 @@ private fun RingDayCell(
             .clip(RoundedCornerShape(10.dp))
             .let { if (isSelected) it.background(SalatPrimaryFixed.copy(alpha = 0.18f)) else it }
             .clickable(onClick = onClick)
-            .padding(vertical = 2.dp),
+            .padding(vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Box(modifier = Modifier.size(34.dp), contentAlignment = Alignment.Center) {
+        Box(modifier = Modifier.size(38.dp), contentAlignment = Alignment.Center) {
             if (showRing) {
                 Canvas(modifier = Modifier.fillMaxSize().alpha(dimAlpha)) {
                     val strokeWidth = size.minDimension * 0.12f
@@ -616,18 +616,19 @@ private fun RingDayCell(
                 }
             }
             if (isToday) {
-                Box(modifier = Modifier.size(22.dp).clip(CircleShape).background(SalatPrimary))
+                Box(modifier = Modifier.size(24.dp).clip(CircleShape).background(SalatPrimary))
             }
             Text(
                 text       = date.dayOfMonth.toString(),
                 color      = if (isToday) SalatOnPrimary else SalatOnSurface,
-                fontSize   = 12.sp,
+                fontSize   = 13.sp,
                 fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
                 fontFamily = InterFamily,
                 modifier   = Modifier.alpha(if (isToday) 1f else dimAlpha),
             )
         }
         if (hijriDay != null) {
+            Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text       = hijriDay.toString(),
                 color      = if (hijriDay == 1) SalatPrimary else SalatOutline,
