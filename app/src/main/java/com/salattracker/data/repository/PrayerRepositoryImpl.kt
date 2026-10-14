@@ -138,6 +138,17 @@ class PrayerRepositoryImpl @Inject constructor(
     override suspend fun markQazaCompleted(date: LocalDate, prayerType: PrayerType) =
         upsertPrayerStatus(date, prayerType, PrayerStatus.QAZA_COMPLETED)
 
+    override fun observeQazaMadeUpCount(): Flow<Int> =
+        prayerDao.observeQazaMadeUpCount(userId)
+
+    override fun observeQazaMadeUpSince(since: LocalDate): Flow<List<PrayerEntry>> {
+        val sinceMillis = since.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+        return prayerDao.observeQazaMadeUpSince(userId, sinceMillis).map { it.map { e -> e.toDomain() } }
+    }
+
+    override fun observeRecentQazaMadeUp(limit: Int): Flow<List<PrayerEntry>> =
+        prayerDao.observeRecentQazaMadeUp(userId, limit).map { it.map { e -> e.toDomain() } }
+
     // ── Analytics ──────────────────────────────────────────────────────────────
 
     override suspend fun getDailyStatusCounts(from: LocalDate, to: LocalDate): List<DayStatusCounts> =

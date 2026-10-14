@@ -29,12 +29,18 @@ import java.time.LocalTime
 class FakePrayerRepository : PrayerRepository {
 
     private val entries = MutableStateFlow<Map<LocalDate, Map<PrayerType, PrayerStatus>>>(emptyMap())
+    private val updatedAtMap = mutableMapOf<Pair<LocalDate, PrayerType>, Long>()
     private val cachedTimes = mutableMapOf<LocalDate, Map<PrayerType, LocalTime>>()
     private val streaksFlow = MutableStateFlow<Map<PrayerType, StreakInfo>>(emptyMap())
+
+    /** Fake "now" used to stamp updatedAt on writes made through [markQazaCompleted] /
+     * [bulkUpsertPrayerStatus] — tests control it directly to exercise pace-window filtering. */
+    var now: Long = 0L
 
     var observeMonthEntriesCallCount = 0
         private set
     val upserts = mutableListOf<Triple<LocalDate, PrayerType, PrayerStatus>>()
+    val bulkUpserts = mutableListOf<Pair<List<Pair<LocalDate, PrayerType>>, PrayerStatus>>()
 
     // ── Stats seeding ───────────────────────────────────────────────────────
     var dailyCounts: Map<LocalDate, StatusCounts> = emptyMap()
@@ -43,11 +49,23 @@ class FakePrayerRepository : PrayerRepository {
     val dailyStatusCountsCalls = mutableListOf<Pair<LocalDate, LocalDate>>()
     val prayerBreakdownCalls = mutableListOf<Pair<LocalDate, LocalDate>>()
 
-    fun seedStatus(date: LocalDate, type: PrayerType, status: PrayerStatus) {
+    fun seedStatus(date: LocalDate, type: PrayerType, status: PrayerStatus, updatedAt: Long = 0L) {
         entries.value = entries.value.toMutableMap().apply {
             this[date] = (this[date].orEmpty()) + (type to status)
         }
+        updatedAtMap[date to type] = updatedAt
     }
+
+    private fun setStatus(date: LocalDate, type: PrayerType, status: PrayerStatus) {
+        seedStatus(date, type, status, updatedAt = now)
+    }
+
+    private fun allEntriesWithStatus(status: PrayerStatus): List<PrayerEntry> =
+        entries.value.flatMap { (date, byType) ->
+            byType.filter { it.value == status }.map { (type, _) ->
+                PrayerEntry(id = 0, userId = "local", date = date, prayerType = type, status = status, updatedAt = updatedAtMap[date to type] ?: 0L)
+            }
+        }
 
     fun seedTimes(date: LocalDate, times: Map<PrayerType, LocalTime>) {
         cachedTimes[date] = times
@@ -69,7 +87,7 @@ class FakePrayerRepository : PrayerRepository {
             byDate.filterKeys { !it.isBefore(from) && !it.isAfter(to) }
                 .mapValues { (date, statuses) ->
                     statuses.map { (type, status) ->
-                        PrayerEntry(id = 0, userId = "local", date = date, prayerType = type, status = status, updatedAt = 0L)
+                        PrayerEntry(id = 0, userId = "local", date = date, prayerType = type, status = status, updatedAt = updatedAtMap[date to type] ?: 0L)
                     }
                 }
         }
@@ -79,7 +97,7 @@ class FakePrayerRepository : PrayerRepository {
 
     override suspend fun upsertPrayerStatus(date: LocalDate, prayerType: PrayerType, status: PrayerStatus) {
         upserts += Triple(date, prayerType, status)
-        seedStatus(date, prayerType, status)
+        setStatus(date, prayerType, status)
     }
 
     override fun observeStreaks(): Flow<Map<PrayerType, StreakInfo>> = streaksFlow
@@ -98,11 +116,44 @@ class FakePrayerRepository : PrayerRepository {
     }
 
     override suspend fun getPrayerEntriesForDate(date: LocalDate): List<PrayerEntry> = notUsed()
-    override suspend fun bulkUpsertPrayerStatus(entries: List<Pair<LocalDate, PrayerType>>, status: PrayerStatus) = notUsed()
+
+    override suspend fun bulkUpsertPrayerStatus(entries: List<Pair<LocalDate, PrayerType>>, status: PrayerStatus) {
+        bulkUpserts += entries to status
+        entries.forEach { (date, type) -> setStatus(date, type, status) }
+    }
+
     override suspend fun getStreakSnapshot(): Map<PrayerType, StreakInfo> = notUsed()
-    override fun observeQazaBalance(): Flow<Map<PrayerType, Int>> = notUsed()
-    override fun observePendingQazaEntries(): Flow<List<PrayerEntry>> = notUsed()
-    override suspend fun markQazaCompleted(date: LocalDate, prayerType: PrayerType) = notUsed()
+
+    override fun observeQazaBalance(): Flow<Map<PrayerType, Int>> = entries.map { byDate ->
+        val counts = byDate.values.flatMap { it.entries }
+            .filter { it.value == PrayerStatus.QAZA_PENDING }
+            .groupingBy { it.key }.eachCount()
+        PrayerType.values().associateWith { counts[it] ?: 0 }
+    }
+
+    override fun observePendingQazaEntries(): Flow<List<PrayerEntry>> =
+        entries.map { allEntriesWithStatus(PrayerStatus.QAZA_PENDING) }
+
+    override suspend fun markQazaCompleted(date: LocalDate, prayerType: PrayerType) {
+        upserts += Triple(date, prayerType, PrayerStatus.QAZA_COMPLETED)
+        setStatus(date, prayerType, PrayerStatus.QAZA_COMPLETED)
+    }
+
+    override fun observeQazaMadeUpCount(): Flow<Int> =
+        entries.map { allEntriesWithStatus(PrayerStatus.QAZA_COMPLETED).size }
+
+    override fun observeQazaMadeUpSince(since: LocalDate): Flow<List<PrayerEntry>> {
+        val sinceMillis = since.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+        return entries.map {
+            allEntriesWithStatus(PrayerStatus.QAZA_COMPLETED)
+                .filter { it.updatedAt >= sinceMillis }
+                .sortedByDescending { it.updatedAt }
+        }
+    }
+
+    override fun observeRecentQazaMadeUp(limit: Int): Flow<List<PrayerEntry>> =
+        entries.map { allEntriesWithStatus(PrayerStatus.QAZA_COMPLETED).sortedByDescending { it.updatedAt }.take(limit) }
+
     override suspend fun recalculateStreaks() = notUsed()
     override fun observeTodayPrayers(date: LocalDate): Flow<List<PrayerEntry>> = notUsed()
 
