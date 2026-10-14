@@ -178,7 +178,7 @@ internal fun DayDetailPrayerRowItem(
 // ── Richer status chip (matches the HTML design tokens exactly) ───────────────
 
 @Composable
-private fun PrayerStatusChip(status: PrayerStatus, isUpcoming: Boolean = false) {
+internal fun PrayerStatusChip(status: PrayerStatus, isUpcoming: Boolean = false) {
     val (bg, fg, iconRes, label) = if (status == PrayerStatus.NOT_RECORDED && isUpcoming) {
         StatusChipStyle(SalatSurfaceContainerHigh, SalatOnSurfaceVariant, R.drawable.ic_schedule, stringResource(R.string.status_upcoming))
     } else when (status) {
@@ -246,7 +246,7 @@ private data class StatusChipStyle(
 
 // ── Extension helpers ─────────────────────────────────────────────────────────
 
-private val PrayerType.iconRes get() = when (this) {
+internal val PrayerType.iconRes get() = when (this) {
     PrayerType.FAJR    -> R.drawable.ic_wb_twilight
     PrayerType.DHUHR   -> R.drawable.ic_light_mode
     PrayerType.ASR     -> R.drawable.ic_wb_sunny

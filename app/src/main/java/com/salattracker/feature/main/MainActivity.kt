@@ -52,8 +52,7 @@ import com.salattracker.feature.calendar.CalendarViewModel
 import com.salattracker.feature.goals.AddGoalEntry
 import com.salattracker.feature.goals.EditGoalEntry
 import com.salattracker.feature.goals.GoalsEntry
-import com.salattracker.feature.home.HomeScreen
-import com.salattracker.feature.home.HomeViewModel
+import com.salattracker.feature.home.HomeEntry
 import com.salattracker.feature.onboarding.OnboardingEntry
 import com.salattracker.feature.qaza.MissedPrayersEntry
 import com.salattracker.feature.qaza.QazaEntry
@@ -294,15 +293,12 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                 modifier         = Modifier.padding(innerPadding),
             ) {
                 composable(BottomNavRoute.Home.route) {
-                    val vm: HomeViewModel = hiltViewModel()
-                    val state by vm.uiState.collectAsState()
-                    HomeScreen(
-                        uiState           = state,
-                        onPrayerCardClick = vm::onPrayerCardClick,
-                        onSheetDismiss    = vm::onSheetDismiss,
-                        onStatusSave      = vm::onStatusSave,
-                        onGoalsClick      = { navController.navigateToTab(BottomNavRoute.Goals.route) },
-                        onAddGoalClick    = { navController.push(Routes.ADD_GOAL) },
+                    HomeEntry(
+                        onQazaClick = { navController.navigateToTab(BottomNavRoute.Qaza.route) },
+                        onDayClick  = { date ->
+                            calendarViewModel.onOpenDay(date)
+                            navController.navigateToTab(BottomNavRoute.Calendar.route)
+                        },
                     )
                 }
                 composable(BottomNavRoute.Calendar.route) {

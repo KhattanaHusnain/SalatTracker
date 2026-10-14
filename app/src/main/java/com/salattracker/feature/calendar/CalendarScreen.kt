@@ -12,11 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -514,25 +510,7 @@ private fun RingDayCell(
     ) {
         Box(modifier = Modifier.size(38.dp), contentAlignment = Alignment.Center) {
             if (showRing) {
-                Canvas(modifier = Modifier.fillMaxSize().alpha(dimAlpha)) {
-                    val strokeWidth = size.minDimension * 0.12f
-                    val diameter = size.minDimension - strokeWidth
-                    val topLeft = Offset((size.width - diameter) / 2f, (size.height - diameter) / 2f)
-                    val arcSize = Size(diameter, diameter)
-                    val segmentSweep = 360f / PrayerType.values().size
-                    val gap = 4f
-                    PrayerType.values().forEachIndexed { index, type ->
-                        drawArc(
-                            color      = statusRingColor(statuses[type]),
-                            startAngle = -90f + index * segmentSweep + gap / 2f,
-                            sweepAngle = segmentSweep - gap,
-                            useCenter  = false,
-                            topLeft    = topLeft,
-                            size       = arcSize,
-                            style      = Stroke(width = strokeWidth, cap = StrokeCap.Round),
-                        )
-                    }
-                }
+                PrayerStatusRing(statuses = statuses, modifier = Modifier.fillMaxSize().alpha(dimAlpha))
             }
             if (isToday) {
                 Box(modifier = Modifier.size(24.dp).clip(CircleShape).background(SalatPrimary))
@@ -565,15 +543,6 @@ private fun DayCellSkeleton(modifier: Modifier = Modifier) {
     val alpha by rememberInfiniteTransition(label = "sk")
         .animateFloat(0.3f, 0.7f, infiniteRepeatable(tween(800), RepeatMode.Reverse), label = "a")
     Box(modifier = modifier.clip(RoundedCornerShape(10.dp)).background(SalatSurfaceContainerHigh.copy(alpha = alpha)))
-}
-
-private fun statusRingColor(status: PrayerStatus?): Color = when (status) {
-    PrayerStatus.CONGREGATION   -> SalatStatusCongregation
-    PrayerStatus.INDIVIDUAL     -> SalatStatusIndividual
-    PrayerStatus.QAZA_PENDING   -> SalatStatusQazaPending
-    PrayerStatus.QAZA_COMPLETED -> SalatStatusQazaCompleted
-    PrayerStatus.MENSTRUATION   -> SalatStatusExcused
-    PrayerStatus.NOT_RECORDED, null -> SalatStatusNotRecorded
 }
 
 private fun statusSquareIconRes(status: PrayerStatus): Int = when (status) {
