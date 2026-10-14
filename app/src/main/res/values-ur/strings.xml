@@ -97,9 +97,6 @@
     <string name="daily_spiritual_tips">روزانہ روحانی نکات</string>
 
     <string name="home_daily_stack">آج کی نمازیں</string>
-    <string name="home_daily_goals">روزانہ اہداف</string>
-    <string name="home_percent_completed">%1$d%% مکمل</string>
-    <string name="home_set_first_goal">اپنا پہلا روحانی ہدف مقرر کریں</string>
     <string name="home_best_streak">بہترین %1$d</string>
     <string name="home_reminder_at">یاد دہانی %1$s</string>
     <string name="home_next_prayer">اگلی نماز</string>
@@ -113,8 +110,7 @@
     <string name="home_streak_caption">ہر نماز برقرار رکھی</string>
     <string name="home_streak_start">آج سے اپنا سلسلہ شروع کریں</string>
     <string name="home_last_7_days">پچھلے 7 دن</string>
-    <string name="home_qaza_pending">قضا باقی</string>
-    <string name="home_qaza_none">کوئی قضا باقی نہیں</string>
+    <string name="home_qaza_count_pending">%1$d قضا باقی</string>
 
     <string name="qaza_today_missed">آج کی چھوٹی ہوئی نمازیں</string>
     <string name="qaza_total_outstanding">کل باقی</string>

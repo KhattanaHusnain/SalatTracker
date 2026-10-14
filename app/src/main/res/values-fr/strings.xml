@@ -97,9 +97,6 @@
     <string name="daily_spiritual_tips">Conseils spirituels quotidiens</string>
 
     <string name="home_daily_stack">Les prières du jour</string>
-    <string name="home_daily_goals">Objectifs du jour</string>
-    <string name="home_percent_completed">%1$d%% terminé</string>
-    <string name="home_set_first_goal">Définissez votre premier objectif spirituel</string>
     <string name="home_best_streak">Max %1$d</string>
     <string name="home_reminder_at">Rappel %1$s</string>
     <string name="home_next_prayer">Prochaine prière</string>
@@ -113,8 +110,7 @@
     <string name="home_streak_caption">chaque prière accomplie</string>
     <string name="home_streak_start">Commencez votre série aujourd\'hui</string>
     <string name="home_last_7_days">7 derniers jours</string>
-    <string name="home_qaza_pending">Qaza en attente</string>
-    <string name="home_qaza_none">Tout est à jour</string>
+    <string name="home_qaza_count_pending">%1$d Qaza en attente</string>
 
     <string name="qaza_today_missed">Prières manquées aujourd\'hui</string>
     <string name="qaza_total_outstanding">TOTAL RESTANT</string>

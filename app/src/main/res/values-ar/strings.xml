@@ -97,9 +97,6 @@
     <string name="daily_spiritual_tips">نصائح روحية يومية</string>
 
     <string name="home_daily_stack">صلوات اليوم</string>
-    <string name="home_daily_goals">الأهداف اليومية</string>
-    <string name="home_percent_completed">%1$d%% مكتمل</string>
-    <string name="home_set_first_goal">حدّد هدفك الروحي الأول</string>
     <string name="home_best_streak">الأفضل %1$d</string>
     <string name="home_reminder_at">تذكير %1$s</string>
     <string name="home_next_prayer">الصلاة التالية</string>
@@ -113,8 +110,7 @@
     <string name="home_streak_caption">حافظت على كل صلاة</string>
     <string name="home_streak_start">ابدأ سلسلتك اليوم</string>
     <string name="home_last_7_days">آخر 7 أيام</string>
-    <string name="home_qaza_pending">قضاء معلّق</string>
-    <string name="home_qaza_none">لا قضاء متبقٍ</string>
+    <string name="home_qaza_count_pending">%1$d قضاء معلّق</string>
 
     <string name="qaza_today_missed">صلوات اليوم الفائتة</string>
     <string name="qaza_total_outstanding">إجمالي المتبقّي</string>

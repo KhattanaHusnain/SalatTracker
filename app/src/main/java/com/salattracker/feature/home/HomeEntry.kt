@@ -15,8 +15,6 @@ import java.time.LocalDate
  */
 @Composable
 fun HomeEntry(
-    onGoalsClick: () -> Unit,
-    onAddGoalClick: () -> Unit,
     onQazaClick: () -> Unit,
     onDayClick: (LocalDate) -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
@@ -27,8 +25,6 @@ fun HomeEntry(
         onPrayerCardClick = viewModel::onPrayerCardClick,
         onSheetDismiss    = viewModel::onSheetDismiss,
         onStatusSave      = viewModel::onStatusSave,
-        onGoalsClick      = onGoalsClick,
-        onAddGoalClick    = onAddGoalClick,
         onQazaClick       = onQazaClick,
         onDayClick        = onDayClick,
     )

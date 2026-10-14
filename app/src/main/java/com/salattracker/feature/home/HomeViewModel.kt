@@ -9,7 +9,6 @@ import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.StreakInfo
 import com.salattracker.domain.model.VerseInfo
-import com.salattracker.domain.repository.GoalRepository
 import com.salattracker.domain.repository.PrayerRepository
 import com.salattracker.domain.repository.SettingsRepository
 import com.salattracker.domain.repository.UserPrefs
@@ -22,7 +21,6 @@ import com.salattracker.domain.usecase.minutesUntil
 import com.salattracker.domain.usecase.nextPrayerOf
 import com.salattracker.notification.PrayerReminderWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlin.math.roundToInt
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -44,7 +42,6 @@ data class HomeUiState(
     val lastSevenDays: Map<LocalDate, Map<PrayerType, PrayerStatus>> = emptyMap(),
     val qazaPendingTotal: Int = 0,
     val verse: VerseInfo? = null,
-    val goalsCompletionPercent: Int? = null,   // null = no active goals, hide the summary card
     val sheetArgs: PrayerStatusSheetArgs? = null,   // null = sheet hidden
     val isSaving: Boolean = false,
     val error: String? = null,
@@ -75,7 +72,6 @@ class HomeViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val calculateStreakUseCase: CalculateStreakUseCase,
     private val verseRepository: VerseRepository,
-    private val goalRepository: GoalRepository,
     private val workManager: WorkManager,
 ) : ViewModel() {
 
@@ -102,7 +98,6 @@ class HomeViewModel @Inject constructor(
         observeQazaBalance()
         loadStreak()
         loadVerse()
-        loadGoalsSummary()
         PrayerReminderWorker.enqueueOneTime(workManager)
     }
 
@@ -181,19 +176,6 @@ class HomeViewModel @Inject constructor(
             prayerRepository.observeQazaBalance()
                 .map { it.values.sum() }
                 .collect { total -> _uiState.update { it.copy(qazaPendingTotal = total) } }
-        }
-    }
-
-    private fun loadGoalsSummary() {
-        viewModelScope.launch {
-            goalRepository.observeActiveGoalsWithProgress().collect { goals ->
-                val percent = if (goals.isEmpty()) {
-                    null
-                } else {
-                    (goals.sumOf { it.progressFraction.toDouble() } / goals.size * 100).roundToInt()
-                }
-                _uiState.update { it.copy(goalsCompletionPercent = percent) }
-            }
         }
     }
 

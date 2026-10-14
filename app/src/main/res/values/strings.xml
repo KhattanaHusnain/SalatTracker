@@ -107,9 +107,6 @@
 
     <!-- Home -->
     <string name="home_daily_stack">Today\'s Prayers</string>
-    <string name="home_daily_goals">Daily Goals</string>
-    <string name="home_percent_completed">%1$d%% Completed</string>
-    <string name="home_set_first_goal">Set your first spiritual goal</string>
     <string name="home_best_streak">Best %1$d</string>
     <string name="home_reminder_at">Reminder %1$s</string>
     <string name="home_next_prayer">Next Prayer</string>
@@ -123,8 +120,7 @@
     <string name="home_streak_caption">every prayer kept</string>
     <string name="home_streak_start">Start your streak today</string>
     <string name="home_last_7_days">Last 7 Days</string>
-    <string name="home_qaza_pending">Qaza Pending</string>
-    <string name="home_qaza_none">All Caught Up</string>
+    <string name="home_qaza_count_pending">%1$d Qaza pending</string>
 
     <!-- Qaza dashboard -->
     <string name="qaza_today_missed">Today\'s Missed Prayers</string>

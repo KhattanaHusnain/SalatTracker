@@ -36,10 +36,11 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 // ── Home Screen ───────────────────────────────────────────────────────────────
-// A today-focused dashboard: a next-prayer hero card, a compact timeline of today's five
-// prayers, a single "perfect day" streak with per-prayer detail, a 7-day history strip, two
-// stat tiles (Qaza / Goals), then the verse card. Stats owns the deeper analytics — this screen
-// never duplicates a trend chart or a breakdown, only "where do I stand right now".
+// A today-focused dashboard: a next-prayer hero card (which also surfaces pending Qaza), a
+// compact timeline of today's five prayers, then a consistency card (streak + 7-day history),
+// then the verse card. Stats owns the deeper analytics and Goals owns goal management — this
+// screen never duplicates a trend chart, a breakdown, or goal setup, only "where do I stand
+// right now".
 
 @Composable
 fun HomeScreen(
@@ -47,8 +48,6 @@ fun HomeScreen(
     onPrayerCardClick: (PrayerType) -> Unit,
     onSheetDismiss: () -> Unit,
     onStatusSave: (PrayerStatus) -> Unit,
-    onGoalsClick: () -> Unit,
-    onAddGoalClick: () -> Unit,
     onQazaClick: () -> Unit,
     onDayClick: (LocalDate) -> Unit,
 ) {
@@ -67,11 +66,14 @@ fun HomeScreen(
                     prayers          = uiState.prayers,
                     nextPrayer       = uiState.nextPrayer,
                     minutesUntilNext = uiState.minutesUntilNext,
+                    qazaPendingTotal = uiState.qazaPendingTotal,
+                    onQazaClick      = onQazaClick,
                     modifier         = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp),
                 )
 
-                // Order: today's action first, then outstanding work (Qaza), then motivation
-                // (streak + history), then the verse as a closing note.
+                // Order: today's action first, then motivation (streak + history), then the
+                // verse as a closing note. Pending Qaza lives in the hero now, next to the
+                // next-prayer countdown, since it's the other "where do I stand right now" fact.
                 SectionTitle(
                     text     = stringResource(R.string.home_daily_stack),
                     modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp),
@@ -82,22 +84,6 @@ fun HomeScreen(
                     onClick       = onPrayerCardClick,
                     modifier      = Modifier.fillMaxWidth(),
                 )
-
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(top = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    QazaTile(
-                        pendingTotal = uiState.qazaPendingTotal,
-                        onClick      = onQazaClick,
-                        modifier     = Modifier.weight(1f),
-                    )
-                    GoalsTile(
-                        percent  = uiState.goalsCompletionPercent,
-                        onClick  = if (uiState.goalsCompletionPercent != null) onGoalsClick else onAddGoalClick,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
 
                 ConsistencyCard(
                     perfectStreak = remember(uiState.streaks) { perfectDayStreak(uiState.streaks) },
@@ -139,6 +125,8 @@ private fun HeroCard(
     prayers: List<PrayerEntryUi>,
     nextPrayer: NextPrayer?,
     minutesUntilNext: Long,
+    qazaPendingTotal: Int,
+    onQazaClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val hijri = remember(todayDate) { todayDate.toHijriOrNull() }
@@ -239,6 +227,35 @@ private fun HeroCard(
                             fontWeight = FontWeight.SemiBold,
                             fontFamily = MontserratFamily,
                         )
+                    }
+                    if (qazaPendingTotal > 0) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color.White.copy(alpha = 0.25f)))
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Row(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable(onClick = onQazaClick)
+                                .padding(vertical = 2.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(painterResource(R.drawable.ic_history_edu), null, tint = Color.White, modifier = Modifier.size(14.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = stringResource(R.string.home_qaza_count_pending, qazaPendingTotal),
+                                color = Color.White,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                fontFamily = InterFamily,
+                                modifier = Modifier.weight(1f),
+                            )
+                            Icon(
+                                painter = painterResource(R.drawable.ic_chevron_right),
+                                contentDescription = null,
+                                tint = Color.White.copy(alpha = 0.8f),
+                                modifier = Modifier.size(14.dp),
+                            )
+                        }
                     }
                 }
             }
@@ -499,75 +516,6 @@ private fun WeekRings(
     }
 }
 
-// ── Stat tiles (Qaza / Goals) ──────────────────────────────────────────────────
-
-@Composable
-private fun QazaTile(pendingTotal: Int, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Surface(onClick = onClick, modifier = modifier, shape = RoundedCornerShape(14.dp), color = SalatSurfaceContainer, border = BorderStroke(1.dp, SalatOutlineVariant)) {
-        Column(Modifier.padding(16.dp)) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    // Same red as a pending-Qaza ring segment, so the status reads identically everywhere.
-                    modifier = Modifier.size(32.dp).clip(RoundedCornerShape(8.dp))
-                        .background(if (pendingTotal > 0) SalatStatusQazaPending.copy(alpha = 0.15f) else SalatPrimaryContainer),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        painter = painterResource(if (pendingTotal > 0) R.drawable.ic_history_edu else R.drawable.ic_check_circle_filled),
-                        contentDescription = null,
-                        tint = if (pendingTotal > 0) SalatStatusQazaPending else SalatOnPrimaryContainer,
-                        modifier = Modifier.size(18.dp),
-                    )
-                }
-                Icon(painterResource(R.drawable.ic_chevron_right), null, tint = SalatOnSurfaceVariant, modifier = Modifier.size(16.dp))
-            }
-            Spacer(modifier = Modifier.height(10.dp))
-            if (pendingTotal > 0) {
-                Text("$pendingTotal", color = SalatPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold, fontFamily = MontserratFamily)
-            } else {
-                Text(stringResource(R.string.home_qaza_none), color = SalatPrimary, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily, maxLines = 2)
-            }
-            Text(stringResource(R.string.home_qaza_pending), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily)
-        }
-    }
-}
-
-@Composable
-private fun GoalsTile(percent: Int?, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Surface(onClick = onClick, modifier = modifier, shape = RoundedCornerShape(14.dp), color = SalatSurfaceContainer, border = BorderStroke(1.dp, SalatOutlineVariant)) {
-        Column(Modifier.padding(16.dp)) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier.size(32.dp).clip(RoundedCornerShape(8.dp)).background(SalatPrimaryContainer),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        painter = painterResource(if (percent != null) R.drawable.ic_check_circle_filled else R.drawable.ic_add),
-                        contentDescription = null,
-                        tint = SalatOnPrimaryContainer,
-                        modifier = Modifier.size(18.dp),
-                    )
-                }
-                if (percent != null) {
-                    Box(modifier = Modifier.size(28.dp), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(progress = { 1f }, modifier = Modifier.fillMaxSize(), color = SalatSurfaceVariant, strokeWidth = 2.5.dp)
-                        CircularProgressIndicator(progress = { percent / 100f }, modifier = Modifier.fillMaxSize(), color = SalatPrimary, strokeWidth = 2.5.dp)
-                    }
-                } else {
-                    Icon(painterResource(R.drawable.ic_chevron_right), null, tint = SalatOnSurfaceVariant, modifier = Modifier.size(16.dp))
-                }
-            }
-            Spacer(modifier = Modifier.height(10.dp))
-            if (percent != null) {
-                Text(stringResource(R.string.home_percent_completed, percent), color = SalatPrimary, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily, maxLines = 1)
-            } else {
-                Text(stringResource(R.string.home_set_first_goal), color = SalatPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily, maxLines = 2)
-            }
-            Text(stringResource(R.string.home_daily_goals), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily)
-        }
-    }
-}
-
 // ── Inspiration banner ────────────────────────────────────────────────────────
 
 @Composable
@@ -688,13 +636,10 @@ fun HomeScreenMiddayPreview() {
                 text = "Verily, in the remembrance of Allah do hearts find rest.",
                 citation = "Ar-Ra'd 13:28",
             ),
-            goalsCompletionPercent = 68,
         ),
         onPrayerCardClick = {},
         onSheetDismiss    = {},
         onStatusSave      = {},
-        onGoalsClick      = {},
-        onAddGoalClick    = {},
         onQazaClick       = {},
         onDayClick        = {},
     )
@@ -721,13 +666,40 @@ fun HomeScreenAfterIshaPreview() {
             },
             qazaPendingTotal = 0,
             verse = null,
-            goalsCompletionPercent = null,
         ),
         onPrayerCardClick = {},
         onSheetDismiss    = {},
         onStatusSave      = {},
-        onGoalsClick      = {},
-        onAddGoalClick    = {},
+        onQazaClick       = {},
+        onDayClick        = {},
+    )
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun HomeScreenQazaPendingPreview() {
+    val today = LocalDate.now()
+    HomeScreen(
+        uiState = HomeUiState(
+            isLoading        = false,
+            todayDate        = today,
+            prayers          = samplePrayers(
+                statuses = listOf(PrayerStatus.NOT_RECORDED, PrayerStatus.NOT_RECORDED, PrayerStatus.NOT_RECORDED, PrayerStatus.NOT_RECORDED, PrayerStatus.NOT_RECORDED),
+                markable = listOf(true, true, true, false, false),
+            ),
+            nextPrayer       = NextPrayer(PrayerType.MAGHRIB, LocalTime.of(17, 32), isTomorrow = false),
+            minutesUntilNext = 5,
+            currentPrayer    = PrayerType.ASR,
+            streaks          = sampleStreaks(listOf(0, 0, 0, 0, 0), listOf(42, 20, 15, 8, 30)),
+            lastSevenDays    = (0..6).associate { offset ->
+                today.minusDays(offset.toLong()) to PrayerType.values().associateWith { PrayerStatus.QAZA_PENDING }
+            },
+            qazaPendingTotal = 456,
+            verse            = null,
+        ),
+        onPrayerCardClick = {},
+        onSheetDismiss    = {},
+        onStatusSave      = {},
         onQazaClick       = {},
         onDayClick        = {},
     )
