@@ -470,7 +470,6 @@ fun HomeScreenPreview() {
     HomeScreen(
         uiState = HomeUiState(
             isLoading = false,
-            hijriDate = "24 Rajab 1445",
             prayers = PrayerType.values().mapIndexed { i, type ->
                 PrayerEntryUi(
                     type         = type,
