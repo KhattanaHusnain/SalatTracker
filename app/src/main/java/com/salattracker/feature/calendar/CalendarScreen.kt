@@ -1025,43 +1025,65 @@ private fun SelectedDayPanel(
 
 // ── Preview ───────────────────────────────────────────────────────────────────
 
+private fun sampleMarks(today: LocalDate): Map<LocalDate, Map<PrayerType, PrayerStatus>> = mapOf(
+    today to mapOf(
+        PrayerType.FAJR to PrayerStatus.CONGREGATION,
+        PrayerType.DHUHR to PrayerStatus.INDIVIDUAL,
+        PrayerType.ASR to PrayerStatus.CONGREGATION,
+        PrayerType.MAGHRIB to PrayerStatus.QAZA_PENDING,
+    ),
+    today.minusDays(1) to PrayerType.values().associateWith { PrayerStatus.CONGREGATION },
+)
+
+private fun sampleUiState(view: CalendarViewType): CalendarUiState {
+    val today = LocalDate.now()
+    return CalendarUiState(
+        view           = view,
+        today          = today,
+        selectedDate   = today,
+        isLoadingMarks = false,
+        marks          = sampleMarks(today),
+        selectedTimes  = null,
+        verse = VerseInfo(
+            text     = "Indeed, prayer prohibits immorality and wrongdoing, and the remembrance of Allāh is greater.",
+            citation = "Al-Ankabut 29:45",
+        ),
+    )
+}
+
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
-fun CalendarScreenPreview() {
-    val today = LocalDate.now()
+fun CalendarScreenMonthPreview() = PreviewCalendarScreen(sampleUiState(CalendarViewType.MONTH))
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun CalendarScreenMonthGridPreview() = PreviewCalendarScreen(sampleUiState(CalendarViewType.MONTH_GRID))
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun CalendarScreenWeekPreview() = PreviewCalendarScreen(sampleUiState(CalendarViewType.WEEK))
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun CalendarScreenYearPreview() = PreviewCalendarScreen(sampleUiState(CalendarViewType.YEAR))
+
+@Composable
+private fun PreviewCalendarScreen(uiState: CalendarUiState) {
     CalendarScreen(
-        uiState = CalendarUiState(
-            view           = CalendarViewType.MONTH,
-            today          = today,
-            selectedDate   = today,
-            isLoadingMarks = false,
-            marks = mapOf(
-                today to mapOf(
-                    PrayerType.FAJR to PrayerStatus.CONGREGATION,
-                    PrayerType.DHUHR to PrayerStatus.INDIVIDUAL,
-                    PrayerType.ASR to PrayerStatus.CONGREGATION,
-                    PrayerType.MAGHRIB to PrayerStatus.QAZA_PENDING,
-                ),
-            ),
-            selectedTimes = null,
-            verse = VerseInfo(
-                text     = "Indeed, prayer prohibits immorality and wrongdoing, and the remembrance of Allāh is greater.",
-                citation = "Al-Ankabut 29:45",
-            ),
-        ),
-        onViewChanged        = {},
-        onPreviousPeriod     = {},
-        onNextPeriod         = {},
-        onTodayClick         = {},
-        onDatePicked         = {},
-        onDaySelected        = {},
-        onGridDayClick       = {},
-        onDaySheetDismiss    = {},
-        onMonthTileClick     = {},
+        uiState                 = uiState,
+        onViewChanged           = {},
+        onPreviousPeriod        = {},
+        onNextPeriod            = {},
+        onTodayClick            = {},
+        onDatePicked            = {},
+        onDaySelected           = {},
+        onGridDayClick          = {},
+        onDaySheetDismiss       = {},
+        onMonthTileClick        = {},
         onBackFromYearDrillDown = {},
-        onPrayerClick        = { _, _ -> },
-        onStatusSheetDismiss = {},
-        onStatusSave         = {},
-        onErrorDismiss       = {},
+        onPrayerClick           = { _, _ -> },
+        onStatusSheetDismiss    = {},
+        onStatusSave            = {},
+        onErrorDismiss          = {},
     )
 }
