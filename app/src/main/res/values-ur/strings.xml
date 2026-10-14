@@ -70,7 +70,6 @@
     <string name="action_delete">حذف</string>
     <string name="action_discard">مسترد کریں</string>
     <string name="action_keep_editing">ترمیم جاری رکھیں</string>
-    <string name="action_done">ہو گیا</string>
     <string name="action_continue">جاری رکھیں</string>
     <string name="action_next">اگلا</string>
     <string name="action_get_started">شروع کریں</string>
@@ -304,7 +303,6 @@
 
     <!-- Calendar redesign -->
     <string name="view_month">مہینہ</string>
-    <string name="view_month_grid">مہینہ گرڈ</string>
     <string name="view_week">ہفتہ</string>
     <string name="view_year">سال</string>
     <string name="cd_change_view">منظر تبدیل کریں</string>

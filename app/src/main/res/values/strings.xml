@@ -78,7 +78,6 @@
     <string name="action_delete">Delete</string>
     <string name="action_discard">Discard</string>
     <string name="action_keep_editing">Keep Editing</string>
-    <string name="action_done">Done</string>
     <string name="action_continue">Continue</string>
     <string name="action_next">Next</string>
     <string name="action_get_started">Get Started</string>
@@ -326,7 +325,6 @@
 
     <!-- Calendar redesign -->
     <string name="view_month">Month</string>
-    <string name="view_month_grid">Month grid</string>
     <string name="view_week">Week</string>
     <string name="view_year">Year</string>
     <string name="cd_change_view">Change view</string>

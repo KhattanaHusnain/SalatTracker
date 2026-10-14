@@ -70,10 +70,9 @@ val GoalFrequency.labelRes: Int get() = when (this) {
 
 @get:StringRes
 val CalendarViewType.labelRes: Int get() = when (this) {
-    CalendarViewType.MONTH       -> R.string.view_month
-    CalendarViewType.MONTH_GRID  -> R.string.view_month_grid
-    CalendarViewType.WEEK        -> R.string.view_week
-    CalendarViewType.YEAR        -> R.string.view_year
+    CalendarViewType.MONTH -> R.string.view_month
+    CalendarViewType.WEEK  -> R.string.view_week
+    CalendarViewType.YEAR  -> R.string.view_year
 }
 
 @Composable fun CalendarViewType.label(): String = stringResource(labelRes)

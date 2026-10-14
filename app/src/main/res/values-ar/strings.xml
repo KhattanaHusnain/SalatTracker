@@ -70,7 +70,6 @@
     <string name="action_delete">حذف</string>
     <string name="action_discard">تجاهل</string>
     <string name="action_keep_editing">متابعة التعديل</string>
-    <string name="action_done">تم</string>
     <string name="action_continue">متابعة</string>
     <string name="action_next">التالي</string>
     <string name="action_get_started">ابدأ الآن</string>
@@ -304,7 +303,6 @@
 
     <!-- Calendar redesign -->
     <string name="view_month">شهر</string>
-    <string name="view_month_grid">شبكة الشهر</string>
     <string name="view_week">أسبوع</string>
     <string name="view_year">سنة</string>
     <string name="cd_change_view">تغيير العرض</string>

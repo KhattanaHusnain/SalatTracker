@@ -70,7 +70,6 @@
     <string name="action_delete">Supprimer</string>
     <string name="action_discard">Abandonner</string>
     <string name="action_keep_editing">Continuer la modification</string>
-    <string name="action_done">Terminé</string>
     <string name="action_continue">Continuer</string>
     <string name="action_next">Suivant</string>
     <string name="action_get_started">Commencer</string>
@@ -304,7 +303,6 @@
 
     <!-- Calendar redesign -->
     <string name="view_month">Mois</string>
-    <string name="view_month_grid">Grille du mois</string>
     <string name="view_week">Semaine</string>
     <string name="view_year">Année</string>
     <string name="cd_change_view">Changer de vue</string>

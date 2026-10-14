@@ -49,8 +49,6 @@ fun CalendarScreen(
     onTodayClick: () -> Unit,
     onDatePicked: (LocalDate) -> Unit,
     onDaySelected: (LocalDate) -> Unit,
-    onGridDayClick: (LocalDate) -> Unit,
-    onDaySheetDismiss: () -> Unit,
     onMonthTileClick: (YearMonth) -> Unit,
     onBackFromYearDrillDown: () -> Unit,
     onPrayerClick: (LocalDate, PrayerType) -> Unit,
@@ -115,33 +113,6 @@ fun CalendarScreen(
                         Spacer(modifier = Modifier.height(20.dp))
                         VerseCard(verse)
                     }
-                }
-            }
-
-            CalendarViewType.MONTH_GRID -> {
-                val (title, subtitle) = monthHeaderTexts(visibleMonth)
-                Column(modifier = Modifier.fillMaxSize().padding(bottom = 90.dp)) {
-                    Box(modifier = Modifier.padding(horizontal = 20.dp)) {
-                        CalendarHeader(
-                            currentView   = uiState.view,
-                            onViewChanged = onViewChanged,
-                            titleText     = title,
-                            subtitleText  = subtitle,
-                            showToday     = uiState.awayFromToday,
-                            onTodayClick  = onTodayClick,
-                            onPrevious    = onPreviousPeriod,
-                            onNext        = onNextPeriod,
-                            onTitleClick  = { showGoToDate = true },
-                        )
-                    }
-                    MonthGridView(
-                        dates        = monthGridDates(visibleMonth),
-                        today        = uiState.today,
-                        currentMonth = visibleMonth,
-                        isLoading    = uiState.isLoadingMarks,
-                        marks        = uiState.marks,
-                        onDayClick   = onGridDayClick,
-                    )
                 }
             }
 
@@ -243,17 +214,6 @@ fun CalendarScreen(
         )
     }
 
-    if (uiState.daySheetOpen) {
-        val hijriText = remember(uiState.selectedDate) { uiState.selectedDate.toHijriOrNull() }?.fullLabel()
-        DayDetailBottomSheet(
-            date          = uiState.selectedDate,
-            hijriLabel    = hijriText,
-            prayers       = buildDayDetailRows(uiState.selectedDate, uiState.today, uiState.selectedDayStatuses, uiState.selectedTimes),
-            onDismiss     = onDaySheetDismiss,
-            onPrayerClick = { type -> onPrayerClick(uiState.selectedDate, type) },
-        )
-    }
-
     uiState.statusSheet?.let { args ->
         PrayerStatusBottomSheet(
             args      = args,
@@ -266,8 +226,8 @@ fun CalendarScreen(
 
 // ── Shared day-row building ───────────────────────────────────────────────────
 
-/** Builds the 5-row list [DayDetailBottomSheet] and [SelectedDayPanel] both render, resolving
- * each prayer's time label and markability the same way. */
+/** Builds the 5-row list [SelectedDayPanel] renders, resolving each prayer's time label and
+ * markability. */
 @Composable
 private fun buildDayDetailRows(
     date: LocalDate,
@@ -291,7 +251,7 @@ private fun buildDayDetailRows(
 // titleText/subtitleText are computed per-view by the caller (monthHeaderTexts/weekHeaderTexts
 // below) — this composable only lays them out, so it doesn't need to know which view it's in.
 
-/** "October 2026" + the Hijri months that Gregorian month spans — shared by Month and Month-grid. */
+/** "October 2026" + the Hijri months that Gregorian month spans — the Month view's header. */
 @Composable
 private fun monthHeaderTexts(visibleMonth: YearMonth): Pair<String, String?> {
     val titleFormatter = remember { DateTimeFormatter.ofPattern("MMMM yyyy") }
@@ -521,7 +481,7 @@ private fun VerseCard(verse: VerseInfo) {
     }
 }
 
-// ── Shared grid pieces (Month and Month-grid) ─────────────────────────────────
+// ── Shared grid pieces (Month view and Week table) ────────────────────────────
 
 private val DAY_HEADERS = listOf(
     R.string.weekday_sun, R.string.weekday_mon, R.string.weekday_tue, R.string.weekday_wed,
@@ -562,7 +522,7 @@ private fun FridayBand(modifier: Modifier = Modifier) {
     }
 }
 
-// ── Month ring grid (compact, inside the scrolling Month view) ───────────────
+// ── Month ring grid ────────────────────────────────────────────────────────────
 
 @Composable
 private fun MonthRingGrid(
@@ -583,7 +543,7 @@ private fun MonthRingGrid(
                     Row(modifier = Modifier.fillMaxWidth()) {
                         week.forEach { date ->
                             if (isLoading) {
-                                DayCellSkeleton(modifier = Modifier.weight(1f).aspectRatio(1f).padding(2.dp))
+                                DayCellSkeleton(modifier = Modifier.weight(1f).height(RING_DAY_CELL_HEIGHT).padding(2.dp))
                             } else {
                                 RingDayCell(
                                     date           = date,
@@ -604,51 +564,16 @@ private fun MonthRingGrid(
     }
 }
 
-// ── Month grid (fills the screen, with Hijri day numbers) ────────────────────
+private val RING_DAY_CELL_HEIGHT = 50.dp
 
+/** One grid cell: the 5-arc status ring around the Gregorian day number, with the Hijri day
+ * number underneath. [isSelected] tints the whole cell for the Month view's inline day panel;
+ * nothing currently passes true for the Week table (it has no such concept). */
 @Composable
-private fun MonthGridView(
-    dates: List<LocalDate>,
-    today: LocalDate,
-    currentMonth: YearMonth,
-    isLoading: Boolean,
-    marks: Map<LocalDate, Map<PrayerType, PrayerStatus>>,
-    onDayClick: (LocalDate) -> Unit,
-) {
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp, vertical = 4.dp)) {
-        WeekdayHeaderRow()
-        Spacer(modifier = Modifier.height(4.dp))
-        Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-            FridayBand(modifier = Modifier.matchParentSize())
-            Column(modifier = Modifier.fillMaxSize()) {
-                dates.chunked(7).forEach { week ->
-                    Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
-                        week.forEach { date ->
-                            if (isLoading) {
-                                DayCellSkeleton(modifier = Modifier.weight(1f).fillMaxHeight().padding(2.dp))
-                            } else {
-                                MonthGridDayCell(
-                                    date           = date,
-                                    isToday        = date == today,
-                                    isCurrentMonth = YearMonth.from(date) == currentMonth,
-                                    statuses       = marks[date].orEmpty(),
-                                    showRing       = !date.isAfter(today),
-                                    onClick        = { onDayClick(date) },
-                                    modifier       = Modifier.weight(1f).fillMaxHeight().padding(2.dp),
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun MonthGridDayCell(
+private fun RingDayCell(
     date: LocalDate,
     isToday: Boolean,
+    isSelected: Boolean,
     isCurrentMonth: Boolean,
     statuses: Map<PrayerType, PrayerStatus>,
     showRing: Boolean,
@@ -659,7 +584,12 @@ private fun MonthGridDayCell(
     val hijriDay = remember(date) { date.toHijriOrNull()?.day }
 
     Column(
-        modifier            = modifier.clip(RoundedCornerShape(10.dp)).clickable(onClick = onClick),
+        modifier = modifier
+            .height(RING_DAY_CELL_HEIGHT)
+            .clip(RoundedCornerShape(10.dp))
+            .let { if (isSelected) it.background(SalatPrimaryFixed.copy(alpha = 0.18f)) else it }
+            .clickable(onClick = onClick)
+            .padding(vertical = 2.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
@@ -710,63 +640,6 @@ private fun MonthGridDayCell(
     }
 }
 
-@Composable
-private fun RingDayCell(
-    date: LocalDate,
-    isToday: Boolean,
-    isSelected: Boolean,
-    isCurrentMonth: Boolean,
-    statuses: Map<PrayerType, PrayerStatus>,
-    showRing: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val dimAlpha = if (isCurrentMonth) 1f else 0.35f
-    Box(
-        modifier = modifier
-            .aspectRatio(1f)
-            .clip(CircleShape)
-            .let { if (isSelected) it.background(SalatPrimaryFixed.copy(alpha = 0.18f)) else it }
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center,
-    ) {
-        if (showRing) {
-            Canvas(modifier = Modifier.fillMaxSize(0.82f).alpha(dimAlpha)) {
-                val strokeWidth = size.minDimension * 0.09f
-                val diameter = size.minDimension - strokeWidth
-                val topLeft = Offset((size.width - diameter) / 2f, (size.height - diameter) / 2f)
-                val arcSize = Size(diameter, diameter)
-                val segmentSweep = 360f / PrayerType.values().size
-                val gap = 3f
-                PrayerType.values().forEachIndexed { index, type ->
-                    drawArc(
-                        color      = statusRingColor(statuses[type]),
-                        startAngle = -90f + index * segmentSweep + gap / 2f,
-                        sweepAngle = segmentSweep - gap,
-                        useCenter  = false,
-                        topLeft    = topLeft,
-                        size       = arcSize,
-                        style      = Stroke(width = strokeWidth, cap = StrokeCap.Round),
-                    )
-                }
-            }
-        }
-        if (isToday) {
-            Box(modifier = Modifier.size(22.dp).clip(CircleShape).background(SalatPrimary))
-        }
-        Text(
-            text       = date.dayOfMonth.toString(),
-            color      = if (isToday) SalatOnPrimary else SalatOnSurface,
-            fontSize   = 13.sp,
-            fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
-            fontFamily = InterFamily,
-            modifier   = Modifier.alpha(if (isToday) 1f else dimAlpha),
-        )
-    }
-}
-
-/** [modifier] supplies its own sizing — a square aspect ratio for the compact Month grid, a
- * fill-height cell for the full-screen Month-grid view. */
 @Composable
 private fun DayCellSkeleton(modifier: Modifier = Modifier) {
     val alpha by rememberInfiniteTransition(label = "sk")
@@ -1057,10 +930,6 @@ fun CalendarScreenMonthPreview() = PreviewCalendarScreen(sampleUiState(CalendarV
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
-fun CalendarScreenMonthGridPreview() = PreviewCalendarScreen(sampleUiState(CalendarViewType.MONTH_GRID))
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
 fun CalendarScreenWeekPreview() = PreviewCalendarScreen(sampleUiState(CalendarViewType.WEEK))
 
 @Preview(showBackground = true, showSystemUi = true)
@@ -1077,8 +946,6 @@ private fun PreviewCalendarScreen(uiState: CalendarUiState) {
         onTodayClick            = {},
         onDatePicked            = {},
         onDaySelected           = {},
-        onGridDayClick          = {},
-        onDaySheetDismiss       = {},
         onMonthTileClick        = {},
         onBackFromYearDrillDown = {},
         onPrayerClick           = { _, _ -> },

@@ -33,9 +33,6 @@ data class CalendarUiState(
     val marks: Map<LocalDate, Map<PrayerType, PrayerStatus>> = emptyMap(),
     val selectedTimes: Map<PrayerType, LocalTime>? = null,
     val statusSheet: PrayerStatusSheetArgs? = null,
-    /** Month-grid: the full day sheet open for [selectedDate]. Reuses [selectedTimes]/
-     * [selectedDayStatuses] rather than its own copy, so it updates live the same way. */
-    val daySheetOpen: Boolean = false,
     /** Set when the Year view drilled into a month, so Back can return there instead of
      * leaving Calendar entirely; cleared by returning, or by any explicit view switch. */
     val cameFromYear: Int? = null,
@@ -124,11 +121,6 @@ class CalendarViewModel @Inject constructor(
     /** Tapping a day cell in the Month view selects it, loading that day into the inline panel. */
     fun onDaySelected(date: LocalDate) = _uiState.update { it.copy(selectedDate = date) }
 
-    /** Tapping a day cell in the Month-grid view opens the full day sheet for it. */
-    fun onGridDayClick(date: LocalDate) = _uiState.update { it.copy(selectedDate = date, daySheetOpen = true) }
-
-    fun onDaySheetDismiss() = _uiState.update { it.copy(daySheetOpen = false) }
-
     /** Year: tapping a month tile drills into it, remembering the year to return Back to. */
     fun onMonthTileClick(month: YearMonth) = _uiState.update { state ->
         state.copy(view = CalendarViewType.MONTH, selectedDate = month.atDay(1), cameFromYear = state.selectedDate.year)
@@ -142,8 +134,8 @@ class CalendarViewModel @Inject constructor(
     // ── Prayer status editing ────────────────────────────────────────────────
 
     /**
-     * Opens the status picker for one (date, prayer) — used by the Month view's inline rows,
-     * and later the Week view's squares. Markability only needs the actual prayer time for
+     * Opens the status picker for one (date, prayer) — used by the Month view's inline rows
+     * and the Week view's squares. Markability only needs the actual prayer time for
      * *today* (any earlier date is always markable, any later date never is — see
      * [isPrayerMarkable]'s own rules), so this only fetches times when [date] is today, rather
      * than requiring every visible date's times to already be loaded.

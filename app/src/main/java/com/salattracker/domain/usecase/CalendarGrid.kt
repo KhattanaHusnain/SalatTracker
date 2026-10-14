@@ -4,8 +4,8 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.temporal.ChronoUnit
 
-/** Which of the four calendar views is showing. */
-enum class CalendarViewType { MONTH, MONTH_GRID, WEEK, YEAR }
+/** Which of the three calendar views is showing. */
+enum class CalendarViewType { MONTH, WEEK, YEAR }
 
 /** The earliest/latest date any calendar view will navigate to — a sanity bound for chevrons,
  * swipes and the go-to-date picker, not a real calendar limit. */
@@ -39,7 +39,7 @@ fun weekDatesOf(date: LocalDate): List<LocalDate> {
  * overall [CALENDAR_MIN_DATE]/[CALENDAR_MAX_DATE] bounds. */
 fun shiftPeriod(view: CalendarViewType, date: LocalDate, direction: Int): LocalDate {
     val shifted = when (view) {
-        CalendarViewType.MONTH, CalendarViewType.MONTH_GRID -> {
+        CalendarViewType.MONTH -> {
             val target = YearMonth.from(date).plusMonths(direction.toLong())
             target.atDay(date.dayOfMonth.coerceAtMost(target.lengthOfMonth()))
         }
@@ -53,10 +53,10 @@ fun shiftPeriod(view: CalendarViewType, date: LocalDate, direction: Int): LocalD
 }
 
 /** The date range to fetch prayer entries for, given the current view and anchor date — the
- * visible grid plus one month of slack either side (Month/Month-grid), the visible week (Week),
- * or the whole year (Year) — so paging to an adjacent period rarely needs a fresh fetch. */
+ * visible grid plus one month of slack either side (Month), the visible week (Week), or the
+ * whole year (Year) — so paging to an adjacent period rarely needs a fresh fetch. */
 fun observedRange(view: CalendarViewType, date: LocalDate): Pair<LocalDate, LocalDate> = when (view) {
-    CalendarViewType.MONTH, CalendarViewType.MONTH_GRID -> {
+    CalendarViewType.MONTH -> {
         val month = YearMonth.from(date)
         monthGridDates(month.minusMonths(1)).first() to monthGridDates(month.plusMonths(1)).last()
     }
@@ -69,7 +69,7 @@ fun observedRange(view: CalendarViewType, date: LocalDate): Pair<LocalDate, Loca
 
 /** Whether the visible period does NOT contain [today] — drives showing a "Today" shortcut. */
 fun isAwayFromToday(view: CalendarViewType, date: LocalDate, today: LocalDate): Boolean = when (view) {
-    CalendarViewType.MONTH, CalendarViewType.MONTH_GRID -> YearMonth.from(date) != YearMonth.from(today)
+    CalendarViewType.MONTH -> YearMonth.from(date) != YearMonth.from(today)
     CalendarViewType.WEEK -> weekStartOf(date) != weekStartOf(today)
     CalendarViewType.YEAR -> date.year != today.year
 }
