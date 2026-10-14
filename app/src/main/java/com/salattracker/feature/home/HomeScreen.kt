@@ -17,6 +17,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -69,16 +70,12 @@ fun HomeScreen(
                     modifier         = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp),
                 )
 
-                Text(
-                    text = stringResource(R.string.home_daily_stack),
+                // Order: today's action first, then outstanding work (Qaza), then motivation
+                // (streak + history), then the verse as a closing note.
+                SectionTitle(
+                    text     = stringResource(R.string.home_daily_stack),
                     modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp),
-                    color = SalatPrimary,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = MontserratFamily,
                 )
-                Spacer(modifier = Modifier.height(4.dp))
-
                 PrayerTimeline(
                     prayers       = uiState.prayers,
                     currentPrayer = uiState.currentPrayer,
@@ -86,23 +83,8 @@ fun HomeScreen(
                     modifier      = Modifier.fillMaxWidth(),
                 )
 
-                StreakCard(
-                    perfectStreak = remember(uiState.streaks) { perfectDayStreak(uiState.streaks) },
-                    streaks       = uiState.streaks,
-                    modifier      = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 16.dp),
-                )
-
-                WeekStrip(
-                    todayDate      = uiState.todayDate,
-                    lastSevenDays  = uiState.lastSevenDays,
-                    onDayClick     = onDayClick,
-                    modifier       = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(top = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     QazaTile(
@@ -116,16 +98,25 @@ fun HomeScreen(
                         modifier = Modifier.weight(1f),
                     )
                 }
-            }
 
-            uiState.verse?.let { verse ->
-                InspirationBanner(
-                    verse = verse,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                        .padding(top = 24.dp)
+                ConsistencyCard(
+                    perfectStreak = remember(uiState.streaks) { perfectDayStreak(uiState.streaks) },
+                    streaks       = uiState.streaks,
+                    todayDate     = uiState.todayDate,
+                    lastSevenDays = uiState.lastSevenDays,
+                    onDayClick    = onDayClick,
+                    modifier      = Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(top = 16.dp),
                 )
+
+                uiState.verse?.let { verse ->
+                    InspirationBanner(
+                        verse = verse,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp)
+                            .padding(top = 24.dp)
+                    )
+                }
             }
         }
     }
@@ -284,7 +275,10 @@ private fun PrayerTimeline(
             TimelineRow(
                 entry     = entry,
                 isLast    = index == prayers.lastIndex,
-                isCurrent = entry.type == currentPrayer,
+                // Only call attention to the current prayer while it still needs marking — once
+                // it's recorded, highlighting it again would just be noise next to the hero's
+                // "next prayer" countdown.
+                needsMarking = entry.type == currentPrayer && entry.isMarkable && entry.status == PrayerStatus.NOT_RECORDED,
                 onClick   = { onClick(entry.type) },
             )
         }
@@ -295,7 +289,7 @@ private fun PrayerTimeline(
 private fun TimelineRow(
     entry: PrayerEntryUi,
     isLast: Boolean,
-    isCurrent: Boolean,
+    needsMarking: Boolean,
     onClick: () -> Unit,
 ) {
     val timeFormatter = remember { DateTimeFormatter.ofPattern("hh:mm a") }
@@ -305,7 +299,7 @@ private fun TimelineRow(
         enabled  = entry.isMarkable,
         modifier = Modifier.fillMaxWidth(),
         shape    = RoundedCornerShape(12.dp),
-        color    = if (isCurrent) SalatPrimaryFixed.copy(alpha = 0.18f) else Color.Transparent,
+        color    = if (needsMarking) SalatPrimaryFixed.copy(alpha = 0.18f) else Color.Transparent,
     ) {
         Row(
             modifier = Modifier
@@ -317,7 +311,7 @@ private fun TimelineRow(
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(18.dp)) {
                 Box(
                     modifier = Modifier
-                        .size(if (isCurrent) 14.dp else 10.dp)
+                        .size(if (needsMarking) 14.dp else 10.dp)
                         .clip(CircleShape)
                         .background(statusRingColor(entry.status)),
                 )
@@ -336,11 +330,11 @@ private fun TimelineRow(
                         fontWeight = FontWeight.SemiBold,
                         fontFamily = MontserratFamily,
                     )
-                    if (isCurrent) {
+                    if (needsMarking) {
                         Box(
-                            modifier = Modifier.clip(RoundedCornerShape(50)).background(SalatPrimary).padding(horizontal = 6.dp, vertical = 2.dp),
+                            modifier = Modifier.clip(RoundedCornerShape(50)).background(SalatPrimary).padding(horizontal = 8.dp, vertical = 2.dp),
                         ) {
-                            Text(stringResource(R.string.home_now), color = SalatOnPrimary, fontSize = 9.sp, fontWeight = FontWeight.Bold, fontFamily = InterFamily)
+                            Text(stringResource(R.string.home_now), color = SalatOnPrimary, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily, maxLines = 1)
                         }
                     }
                 }
@@ -357,15 +351,46 @@ private fun TimelineRow(
                 }
             }
             Spacer(modifier = Modifier.width(8.dp))
-            PrayerStatusChip(status = entry.status, isUpcoming = !entry.isMarkable)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                PrayerStatusChip(status = entry.status, isUpcoming = !entry.isMarkable)
+                if (entry.isMarkable) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_chevron_right),
+                        contentDescription = null,
+                        tint = SalatOnSurfaceVariant,
+                        modifier = Modifier.padding(start = 4.dp).size(16.dp),
+                    )
+                }
+            }
         }
     }
 }
 
-// ── Streak card ────────────────────────────────────────────────────────────────
+// ── Section title ─────────────────────────────────────────────────────────────
 
 @Composable
-private fun StreakCard(perfectStreak: Int, streaks: Map<PrayerType, StreakInfo>, modifier: Modifier = Modifier) {
+private fun SectionTitle(text: String, modifier: Modifier = Modifier) {
+    Text(
+        text = text,
+        modifier = modifier,
+        color = SalatPrimary,
+        fontSize = 18.sp,
+        fontWeight = FontWeight.SemiBold,
+        fontFamily = MontserratFamily,
+    )
+}
+
+// ── Consistency card (streak + last 7 days) ───────────────────────────────────
+
+@Composable
+private fun ConsistencyCard(
+    perfectStreak: Int,
+    streaks: Map<PrayerType, StreakInfo>,
+    todayDate: LocalDate,
+    lastSevenDays: Map<LocalDate, Map<PrayerType, PrayerStatus>>,
+    onDayClick: (LocalDate) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Surface(
         modifier = modifier,
         shape    = RoundedCornerShape(16.dp),
@@ -376,17 +401,33 @@ private fun StreakCard(perfectStreak: Int, streaks: Map<PrayerType, StreakInfo>,
         Column(Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Icon(painterResource(R.drawable.ic_local_fire_department), null, tint = Color(0xFFFF9939), modifier = Modifier.size(28.dp))
-                Column {
-                    Text("$perfectStreak", color = SalatPrimary, fontSize = 24.sp, fontWeight = FontWeight.Bold, fontFamily = MontserratFamily)
-                    Text(stringResource(R.string.home_streak_caption), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily)
+                if (perfectStreak > 0) {
+                    Column {
+                        Text("$perfectStreak", color = SalatPrimary, fontSize = 24.sp, fontWeight = FontWeight.Bold, fontFamily = MontserratFamily)
+                        Text(stringResource(R.string.home_streak_caption), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily)
+                    }
+                } else {
+                    Text(stringResource(R.string.home_streak_start), color = SalatPrimary, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily)
                 }
             }
             Spacer(modifier = Modifier.height(14.dp))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 PrayerType.values().forEach { type ->
                     StreakChip(type = type, info = streaks[type] ?: StreakInfo(0, 0), modifier = Modifier.weight(1f))
                 }
             }
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = SalatOutlineVariant.copy(alpha = 0.6f))
+
+            Text(
+                text = stringResource(R.string.home_last_7_days),
+                color = SalatOnSurfaceVariant,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                fontFamily = InterFamily,
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            WeekRings(todayDate = todayDate, lastSevenDays = lastSevenDays, onDayClick = onDayClick)
         }
     }
 }
@@ -398,7 +439,7 @@ private fun StreakChip(type: PrayerType, info: StreakInfo, modifier: Modifier = 
         modifier = modifier.clip(RoundedCornerShape(10.dp)).background(SalatSurfaceContainer).padding(vertical = 8.dp, horizontal = 2.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(type.shortLabel(), color = SalatOnSurfaceVariant, fontSize = 10.sp, fontFamily = InterFamily, maxLines = 1)
+        Text(type.shortLabel(), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Spacer(modifier = Modifier.height(2.dp))
         Text("${info.currentStreak}", color = SalatPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold, fontFamily = MontserratFamily)
         Spacer(modifier = Modifier.height(4.dp))
@@ -406,53 +447,53 @@ private fun StreakChip(type: PrayerType, info: StreakInfo, modifier: Modifier = 
             Box(modifier = Modifier.fillMaxWidth(fraction).fillMaxHeight().clip(RoundedCornerShape(2.dp)).background(SalatPrimary))
         }
         Spacer(modifier = Modifier.height(4.dp))
-        Text(stringResource(R.string.home_best_streak, info.highestStreak), color = SalatOutline, fontSize = 8.sp, fontFamily = InterFamily)
+        Text(
+            text = stringResource(R.string.home_best_streak, info.highestStreak),
+            color = SalatOnSurfaceVariant,
+            fontSize = 11.sp,
+            fontFamily = InterFamily,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 
-// ── Last 7 days strip ─────────────────────────────────────────────────────────
-
 @Composable
-private fun WeekStrip(
+private fun WeekRings(
     todayDate: LocalDate,
     lastSevenDays: Map<LocalDate, Map<PrayerType, PrayerStatus>>,
     onDayClick: (LocalDate) -> Unit,
-    modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier) {
-        Text(
-            text = stringResource(R.string.home_last_7_days),
-            color = SalatPrimary,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.SemiBold,
-            fontFamily = MontserratFamily,
-        )
-        Spacer(modifier = Modifier.height(10.dp))
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            for (offset in 6 downTo 0) {
-                val date = todayDate.minusDays(offset.toLong())
-                val isToday = date == todayDate
-                Column(
-                    modifier = Modifier.weight(1f).clickable { onDayClick(date) },
-                    horizontalAlignment = Alignment.CenterHorizontally,
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        for (offset in 6 downTo 0) {
+            val date = todayDate.minusDays(offset.toLong())
+            val isToday = date == todayDate
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .heightIn(min = 48.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .clickable { onDayClick(date) }
+                    .padding(vertical = 4.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .let { if (isToday) it.border(1.5.dp, SalatPrimary, CircleShape) else it }
+                        .padding(3.dp),
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .let { if (isToday) it.border(1.5.dp, SalatPrimary, CircleShape) else it }
-                            .padding(3.dp),
-                    ) {
-                        PrayerStatusRing(statuses = lastSevenDays[date].orEmpty(), modifier = Modifier.fillMaxSize())
-                    }
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = stringResource(date.dayOfWeek.shortLabelRes),
-                        color = if (isToday) SalatPrimary else SalatOutline,
-                        fontSize = 9.sp,
-                        fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
-                        fontFamily = InterFamily,
-                    )
+                    PrayerStatusRing(statuses = lastSevenDays[date].orEmpty(), modifier = Modifier.fillMaxSize())
                 }
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(date.dayOfWeek.shortLabelRes),
+                    color = if (isToday) SalatPrimary else SalatOnSurfaceVariant,
+                    fontSize = 11.sp,
+                    fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
+                    fontFamily = InterFamily,
+                    maxLines = 1,
+                )
             }
         }
     }
@@ -466,13 +507,15 @@ private fun QazaTile(pendingTotal: Int, onClick: () -> Unit, modifier: Modifier 
         Column(Modifier.padding(16.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Box(
-                    modifier = Modifier.size(32.dp).clip(RoundedCornerShape(8.dp)).background(if (pendingTotal > 0) SalatTertiaryContainer else SalatPrimaryContainer),
+                    // Same red as a pending-Qaza ring segment, so the status reads identically everywhere.
+                    modifier = Modifier.size(32.dp).clip(RoundedCornerShape(8.dp))
+                        .background(if (pendingTotal > 0) SalatStatusQazaPending.copy(alpha = 0.15f) else SalatPrimaryContainer),
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
                         painter = painterResource(if (pendingTotal > 0) R.drawable.ic_history_edu else R.drawable.ic_check_circle_filled),
                         contentDescription = null,
-                        tint = if (pendingTotal > 0) SalatOnTertiaryContainer else SalatOnPrimaryContainer,
+                        tint = if (pendingTotal > 0) SalatStatusQazaPending else SalatOnPrimaryContainer,
                         modifier = Modifier.size(18.dp),
                     )
                 }

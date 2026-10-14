@@ -106,11 +106,12 @@
     <string name="home_next_in_hours_minutes">%1$d گھنٹے %2$d منٹ میں</string>
     <string name="home_next_in_minutes">%1$d منٹ میں</string>
     <string name="home_tomorrow">کل</string>
-    <string name="home_day_complete">آج کی نمازیں مکمل ہو گئیں</string>
+    <string name="home_day_complete">آج کی نمازوں کے اوقات گزر گئے</string>
     <string name="home_ring_count">%1$d/5</string>
     <string name="home_ring_caption">آج ادا کی گئیں</string>
-    <string name="home_now">ابھی</string>
+    <string name="home_now">ابھی درج کریں</string>
     <string name="home_streak_caption">ہر نماز برقرار رکھی</string>
+    <string name="home_streak_start">آج سے اپنا سلسلہ شروع کریں</string>
     <string name="home_last_7_days">پچھلے 7 دن</string>
     <string name="home_qaza_pending">قضا باقی</string>
     <string name="home_qaza_none">کوئی قضا باقی نہیں</string>

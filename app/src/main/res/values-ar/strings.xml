@@ -106,11 +106,12 @@
     <string name="home_next_in_hours_minutes">بعد %1$d س %2$d د</string>
     <string name="home_next_in_minutes">بعد %1$d د</string>
     <string name="home_tomorrow">غداً</string>
-    <string name="home_day_complete">اكتملت صلوات اليوم</string>
+    <string name="home_day_complete">انقضت أوقات صلوات اليوم</string>
     <string name="home_ring_count">%1$d/5</string>
     <string name="home_ring_caption">صُليت اليوم</string>
-    <string name="home_now">الآن</string>
+    <string name="home_now">سجّلها الآن</string>
     <string name="home_streak_caption">حافظت على كل صلاة</string>
+    <string name="home_streak_start">ابدأ سلسلتك اليوم</string>
     <string name="home_last_7_days">آخر 7 أيام</string>
     <string name="home_qaza_pending">قضاء معلّق</string>
     <string name="home_qaza_none">لا قضاء متبقٍ</string>
