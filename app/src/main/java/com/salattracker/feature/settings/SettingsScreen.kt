@@ -10,8 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
@@ -19,6 +18,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -29,7 +29,7 @@ import com.salattracker.domain.model.AppLanguage
 import com.salattracker.domain.model.CalculationMethod
 import com.salattracker.domain.model.ThemeMode
 
-// ── Settings Screen ───────────────────────────────────────────────────────────
+// ── Settings Screen — a hub of 3 cards, every control live-applies ──────────────
 
 @Composable
 fun SettingsScreen(
@@ -37,15 +37,17 @@ fun SettingsScreen(
     onUseDeviceLocationChanged: (Boolean) -> Unit,
     onLatitudeChanged: (String) -> Unit,
     onLongitudeChanged: (String) -> Unit,
+    onLocationCommit: () -> Unit,
+    onCalculationMethodSheetOpen: () -> Unit,
+    onCalculationMethodSheetDismiss: () -> Unit,
     onCalculationMethodChanged: (CalculationMethod) -> Unit,
     on24HourFormatChanged: (Boolean) -> Unit,
     onLanguageChanged: (AppLanguage) -> Unit,
     onThemeModeChanged: (ThemeMode) -> Unit,
-    onSave: () -> Unit,
     onErrorDismiss: () -> Unit,
-    onClearSaveSuccess: () -> Unit,
-    onDiscardConfirm: () -> Unit,
-    onKeepEditingClick: () -> Unit,
+    onPrayerRemindersClick: () -> Unit,
+    onBackupClick: () -> Unit,
+    backupNeedsAttention: Boolean,
 ) {
     val focusManager = LocalFocusManager.current
 
@@ -58,66 +60,43 @@ fun SettingsScreen(
                 }
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp)
-                .padding(bottom = 120.dp),
+                .padding(bottom = 32.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
             Spacer(modifier = Modifier.height(4.dp))
 
-            // ── Location ──────────────────────────────────────────────────────
-            SettingsSectionLabel(stringResource(R.string.settings_location))
-            LocationSection(
+            // ── Location & Prayer Times ──────────────────────────────────────
+            SettingsSectionLabel(stringResource(R.string.settings_location_prayer_times))
+            LocationAndPrayerTimesCard(
                 useDeviceLocation = uiState.useDeviceLocation,
                 latitude          = uiState.latitude,
                 longitude         = uiState.longitude,
+                calculationMethod = uiState.calculationMethod,
                 onToggleDevice    = onUseDeviceLocationChanged,
                 onLatChanged      = onLatitudeChanged,
                 onLonChanged      = onLongitudeChanged,
+                onLocationCommit  = onLocationCommit,
+                onCalculationMethodClick = onCalculationMethodSheetOpen,
             )
 
-            // ── Calculation method ────────────────────────────────────────────
-            SettingsSectionLabel(stringResource(R.string.settings_prayer_calc))
-            CalculationSection(
-                selected  = uiState.calculationMethod,
-                onChanged = onCalculationMethodChanged,
-            )
-
-            // ── Display ───────────────────────────────────────────────────────
-            SettingsSectionLabel(stringResource(R.string.settings_display))
-            DisplaySection(
-                use24Hour   = uiState.use24HourFormat,
-                onToggle    = on24HourFormatChanged,
-            )
-
-            // ── Appearance & language ─────────────────────────────────────────
-            SettingsSectionLabel(stringResource(R.string.settings_appearance_language))
-            AppearanceSection(
-                language         = uiState.language,
-                themeMode        = uiState.themeMode,
+            // ── Appearance ────────────────────────────────────────────────────
+            SettingsSectionLabel(stringResource(R.string.settings_appearance))
+            AppearanceCard(
+                language          = uiState.language,
+                themeMode         = uiState.themeMode,
+                use24Hour         = uiState.use24HourFormat,
                 onLanguageChanged = onLanguageChanged,
                 onThemeChanged    = onThemeModeChanged,
+                on24HourChanged   = on24HourFormatChanged,
             )
 
-            // ── Save button ───────────────────────────────────────────────────
-            Button(
-                onClick  = onSave,
-                enabled  = !uiState.isSaving,
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape    = RoundedCornerShape(12.dp),
-                colors   = ButtonDefaults.buttonColors(
-                    containerColor = SalatPrimary,
-                    contentColor   = SalatOnPrimary,
-                ),
-            ) {
-                if (uiState.isSaving) {
-                    CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp, color = SalatOnPrimary)
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.settings_saving), fontFamily = InterFamily, fontWeight = FontWeight.SemiBold)
-                } else {
-                    Icon(painterResource(R.drawable.ic_save), null, Modifier.size(20.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.settings_save), fontFamily = InterFamily, fontWeight = FontWeight.SemiBold)
-                }
-            }
+            // ── Notifications & Data ──────────────────────────────────────────
+            SettingsSectionLabel(stringResource(R.string.settings_notifications_data))
+            NotificationsAndDataCard(
+                onPrayerRemindersClick = onPrayerRemindersClick,
+                onBackupClick           = onBackupClick,
+                backupNeedsAttention    = backupNeedsAttention,
+            )
         }
 
         // ── Error snackbar ────────────────────────────────────────────────────
@@ -129,47 +108,15 @@ fun SettingsScreen(
                 contentColor   = SalatInverseOnSurface,
             ) { Text(msg, fontFamily = InterFamily) }
         }
-
-        // ── Save success snackbar ─────────────────────────────────────────────
-        if (uiState.saveSuccess) {
-            Snackbar(
-                modifier       = Modifier.align(Alignment.BottomCenter).padding(16.dp),
-                action         = { TextButton(onClick = onClearSaveSuccess) { Text(stringResource(R.string.action_ok), color = SalatPrimary) } },
-                containerColor = SalatSecondaryContainer,
-                contentColor   = SalatOnSecondaryContainer,
-            ) { Text(stringResource(R.string.settings_saved), fontFamily = InterFamily) }
-        }
     }
 
-    if (uiState.showDiscardConfirm) {
-        DiscardChangesDialog(onDiscard = onDiscardConfirm, onKeepEditing = onKeepEditingClick)
+    if (uiState.showCalculationMethodSheet) {
+        CalculationMethodSheet(
+            selected  = uiState.calculationMethod,
+            onSelect  = onCalculationMethodChanged,
+            onDismiss = onCalculationMethodSheetDismiss,
+        )
     }
-}
-
-// ── Discard changes dialog ─────────────────────────────────────────────────────
-
-@Composable
-private fun DiscardChangesDialog(onDiscard: () -> Unit, onKeepEditing: () -> Unit) {
-    AlertDialog(
-        onDismissRequest = onKeepEditing,
-        containerColor    = SalatSurfaceContainerLowest,
-        title = {
-            Text(stringResource(R.string.settings_discard_title), color = SalatOnSurface, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily)
-        },
-        text = {
-            Text(stringResource(R.string.settings_discard_desc), color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = InterFamily)
-        },
-        confirmButton = {
-            Button(
-                onClick = onDiscard,
-                colors  = ButtonDefaults.buttonColors(containerColor = SalatError, contentColor = SalatOnPrimary),
-                shape   = RoundedCornerShape(12.dp),
-            ) { Text(stringResource(R.string.action_discard), fontFamily = InterFamily, fontWeight = FontWeight.SemiBold) }
-        },
-        dismissButton = {
-            TextButton(onClick = onKeepEditing) { Text(stringResource(R.string.action_keep_editing), color = SalatOnSurfaceVariant, fontFamily = InterFamily) }
-        },
-    )
 }
 
 // ── Section label ─────────────────────────────────────────────────────────────
@@ -187,16 +134,19 @@ private fun SettingsSectionLabel(text: String, modifier: Modifier = Modifier) {
     )
 }
 
-// ── Location section ──────────────────────────────────────────────────────────
+// ── Location & Prayer Times card ──────────────────────────────────────────────
 
 @Composable
-private fun LocationSection(
+private fun LocationAndPrayerTimesCard(
     useDeviceLocation: Boolean,
     latitude: String,
     longitude: String,
+    calculationMethod: CalculationMethod,
     onToggleDevice: (Boolean) -> Unit,
     onLatChanged: (String) -> Unit,
     onLonChanged: (String) -> Unit,
+    onLocationCommit: () -> Unit,
+    onCalculationMethodClick: () -> Unit,
 ) {
     SettingsCard {
         // Device location toggle
@@ -232,20 +182,41 @@ private fun LocationSection(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             CoordField(
-                label    = stringResource(R.string.settings_latitude),
-                value    = latitude,
+                label     = stringResource(R.string.settings_latitude),
+                value     = latitude,
                 onChanged = onLatChanged,
-                enabled  = !useDeviceLocation,
-                modifier = Modifier.weight(1f),
+                onCommit  = onLocationCommit,
+                enabled   = !useDeviceLocation,
+                modifier  = Modifier.weight(1f),
             )
             CoordField(
-                label    = stringResource(R.string.settings_longitude),
-                value    = longitude,
+                label     = stringResource(R.string.settings_longitude),
+                value     = longitude,
                 onChanged = onLonChanged,
-                enabled  = !useDeviceLocation,
-                modifier = Modifier.weight(1f),
+                onCommit  = onLocationCommit,
+                enabled   = !useDeviceLocation,
+                modifier  = Modifier.weight(1f),
             )
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+        HorizontalDivider(color = SalatOutlineVariant.copy(alpha = 0.4f))
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Calculation method — opens a bottom sheet (23 entries don't fit a dropdown)
+        SettingsNavRow(
+            icon    = R.drawable.ic_history_edu,
+            label   = stringResource(R.string.settings_calc_method),
+            onClick = onCalculationMethodClick,
+        )
+        Text(
+            text     = calculationMethod.displayName,
+            modifier = Modifier.padding(start = 36.dp, top = 2.dp),
+            color    = SalatOnSurfaceVariant,
+            fontSize = 12.sp,
+            fontFamily = InterFamily,
+            maxLines = 1,
+        )
     }
 }
 
@@ -254,6 +225,7 @@ private fun CoordField(
     label: String,
     value: String,
     onChanged: (String) -> Unit,
+    onCommit: () -> Unit,
     enabled: Boolean,
     modifier: Modifier = Modifier,
 ) {
@@ -266,13 +238,13 @@ private fun CoordField(
             value         = value,
             onValueChange = onChanged,
             enabled       = enabled,
-            modifier      = Modifier.fillMaxWidth(),
+            modifier      = Modifier.fillMaxWidth().onFocusChanged { if (!it.isFocused) onCommit() },
             singleLine    = true,
             textStyle     = LocalTextStyle.current.copy(
                 fontFamily = InterFamily, fontSize = 14.sp, color = SalatOnSurface,
             ),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
+            keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus(); onCommit() }),
             colors          = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor   = SalatPrimary,
                 unfocusedBorderColor = SalatOutlineVariant,
@@ -286,74 +258,37 @@ private fun CoordField(
     }
 }
 
-// ── Calculation method section ────────────────────────────────────────────────
+// ── Appearance card (theme, language, 24-hour) ────────────────────────────────
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun CalculationSection(
-    selected: CalculationMethod,
-    onChanged: (CalculationMethod) -> Unit,
-) {
-    var expanded by remember { mutableStateOf(false) }
-
-    SettingsCard {
-        Column {
-            Text(stringResource(R.string.settings_calc_method), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily)
-            Spacer(Modifier.height(4.dp))
-            ExposedDropdownMenuBox(
-                expanded         = expanded,
-                onExpandedChange = { expanded = it },
-            ) {
-                OutlinedTextField(
-                    value         = selected.displayName,
-                    onValueChange = {},
-                    readOnly      = true,
-                    modifier      = Modifier.fillMaxWidth().menuAnchor(),
-                    singleLine    = true,
-                    trailingIcon  = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                    textStyle     = LocalTextStyle.current.copy(fontFamily = InterFamily, fontSize = 14.sp),
-                    colors        = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor   = SalatPrimary,
-                        unfocusedBorderColor = SalatOutlineVariant,
-                        focusedContainerColor   = SalatSurfaceContainerLow,
-                        unfocusedContainerColor = SalatSurfaceContainerLow,
-                    ),
-                    shape = RoundedCornerShape(8.dp),
-                )
-                ExposedDropdownMenu(
-                    expanded         = expanded,
-                    onDismissRequest = { expanded = false },
-                    modifier         = Modifier.background(SalatSurface),
-                ) {
-                    CalculationMethod.values().forEach { method ->
-                        DropdownMenuItem(
-                            text   = { Text(method.displayName, fontFamily = InterFamily, fontSize = 14.sp, color = SalatOnSurface) },
-                            onClick = {
-                                onChanged(method)
-                                expanded = false
-                            },
-                            colors = MenuDefaults.itemColors(
-                                textColor = if (method == selected) SalatPrimary else SalatOnSurface,
-                            ),
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-// ── Appearance & language section ─────────────────────────────────────────────
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun AppearanceSection(
+private fun AppearanceCard(
     language: AppLanguage,
     themeMode: ThemeMode,
+    use24Hour: Boolean,
     onLanguageChanged: (AppLanguage) -> Unit,
     onThemeChanged: (ThemeMode) -> Unit,
+    on24HourChanged: (Boolean) -> Unit,
 ) {
     SettingsCard {
+        // Theme
+        Text(stringResource(R.string.settings_theme), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily)
+        Spacer(Modifier.height(8.dp))
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            ThemeMode.values().forEach { mode ->
+                ThemeModeChip(
+                    label      = stringResource(mode.themeLabelRes),
+                    isSelected = mode == themeMode,
+                    onClick    = { onThemeChanged(mode) },
+                    modifier   = Modifier.weight(1f),
+                )
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+        HorizontalDivider(color = SalatOutlineVariant.copy(alpha = 0.4f))
+        Spacer(Modifier.height(16.dp))
+
         // Language
         Text(stringResource(R.string.settings_language), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily)
         Spacer(Modifier.height(4.dp))
@@ -394,19 +329,26 @@ private fun AppearanceSection(
         }
 
         Spacer(Modifier.height(16.dp))
+        HorizontalDivider(color = SalatOutlineVariant.copy(alpha = 0.4f))
+        Spacer(Modifier.height(16.dp))
 
-        // Theme
-        Text(stringResource(R.string.settings_theme), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily)
-        Spacer(Modifier.height(8.dp))
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            ThemeMode.values().forEach { mode ->
-                ThemeModeChip(
-                    label      = stringResource(mode.themeLabelRes),
-                    isSelected = mode == themeMode,
-                    onClick    = { onThemeChanged(mode) },
-                    modifier   = Modifier.weight(1f),
-                )
-            }
+        // 24-hour format
+        Row(
+            modifier              = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment     = Alignment.CenterVertically,
+        ) {
+            Text(stringResource(R.string.settings_24hour), color = SalatOnSurface, fontSize = 16.sp, fontFamily = InterFamily)
+            Switch(
+                checked         = use24Hour,
+                onCheckedChange = on24HourChanged,
+                colors          = SwitchDefaults.colors(
+                    checkedThumbColor   = SalatOnPrimary,
+                    checkedTrackColor   = SalatPrimary,
+                    uncheckedThumbColor = SalatOutline,
+                    uncheckedTrackColor = SalatOutlineVariant,
+                ),
+            )
         }
     }
 }
@@ -423,7 +365,7 @@ private fun ThemeModeChip(label: String, isSelected: Boolean, onClick: () -> Uni
         Text(
             text       = label,
             modifier   = Modifier.fillMaxWidth().padding(vertical = 10.dp),
-            textAlign  = androidx.compose.ui.text.style.TextAlign.Center,
+            textAlign  = TextAlign.Center,
             color      = if (isSelected) SalatOnPrimary else SalatOnSurfaceVariant,
             fontSize   = 13.sp,
             fontWeight = FontWeight.SemiBold,
@@ -438,34 +380,32 @@ private val ThemeMode.themeLabelRes get() = when (this) {
     ThemeMode.SYSTEM -> R.string.theme_system
 }
 
-// ── Display section ───────────────────────────────────────────────────────────
+// ── Notifications & Data card (navigation rows into Reminders / Backup) ──────
 
 @Composable
-private fun DisplaySection(
-    use24Hour: Boolean,
-    onToggle: (Boolean) -> Unit,
+private fun NotificationsAndDataCard(
+    onPrayerRemindersClick: () -> Unit,
+    onBackupClick: () -> Unit,
+    backupNeedsAttention: Boolean,
 ) {
     SettingsCard {
-        Row(
-            modifier              = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment     = Alignment.CenterVertically,
-        ) {
-            Text(stringResource(R.string.settings_24hour), color = SalatOnSurface, fontSize = 16.sp, fontFamily = InterFamily)
-            Switch(
-                checked         = use24Hour,
-                onCheckedChange = onToggle,
-                colors          = SwitchDefaults.colors(
-                    checkedThumbColor   = SalatOnPrimary,
-                    checkedTrackColor   = SalatPrimary,
-                    uncheckedThumbColor = SalatOutline,
-                    uncheckedTrackColor = SalatOutlineVariant,
-                ),
-            )
-        }
+        SettingsNavRow(
+            icon    = R.drawable.ic_notifications,
+            label   = stringResource(R.string.prayer_reminders),
+            onClick = onPrayerRemindersClick,
+        )
+        Spacer(Modifier.height(4.dp))
+        HorizontalDivider(color = SalatOutlineVariant.copy(alpha = 0.4f))
+        Spacer(Modifier.height(4.dp))
+        SettingsNavRow(
+            icon          = R.drawable.ic_cloud_upload,
+            label         = stringResource(R.string.backup_title),
+            onClick       = onBackupClick,
+            trailingText  = if (backupNeedsAttention) stringResource(R.string.backup_action_needed) else null,
+            trailingColor = SalatError,
+        )
     }
 }
-
 
 // ── Preview ───────────────────────────────────────────────────────────────────
 
@@ -484,14 +424,16 @@ fun SettingsScreenPreview() {
         onUseDeviceLocationChanged = {},
         onLatitudeChanged          = {},
         onLongitudeChanged         = {},
+        onLocationCommit           = {},
+        onCalculationMethodSheetOpen    = {},
+        onCalculationMethodSheetDismiss = {},
         onCalculationMethodChanged = {},
         on24HourFormatChanged      = {},
         onLanguageChanged          = {},
         onThemeModeChanged         = {},
-        onSave                     = {},
         onErrorDismiss             = {},
-        onClearSaveSuccess         = {},
-        onDiscardConfirm           = {},
-        onKeepEditingClick         = {},
+        onPrayerRemindersClick     = {},
+        onBackupClick              = {},
+        backupNeedsAttention       = true,
     )
 }

@@ -1,6 +1,5 @@
 package com.salattracker.feature.main
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -21,20 +20,17 @@ import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.InterFamily
 import com.salattracker.core.theme.MontserratFamily
-import com.salattracker.core.theme.SalatError
 import com.salattracker.core.theme.SalatOutlineVariant
 import com.salattracker.core.theme.SalatPrimary
 import com.salattracker.core.theme.SalatSurface
 
-/** Stateless drawer content: Bulk Update, Prayer Reminders, Backup & Restore (with an
- * attention line when [backupNeedsAttention]), Settings. Fixed-width so the dimmed scrim area
- * next to it stays tappable (to close the drawer) even on small phones. */
+/** Stateless drawer content: Bulk Update, Settings. Prayer Reminders and Backup & Restore moved
+ * into Settings as navigation rows (see SettingsScreen's "Notifications & Data" card) — Settings
+ * is now a hub rather than one of several flat drawer destinations. Fixed-width so the dimmed
+ * scrim area next to it stays tappable (to close the drawer) even on small phones. */
 @Composable
 fun AppDrawer(
-    backupNeedsAttention: Boolean,
     onBulkUpdateClick: () -> Unit,
-    onPrayerRemindersClick: () -> Unit,
-    onBackupClick: () -> Unit,
     onSettingsClick: () -> Unit,
 ) {
     ModalDrawerSheet(
@@ -58,17 +54,6 @@ fun AppDrawer(
             onClick = onBulkUpdateClick,
         )
         DrawerItem(
-            iconRes = R.drawable.ic_notifications,
-            label = stringResource(R.string.prayer_reminders),
-            onClick = onPrayerRemindersClick,
-        )
-        DrawerItem(
-            iconRes = R.drawable.ic_cloud_upload,
-            label = stringResource(R.string.backup_title),
-            subtitle = if (backupNeedsAttention) stringResource(R.string.backup_action_needed) else null,
-            onClick = onBackupClick,
-        )
-        DrawerItem(
             iconRes = R.drawable.ic_nav_settings,
             label = stringResource(R.string.nav_settings),
             onClick = onSettingsClick,
@@ -80,7 +65,6 @@ fun AppDrawer(
 private fun DrawerItem(
     iconRes: Int,
     label: String,
-    subtitle: String? = null,
     onClick: () -> Unit,
 ) {
     NavigationDrawerItem(
@@ -88,14 +72,7 @@ private fun DrawerItem(
         selected = false,
         onClick = onClick,
         icon = { Icon(painterResource(iconRes), contentDescription = null) },
-        label = {
-            Column {
-                Text(label, fontSize = 14.sp, fontFamily = InterFamily, fontWeight = FontWeight.Medium)
-                if (subtitle != null) {
-                    Text(subtitle, fontSize = 11.sp, fontFamily = InterFamily, color = SalatError)
-                }
-            }
-        },
+        label = { Text(label, fontSize = 14.sp, fontFamily = InterFamily, fontWeight = FontWeight.Medium) },
     )
 }
 
@@ -103,10 +80,7 @@ private fun DrawerItem(
 @Composable
 fun AppDrawerPreview() {
     AppDrawer(
-        backupNeedsAttention = true,
         onBulkUpdateClick = {},
-        onPrayerRemindersClick = {},
-        onBackupClick = {},
         onSettingsClick = {},
     )
 }

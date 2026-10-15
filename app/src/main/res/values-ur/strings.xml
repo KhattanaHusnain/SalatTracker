@@ -68,8 +68,6 @@
     <string name="action_ok">ٹھیک ہے</string>
     <string name="action_cancel">منسوخ</string>
     <string name="action_delete">حذف</string>
-    <string name="action_discard">مسترد کریں</string>
-    <string name="action_keep_editing">ترمیم جاری رکھیں</string>
     <string name="action_continue">جاری رکھیں</string>
     <string name="action_next">اگلا</string>
     <string name="action_get_started">شروع کریں</string>
@@ -94,7 +92,6 @@
     <string name="onboarding_notifications_title">جڑے رہیں</string>
     <string name="onboarding_notifications_subtitle">یاد دہانیاں فعال کریں تاکہ آپ کوئی نماز یا روحانی سنگِ میل نہ چھوڑیں۔</string>
     <string name="prayer_reminders">نماز کی یاد دہانیاں</string>
-    <string name="daily_spiritual_tips">روزانہ روحانی نکات</string>
 
     <string name="home_daily_stack">آج کی نمازیں</string>
     <string name="home_best_streak">بہترین %1$d</string>
@@ -159,23 +156,18 @@
     <string name="missed_empty_desc">آپ نے اپنی تمام چھوٹی ہوئی نمازیں مکمل کر لیں! آپ کا نظم و ضبط قابلِ تعریف ہے۔</string>
     <string name="action_back_dashboard">ڈیش بورڈ پر واپس</string>
 
-    <string name="settings_location">مقام</string>
-    <string name="settings_prayer_calc">نماز کا حساب</string>
+    <string name="settings_location_prayer_times">مقام اور نماز کے اوقات</string>
     <string name="settings_minutes_offset">منٹ کا فرق</string>
-    <string name="settings_display">ڈسپلے</string>
-    <string name="settings_appearance_language">ظاہری شکل و زبان</string>
-    <string name="settings_saving">محفوظ ہو رہا ہے…</string>
-    <string name="settings_save">ترتیبات محفوظ کریں</string>
-    <string name="settings_saved">ترتیبات محفوظ ہو گئیں۔</string>
     <string name="settings_device_location">آلے کا مقام</string>
     <string name="settings_latitude">عرض بلد</string>
     <string name="settings_longitude">طول بلد</string>
     <string name="settings_calc_method">حساب کا طریقہ</string>
+    <string name="settings_calculation_method_sheet_title">حساب کا طریقہ</string>
+    <string name="settings_appearance">ظاہری شکل</string>
     <string name="settings_language">زبان</string>
     <string name="settings_theme">تھیم</string>
     <string name="settings_24hour">24 گھنٹے کی شکل</string>
-    <string name="settings_discard_title">تبدیلیاں مسترد کریں؟</string>
-    <string name="settings_discard_desc">آپ کی تبدیلیاں محفوظ نہیں ہوئیں۔ ابھی جانے سے وہ ضائع ہو جائیں گی۔</string>
+    <string name="settings_notifications_data">اطلاعات اور ڈیٹا</string>
 
     <string name="reminders_snooze_length">التوا کی مدت</string>
     <string name="reminders_full_screen_alert">فل سکرین الرٹ</string>

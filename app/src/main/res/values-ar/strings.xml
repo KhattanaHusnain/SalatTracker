@@ -68,8 +68,6 @@
     <string name="action_ok">حسنًا</string>
     <string name="action_cancel">إلغاء</string>
     <string name="action_delete">حذف</string>
-    <string name="action_discard">تجاهل</string>
-    <string name="action_keep_editing">متابعة التعديل</string>
     <string name="action_continue">متابعة</string>
     <string name="action_next">التالي</string>
     <string name="action_get_started">ابدأ الآن</string>
@@ -94,7 +92,6 @@
     <string name="onboarding_notifications_title">ابقَ على تواصل</string>
     <string name="onboarding_notifications_subtitle">فعّل التذكيرات حتى لا تفوتك صلاة أو محطة روحية.</string>
     <string name="prayer_reminders">تذكيرات الصلاة</string>
-    <string name="daily_spiritual_tips">نصائح روحية يومية</string>
 
     <string name="home_daily_stack">صلوات اليوم</string>
     <string name="home_best_streak">الأفضل %1$d</string>
@@ -159,23 +156,18 @@
     <string name="missed_empty_desc">لقد أكملت جميع صلواتك الفائتة! انضباطك مُلهِم.</string>
     <string name="action_back_dashboard">العودة إلى اللوحة</string>
 
-    <string name="settings_location">الموقع</string>
-    <string name="settings_prayer_calc">حساب الصلاة</string>
+    <string name="settings_location_prayer_times">الموقع ومواقيت الصلاة</string>
     <string name="settings_minutes_offset">فرق الدقائق</string>
-    <string name="settings_display">العرض</string>
-    <string name="settings_appearance_language">المظهر واللغة</string>
-    <string name="settings_saving">جارٍ الحفظ…</string>
-    <string name="settings_save">حفظ الإعدادات</string>
-    <string name="settings_saved">تم حفظ الإعدادات.</string>
     <string name="settings_device_location">موقع الجهاز</string>
     <string name="settings_latitude">خط العرض</string>
     <string name="settings_longitude">خط الطول</string>
     <string name="settings_calc_method">طريقة الحساب</string>
+    <string name="settings_calculation_method_sheet_title">طريقة الحساب</string>
+    <string name="settings_appearance">المظهر</string>
     <string name="settings_language">اللغة</string>
     <string name="settings_theme">المظهر</string>
     <string name="settings_24hour">تنسيق 24 ساعة</string>
-    <string name="settings_discard_title">تجاهل التغييرات؟</string>
-    <string name="settings_discard_desc">لديك تغييرات غير محفوظة. مغادرة الشاشة الآن ستؤدي إلى تجاهلها.</string>
+    <string name="settings_notifications_data">الإشعارات والبيانات</string>
 
     <string name="reminders_snooze_length">مدة التأجيل</string>
     <string name="reminders_full_screen_alert">تنبيه ملء الشاشة</string>
