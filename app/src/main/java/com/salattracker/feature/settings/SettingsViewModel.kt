@@ -4,9 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.salattracker.core.locale.LocaleManager
-import com.salattracker.data.location.LocationProvider
 import com.salattracker.domain.model.AppLanguage
+import com.salattracker.domain.model.CalculationMethod
 import com.salattracker.domain.model.ThemeMode
+import com.salattracker.domain.repository.LocationProvider
 import com.salattracker.domain.repository.SettingsRepository
 import com.salattracker.domain.repository.UserPrefs
 import com.salattracker.notification.PrayerReminderWorker
@@ -15,24 +16,15 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-enum class CalculationMethod(val id: Int, val label: String) {
-    MWL(3,          "Muslim World League (MWL)"),
-    ISNA(2,         "Islamic Society of North America (ISNA)"),
-    UMM_AL_QURA(4,  "Umm al-Qura University, Makkah"),
-    EGYPT(5,        "Egyptian General Authority of Survey"),
-    KARACHI(1,      "University of Islamic Sciences, Karachi"),
-}
-
 data class SettingsUiState(
     val isLoading: Boolean = true,
     val useDeviceLocation: Boolean = true,
     val latitude: String = "",
     val longitude: String = "",
-    val calculationMethod: CalculationMethod = CalculationMethod.MWL,
+    val calculationMethod: CalculationMethod = CalculationMethod.DEFAULT,
     val use24HourFormat: Boolean = false,
     val language: AppLanguage = AppLanguage.ENGLISH,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
-    val dailyTipsEnabled: Boolean = false,
     val isSaving: Boolean = false,
     val error: String? = null,
     val saveSuccess: Boolean = false,
@@ -71,13 +63,10 @@ class SettingsViewModel @Inject constructor(
                             useDeviceLocation = prefs.useDeviceLocation,
                             latitude          = prefs.latitude.toString(),
                             longitude         = prefs.longitude.toString(),
-                            calculationMethod = CalculationMethod.values()
-                                .firstOrNull { m -> m.id == prefs.calculationMethodId }
-                                ?: CalculationMethod.MWL,
+                            calculationMethod = CalculationMethod.fromId(prefs.calculationMethodId),
                             use24HourFormat   = prefs.use24HourFormat,
                             language          = prefs.language,
                             themeMode         = prefs.themeMode,
-                            dailyTipsEnabled  = prefs.dailyTipsEnabled,
                         )
                     }
                 }
@@ -100,7 +89,6 @@ class SettingsViewModel @Inject constructor(
     fun on24HourFormatChanged(enabled: Boolean) = _uiState.update { it.copy(use24HourFormat = enabled) }
     fun onLanguageChanged(language: AppLanguage) = _uiState.update { it.copy(language = language) }
     fun onThemeModeChanged(themeMode: ThemeMode) = _uiState.update { it.copy(themeMode = themeMode) }
-    fun onDailyTipsChanged(enabled: Boolean)     = _uiState.update { it.copy(dailyTipsEnabled = enabled) }
 
     fun onSave() {
         viewModelScope.launch {
@@ -121,7 +109,6 @@ class SettingsViewModel @Inject constructor(
                     use24HourFormat       = state.use24HourFormat,
                     language              = state.language,
                     themeMode             = state.themeMode,
-                    dailyTipsEnabled      = state.dailyTipsEnabled,
                 )
             }.onSuccess {
                 // Location/calculation-method may have changed prayer times — reschedule alarms.
@@ -154,8 +141,7 @@ class SettingsViewModel @Inject constructor(
         val sameMethod = state.calculationMethod.id == baseline.calculationMethodId
         val sameDisplay = state.use24HourFormat == baseline.use24HourFormat
         val sameAppearance = state.language == baseline.language &&
-            state.themeMode == baseline.themeMode &&
-            state.dailyTipsEnabled == baseline.dailyTipsEnabled
+            state.themeMode == baseline.themeMode
         return !(sameLocation && sameMethod && sameDisplay && sameAppearance)
     }
 

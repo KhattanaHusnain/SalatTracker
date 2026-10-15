@@ -5,21 +5,19 @@ import android.location.Location
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
+import com.salattracker.domain.repository.LocationProvider
 import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.resume
 
-/**
- * Caller must have already confirmed ACCESS_FINE_LOCATION / ACCESS_COARSE_LOCATION
- * is granted — this does not request permission itself.
- */
 @Singleton
-class LocationProvider @Inject constructor(
+class LocationProviderImpl @Inject constructor(
     private val fusedLocationClient: FusedLocationProviderClient,
-) {
+) : LocationProvider {
+
     @SuppressLint("MissingPermission")
-    suspend fun getCurrentLocation(): Pair<Double, Double>? {
+    override suspend fun getCurrentLocation(): Pair<Double, Double>? {
         val cancellationTokenSource = CancellationTokenSource()
         val location = try {
             suspendCancellableCoroutine<Location?> { cont ->

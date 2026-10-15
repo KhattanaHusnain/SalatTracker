@@ -31,7 +31,6 @@ class DataStoreSettingsRepository @Inject constructor(
         val USE_24_HOUR           = booleanPreferencesKey("use_24_hour")
         val LANGUAGE              = stringPreferencesKey("language")
         val THEME_MODE            = stringPreferencesKey("theme_mode")
-        val DAILY_TIPS_ENABLED    = booleanPreferencesKey("daily_tips_enabled")
         val ONBOARDING_COMPLETED  = booleanPreferencesKey("onboarding_completed")
 
         // Per-prayer reminder toggle: "reminder_enabled_FAJR" etc.
@@ -96,7 +95,6 @@ class DataStoreSettingsRepository @Inject constructor(
             ?: AppLanguage.ENGLISH,
         themeMode            = this[Keys.THEME_MODE]?.let { runCatching { ThemeMode.valueOf(it) }.getOrNull() }
             ?: ThemeMode.SYSTEM,
-        dailyTipsEnabled     = this[Keys.DAILY_TIPS_ENABLED]     ?: false,
         onboardingCompleted  = this[Keys.ONBOARDING_COMPLETED]   ?: false,
     )
 
@@ -112,7 +110,6 @@ class DataStoreSettingsRepository @Inject constructor(
         use24HourFormat: Boolean,
         language: AppLanguage,
         themeMode: ThemeMode,
-        dailyTipsEnabled: Boolean,
     ) {
         dataStore.edit { prefs ->
             prefs[Keys.USE_DEVICE_LOCATION]   = useDeviceLocation
@@ -122,12 +119,30 @@ class DataStoreSettingsRepository @Inject constructor(
             prefs[Keys.USE_24_HOUR]           = use24HourFormat
             prefs[Keys.LANGUAGE]              = language.name
             prefs[Keys.THEME_MODE]            = themeMode.name
-            prefs[Keys.DAILY_TIPS_ENABLED]    = dailyTipsEnabled
             PrayerType.values().forEach { type ->
                 prefs[Keys.reminderEnabled(type)] = reminderEnabled[type] ?: true
                 prefs[Keys.reminderOffset(type)]  = reminderOffsetMinutes[type] ?: 0
             }
         }
+    }
+
+    override suspend fun setUseDeviceLocation(enabled: Boolean) {
+        dataStore.edit { it[Keys.USE_DEVICE_LOCATION] = enabled }
+    }
+
+    override suspend fun setLocation(latitude: Double, longitude: Double) {
+        dataStore.edit { prefs ->
+            prefs[Keys.LATITUDE] = latitude
+            prefs[Keys.LONGITUDE] = longitude
+        }
+    }
+
+    override suspend fun setCalculationMethodId(id: Int) {
+        dataStore.edit { it[Keys.CALCULATION_METHOD_ID] = id }
+    }
+
+    override suspend fun setUse24HourFormat(enabled: Boolean) {
+        dataStore.edit { it[Keys.USE_24_HOUR] = enabled }
     }
 
     override suspend fun setLanguage(language: AppLanguage) {
@@ -136,10 +151,6 @@ class DataStoreSettingsRepository @Inject constructor(
 
     override suspend fun setThemeMode(themeMode: ThemeMode) {
         dataStore.edit { it[Keys.THEME_MODE] = themeMode.name }
-    }
-
-    override suspend fun setDailyTipsEnabled(enabled: Boolean) {
-        dataStore.edit { it[Keys.DAILY_TIPS_ENABLED] = enabled }
     }
 
     override suspend fun setAllRemindersEnabled(enabled: Boolean) {

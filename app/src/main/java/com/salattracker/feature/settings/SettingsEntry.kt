@@ -58,7 +58,6 @@ fun SettingsEntry(
         on24HourFormatChanged      = viewModel::on24HourFormatChanged,
         onLanguageChanged          = viewModel::onLanguageChanged,
         onThemeModeChanged         = viewModel::onThemeModeChanged,
-        onDailyTipsChanged         = viewModel::onDailyTipsChanged,
         onSave                     = viewModel::onSave,
         onErrorDismiss             = viewModel::clearError,
         onClearSaveSuccess         = viewModel::clearSaveSuccess,

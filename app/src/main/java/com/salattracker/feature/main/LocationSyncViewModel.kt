@@ -2,7 +2,7 @@ package com.salattracker.feature.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.salattracker.data.location.LocationProvider
+import com.salattracker.domain.repository.LocationProvider
 import com.salattracker.domain.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -23,21 +23,9 @@ class LocationSyncViewModel @Inject constructor(
 
     fun syncDeviceLocation() {
         viewModelScope.launch {
-            val prefs = settingsRepository.getCurrentPrefs()
-            if (!prefs.useDeviceLocation) return@launch
+            if (!settingsRepository.getCurrentPrefs().useDeviceLocation) return@launch
             val (lat, lon) = locationProvider.getCurrentLocation() ?: return@launch
-            settingsRepository.saveSettings(
-                useDeviceLocation     = prefs.useDeviceLocation,
-                latitude              = lat,
-                longitude             = lon,
-                calculationMethodId   = prefs.calculationMethodId,
-                reminderEnabled       = prefs.reminderEnabled,
-                reminderOffsetMinutes = prefs.reminderOffsetMinutes,
-                use24HourFormat       = prefs.use24HourFormat,
-                language              = prefs.language,
-                themeMode             = prefs.themeMode,
-                dailyTipsEnabled      = prefs.dailyTipsEnabled,
-            )
+            settingsRepository.setLocation(lat, lon)
         }
     }
 }

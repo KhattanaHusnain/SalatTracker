@@ -141,7 +141,6 @@ class RoomBackupLocalSource @Inject constructor(
             use24HourFormat        = s.use24HourFormat,
             language               = s.language,
             themeMode               = s.themeMode,
-            dailyTipsEnabled        = s.dailyTipsEnabled,
         )
         settingsRepository.setOnboardingCompleted(true)
 

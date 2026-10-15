@@ -130,7 +130,6 @@ private data class SettingsDto(
     @SerializedName("use24HourFormat") val use24HourFormat: Boolean?,
     @SerializedName("language") val language: String?,
     @SerializedName("themeMode") val themeMode: String?,
-    @SerializedName("dailyTipsEnabled") val dailyTipsEnabled: Boolean?,
 )
 
 private data class PayloadDto(
@@ -287,7 +286,6 @@ object BackupCodec {
             use24HourFormat        = settings.use24HourFormat,
             language               = settings.language.name,
             themeMode               = settings.themeMode.name,
-            dailyTipsEnabled        = settings.dailyTipsEnabled,
         ),
     )
 
@@ -363,7 +361,6 @@ object BackupCodec {
                 ?: com.salattracker.domain.model.AppLanguage.ENGLISH,
             themeMode = themeMode?.let { runCatching { com.salattracker.domain.model.ThemeMode.valueOf(it) }.getOrNull() }
                 ?: com.salattracker.domain.model.ThemeMode.SYSTEM,
-            dailyTipsEnabled       = dailyTipsEnabled ?: false,
         )
     }
 

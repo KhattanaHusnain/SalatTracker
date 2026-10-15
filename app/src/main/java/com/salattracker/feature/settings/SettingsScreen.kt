@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.domain.model.AppLanguage
+import com.salattracker.domain.model.CalculationMethod
 import com.salattracker.domain.model.ThemeMode
 
 // ── Settings Screen ───────────────────────────────────────────────────────────
@@ -39,7 +40,6 @@ fun SettingsScreen(
     on24HourFormatChanged: (Boolean) -> Unit,
     onLanguageChanged: (AppLanguage) -> Unit,
     onThemeModeChanged: (ThemeMode) -> Unit,
-    onDailyTipsChanged: (Boolean) -> Unit,
     onSave: () -> Unit,
     onErrorDismiss: () -> Unit,
     onClearSaveSuccess: () -> Unit,
@@ -92,10 +92,8 @@ fun SettingsScreen(
             AppearanceSection(
                 language         = uiState.language,
                 themeMode        = uiState.themeMode,
-                dailyTipsEnabled = uiState.dailyTipsEnabled,
                 onLanguageChanged = onLanguageChanged,
                 onThemeChanged    = onThemeModeChanged,
-                onDailyTipsChanged = onDailyTipsChanged,
             )
 
             // ── Save button ───────────────────────────────────────────────────
@@ -176,10 +174,10 @@ private fun DiscardChangesDialog(onDiscard: () -> Unit, onKeepEditing: () -> Uni
 // ── Section label ─────────────────────────────────────────────────────────────
 
 @Composable
-private fun SettingsSectionLabel(text: String, modifier: Modifier = Modifier.fillMaxWidth()) {
+private fun SettingsSectionLabel(text: String, modifier: Modifier = Modifier) {
     Text(
         text          = text.uppercase(),
-        modifier      = modifier,
+        modifier      = modifier.fillMaxWidth(),
         color         = SalatPrimaryContainer,
         fontSize      = 11.sp,
         fontWeight    = FontWeight.SemiBold,
@@ -306,7 +304,7 @@ private fun CalculationSection(
                 onExpandedChange = { expanded = it },
             ) {
                 OutlinedTextField(
-                    value         = selected.label,
+                    value         = selected.displayName,
                     onValueChange = {},
                     readOnly      = true,
                     modifier      = Modifier.fillMaxWidth().menuAnchor(),
@@ -328,7 +326,7 @@ private fun CalculationSection(
                 ) {
                     CalculationMethod.values().forEach { method ->
                         DropdownMenuItem(
-                            text   = { Text(method.label, fontFamily = InterFamily, fontSize = 14.sp, color = SalatOnSurface) },
+                            text   = { Text(method.displayName, fontFamily = InterFamily, fontSize = 14.sp, color = SalatOnSurface) },
                             onClick = {
                                 onChanged(method)
                                 expanded = false
@@ -351,10 +349,8 @@ private fun CalculationSection(
 private fun AppearanceSection(
     language: AppLanguage,
     themeMode: ThemeMode,
-    dailyTipsEnabled: Boolean,
     onLanguageChanged: (AppLanguage) -> Unit,
     onThemeChanged: (ThemeMode) -> Unit,
-    onDailyTipsChanged: (Boolean) -> Unit,
 ) {
     SettingsCard {
         // Language
@@ -410,27 +406,6 @@ private fun AppearanceSection(
                     modifier   = Modifier.weight(1f),
                 )
             }
-        }
-
-        Spacer(Modifier.height(16.dp))
-
-        // Daily spiritual tips
-        Row(
-            modifier              = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment     = Alignment.CenterVertically,
-        ) {
-            Text(stringResource(R.string.daily_spiritual_tips), color = SalatOnSurface, fontSize = 16.sp, fontFamily = InterFamily)
-            Switch(
-                checked         = dailyTipsEnabled,
-                onCheckedChange = onDailyTipsChanged,
-                colors          = SwitchDefaults.colors(
-                    checkedThumbColor   = SalatOnPrimary,
-                    checkedTrackColor   = SalatPrimary,
-                    uncheckedThumbColor = SalatOutline,
-                    uncheckedTrackColor = SalatOutlineVariant,
-                ),
-            )
         }
     }
 }
@@ -530,7 +505,6 @@ fun SettingsScreenPreview() {
         on24HourFormatChanged      = {},
         onLanguageChanged          = {},
         onThemeModeChanged         = {},
-        onDailyTipsChanged         = {},
         onSave                     = {},
         onErrorDismiss             = {},
         onClearSaveSuccess         = {},

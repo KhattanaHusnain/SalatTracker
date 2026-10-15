@@ -1,0 +1,46 @@
+package com.salattracker.domain.model
+
+/**
+ * A prayer-time calculation method, as defined by the AlAdhan API
+ * (https://api.aladhan.com/v1/methods — fetched 2026; ids 0–23, no id 6).
+ *
+ * [displayName] is the method's institution/place name — a proper noun, so unlike every other
+ * enum in this app it is NOT localized via a string resource: "Umm Al-Qura University, Makkah"
+ * reads the same in every language, the same way competing prayer apps don't translate it either.
+ *
+ * [id] excludes AlAdhan's `99 = CUSTOM`, which needs extra angle parameters (Fajr/Isha angles,
+ * or a fixed-interval rule) this app doesn't collect anywhere.
+ */
+enum class CalculationMethod(val id: Int, val displayName: String) {
+    SHIA_ITHNA_ASHARI(0, "Shia Ithna-Ashari, Leva Institute, Qum"),
+    KARACHI(1, "University of Islamic Sciences, Karachi"),
+    ISNA(2, "Islamic Society of North America (ISNA)"),
+    MWL(3, "Muslim World League"),
+    UMM_AL_QURA(4, "Umm Al-Qura University, Makkah"),
+    EGYPT(5, "Egyptian General Authority of Survey"),
+    TEHRAN(7, "Institute of Geophysics, University of Tehran"),
+    GULF_REGION(8, "Gulf Region"),
+    KUWAIT(9, "Kuwait"),
+    QATAR(10, "Qatar"),
+    SINGAPORE(11, "Majlis Ugama Islam Singapura, Singapore"),
+    FRANCE(12, "Union Organization Islamic de France"),
+    TURKEY(13, "Diyanet İşleri Başkanlığı, Turkey"),
+    RUSSIA(14, "Spiritual Administration of Muslims of Russia"),
+    MOONSIGHTING_COMMITTEE(15, "Moonsighting Committee Worldwide"),
+    DUBAI(16, "Dubai"),
+    JAKIM_MALAYSIA(17, "Jabatan Kemajuan Islam Malaysia (JAKIM)"),
+    TUNISIA(18, "Tunisia"),
+    ALGERIA(19, "Algeria"),
+    INDONESIA(20, "Kementerian Agama Republik Indonesia"),
+    MOROCCO(21, "Morocco"),
+    LISBON(22, "Comunidade Islamica de Lisboa"),
+    JORDAN(23, "Ministry of Awqaf, Islamic Affairs and Holy Places, Jordan");
+
+    companion object {
+        /** AlAdhan's own default (MWL) — used whenever a stored id doesn't match any method
+         * (e.g. corrupted preference, or a future id this list doesn't know about yet). */
+        val DEFAULT = MWL
+
+        fun fromId(id: Int): CalculationMethod = values().firstOrNull { it.id == id } ?: DEFAULT
+    }
+}

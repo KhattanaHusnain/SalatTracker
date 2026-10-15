@@ -33,7 +33,6 @@ fun OnboardingEntry(
         onLanguageSelected       = viewModel::onLanguageSelected,
         onThemeSelected          = viewModel::onThemeSelected,
         onPrayerRemindersChanged = viewModel::onPrayerRemindersChanged,
-        onDailyTipsChanged       = viewModel::onDailyTipsChanged,
         onNext                   = viewModel::onNext,
         onAllowLocation          = onAllowLocation,
         onFinish                 = {
