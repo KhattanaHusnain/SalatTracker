@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.*
+import com.salattracker.core.ui.SettingsCard
 import com.salattracker.domain.model.AppLanguage
 import com.salattracker.domain.model.CalculationMethod
 import com.salattracker.domain.model.ThemeMode
@@ -462,24 +463,6 @@ private fun DisplaySection(
                 ),
             )
         }
-    }
-}
-
-// ── Shared card wrapper ───────────────────────────────────────────────────────
-
-@Composable
-private fun SettingsCard(
-    contentPadding: PaddingValues = PaddingValues(16.dp),
-    content: @Composable ColumnScope.() -> Unit,
-) {
-    Surface(
-        modifier        = Modifier.fillMaxWidth(),
-        shape           = RoundedCornerShape(16.dp),
-        color           = SalatSurfaceContainerLowest,
-        border          = BorderStroke(1.dp, SalatSecondaryContainer),
-        shadowElevation = 2.dp,
-    ) {
-        Column(modifier = Modifier.padding(contentPadding), content = content)
     }
 }
 

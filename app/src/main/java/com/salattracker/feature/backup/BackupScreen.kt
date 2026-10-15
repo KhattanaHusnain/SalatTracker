@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.*
+import com.salattracker.core.ui.SettingsCard
 import com.salattracker.domain.model.BackupAttention
 import com.salattracker.domain.model.RemoteBackupInfo
 import java.time.Instant
@@ -122,7 +123,7 @@ fun BackupScreen(
 
 @Composable
 private fun NotConnectedCard(isWorking: Boolean, onConnectClick: () -> Unit) {
-    BackupCard {
+    SettingsCard {
         Text(
             stringResource(R.string.backup_not_connected_desc),
             color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = InterFamily,
@@ -155,7 +156,7 @@ private fun ConnectedCard(
     onDisconnectClick: () -> Unit,
     onConnectClick: () -> Unit,
 ) {
-    BackupCard {
+    SettingsCard {
         LabeledRow(stringResource(R.string.backup_connected_account), uiState.accountEmail ?: "—")
         Spacer(Modifier.height(10.dp))
         LabeledRow(
@@ -293,21 +294,6 @@ private fun DisconnectConfirmDialog(onConfirm: () -> Unit, onDismiss: () -> Unit
             TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel), color = SalatOnSurfaceVariant, fontFamily = InterFamily) }
         },
     )
-}
-
-// ── Shared card wrapper (local copy of SettingsScreen's SettingsCard — private there) ──
-
-@Composable
-private fun BackupCard(content: @Composable ColumnScope.() -> Unit) {
-    Surface(
-        modifier        = Modifier.fillMaxWidth(),
-        shape           = RoundedCornerShape(16.dp),
-        color           = SalatSurfaceContainerLowest,
-        border          = BorderStroke(1.dp, SalatSecondaryContainer),
-        shadowElevation = 2.dp,
-    ) {
-        Column(modifier = Modifier.padding(16.dp), content = content)
-    }
 }
 
 // ── Formatting ─────────────────────────────────────────────────────────────────
