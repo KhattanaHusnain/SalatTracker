@@ -151,11 +151,15 @@ fun GoalDayCell(
                 Icon(painterResource(R.drawable.ic_check_circle_filled), null, tint = SalatPrimaryContainer, modifier = Modifier.fillMaxSize())
             GoalDayState.PARTIAL -> {
                 val fraction = if (target > 0) (day.amount.toFloat() / target).coerceIn(0f, 1f) else 0f
+                // Resolved here, in composable scope — Canvas's draw lambda below isn't itself
+                // @Composable, so these theme-aware colors must already be plain values by then.
+                val trackColor = SalatSecondaryContainer
+                val progressColor = SalatPrimaryContainer
                 Canvas(Modifier.fillMaxSize().padding(3.dp)) {
                     val stroke = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
                     val arcSize = Size(this.size.width, this.size.height)
-                    drawArc(SalatSecondaryContainer, 0f, 360f, false, Offset.Zero, arcSize, style = stroke)
-                    drawArc(SalatPrimaryContainer, -90f, 360f * fraction, false, Offset.Zero, arcSize, style = stroke)
+                    drawArc(trackColor, 0f, 360f, false, Offset.Zero, arcSize, style = stroke)
+                    drawArc(progressColor, -90f, 360f * fraction, false, Offset.Zero, arcSize, style = stroke)
                 }
                 Text("${day.amount}", color = SalatPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold, fontFamily = InterFamily)
             }
