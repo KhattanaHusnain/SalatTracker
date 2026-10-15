@@ -45,9 +45,6 @@ fun SettingsScreen(
     onLanguageChanged: (AppLanguage) -> Unit,
     onThemeModeChanged: (ThemeMode) -> Unit,
     onErrorDismiss: () -> Unit,
-    onPrayerRemindersClick: () -> Unit,
-    onBackupClick: () -> Unit,
-    backupNeedsAttention: Boolean,
 ) {
     val focusManager = LocalFocusManager.current
 
@@ -88,14 +85,6 @@ fun SettingsScreen(
                 onLanguageChanged = onLanguageChanged,
                 onThemeChanged    = onThemeModeChanged,
                 on24HourChanged   = on24HourFormatChanged,
-            )
-
-            // ── Notifications & Data ──────────────────────────────────────────
-            SettingsSectionLabel(stringResource(R.string.settings_notifications_data))
-            NotificationsAndDataCard(
-                onPrayerRemindersClick = onPrayerRemindersClick,
-                onBackupClick           = onBackupClick,
-                backupNeedsAttention    = backupNeedsAttention,
             )
         }
 
@@ -380,33 +369,6 @@ private val ThemeMode.themeLabelRes get() = when (this) {
     ThemeMode.SYSTEM -> R.string.theme_system
 }
 
-// ── Notifications & Data card (navigation rows into Reminders / Backup) ──────
-
-@Composable
-private fun NotificationsAndDataCard(
-    onPrayerRemindersClick: () -> Unit,
-    onBackupClick: () -> Unit,
-    backupNeedsAttention: Boolean,
-) {
-    SettingsCard {
-        SettingsNavRow(
-            icon    = R.drawable.ic_notifications,
-            label   = stringResource(R.string.prayer_reminders),
-            onClick = onPrayerRemindersClick,
-        )
-        Spacer(Modifier.height(4.dp))
-        HorizontalDivider(color = SalatOutlineVariant.copy(alpha = 0.4f))
-        Spacer(Modifier.height(4.dp))
-        SettingsNavRow(
-            icon          = R.drawable.ic_cloud_upload,
-            label         = stringResource(R.string.backup_title),
-            onClick       = onBackupClick,
-            trailingText  = if (backupNeedsAttention) stringResource(R.string.backup_action_needed) else null,
-            trailingColor = SalatError,
-        )
-    }
-}
-
 // ── Preview ───────────────────────────────────────────────────────────────────
 
 @Preview(showBackground = true, showSystemUi = true)
@@ -432,8 +394,5 @@ fun SettingsScreenPreview() {
         onLanguageChanged          = {},
         onThemeModeChanged         = {},
         onErrorDismiss             = {},
-        onPrayerRemindersClick     = {},
-        onBackupClick              = {},
-        backupNeedsAttention       = true,
     )
 }

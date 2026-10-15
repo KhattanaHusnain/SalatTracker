@@ -167,7 +167,6 @@
     <string name="settings_language">Langue</string>
     <string name="settings_theme">Thème</string>
     <string name="settings_24hour">Format 24 heures</string>
-    <string name="settings_notifications_data">Notifications et données</string>
 
     <string name="reminders_snooze_length">Durée de report</string>
     <string name="reminders_full_screen_alert">Alerte plein écran</string>

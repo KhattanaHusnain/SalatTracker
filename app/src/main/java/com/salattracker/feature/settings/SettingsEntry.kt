@@ -17,9 +17,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
  */
 @Composable
 fun SettingsEntry(
-    onPrayerRemindersClick: () -> Unit,
-    onBackupClick: () -> Unit,
-    backupNeedsAttention: Boolean,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -55,8 +52,5 @@ fun SettingsEntry(
         onLanguageChanged               = viewModel::onLanguageChanged,
         onThemeModeChanged              = viewModel::onThemeModeChanged,
         onErrorDismiss                  = viewModel::clearError,
-        onPrayerRemindersClick          = onPrayerRemindersClick,
-        onBackupClick                   = onBackupClick,
-        backupNeedsAttention            = backupNeedsAttention,
     )
 }

@@ -167,7 +167,6 @@
     <string name="settings_language">اللغة</string>
     <string name="settings_theme">المظهر</string>
     <string name="settings_24hour">تنسيق 24 ساعة</string>
-    <string name="settings_notifications_data">الإشعارات والبيانات</string>
 
     <string name="reminders_snooze_length">مدة التأجيل</string>
     <string name="reminders_full_screen_alert">تنبيه ملء الشاشة</string>

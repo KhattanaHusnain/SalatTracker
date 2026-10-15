@@ -167,7 +167,6 @@
     <string name="settings_language">زبان</string>
     <string name="settings_theme">تھیم</string>
     <string name="settings_24hour">24 گھنٹے کی شکل</string>
-    <string name="settings_notifications_data">اطلاعات اور ڈیٹا</string>
 
     <string name="reminders_snooze_length">التوا کی مدت</string>
     <string name="reminders_full_screen_alert">فل سکرین الرٹ</string>

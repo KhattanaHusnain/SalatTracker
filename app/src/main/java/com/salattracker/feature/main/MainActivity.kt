@@ -250,7 +250,10 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
         gesturesEnabled = drawerState.isOpen,
         drawerContent = {
             AppDrawer(
+                backupNeedsAttention   = backupNeedsAttention,
                 onBulkUpdateClick      = { navController.push(Routes.bulkUpdate()) },
+                onPrayerRemindersClick = { navController.push(Routes.PRAYER_REMINDERS) },
+                onBackupClick          = { navController.push(Routes.BACKUP) },
                 onSettingsClick        = { navController.push(Routes.SETTINGS) },
             )
         },
@@ -326,11 +329,7 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                     StatsEntry(onAddGoalClick = { navController.push(Routes.ADD_GOAL) })
                 }
                 composable(Routes.SETTINGS) {
-                    SettingsEntry(
-                        onPrayerRemindersClick = { navController.push(Routes.PRAYER_REMINDERS) },
-                        onBackupClick           = { navController.push(Routes.BACKUP) },
-                        backupNeedsAttention    = backupNeedsAttention,
-                    )
+                    SettingsEntry()
                 }
                 composable(Routes.PRAYER_REMINDERS) {
                     PrayerRemindersEntry()
