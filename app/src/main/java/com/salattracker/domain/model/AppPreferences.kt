@@ -3,9 +3,9 @@ package com.salattracker.domain.model
 /**
  * App language chosen during onboarding / in Settings.
  *
- * NOTE: the selection is persisted but not yet applied — actual localization
- * (per-locale strings, RTL, locale switching) is deferred follow-up work.
- * [code] is the BCP-47 language tag to use when that work is picked up.
+ * Applied app-wide via [com.salattracker.core.locale.LocaleManager] (which drives RTL for
+ * Arabic/Urdu too) — see its call sites in `MainActivity.onCreate` and `SettingsViewModel`.
+ * [code] is the BCP-47 language tag passed to it.
  */
 enum class AppLanguage(val code: String, val displayName: String) {
     ENGLISH("en", "English"),
@@ -17,7 +17,15 @@ enum class AppLanguage(val code: String, val displayName: String) {
 /**
  * App theme mode chosen during onboarding / in Settings.
  *
- * NOTE: the selection is persisted but not yet applied — the app is still
- * light-only. Wiring a dark [androidx.compose.material3.ColorScheme] is deferred.
+ * Applied via [isDark] — `MainActivity` reads it (through `AppStartViewModel`) and passes the
+ * result into `SalatTrackerTheme(darkTheme = ...)`.
  */
 enum class ThemeMode { LIGHT, DARK, SYSTEM }
+
+/** Resolves this [ThemeMode] against the device's current dark-theme state. [SYSTEM] defers to
+ * [systemInDarkTheme] (typically `isSystemInDarkTheme()`); [LIGHT]/[DARK] ignore it. */
+fun ThemeMode.isDark(systemInDarkTheme: Boolean): Boolean = when (this) {
+    ThemeMode.LIGHT  -> false
+    ThemeMode.DARK   -> true
+    ThemeMode.SYSTEM -> systemInDarkTheme
+}

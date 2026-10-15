@@ -26,7 +26,9 @@ interface SettingsRepository {
      */
     fun observeSettings(): Flow<UserPrefs>
 
-    /** Persist all settings in one atomic DataStore write. */
+    /** Persist all settings in one atomic DataStore write. Still needed by backup restore,
+     * which writes a whole snapshot at once; the Settings screen itself uses the granular
+     * setters below instead (live-apply, one write per change). */
     suspend fun saveSettings(
         useDeviceLocation: Boolean,
         latitude: Double,
@@ -37,19 +39,27 @@ interface SettingsRepository {
         use24HourFormat: Boolean,
         language: AppLanguage,
         themeMode: ThemeMode,
-        dailyTipsEnabled: Boolean,
     )
 
     /** One-shot read, used when prayer times need refreshing. */
     suspend fun getCurrentPrefs(): UserPrefs
+
+    // ── Settings screen — granular, live-apply writes ──────────────────────────
+
+    suspend fun setUseDeviceLocation(enabled: Boolean)
+
+    /** Used by both the manual lat/lon fields and a successful device-location fix. */
+    suspend fun setLocation(latitude: Double, longitude: Double)
+
+    suspend fun setCalculationMethodId(id: Int)
+
+    suspend fun setUse24HourFormat(enabled: Boolean)
 
     // ── Onboarding / app-preference granular writes ────────────────────────────
 
     suspend fun setLanguage(language: AppLanguage)
 
     suspend fun setThemeMode(themeMode: ThemeMode)
-
-    suspend fun setDailyTipsEnabled(enabled: Boolean)
 
     /** Master toggle used by onboarding — enables/disables every per-prayer reminder at once. */
     suspend fun setAllRemindersEnabled(enabled: Boolean)
@@ -99,9 +109,8 @@ data class UserPrefs(
     val reminderSoundUri: Map<PrayerType, String?> = PrayerType.values()
         .associateWith { null },
     val use24HourFormat: Boolean = false,
-    // App preferences collected at onboarding (language/theme stored but not yet applied).
+    // App preferences collected at onboarding.
     val language: AppLanguage = AppLanguage.ENGLISH,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
-    val dailyTipsEnabled: Boolean = false,
     val onboardingCompleted: Boolean = false,
 )

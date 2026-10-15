@@ -14,6 +14,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -45,6 +46,7 @@ import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.core.ui.label
 import com.salattracker.domain.model.PrayerStatus
+import com.salattracker.domain.model.isDark
 import com.salattracker.domain.usecase.CalendarViewType
 import com.salattracker.feature.backup.BackupEntry
 import com.salattracker.feature.bulkupdate.BulkUpdateEntry
@@ -136,7 +138,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            SalatTrackerTheme {
+            SalatTrackerTheme(darkTheme = appStart.themeMode.isDark(isSystemInDarkTheme())) {
                 when (onboardingCompleted) {
                     // null = DataStore not read yet — plain background avoids a flash of the wrong screen.
                     null  -> Box(modifier = Modifier.fillMaxSize().background(SalatBackground))
@@ -327,7 +329,7 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                     StatsEntry(onAddGoalClick = { navController.push(Routes.ADD_GOAL) })
                 }
                 composable(Routes.SETTINGS) {
-                    SettingsEntry(onDiscardAndBack = { navController.popBackStack() })
+                    SettingsEntry()
                 }
                 composable(Routes.PRAYER_REMINDERS) {
                     PrayerRemindersEntry()

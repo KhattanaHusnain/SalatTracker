@@ -68,8 +68,6 @@
     <string name="action_ok">OK</string>
     <string name="action_cancel">Annuler</string>
     <string name="action_delete">Supprimer</string>
-    <string name="action_discard">Abandonner</string>
-    <string name="action_keep_editing">Continuer la modification</string>
     <string name="action_continue">Continuer</string>
     <string name="action_next">Suivant</string>
     <string name="action_get_started">Commencer</string>
@@ -94,7 +92,6 @@
     <string name="onboarding_notifications_title">Restez connecté</string>
     <string name="onboarding_notifications_subtitle">Activez les rappels pour ne jamais manquer une prière ou une étape spirituelle.</string>
     <string name="prayer_reminders">Rappels de prière</string>
-    <string name="daily_spiritual_tips">Conseils spirituels quotidiens</string>
 
     <string name="home_daily_stack">Les prières du jour</string>
     <string name="home_best_streak">Max %1$d</string>
@@ -159,23 +156,17 @@
     <string name="missed_empty_desc">Vous avez complété toutes vos prières manquées ! Votre discipline est inspirante.</string>
     <string name="action_back_dashboard">Retour au tableau de bord</string>
 
-    <string name="settings_location">Localisation</string>
-    <string name="settings_prayer_calc">Calcul des prières</string>
+    <string name="settings_location_prayer_times">Localisation et heures de prière</string>
     <string name="settings_minutes_offset">Décalage (min)</string>
-    <string name="settings_display">Affichage</string>
-    <string name="settings_appearance_language">Apparence et langue</string>
-    <string name="settings_saving">Enregistrement…</string>
-    <string name="settings_save">Enregistrer les réglages</string>
-    <string name="settings_saved">Réglages enregistrés.</string>
     <string name="settings_device_location">Localisation de l\'appareil</string>
     <string name="settings_latitude">Latitude</string>
     <string name="settings_longitude">Longitude</string>
     <string name="settings_calc_method">Méthode de calcul</string>
+    <string name="settings_calculation_method_sheet_title">Méthode de calcul</string>
+    <string name="settings_appearance">Apparence</string>
     <string name="settings_language">Langue</string>
     <string name="settings_theme">Thème</string>
     <string name="settings_24hour">Format 24 heures</string>
-    <string name="settings_discard_title">Abandonner les modifications ?</string>
-    <string name="settings_discard_desc">Vous avez des modifications non enregistrées. Quitter maintenant les abandonnera.</string>
 
     <string name="reminders_snooze_length">Durée de report</string>
     <string name="reminders_full_screen_alert">Alerte plein écran</string>

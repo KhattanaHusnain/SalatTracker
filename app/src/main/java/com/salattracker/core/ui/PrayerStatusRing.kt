@@ -32,6 +32,11 @@ fun PrayerStatusRing(
     strokeFraction: Float = 0.12f,
     sweepFraction: Float = 1f,
 ) {
+    // Resolved once per recomposition, in composable scope — Canvas's onDraw lambda below isn't
+    // itself @Composable, so every color it uses must already be a plain value by the time it
+    // runs (this is also why SalatStatusXxx, now theme-aware composable getters, can't be read
+    // directly inside that lambda).
+    val ringColors = PrayerType.values().map { type -> statusRingColor(statuses[type], emptyColor) }
     Canvas(modifier = modifier) {
         val strokeWidth = size.minDimension * strokeFraction
         val diameter = size.minDimension - strokeWidth
@@ -41,7 +46,7 @@ fun PrayerStatusRing(
         val gap = 4f
         PrayerType.values().forEachIndexed { index, type ->
             drawArc(
-                color = statusRingColor(statuses[type], emptyColor),
+                color = ringColors[index],
                 startAngle = -90f + index * segmentSweep + gap / 2f,
                 sweepAngle = (segmentSweep - gap) * sweepFraction,
                 useCenter = false,
@@ -53,6 +58,7 @@ fun PrayerStatusRing(
     }
 }
 
+@Composable
 internal fun statusRingColor(status: PrayerStatus?, emptyColor: Color = SalatStatusNotRecorded): Color = when (status) {
     PrayerStatus.CONGREGATION -> SalatStatusCongregation
     PrayerStatus.INDIVIDUAL -> SalatStatusIndividual

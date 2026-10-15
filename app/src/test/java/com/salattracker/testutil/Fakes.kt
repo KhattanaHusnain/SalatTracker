@@ -7,16 +7,24 @@ import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.StreakInfo
 import com.salattracker.domain.model.VerseInfo
+import com.salattracker.domain.model.AppLanguage
+import com.salattracker.domain.model.ThemeMode
 import com.salattracker.domain.repository.DayStatusCounts
 import com.salattracker.domain.repository.GoalReminderScheduler
 import com.salattracker.domain.repository.GoalRepository
+import com.salattracker.domain.repository.LocaleApplier
+import com.salattracker.domain.repository.LocationProvider
 import com.salattracker.domain.repository.PrayerBreakdown
+import com.salattracker.domain.repository.PrayerReminderRescheduler
 import com.salattracker.domain.repository.PrayerRepository
+import com.salattracker.domain.repository.SettingsRepository
 import com.salattracker.domain.repository.StatusCounts
+import com.salattracker.domain.repository.UserPrefs
 import com.salattracker.domain.repository.VerseRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
@@ -233,4 +241,93 @@ class FakeGoalReminderScheduler : GoalReminderScheduler {
 
     override fun cancel(goalId: Long) { cancelled += goalId }
     override fun rescheduleAll() { rescheduleCount++ }
+}
+
+/** In-memory [LocationProvider] — tests set [nextLocation] before calling the code under test. */
+class FakeLocationProvider : LocationProvider {
+    var nextLocation: Pair<Double, Double>? = null
+    var callCount = 0
+        private set
+
+    override suspend fun getCurrentLocation(): Pair<Double, Double>? {
+        callCount++
+        return nextLocation
+    }
+}
+
+class FakePrayerReminderRescheduler : PrayerReminderRescheduler {
+    var rescheduleCount = 0
+        private set
+
+    override fun rescheduleAll() { rescheduleCount++ }
+}
+
+class FakeLocaleApplier : LocaleApplier {
+    val applied = mutableListOf<AppLanguage>()
+
+    override fun apply(language: AppLanguage) { applied += language }
+}
+
+/** In-memory [SettingsRepository] exercising only what SettingsViewModel actually calls. */
+class FakeSettingsRepository(initial: UserPrefs = UserPrefs()) : SettingsRepository {
+
+    private val prefs = MutableStateFlow(initial)
+
+    val useDeviceLocationCalls = mutableListOf<Boolean>()
+    val locationCalls = mutableListOf<Pair<Double, Double>>()
+    val calculationMethodIdCalls = mutableListOf<Int>()
+    val use24HourFormatCalls = mutableListOf<Boolean>()
+    val languageCalls = mutableListOf<AppLanguage>()
+    val themeModeCalls = mutableListOf<ThemeMode>()
+
+    override fun observeSettings(): Flow<UserPrefs> = prefs
+
+    override suspend fun getCurrentPrefs(): UserPrefs = prefs.value
+
+    override suspend fun saveSettings(
+        useDeviceLocation: Boolean, latitude: Double, longitude: Double, calculationMethodId: Int,
+        reminderEnabled: Map<PrayerType, Boolean>, reminderOffsetMinutes: Map<PrayerType, Int>,
+        use24HourFormat: Boolean, language: AppLanguage, themeMode: ThemeMode,
+    ) = notUsed()
+
+    override suspend fun setUseDeviceLocation(enabled: Boolean) {
+        useDeviceLocationCalls += enabled
+        prefs.update { it.copy(useDeviceLocation = enabled) }
+    }
+
+    override suspend fun setLocation(latitude: Double, longitude: Double) {
+        locationCalls += latitude to longitude
+        prefs.update { it.copy(latitude = latitude, longitude = longitude) }
+    }
+
+    override suspend fun setCalculationMethodId(id: Int) {
+        calculationMethodIdCalls += id
+        prefs.update { it.copy(calculationMethodId = id) }
+    }
+
+    override suspend fun setUse24HourFormat(enabled: Boolean) {
+        use24HourFormatCalls += enabled
+        prefs.update { it.copy(use24HourFormat = enabled) }
+    }
+
+    override suspend fun setLanguage(language: AppLanguage) {
+        languageCalls += language
+        prefs.update { it.copy(language = language) }
+    }
+
+    override suspend fun setThemeMode(themeMode: ThemeMode) {
+        themeModeCalls += themeMode
+        prefs.update { it.copy(themeMode = themeMode) }
+    }
+
+    override suspend fun setAllRemindersEnabled(enabled: Boolean) = notUsed()
+    override suspend fun setOnboardingCompleted(completed: Boolean) = notUsed()
+    override suspend fun setReminderEnabled(type: PrayerType, enabled: Boolean) = notUsed()
+    override suspend fun setReminderOffsetMinutes(type: PrayerType, minutes: Int) = notUsed()
+    override suspend fun setReminderSnoozeMinutes(type: PrayerType, minutes: Int) = notUsed()
+    override suspend fun setReminderFullScreenAlert(type: PrayerType, enabled: Boolean) = notUsed()
+    override suspend fun setReminderVibrationEnabled(type: PrayerType, enabled: Boolean) = notUsed()
+    override suspend fun setReminderSoundUri(type: PrayerType, uri: String?) = notUsed()
+
+    private fun notUsed(): Nothing = throw NotImplementedError("not used by this test")
 }

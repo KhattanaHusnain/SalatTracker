@@ -110,7 +110,7 @@ fun PrayerStatusBottomSheet(
 
             // Status options
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                PrayerStatusItem.all.forEach { item ->
+                prayerStatusItems().forEach { item ->
                     StatusOptionRow(
                         item = item,
                         isSelected = selected == item.status,
@@ -225,17 +225,19 @@ private data class PrayerStatusItem(
     val status: PrayerStatus,
     val iconRes: Int,
     val iconTint: Color,
-) {
-    companion object {
-        val all = listOf(
-            PrayerStatusItem(PrayerStatus.CONGREGATION,   R.drawable.ic_groups,          SalatPrimary),
-            PrayerStatusItem(PrayerStatus.INDIVIDUAL,     R.drawable.ic_person,          SalatPrimary),
-            PrayerStatusItem(PrayerStatus.QAZA_PENDING,   R.drawable.ic_pending_actions, SalatTertiary),
-            PrayerStatusItem(PrayerStatus.QAZA_COMPLETED, R.drawable.ic_history_edu,     Color(0xFFFF9939)),
-            PrayerStatusItem(PrayerStatus.MENSTRUATION,   R.drawable.ic_female,          SalatError),
-        )
-    }
-}
+)
+
+/** Built fresh every call rather than cached in a `val` — `SalatPrimary`/`SalatTertiary`/
+ * `SalatError` are theme-aware composable getters now, so this list can't be computed once at
+ * class-load time (outside any composition) the way it used to be. */
+@Composable
+private fun prayerStatusItems(): List<PrayerStatusItem> = listOf(
+    PrayerStatusItem(PrayerStatus.CONGREGATION,   R.drawable.ic_groups,          SalatPrimary),
+    PrayerStatusItem(PrayerStatus.INDIVIDUAL,     R.drawable.ic_person,          SalatPrimary),
+    PrayerStatusItem(PrayerStatus.QAZA_PENDING,   R.drawable.ic_pending_actions, SalatTertiary),
+    PrayerStatusItem(PrayerStatus.QAZA_COMPLETED, R.drawable.ic_history_edu,     Color(0xFFFF9939)),
+    PrayerStatusItem(PrayerStatus.MENSTRUATION,   R.drawable.ic_female,          SalatError),
+)
 
 // ── Preview ───────────────────────────────────────────────────────────────────
 

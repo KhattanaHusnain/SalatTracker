@@ -163,7 +163,7 @@ fun CalendarScreen(
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
-                    DotLegend(items = yearLegendItems)
+                    DotLegend(items = yearLegendItems())
                     Spacer(modifier = Modifier.height(20.dp))
 
                     YearGrid(
@@ -319,7 +319,11 @@ private fun CalendarHeader(
 // ── Legend ────────────────────────────────────────────────────────────────────
 
 private data class LegendItem(val color: Color, val labelRes: Int)
-private val legendItems = listOf(
+
+// Built fresh every call rather than cached in a top-level val — the SalatStatusXxx colors are
+// theme-aware composable getters now, so these lists can't be computed once outside composition.
+@Composable
+private fun legendItems() = listOf(
     LegendItem(SalatStatusCongregation,  R.string.status_congregation),
     LegendItem(SalatStatusIndividual,    R.string.status_individual),
     LegendItem(SalatStatusQazaPending,   R.string.status_qaza),
@@ -329,7 +333,8 @@ private val legendItems = listOf(
 )
 
 /** Year view's tones are coarser than a single prayer's status — see [DayTone]/[toneColor]. */
-private val yearLegendItems = listOf(
+@Composable
+private fun yearLegendItems() = listOf(
     LegendItem(SalatStatusCongregation, R.string.year_tone_all_prayed),
     LegendItem(SalatStatusIndividual,   R.string.year_tone_partly),
     LegendItem(SalatStatusQazaPending,  R.string.status_qaza),
@@ -338,7 +343,7 @@ private val yearLegendItems = listOf(
 )
 
 @Composable
-private fun DotLegend(items: List<LegendItem> = legendItems) {
+private fun DotLegend(items: List<LegendItem> = legendItems()) {
     Surface(
         modifier       = Modifier.fillMaxWidth(),
         shape          = RoundedCornerShape(12.dp),
@@ -666,6 +671,7 @@ private fun WeekStatusSquare(
 // day legibly at this size. Tapping a month drills into it as the Month view (onMonthClick);
 // Back out of that returns here via CalendarViewModel's cameFromYear + this screen's BackHandler.
 
+@Composable
 private fun toneColor(tone: DayTone): Color = when (tone) {
     DayTone.ALL_PRAYED   -> SalatStatusCongregation
     DayTone.PARTLY       -> SalatStatusIndividual
@@ -744,7 +750,7 @@ private fun MiniMonthTile(
                                     .weight(1f)
                                     .aspectRatio(1f)
                                     .clip(RoundedCornerShape(1.dp))
-                                    .background(tone?.let(::toneColor) ?: Color.Transparent),
+                                    .background(tone?.let { toneColor(it) } ?: Color.Transparent),
                             )
                         } else {
                             Spacer(modifier = Modifier.weight(1f).aspectRatio(1f))

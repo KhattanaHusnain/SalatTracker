@@ -24,7 +24,6 @@ data class OnboardingUiState(
     val language: AppLanguage = AppLanguage.ENGLISH,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val prayerRemindersEnabled: Boolean = true,
-    val dailyTipsEnabled: Boolean = false,
     val isFinishing: Boolean = false,
     /** True while the "Restore from Google Drive" flow (feature/backup's BackupEntry) is shown
      * in place of the normal onboarding steps. A successful restore sets onboarding_completed
@@ -45,7 +44,6 @@ class OnboardingViewModel @Inject constructor(
     fun onLanguageSelected(language: AppLanguage) = _uiState.update { it.copy(language = language) }
     fun onThemeSelected(themeMode: ThemeMode) = _uiState.update { it.copy(themeMode = themeMode) }
     fun onPrayerRemindersChanged(enabled: Boolean) = _uiState.update { it.copy(prayerRemindersEnabled = enabled) }
-    fun onDailyTipsChanged(enabled: Boolean) = _uiState.update { it.copy(dailyTipsEnabled = enabled) }
 
     fun onNext() {
         val next = OnboardingStep.values().getOrNull(_uiState.value.step.ordinal + 1) ?: return
@@ -70,7 +68,6 @@ class OnboardingViewModel @Inject constructor(
         viewModelScope.launch {
             settingsRepository.setLanguage(state.language)
             settingsRepository.setThemeMode(state.themeMode)
-            settingsRepository.setDailyTipsEnabled(state.dailyTipsEnabled)
             settingsRepository.setAllRemindersEnabled(state.prayerRemindersEnabled)
             // Reschedule prayer reminders to honour the master toggle chosen here.
             PrayerReminderWorker.enqueueOneTime(workManager)

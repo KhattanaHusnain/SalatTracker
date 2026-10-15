@@ -30,7 +30,6 @@ fun OnboardingScreen(
     onLanguageSelected: (AppLanguage) -> Unit,
     onThemeSelected: (ThemeMode) -> Unit,
     onPrayerRemindersChanged: (Boolean) -> Unit,
-    onDailyTipsChanged: (Boolean) -> Unit,
     onNext: () -> Unit,
     onAllowLocation: () -> Unit,
     onFinish: () -> Unit,
@@ -48,10 +47,8 @@ fun OnboardingScreen(
             OnboardingStep.LOCATION      -> LocationStep(onAllowLocation = { onAllowLocation(); onNext() })
             OnboardingStep.NOTIFICATIONS -> NotificationsStep(
                 prayerRemindersEnabled = uiState.prayerRemindersEnabled,
-                dailyTipsEnabled       = uiState.dailyTipsEnabled,
                 isFinishing            = uiState.isFinishing,
                 onPrayerRemindersChanged = onPrayerRemindersChanged,
-                onDailyTipsChanged       = onDailyTipsChanged,
                 onFinish                 = onFinish,
             )
         }
@@ -215,10 +212,8 @@ private fun LocationStep(onAllowLocation: () -> Unit) {
 @Composable
 private fun NotificationsStep(
     prayerRemindersEnabled: Boolean,
-    dailyTipsEnabled: Boolean,
     isFinishing: Boolean,
     onPrayerRemindersChanged: (Boolean) -> Unit,
-    onDailyTipsChanged: (Boolean) -> Unit,
     onFinish: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
@@ -243,13 +238,6 @@ private fun NotificationsStep(
             label   = stringResource(R.string.prayer_reminders),
             checked = prayerRemindersEnabled,
             onCheckedChange = onPrayerRemindersChanged,
-        )
-        Spacer(Modifier.height(12.dp))
-        ToggleRow(
-            icon    = R.drawable.ic_auto_awesome,
-            label   = stringResource(R.string.daily_spiritual_tips),
-            checked = dailyTipsEnabled,
-            onCheckedChange = onDailyTipsChanged,
         )
 
         Spacer(Modifier.height(40.dp))
@@ -381,7 +369,7 @@ fun OnboardingLanguagePreview() {
     OnboardingScreen(
         uiState = OnboardingUiState(step = OnboardingStep.LANGUAGE),
         onLanguageSelected = {}, onThemeSelected = {}, onPrayerRemindersChanged = {},
-        onDailyTipsChanged = {}, onNext = {}, onAllowLocation = {}, onFinish = {},
+        onNext = {}, onAllowLocation = {}, onFinish = {},
     )
 }
 
@@ -391,6 +379,6 @@ fun OnboardingNotificationsPreview() {
     OnboardingScreen(
         uiState = OnboardingUiState(step = OnboardingStep.NOTIFICATIONS),
         onLanguageSelected = {}, onThemeSelected = {}, onPrayerRemindersChanged = {},
-        onDailyTipsChanged = {}, onNext = {}, onAllowLocation = {}, onFinish = {},
+        onNext = {}, onAllowLocation = {}, onFinish = {},
     )
 }

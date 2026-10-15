@@ -76,8 +76,6 @@
     <string name="action_ok">OK</string>
     <string name="action_cancel">Cancel</string>
     <string name="action_delete">Delete</string>
-    <string name="action_discard">Discard</string>
-    <string name="action_keep_editing">Keep Editing</string>
     <string name="action_continue">Continue</string>
     <string name="action_next">Next</string>
     <string name="action_get_started">Get Started</string>
@@ -103,7 +101,6 @@
     <string name="onboarding_notifications_title">Stay Connected</string>
     <string name="onboarding_notifications_subtitle">Enable reminders so you never miss a prayer or a spiritual milestone.</string>
     <string name="prayer_reminders">Prayer Reminders</string>
-    <string name="daily_spiritual_tips">Daily Spiritual Tips</string>
 
     <!-- Home -->
     <string name="home_daily_stack">Today\'s Prayers</string>
@@ -169,23 +166,17 @@
     <string name="missed_empty_desc">You\'ve completed all your missed prayers! Your discipline is inspiring.</string>
     <string name="action_back_dashboard">Back to Dashboard</string>
     <!-- Settings -->
-    <string name="settings_location">Location</string>
-    <string name="settings_prayer_calc">Prayer Calculation</string>
+    <string name="settings_location_prayer_times">Location &amp; Prayer Times</string>
     <string name="settings_minutes_offset">Minutes Offset</string>
-    <string name="settings_display">Display</string>
-    <string name="settings_appearance_language">Appearance &amp; Language</string>
-    <string name="settings_saving">Saving…</string>
-    <string name="settings_save">Save Settings</string>
-    <string name="settings_saved">Settings saved.</string>
     <string name="settings_device_location">Device Location</string>
     <string name="settings_latitude">Latitude</string>
     <string name="settings_longitude">Longitude</string>
     <string name="settings_calc_method">Calculation Method</string>
+    <string name="settings_calculation_method_sheet_title">Calculation Method</string>
+    <string name="settings_appearance">Appearance</string>
     <string name="settings_language">Language</string>
     <string name="settings_theme">Theme</string>
     <string name="settings_24hour">24-Hour Format</string>
-    <string name="settings_discard_title">Discard changes?</string>
-    <string name="settings_discard_desc">You have unsaved changes. Leaving now will discard them.</string>
 
     <!-- Prayer Reminders -->
     <string name="reminders_snooze_length">Snooze Length</string>

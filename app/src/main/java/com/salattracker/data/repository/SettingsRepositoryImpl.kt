@@ -36,7 +36,6 @@ class SettingsRepositoryImpl @Inject constructor(
         use24HourFormat: Boolean,
         language: AppLanguage,
         themeMode: ThemeMode,
-        dailyTipsEnabled: Boolean,
     ) = dataStore.saveSettings(
         useDeviceLocation     = useDeviceLocation,
         latitude              = latitude,
@@ -47,14 +46,19 @@ class SettingsRepositoryImpl @Inject constructor(
         use24HourFormat       = use24HourFormat,
         language              = language,
         themeMode             = themeMode,
-        dailyTipsEnabled      = dailyTipsEnabled,
     )
+
+    override suspend fun setUseDeviceLocation(enabled: Boolean) = dataStore.setUseDeviceLocation(enabled)
+
+    override suspend fun setLocation(latitude: Double, longitude: Double) = dataStore.setLocation(latitude, longitude)
+
+    override suspend fun setCalculationMethodId(id: Int) = dataStore.setCalculationMethodId(id)
+
+    override suspend fun setUse24HourFormat(enabled: Boolean) = dataStore.setUse24HourFormat(enabled)
 
     override suspend fun setLanguage(language: AppLanguage) = dataStore.setLanguage(language)
 
     override suspend fun setThemeMode(themeMode: ThemeMode) = dataStore.setThemeMode(themeMode)
-
-    override suspend fun setDailyTipsEnabled(enabled: Boolean) = dataStore.setDailyTipsEnabled(enabled)
 
     override suspend fun setAllRemindersEnabled(enabled: Boolean) = dataStore.setAllRemindersEnabled(enabled)
 

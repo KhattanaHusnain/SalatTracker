@@ -95,6 +95,20 @@ class BackupCodecTest {
     }
 
     @Test
+    fun `a backup whose settings JSON still has dailyTipsEnabled decodes fine, field ignored`() {
+        val json = """{"meta":{"formatVersion":1,"revisionId":"r","createdAt":1,"appVersionCode":1,"deviceModel":"x",
+            "prayerEntryCount":0},"payload":{"prayerEntries":[],"goals":[],"checkIns":[],"streaks":[],
+            "settings":{"useDeviceLocation":true,"dailyTipsEnabled":true}}}""".trimIndent()
+        val bytes = java.io.ByteArrayOutputStream().also { out ->
+            java.util.zip.GZIPOutputStream(out).use { it.write(json.toByteArray()) }
+        }.toByteArray()
+
+        val (_, decoded) = BackupCodec.decode(bytes)
+
+        assertTrue(decoded.settings.useDeviceLocation)
+    }
+
+    @Test
     fun `decode drops check-ins whose goal is not present in the same backup`() {
         val snapshot = sampleSnapshot()
         val bytes = BackupCodec.encode(snapshot, sampleMeta(snapshot))
