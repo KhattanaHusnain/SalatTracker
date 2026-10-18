@@ -2,6 +2,7 @@ package com.salattracker.di
 
 import android.content.Context
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.GeofencingClient
 import com.google.android.gms.location.LocationServices
 import dagger.Module
 import dagger.Provides
@@ -18,4 +19,9 @@ object LocationModule {
     @Singleton
     fun provideFusedLocationProviderClient(@ApplicationContext context: Context): FusedLocationProviderClient =
         LocationServices.getFusedLocationProviderClient(context)
+
+    @Provides
+    @Singleton
+    fun provideGeofencingClient(@ApplicationContext context: Context): GeofencingClient =
+        LocationServices.getGeofencingClient(context)
 }

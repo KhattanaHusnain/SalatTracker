@@ -411,4 +411,50 @@
         <item>ذو القعدة</item>
         <item>ذو الحجة</item>
     </string-array>
+
+    <string name="mosque_mode">وضع المسجد</string>
+    <string name="topbar_mosque_mode">وضع المسجد</string>
+    <string name="mosque_toggle_title">الاهتزاز في المساجد</string>
+    <string name="mosque_toggle_desc">يحوّل هاتفك إلى وضع الاهتزاز بعد دقيقة داخل مسجد محفوظ، ويعيده عند المغادرة.</string>
+    <string name="mosque_vibrate_on">الاهتزاز مفعّل · %1$s</string>
+    <string name="mosque_restore_sound">استعادة الصوت</string>
+    <string name="mosque_unavailable">لا يحتوي هذا الجهاز على محرك اهتزاز، لذا فإن وضع المسجد غير متاح.</string>
+    <string name="mosque_access_needed">اسمح بالموقع «طوال الوقت» ليتمكن وضع المسجد من معرفة وصولك حتى والتطبيق مغلق.</string>
+    <string name="mosque_access_allow">السماح</string>
+    <string name="mosque_access_open_settings">فتح الإعدادات</string>
+    <string name="mosque_location_off">الموقع متوقف، لذا لا يستطيع وضع المسجد معرفة وصولك.</string>
+    <string name="mosque_location_turn_on">تشغيل</string>
+    <string name="mosque_my_mosques">مساجدي</string>
+    <string name="mosque_empty">لا توجد مساجد بعد. أضف المسجد الذي تصلي فيه وسيصمت هاتفك عند وجودك فيه.</string>
+    <string name="mosque_add_current">إضافة الموقع الحالي</string>
+    <string name="mosque_find_nearby">البحث عن مساجد قريبة</string>
+    <string name="mosque_distance_meters">%1$d م</string>
+    <string name="mosque_sheet_add_title">إضافة مسجد</string>
+    <string name="mosque_sheet_edit_title">تعديل المسجد</string>
+    <string name="mosque_name_label">اسم المسجد</string>
+    <string name="mosque_name_required">أدخل اسماً</string>
+    <string name="mosque_radius_label">المنطقة حول المسجد</string>
+    <string name="mosque_radius_hint">المنطقة الأوسع أكثر موثوقية داخل المباني.</string>
+    <string name="mosque_save">حفظ</string>
+    <string name="mosque_delete_title">حذف هذا المسجد؟</string>
+    <string name="mosque_delete_desc">لن يحوّل وضع المسجد هاتفك إلى الاهتزاز هنا بعد الآن.</string>
+    <string name="mosque_nearby_title">مساجد بالقرب منك</string>
+    <string name="mosque_nearby_empty">لم يتم العثور على مساجد ضمن 2 كم على OpenStreetMap. قف داخل مسجدك واستخدم «إضافة الموقع الحالي».</string>
+    <string name="mosque_nearby_failed">تعذّر البحث. تحقق من اتصالك وحاول مرة أخرى.</string>
+    <string name="mosque_nearby_retry">حاول مرة أخرى</string>
+    <string name="mosque_nearby_added">تمت الإضافة</string>
+    <string name="mosque_nearby_unnamed">مسجد بلا اسم</string>
+    <string name="mosque_osm_credit">© مساهمو OpenStreetMap</string>
+    <string name="mosque_disclosure_title">الموقع في الخلفية</string>
+    <string name="mosque_disclosure_body">يستخدم هذا التطبيق موقعك في الخلفية — حتى عند إغلاقه أو عدم استخدامه — لمعرفة وصولك إلى مسجد محفوظ أو مغادرتك له، ليحوّل هاتفك إلى الاهتزاز ثم يعيده. لا يخزّن التطبيق موقعك ولا يشاركه. في الشاشة التالية اختر «السماح طوال الوقت».</string>
+    <string name="mosque_msg_location_unavailable">تعذّر تحديد موقعك. تأكد من تشغيل الموقع وحاول مرة أخرى.</string>
+    <string name="mosque_msg_limit">يمكنك حفظ ما يصل إلى 100 مسجد.</string>
+    <string name="mosque_msg_save_failed">تعذّر الحفظ. حاول مرة أخرى.</string>
+    <string name="mosque_msg_sync_failed">تعذّر بدء مراقبة مساجدك. حاول لاحقاً.</string>
+    <string name="mosque_notif_title">الاهتزاز مفعّل</string>
+    <string name="mosque_notif_body">أنت في %1$s. سيعود الصوت عند مغادرتك.</string>
+    <string name="mosque_notif_restore">استعادة الصوت</string>
+    <string name="notification_channel_mosque_id">mosque_mode</string>
+    <string name="notification_channel_mosque_name">وضع المسجد</string>
+    <string name="notification_channel_mosque_desc">يظهر أثناء وجود هاتفك على الاهتزاز داخل مسجد محفوظ</string>
 </resources>

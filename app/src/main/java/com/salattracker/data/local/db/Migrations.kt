@@ -15,3 +15,14 @@ val MIGRATION_5_6 = object : Migration(5, 6) {
         db.execSQL("ALTER TABLE goal_check_ins ADD COLUMN is_skip INTEGER NOT NULL DEFAULT 0")
     }
 }
+
+/** v6 -> v7: the Mosque Mode table. Purely additive — no existing data is touched. */
+val MIGRATION_6_7 = object : Migration(6, 7) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `mosques` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`name` TEXT NOT NULL, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, " +
+                "`radius_meters` INTEGER NOT NULL)"
+        )
+    }
+}

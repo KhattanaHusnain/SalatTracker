@@ -15,8 +15,9 @@ import com.salattracker.data.local.entity.*
         VerseCacheEntity::class,
         SpiritualGoalEntity::class,
         GoalCheckInEntity::class,
+        MosqueEntity::class,
     ],
-    version  = 6,
+    version  = 7,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -27,4 +28,5 @@ abstract class SalatDatabase : RoomDatabase() {
     abstract fun verseDao(): VerseDao
     abstract fun goalDao(): GoalDao
     abstract fun backupDao(): BackupDao
+    abstract fun mosqueDao(): MosqueDao
 }

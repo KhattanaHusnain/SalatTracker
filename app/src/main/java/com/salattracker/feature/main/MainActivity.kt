@@ -57,6 +57,7 @@ import com.salattracker.feature.goals.EditGoalEntry
 import com.salattracker.feature.goals.GoalDetailsEntry
 import com.salattracker.feature.goals.GoalsEntry
 import com.salattracker.feature.home.HomeEntry
+import com.salattracker.feature.mosque.MosqueModeEntry
 import com.salattracker.feature.onboarding.OnboardingEntry
 import com.salattracker.feature.qaza.MissedPrayersEntry
 import com.salattracker.feature.qaza.QazaEntry
@@ -177,13 +178,14 @@ class MainActivity : AppCompatActivity() {
     /** Only known deep-link targets are accepted — an exported, singleTask activity should
      * never hand an arbitrary caller-supplied string straight to navigate(). */
     private fun Intent?.openRouteOrNull(): String? =
-        this?.getStringExtra(EXTRA_OPEN_ROUTE)?.takeIf { it == ROUTE_BACKUP || it == ROUTE_GOALS }
+        this?.getStringExtra(EXTRA_OPEN_ROUTE)?.takeIf { it == ROUTE_BACKUP || it == ROUTE_GOALS || it == ROUTE_MOSQUE_MODE }
 
     companion object {
         /** Intent extra a notification sets to deep-link straight to a route once the app is up. */
         const val EXTRA_OPEN_ROUTE = "open_route"
         const val ROUTE_BACKUP = "backup"
         const val ROUTE_GOALS = "goals"
+        const val ROUTE_MOSQUE_MODE = "mosque_mode"
         private const val STATE_PENDING_ROUTE = "pending_route"
     }
 }
@@ -253,6 +255,7 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                 backupNeedsAttention   = backupNeedsAttention,
                 onBulkUpdateClick      = { navController.push(Routes.bulkUpdate()) },
                 onPrayerRemindersClick = { navController.push(Routes.PRAYER_REMINDERS) },
+                onMosqueModeClick = { navController.push(Routes.MOSQUE_MODE) },
                 onBackupClick          = { navController.push(Routes.BACKUP) },
                 onSettingsClick        = { navController.push(Routes.SETTINGS) },
             )
@@ -336,6 +339,9 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                 }
                 composable(Routes.BACKUP) {
                     BackupEntry()
+                }
+                composable(Routes.MOSQUE_MODE) {
+                    MosqueModeEntry()
                 }
                 composable(
                     Routes.BULK_UPDATE,
@@ -547,6 +553,7 @@ private fun topBarTitle(route: String?): String = stringResource(
         Routes.BACKUP                 -> R.string.topbar_backup
         Routes.BULK_UPDATE            -> R.string.topbar_bulk_update
         Routes.PRAYER_REMINDERS       -> R.string.prayer_reminders
+        Routes.MOSQUE_MODE            -> R.string.topbar_mosque_mode
         Routes.ADD_GOAL               -> R.string.topbar_new_goal
         Routes.MISSED_PRAYERS         -> R.string.topbar_missed_prayers
         else -> when {

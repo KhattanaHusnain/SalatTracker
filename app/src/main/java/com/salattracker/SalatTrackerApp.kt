@@ -9,6 +9,7 @@ import androidx.work.Configuration
 import androidx.work.WorkManager
 import com.salattracker.notification.BackupWorker
 import com.salattracker.notification.GoalReminderWorker
+import com.salattracker.notification.MosqueModeSyncWorker
 import com.salattracker.notification.PrayerReminderWorker
 import com.salattracker.notification.QazaAutoMarkWorker
 import com.salattracker.notification.VerseCacheWorker
@@ -40,6 +41,8 @@ class SalatTrackerApp : Application(), Configuration.Provider {
         GoalReminderWorker.enqueueOneTime(workManager)
         GoalReminderWorker.enqueuePeriodic(workManager)
         BackupWorker.enqueuePeriodic(workManager)
+        // Periodic only: geofence broadcasts cold-start the process, so a one-time sync here would run on every event.
+        MosqueModeSyncWorker.enqueuePeriodic(workManager)
     }
 
     // Per-prayer channels (sound/vibration vary by prayer) are created lazily, right before
@@ -67,6 +70,17 @@ class SalatTrackerApp : Application(), Configuration.Provider {
                 ).apply {
                     description =
                         getString(R.string.notification_channel_backup_desc)
+                }
+            )
+
+            manager.createNotificationChannel(
+                NotificationChannel(
+                    getString(R.string.notification_channel_mosque_id),
+                    getString(R.string.notification_channel_mosque_name),
+                    NotificationManager.IMPORTANCE_LOW
+                ).apply {
+                    description =
+                        getString(R.string.notification_channel_mosque_desc)
                 }
             )
         }

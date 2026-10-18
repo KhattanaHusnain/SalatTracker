@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.salattracker.data.local.dao.*
 import com.salattracker.data.local.db.MIGRATION_5_6
+import com.salattracker.data.local.db.MIGRATION_6_7
 import com.salattracker.data.local.db.SalatDatabase
 import dagger.Module
 import dagger.Provides
@@ -24,7 +25,7 @@ object DatabaseModule {
             SalatDatabase::class.java,
             "salat_tracker.db",
         )
-            .addMigrations(MIGRATION_5_6)
+            .addMigrations(MIGRATION_5_6, MIGRATION_6_7)
             .fallbackToDestructiveMigration()   // only for schemas older than v5 (dev builds)
             .build()
 
@@ -34,4 +35,5 @@ object DatabaseModule {
     @Provides fun provideVerseDao(db: SalatDatabase): VerseDao            = db.verseDao()
     @Provides fun provideGoalDao(db: SalatDatabase): GoalDao              = db.goalDao()
     @Provides fun provideBackupDao(db: SalatDatabase): BackupDao          = db.backupDao()
+    @Provides fun provideMosqueDao(db: SalatDatabase): MosqueDao          = db.mosqueDao()
 }

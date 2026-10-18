@@ -1,6 +1,11 @@
 package com.salattracker.testutil
 
+import com.salattracker.domain.model.GeofenceSync
 import com.salattracker.domain.model.GoalHistory
+import com.salattracker.domain.model.Mosque
+import com.salattracker.domain.model.MosqueModeState
+import com.salattracker.domain.model.NearbyMosque
+import com.salattracker.domain.model.RingerMode
 import com.salattracker.domain.model.GoalPeriodStat
 import com.salattracker.domain.model.PrayerEntry
 import com.salattracker.domain.model.PrayerStatus
@@ -14,6 +19,12 @@ import com.salattracker.domain.repository.GoalReminderScheduler
 import com.salattracker.domain.repository.GoalRepository
 import com.salattracker.domain.repository.LocaleApplier
 import com.salattracker.domain.repository.LocationProvider
+import com.salattracker.domain.repository.MosqueGeofencer
+import com.salattracker.domain.repository.MosqueModeNotifier
+import com.salattracker.domain.repository.MosqueModeStore
+import com.salattracker.domain.repository.MosqueModeSyncScheduler
+import com.salattracker.domain.repository.MosqueRepository
+import com.salattracker.domain.repository.RingerController
 import com.salattracker.domain.repository.PrayerBreakdown
 import com.salattracker.domain.repository.PrayerReminderRescheduler
 import com.salattracker.domain.repository.PrayerRepository
@@ -248,9 +259,12 @@ class FakeLocationProvider : LocationProvider {
     var nextLocation: Pair<Double, Double>? = null
     var callCount = 0
         private set
+    var lastHighAccuracy: Boolean? = null
+        private set
 
-    override suspend fun getCurrentLocation(): Pair<Double, Double>? {
+    override suspend fun getCurrentLocation(highAccuracy: Boolean): Pair<Double, Double>? {
         callCount++
+        lastHighAccuracy = highAccuracy
         return nextLocation
     }
 }
@@ -330,4 +344,110 @@ class FakeSettingsRepository(initial: UserPrefs = UserPrefs()) : SettingsReposit
     override suspend fun setReminderSoundUri(type: PrayerType, uri: String?) = notUsed()
 
     private fun notUsed(): Nothing = throw NotImplementedError("not used by this test")
+}
+
+// ── Mosque Mode ────────────────────────────────────────────────────────────────
+
+class FakeMosqueRepository(initial: List<Mosque> = emptyList()) : MosqueRepository {
+    private val mosques = MutableStateFlow(initial)
+    private var nextId = (initial.maxOfOrNull { it.id } ?: 0L) + 1
+
+    var nearby: List<NearbyMosque> = emptyList()
+    var nearbyError: Throwable? = null
+    var failWrites = false
+    var findNearbyCalls = 0
+        private set
+
+    fun getMosquesBlocking(): List<Mosque> = mosques.value
+
+    fun addForTest(mosque: Mosque) { mosques.update { it + mosque } }
+
+    override fun observeMosques(): Flow<List<Mosque>> = mosques
+
+    override suspend fun getMosques(): List<Mosque> = mosques.value
+
+    override suspend fun addMosque(mosque: Mosque): Long {
+        if (failWrites) throw java.io.IOException("disk full")
+        val id = nextId++
+        mosques.update { it + mosque.copy(id = id) }
+        return id
+    }
+
+    override suspend fun updateMosque(mosque: Mosque) {
+        if (failWrites) throw java.io.IOException("disk full")
+        mosques.update { list -> list.map { if (it.id == mosque.id) mosque else it } }
+    }
+
+    override suspend fun deleteMosque(id: Long) {
+        mosques.update { list -> list.filterNot { it.id == id } }
+    }
+
+    override suspend fun findNearby(latitude: Double, longitude: Double): List<NearbyMosque> {
+        findNearbyCalls++
+        nearbyError?.let { throw it }
+        return nearby
+    }
+}
+
+class FakeMosqueModeStore(initial: MosqueModeState = MosqueModeState()) : MosqueModeStore {
+    private val state = MutableStateFlow(initial)
+
+    fun setStateForTest(newState: MosqueModeState) { state.value = newState }
+
+    override fun observeState(): Flow<MosqueModeState> = state
+
+    override suspend fun getState(): MosqueModeState = state.value
+
+    override suspend fun setEnabled(enabled: Boolean) {
+        state.update { it.copy(enabled = enabled) }
+    }
+
+    override suspend fun setVisit(insideIds: Set<Long>, restoreTo: RingerMode?, activeMosqueName: String?) {
+        state.update { it.copy(insideIds = insideIds, restoreTo = restoreTo, activeMosqueName = activeMosqueName) }
+    }
+}
+
+class FakeMosqueGeofencer : MosqueGeofencer {
+    var result = GeofenceSync.OK
+    val registered = mutableListOf<List<Mosque>>()
+    var clearCount = 0
+        private set
+
+    override suspend fun register(mosques: List<Mosque>): GeofenceSync {
+        registered += mosques
+        return result
+    }
+
+    override suspend fun clear() { clearCount++ }
+}
+
+class FakeRingerController(var mode: RingerMode = RingerMode.NORMAL) : RingerController {
+    override var canVibrate: Boolean = true
+    var acceptChanges = true
+    val setCalls = mutableListOf<RingerMode>()
+
+    override fun current(): RingerMode = mode
+
+    override fun set(mode: RingerMode): Boolean {
+        setCalls += mode
+        if (!acceptChanges) return false
+        this.mode = mode
+        return true
+    }
+}
+
+class FakeMosqueModeNotifier : MosqueModeNotifier {
+    val shown = mutableListOf<String>()
+    var dismissCount = 0
+        private set
+
+    override fun showVibrateOn(mosqueName: String) { shown += mosqueName }
+    override fun dismiss() { dismissCount++ }
+}
+
+class FakeMosqueModeSyncScheduler : MosqueModeSyncScheduler {
+    var requestCount = 0
+        private set
+
+    override fun requestSync() { requestCount++ }
 }

@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder
 import com.salattracker.BuildConfig
 import com.salattracker.data.remote.api.AlAdhanService
 import com.salattracker.data.remote.api.DriveApiService
+import com.salattracker.data.remote.api.OverpassService
 import com.salattracker.data.remote.api.QuranApiService
 import dagger.Module
 import dagger.Provides
@@ -26,6 +27,10 @@ annotation class QuranRetrofit
 @Retention(AnnotationRetention.BINARY)
 annotation class DriveRetrofit
 
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class OverpassRetrofit
+
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
@@ -33,6 +38,7 @@ object NetworkModule {
     private const val ALADHAN_BASE_URL = "https://api.aladhan.com/"
     private const val QURAN_API_BASE_URL = "https://api.quran.com/api/v4/"
     private const val DRIVE_BASE_URL = "https://www.googleapis.com/"
+    private const val OVERPASS_BASE_URL = "https://overpass-api.de/"
 
     @Provides
     @Singleton
@@ -111,4 +117,37 @@ object NetworkModule {
     @Singleton
     fun provideDriveApiService(@DriveRetrofit retrofit: Retrofit): DriveApiService =
         retrofit.create(DriveApiService::class.java)
+
+    // Own client for the same reason as Drive: the shared one logs full bodies, and these requests
+    // carry the user's (rounded) coordinates. Overpass also asks clients to identify themselves.
+    @Provides
+    @Singleton
+    @OverpassRetrofit
+    fun provideOverpassOkHttpClient(): OkHttpClient =
+        OkHttpClient.Builder()
+            .addInterceptor { chain ->
+                chain.proceed(
+                    chain.request().newBuilder()
+                        .header("User-Agent", "SalatTracker/${BuildConfig.VERSION_NAME} (Android)")
+                        .build()
+                )
+            }
+            .connectTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(40, TimeUnit.SECONDS)
+            .build()
+
+    @Provides
+    @Singleton
+    @OverpassRetrofit
+    fun provideOverpassRetrofit(@OverpassRetrofit okHttpClient: OkHttpClient, gson: Gson): Retrofit =
+        Retrofit.Builder()
+            .baseUrl(OVERPASS_BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .build()
+
+    @Provides
+    @Singleton
+    fun provideOverpassService(@OverpassRetrofit retrofit: Retrofit): OverpassService =
+        retrofit.create(OverpassService::class.java)
 }

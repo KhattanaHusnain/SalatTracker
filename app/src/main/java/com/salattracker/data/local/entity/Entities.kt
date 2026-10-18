@@ -141,3 +141,14 @@ data class GoalCheckInEntity(
     // An excused day: neither counted as hit nor as missed, and never breaks a streak.
     @ColumnInfo(name = "is_skip", defaultValue = "0") val isSkip: Boolean = false,
 )
+// ── Mosque entity (Mosque Mode) ───────────────────────────────────────────────
+
+@Entity(tableName = "mosques")
+data class MosqueEntity(
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id")            val id: Long = 0,
+    @ColumnInfo(name = "name")          val name: String,
+    @ColumnInfo(name = "latitude")      val latitude: Double,
+    @ColumnInfo(name = "longitude")     val longitude: Double,
+    @ColumnInfo(name = "radius_meters") val radiusMeters: Int,
+)

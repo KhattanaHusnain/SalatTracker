@@ -2,6 +2,10 @@ package com.salattracker.di
 
 import com.salattracker.core.locale.LocaleApplierImpl
 import com.salattracker.data.location.LocationProviderImpl
+import com.salattracker.data.mosque.MosqueGeofencerImpl
+import com.salattracker.data.mosque.MosqueModeStoreImpl
+import com.salattracker.data.mosque.RingerControllerImpl
+import com.salattracker.data.repository.MosqueRepositoryImpl
 import com.salattracker.data.repository.BackupRepositoryImpl
 import com.salattracker.data.repository.GoalRepositoryImpl
 import com.salattracker.data.repository.PrayerRepositoryImpl
@@ -12,7 +16,15 @@ import com.salattracker.domain.repository.GoalReminderScheduler
 import com.salattracker.domain.repository.GoalRepository
 import com.salattracker.domain.repository.LocaleApplier
 import com.salattracker.domain.repository.LocationProvider
+import com.salattracker.domain.repository.MosqueGeofencer
+import com.salattracker.domain.repository.MosqueModeNotifier
+import com.salattracker.domain.repository.MosqueModeStore
+import com.salattracker.domain.repository.MosqueModeSyncScheduler
+import com.salattracker.domain.repository.MosqueRepository
 import com.salattracker.domain.repository.PrayerReminderRescheduler
+import com.salattracker.domain.repository.RingerController
+import com.salattracker.notification.MosqueModeNotifierImpl
+import com.salattracker.notification.MosqueModeSyncSchedulerImpl
 import com.salattracker.notification.GoalReminderSchedulerImpl
 import com.salattracker.notification.PrayerReminderReschedulerImpl
 import com.salattracker.domain.repository.PrayerRepository
@@ -63,4 +75,28 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindLocaleApplier(impl: LocaleApplierImpl): LocaleApplier
+
+    @Binds
+    @Singleton
+    abstract fun bindMosqueRepository(impl: MosqueRepositoryImpl): MosqueRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindMosqueModeStore(impl: MosqueModeStoreImpl): MosqueModeStore
+
+    @Binds
+    @Singleton
+    abstract fun bindMosqueGeofencer(impl: MosqueGeofencerImpl): MosqueGeofencer
+
+    @Binds
+    @Singleton
+    abstract fun bindRingerController(impl: RingerControllerImpl): RingerController
+
+    @Binds
+    @Singleton
+    abstract fun bindMosqueModeNotifier(impl: MosqueModeNotifierImpl): MosqueModeNotifier
+
+    @Binds
+    @Singleton
+    abstract fun bindMosqueModeSyncScheduler(impl: MosqueModeSyncSchedulerImpl): MosqueModeSyncScheduler
 }

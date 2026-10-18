@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.salattracker.domain.model.BackupAttention
 import com.salattracker.domain.repository.BackupRepository
+import com.salattracker.domain.repository.MosqueModeSyncScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +17,11 @@ import javax.inject.Inject
 @HiltViewModel
 class MainShellViewModel @Inject constructor(
     backupRepository: BackupRepository,
+    mosqueModeSyncScheduler: MosqueModeSyncScheduler,
 ) : ViewModel() {
+
+    // Once per app launch: catches location having been switched off and on, which drops geofences.
+    init { mosqueModeSyncScheduler.requestSync() }
 
     val backupNeedsAttention: StateFlow<Boolean> = backupRepository.observeStatus()
         .map { it.attention != BackupAttention.NONE }
