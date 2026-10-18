@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Salat Tracker</string>
+    <string name="app_name">Salah Tracker</string>
 
     <string name="nav_home">ہوم</string>
     <string name="nav_calendar">کیلنڈر</string>
@@ -20,7 +20,7 @@
     <string name="topbar_edit_goal">ہدف میں ترمیم</string>
     <string name="topbar_missed_prayers">چھوٹی ہوئی نمازیں</string>
     <string name="topbar_backup">بیک اپ اور بحالی</string>
-    <string name="topbar_default">Salat Tracker</string>
+    <string name="topbar_default">Salah Tracker</string>
     <string name="cd_menu">مینو</string>
     <string name="cd_back">واپس</string>
     <string name="action_add_goal">ہدف شامل کریں</string>
@@ -74,7 +74,7 @@
     <string name="action_view_all">سب دیکھیں</string>
     <string name="action_mark_done">مکمل نشان زد کریں</string>
 
-    <string name="onboarding_welcome_title">Salat Tracker میں خوش آمدید</string>
+    <string name="onboarding_welcome_title">Salah Tracker میں خوش آمدید</string>
     <string name="onboarding_welcome_subtitle">اپنے سفر کا آغاز کرنے کے لیے براہ کرم اپنی پسندیدہ زبان منتخب کریں۔</string>
     <string name="onboarding_change_later">آپ اسے بعد میں ترتیبات میں تبدیل کر سکتے ہیں۔</string>
     <string name="onboarding_theme_title">اپنا انداز منتخب کریں</string>
@@ -368,7 +368,7 @@
     <string name="backup_notif_sign_in_title">بیک اپ کو آپ کی توجہ درکار ہے</string>
     <string name="backup_notif_sign_in_body">گوگل ڈرائیو پر بیک اپ جاری رکھنے کے لیے دوبارہ سائن اِن کریں۔</string>
     <string name="backup_notif_remote_changed_title">ایک مختلف بیک اپ ملا ہے</string>
-    <string name="backup_notif_remote_changed_body">آگے بڑھنے کا طریقہ منتخب کرنے کے لیے Salat Tracker کھولیں۔</string>
+    <string name="backup_notif_remote_changed_body">آگے بڑھنے کا طریقہ منتخب کرنے کے لیے Salah Tracker کھولیں۔</string>
     <string name="backup_notif_local_missing_title">بیک اپ روک دیا گیا</string>
     <string name="backup_notif_local_missing_body">اس ڈیوائس میں آپ کے بیک اپ سے کم ڈیٹا ہے۔ آگے بڑھنے کا طریقہ منتخب کرنے کے لیے ایپ کھولیں۔</string>
     <string name="backup_notif_storage_full_title">گوگل ڈرائیو اسٹوریج بھر گیا</string>
@@ -459,4 +459,35 @@
     <string name="notification_channel_mosque_id">mosque_mode</string>
     <string name="notification_channel_mosque_name">مسجد موڈ</string>
     <string name="notification_channel_mosque_desc">محفوظ شدہ مسجد میں فون وائبریٹ پر ہونے کے دوران دکھائی جاتی ہے</string>
+
+    <!-- Donate -->
+    <string name="action_donate">عطیہ کریں</string>
+    <string name="topbar_donate">عطیہ کریں</string>
+    <string name="donate_title">Salah Tracker کی مدد کریں</string>
+    <string name="donate_subtitle">یہ ایپ بنانے میں حقیقی وقت اور وسائل لگتے ہیں</string>
+    <string name="donate_body">Salah Tracker ایک چھوٹی ٹیم نے اپنے فارغ وقت میں بنایا اور اسے برقرار رکھا ہے۔ اسے چلانے اور بہتر بنانے میں اب بھی لاگت آتی ہے — ایپ سٹور کی فیس، سرورز اور اے پی آئیز، ٹیسٹنگ آلات، اور بگ ٹھیک کرنے اور نئی خصوصیات شامل کرنے میں لگنے والے بہت سے گھنٹے۔ اگر اس ایپ نے آپ کی مدد کی ہے، تو آپ کی حمایت ہمیں اسے بناتے رہنے میں مدد دیتی ہے۔</string>
+    <string name="donate_bank_title">بینک ٹرانسفر</string>
+    <string name="donate_account_title_label">اکاؤنٹ ٹائٹل</string>
+    <string name="donate_account_number_label">اکاؤنٹ نمبر</string>
+    <string name="donate_iban_label">آئی بی اے این (IBAN)</string>
+    <string name="donate_wallets_title">موبائل والٹس</string>
+    <string name="donate_wallet_number_label">نمبر</string>
+    <string name="donate_wallet_available_label">دستیاب</string>
+    <string name="donate_copy">کاپی کریں</string>
+    <string name="donate_copied">کلپ بورڈ پر کاپی ہو گیا</string>
+    <string name="donate_contact_hint">کوئی سوال ہے، یا کسی اور طریقے سے بھیجنا چاہتے ہیں؟ رابطہ کریں اور ہم مدد کریں گے۔</string>
+    <string name="donate_contact_button">رابطہ کریں</string>
+    <string name="donate_email_subject">عطیہ — Salah Tracker</string>
+    <string name="donate_email_body">السلام علیکم، میں Salah Tracker کی ترقی میں مدد کرنے کے طریقے کے بارے میں مزید جاننا چاہتا ہوں۔</string>
+
+    <!-- Developers -->
+    <string name="action_developers">ڈیولپرز</string>
+    <string name="topbar_developers">ڈیولپرز</string>
+    <string name="developers_subtitle">Salah Tracker کے پیچھے موجود لوگ</string>
+    <string name="developer_view_linkedin">لنکڈ اِن پروفائل دیکھیں</string>
+    <string name="developer_contribute_title">حصہ لینا چاہتے ہیں؟</string>
+    <string name="developer_contribute_body">Salah Tracker شراکت کے لیے کھلا ہے — بگ فکسز، نئی خصوصیات، تراجم، یا محض خیالات۔ اگر آپ شامل ہونا چاہتے ہیں تو رابطہ کریں اور ہم آپ کو صحیح سمت دکھائیں گے۔</string>
+    <string name="developer_contribute_button">رابطہ کریں</string>
+    <string name="developer_contribute_email_subject">تعاون — Salah Tracker</string>
+    <string name="developer_contribute_email_body">السلام علیکم، میں Salah Tracker میں تعاون کرنا چاہتا ہوں۔ یہاں تھوڑا سا بتا رہا ہوں کہ میں کس چیز میں مدد کرنا چاہوں گا:</string>
 </resources>

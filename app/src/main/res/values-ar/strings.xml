@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Salat Tracker</string>
+    <string name="app_name">Salah Tracker</string>
 
     <string name="nav_home">الرئيسية</string>
     <string name="nav_calendar">التقويم</string>
@@ -20,7 +20,7 @@
     <string name="topbar_edit_goal">تعديل الهدف</string>
     <string name="topbar_missed_prayers">الصلوات الفائتة</string>
     <string name="topbar_backup">النسخ الاحتياطي والاستعادة</string>
-    <string name="topbar_default">Salat Tracker</string>
+    <string name="topbar_default">Salah Tracker</string>
     <string name="cd_menu">القائمة</string>
     <string name="cd_back">رجوع</string>
     <string name="action_add_goal">إضافة هدف</string>
@@ -74,7 +74,7 @@
     <string name="action_view_all">عرض الكل</string>
     <string name="action_mark_done">تحديد كمُنجز</string>
 
-    <string name="onboarding_welcome_title">مرحبًا بك في Salat Tracker</string>
+    <string name="onboarding_welcome_title">مرحبًا بك في Salah Tracker</string>
     <string name="onboarding_welcome_subtitle">يرجى اختيار لغتك المفضّلة لبدء رحلتك.</string>
     <string name="onboarding_change_later">يمكنك تغيير ذلك لاحقًا في الإعدادات.</string>
     <string name="onboarding_theme_title">اختر أجواءك</string>
@@ -368,7 +368,7 @@
     <string name="backup_notif_sign_in_title">النسخ الاحتياطي يحتاج اهتمامك</string>
     <string name="backup_notif_sign_in_body">سجّل الدخول مجددًا لمواصلة النسخ الاحتياطي إلى Google Drive.</string>
     <string name="backup_notif_remote_changed_title">تم العثور على نسخة احتياطية مختلفة</string>
-    <string name="backup_notif_remote_changed_body">افتح Salat Tracker لاختيار كيفية المتابعة.</string>
+    <string name="backup_notif_remote_changed_body">افتح Salah Tracker لاختيار كيفية المتابعة.</string>
     <string name="backup_notif_local_missing_title">تم إيقاف النسخ الاحتياطي مؤقتًا</string>
     <string name="backup_notif_local_missing_body">هذا الجهاز يحتوي على بيانات أقل من نسختك الاحتياطية. افتح التطبيق لاختيار كيفية المتابعة.</string>
     <string name="backup_notif_storage_full_title">مساحة Google Drive ممتلئة</string>
@@ -459,4 +459,35 @@
     <string name="notification_channel_mosque_id">mosque_mode</string>
     <string name="notification_channel_mosque_name">وضع المسجد</string>
     <string name="notification_channel_mosque_desc">يظهر أثناء وجود هاتفك على الاهتزاز داخل مسجد محفوظ</string>
+
+    <!-- Donate -->
+    <string name="action_donate">تبرّع</string>
+    <string name="topbar_donate">تبرّع</string>
+    <string name="donate_title">دعم تطبيق Salah Tracker</string>
+    <string name="donate_subtitle">بناء هذا التطبيق يتطلب وقتاً وموارد حقيقية</string>
+    <string name="donate_body">تم بناء Salah Tracker وصيانته من قبل فريق صغير في وقت فراغه. إبقاء التطبيق يعمل وتحسينه لا يزال يتطلب تكلفة — رسوم متاجر التطبيقات، الخوادم وواجهات البرمجة، أجهزة الاختبار، والساعات الكثيرة التي تُصرف في إصلاح الأخطاء وإضافة المزايا. إذا كان هذا التطبيق قد ساعدك، فدعمك يساعدنا على الاستمرار في تطويره.</string>
+    <string name="donate_bank_title">تحويل بنكي</string>
+    <string name="donate_account_title_label">اسم الحساب</string>
+    <string name="donate_account_number_label">رقم الحساب</string>
+    <string name="donate_iban_label">IBAN</string>
+    <string name="donate_wallets_title">المحافظ الإلكترونية</string>
+    <string name="donate_wallet_number_label">الرقم</string>
+    <string name="donate_wallet_available_label">متوفر على</string>
+    <string name="donate_copy">نسخ</string>
+    <string name="donate_copied">تم النسخ إلى الحافظة</string>
+    <string name="donate_contact_hint">لديك سؤال أو تفضل وسيلة أخرى للإرسال؟ تواصل معنا وسنساعدك.</string>
+    <string name="donate_contact_button">تواصل معنا</string>
+    <string name="donate_email_subject">تبرّع — Salah Tracker</string>
+    <string name="donate_email_body">مرحباً، أرغب في معرفة المزيد عن كيفية دعم تطوير Salah Tracker.</string>
+
+    <!-- Developers -->
+    <string name="action_developers">المطوّرون</string>
+    <string name="topbar_developers">المطوّرون</string>
+    <string name="developers_subtitle">الأشخاص الذين طوّروا Salah Tracker</string>
+    <string name="developer_view_linkedin">عرض الملف الشخصي على LinkedIn</string>
+    <string name="developer_contribute_title">تريد المساهمة؟</string>
+    <string name="developer_contribute_body">تطبيق Salah Tracker مفتوح للمساهمات — إصلاح الأخطاء، ميزات جديدة، ترجمات، أو حتى أفكار. إذا كنت ترغب في المشاركة، تواصل معنا وسنوجهك للخطوة التالية.</string>
+    <string name="developer_contribute_button">تواصل معنا</string>
+    <string name="developer_contribute_email_subject">المساهمة — Salah Tracker</string>
+    <string name="developer_contribute_email_body">مرحباً، أرغب في المساهمة في Salah Tracker. فيما يلي نبذة عما أرغب في المساعدة فيه:</string>
 </resources>

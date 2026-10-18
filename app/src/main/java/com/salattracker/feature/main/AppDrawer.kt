@@ -36,6 +36,8 @@ fun AppDrawer(
     onPrayerRemindersClick: () -> Unit,
     onMosqueModeClick: () -> Unit,
     onBackupClick: () -> Unit,
+    onDonateClick: () -> Unit,
+    onDevelopersClick: () -> Unit,
     onSettingsClick: () -> Unit,
 ) {
     ModalDrawerSheet(
@@ -73,6 +75,16 @@ fun AppDrawer(
             label = stringResource(R.string.backup_title),
             subtitle = if (backupNeedsAttention) stringResource(R.string.backup_action_needed) else null,
             onClick = onBackupClick,
+        )
+        DrawerItem(
+            iconRes = R.drawable.ic_heart,
+            label = stringResource(R.string.action_donate),
+            onClick = onDonateClick,
+        )
+        DrawerItem(
+            iconRes = R.drawable.ic_code,
+            label = stringResource(R.string.action_developers),
+            onClick = onDevelopersClick,
         )
         DrawerItem(
             iconRes = R.drawable.ic_nav_settings,
@@ -114,6 +126,8 @@ fun AppDrawerPreview() {
         onPrayerRemindersClick = {},
         onMosqueModeClick = {},
         onBackupClick = {},
+        onDonateClick = {},
+        onDevelopersClick = {},
         onSettingsClick = {},
     )
 }
