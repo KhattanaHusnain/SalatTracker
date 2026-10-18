@@ -5,6 +5,7 @@ import android.media.AudioManager
 import android.os.Build
 import android.os.Vibrator
 import android.os.VibratorManager
+import android.util.Log
 import com.salattracker.domain.model.RingerMode
 import com.salattracker.domain.repository.RingerController
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -34,7 +35,11 @@ class RingerControllerImpl @Inject constructor(
     }
 
     override fun set(mode: RingerMode): Boolean {
-        val manager = audio ?: return false
+        val manager = audio
+        if (manager == null) {
+            Log.w(TAG, "set($mode): no AudioManager")
+            return false
+        }
         val target = when (mode) {
             RingerMode.NORMAL -> AudioManager.RINGER_MODE_NORMAL
             RingerMode.VIBRATE -> AudioManager.RINGER_MODE_VIBRATE
@@ -42,9 +47,18 @@ class RingerControllerImpl @Inject constructor(
         }
         return try {
             manager.ringerMode = target
-            manager.ringerMode == target
+            val applied = manager.ringerMode == target
+            // setRingerMode(SILENT) is silently discarded without Do Not Disturb access; VIBRATE/NORMAL
+            // normally aren't gated by that, but some OEMs restrict this further.
+            Log.i(TAG, "set($mode): applied=$applied actualRingerMode=${manager.ringerMode}")
+            applied
         } catch (e: SecurityException) {
+            Log.w(TAG, "set($mode): SecurityException", e)
             false
         }
+    }
+
+    private companion object {
+        const val TAG = "MosqueMode"
     }
 }

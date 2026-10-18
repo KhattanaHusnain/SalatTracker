@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import android.util.Log
 import androidx.core.content.ContextCompat
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.location.Geofence
@@ -39,7 +40,11 @@ class MosqueGeofencerImpl @Inject constructor(
 
     @SuppressLint("MissingPermission")
     override suspend fun register(mosques: List<Mosque>): GeofenceSync {
-        if (!hasPermission()) return GeofenceSync.MISSING_PERMISSION
+        if (!hasPermission()) {
+            Log.w(TAG, "register: missing permission (fine=${granted(Manifest.permission.ACCESS_FINE_LOCATION)}, " +
+                "background=${Build.VERSION.SDK_INT < Build.VERSION_CODES.Q || granted(Manifest.permission.ACCESS_BACKGROUND_LOCATION)})")
+            return GeofenceSync.MISSING_PERMISSION
+        }
         return try {
             client.removeGeofences(pendingIntent).await()
             val geofences = mosques.take(MosqueMode.MAX_MOSQUES).map {
@@ -58,16 +63,21 @@ class MosqueGeofencerImpl @Inject constructor(
                 .addGeofences(geofences)
                 .build()
             client.addGeofences(request, pendingIntent).await()
+            Log.i(TAG, "register: OK, ${geofences.size} geofence(s): " +
+                geofences.joinToString { "#${it.requestId}" })
             GeofenceSync.OK
         } catch (e: SecurityException) {
+            Log.w(TAG, "register: SecurityException", e)
             GeofenceSync.MISSING_PERMISSION
         } catch (e: ApiException) {
+            Log.w(TAG, "register: ApiException statusCode=${e.statusCode} (${GeofenceStatusCodes.getStatusCodeString(e.statusCode)})")
             when (e.statusCode) {
                 GeofenceStatusCodes.GEOFENCE_NOT_AVAILABLE -> GeofenceSync.LOCATION_OFF
                 GeofenceStatusCodes.GEOFENCE_INSUFFICIENT_LOCATION_PERMISSION -> GeofenceSync.MISSING_PERMISSION
                 else -> GeofenceSync.FAILED
             }
         } catch (e: Exception) {
+            Log.e(TAG, "register: failed", e)
             GeofenceSync.FAILED
         }
     }
@@ -75,18 +85,21 @@ class MosqueGeofencerImpl @Inject constructor(
     override suspend fun clear() {
         try {
             client.removeGeofences(pendingIntent).await()
+            Log.i(TAG, "clear: OK")
         } catch (e: Exception) {
             // Nothing registered, or Play services unavailable — either way there's nothing to clear.
         }
     }
 
+    private fun granted(p: String) = ContextCompat.checkSelfPermission(context, p) == PackageManager.PERMISSION_GRANTED
+
     private fun hasPermission(): Boolean {
-        fun granted(p: String) = ContextCompat.checkSelfPermission(context, p) == PackageManager.PERMISSION_GRANTED
         val background = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q || granted(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
         return granted(Manifest.permission.ACCESS_FINE_LOCATION) && background
     }
 
     private companion object {
+        const val TAG = "MosqueMode"
         const val REQUEST_CODE = 8100
     }
 }

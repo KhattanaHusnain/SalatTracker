@@ -1,6 +1,7 @@
 package com.salattracker.notification
 
 import android.content.Context
+import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -26,10 +27,14 @@ class MosqueModeSyncWorker @AssistedInject constructor(
     private val controller: MosqueModeController,
 ) : CoroutineWorker(context, params) {
 
-    override suspend fun doWork(): Result =
-        if (controller.sync() == GeofenceSync.FAILED) Result.retry() else Result.success()
+    override suspend fun doWork(): Result {
+        val result = controller.sync()
+        Log.i(TAG, "sync: $result")
+        return if (result == GeofenceSync.FAILED) Result.retry() else Result.success()
+    }
 
     companion object {
+        private const val TAG = "MosqueMode"
         private const val ONE_TIME_WORK_NAME = "mosque_mode_sync"
         private const val PERIODIC_WORK_NAME = "mosque_mode_sync_periodic"
 

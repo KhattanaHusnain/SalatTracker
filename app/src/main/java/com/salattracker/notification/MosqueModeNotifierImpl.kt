@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.salattracker.R
@@ -18,6 +19,7 @@ private const val NOTIFICATION_ID = 1
 private const val NOTIFICATION_TAG = "mosque_mode"
 private const val CONTENT_REQUEST_CODE = 8101
 private const val RESTORE_REQUEST_CODE = 8102
+private const val TAG = "MosqueMode"
 
 @Singleton
 class MosqueModeNotifierImpl @Inject constructor(
@@ -27,7 +29,11 @@ class MosqueModeNotifierImpl @Inject constructor(
     @SuppressLint("MissingPermission")
     override fun showVibrateOn(mosqueName: String) {
         val manager = NotificationManagerCompat.from(context)
-        if (!manager.areNotificationsEnabled()) return
+        if (!manager.areNotificationsEnabled()) {
+            Log.w(TAG, "showVibrateOn: notifications are disabled, not posting")
+            return
+        }
+        Log.i(TAG, "showVibrateOn: $mosqueName")
 
         val contentIntent = Intent(context, MainActivity::class.java).apply {
             putExtra(MainActivity.EXTRA_OPEN_ROUTE, MainActivity.ROUTE_MOSQUE_MODE)
