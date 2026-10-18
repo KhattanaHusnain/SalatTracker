@@ -17,15 +17,16 @@ class LocationProviderImpl @Inject constructor(
 ) : LocationProvider {
 
     @SuppressLint("MissingPermission")
-    override suspend fun getCurrentLocation(): Pair<Double, Double>? {
+    override suspend fun getCurrentLocation(highAccuracy: Boolean): Pair<Double, Double>? {
         val cancellationTokenSource = CancellationTokenSource()
         val location = try {
             suspendCancellableCoroutine<Location?> { cont ->
                 fusedLocationClient.getCurrentLocation(
-                    Priority.PRIORITY_BALANCED_POWER_ACCURACY,
+                    if (highAccuracy) Priority.PRIORITY_HIGH_ACCURACY else Priority.PRIORITY_BALANCED_POWER_ACCURACY,
                     cancellationTokenSource.token,
                 ).addOnSuccessListener { loc -> cont.resume(loc) }
                     .addOnFailureListener { cont.resume(null) }
+                    .addOnCanceledListener { cont.resume(null) }
                 cont.invokeOnCancellation { cancellationTokenSource.cancel() }
             }
         } catch (e: SecurityException) {

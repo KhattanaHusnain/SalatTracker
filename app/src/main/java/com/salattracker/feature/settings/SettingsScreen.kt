@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.core.ui.SettingsCard
+import com.salattracker.core.ui.SettingsSectionLabel
+import com.salattracker.core.ui.salatSwitchColors
 import com.salattracker.domain.model.AppLanguage
 import com.salattracker.domain.model.CalculationMethod
 import com.salattracker.domain.model.ThemeMode
@@ -108,21 +110,6 @@ fun SettingsScreen(
     }
 }
 
-// ── Section label ─────────────────────────────────────────────────────────────
-
-@Composable
-private fun SettingsSectionLabel(text: String, modifier: Modifier = Modifier) {
-    Text(
-        text          = text.uppercase(),
-        modifier      = modifier.fillMaxWidth(),
-        color         = SalatPrimaryContainer,
-        fontSize      = 11.sp,
-        fontWeight    = FontWeight.SemiBold,
-        fontFamily    = InterFamily,
-        letterSpacing = 1.5.sp,
-    )
-}
-
 // ── Location & Prayer Times card ──────────────────────────────────────────────
 
 @Composable
@@ -155,12 +142,7 @@ private fun LocationAndPrayerTimesCard(
             Switch(
                 checked         = useDeviceLocation,
                 onCheckedChange = onToggleDevice,
-                colors          = SwitchDefaults.colors(
-                    checkedThumbColor   = SalatOnPrimary,
-                    checkedTrackColor   = SalatPrimary,
-                    uncheckedThumbColor = SalatOutline,
-                    uncheckedTrackColor = SalatOutlineVariant,
-                ),
+                colors          = salatSwitchColors(),
             )
         }
 
@@ -331,12 +313,7 @@ private fun AppearanceCard(
             Switch(
                 checked         = use24Hour,
                 onCheckedChange = on24HourChanged,
-                colors          = SwitchDefaults.colors(
-                    checkedThumbColor   = SalatOnPrimary,
-                    checkedTrackColor   = SalatPrimary,
-                    uncheckedThumbColor = SalatOutline,
-                    uncheckedTrackColor = SalatOutlineVariant,
-                ),
+                colors          = salatSwitchColors(),
             )
         }
     }

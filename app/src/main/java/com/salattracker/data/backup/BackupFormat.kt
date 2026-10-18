@@ -4,6 +4,8 @@ import com.google.gson.GsonBuilder
 import com.google.gson.annotations.SerializedName
 import com.salattracker.domain.model.GoalCategory
 import com.salattracker.domain.model.GoalFrequency
+import com.salattracker.domain.model.Mosque
+import com.salattracker.domain.model.MosqueMode
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.repository.UserPrefs
@@ -67,6 +69,8 @@ data class BackupSnapshot(
     /** Highest streak per prayer type — current streak is always recomputed after restore, not stored. */
     val highestStreaks: Map<PrayerType, Int>,
     val settings: UserPrefs,
+    /** Saved Mosque Mode places. The on/off switch is deliberately not backed up: permissions don't transfer to a new phone. */
+    val mosques: List<Mosque> = emptyList(),
 )
 
 /** Everything needed to decide whether a remote backup is safe to overwrite, without downloading it. */
@@ -115,6 +119,14 @@ private data class CheckInDto(
     @SerializedName("isSkip") val isSkip: Boolean?,
 )
 
+private data class MosqueDto(
+    @SerializedName("id") val id: Long?,
+    @SerializedName("name") val name: String?,
+    @SerializedName("latitude") val latitude: Double?,
+    @SerializedName("longitude") val longitude: Double?,
+    @SerializedName("radiusMeters") val radiusMeters: Int?,
+)
+
 private data class StreakDto(
     @SerializedName("prayerType") val prayerType: String?,
     @SerializedName("highestStreak") val highestStreak: Int?,
@@ -138,6 +150,8 @@ private data class PayloadDto(
     @SerializedName("checkIns") val checkIns: List<CheckInDto>?,
     @SerializedName("streaks") val streaks: List<StreakDto>?,
     @SerializedName("settings") val settingsDto: SettingsDto?,
+    // Added after format v1; absent in older backups, which then restore with no saved mosques.
+    @SerializedName("mosques") val mosques: List<MosqueDto>?,
 )
 
 private data class MetaDto(
@@ -287,6 +301,9 @@ object BackupCodec {
             language               = settings.language.name,
             themeMode               = settings.themeMode.name,
         ),
+        mosques = mosques.map {
+            MosqueDto(id = it.id, name = it.name, latitude = it.latitude, longitude = it.longitude, radiusMeters = it.radiusMeters)
+        },
     )
 
     private fun PayloadDto.toSnapshot(): BackupSnapshot {
@@ -306,6 +323,7 @@ object BackupCodec {
                 type to (dto.highestStreak ?: 0)
             },
             settings = (settingsDto ?: throw BackupFormatException("Backup file has no settings")).toDomain(),
+            mosques  = (mosques ?: emptyList()).map { it.toDomain() },
         )
     }
 
@@ -330,6 +348,14 @@ object BackupCodec {
         isActive        = isActive ?: true,
         daysOfWeek      = daysOfWeek ?: 0,
         endsAfterDuration = endsAfterDuration ?: false,
+    )
+
+    private fun MosqueDto.toDomain() = Mosque(
+        id           = id ?: throw BackupFormatException("Mosque missing id"),
+        name         = name ?: throw BackupFormatException("Mosque missing name"),
+        latitude     = latitude ?: throw BackupFormatException("Mosque missing latitude"),
+        longitude    = longitude ?: throw BackupFormatException("Mosque missing longitude"),
+        radiusMeters = radiusMeters ?: MosqueMode.DEFAULT_RADIUS_METERS,
     )
 
     private fun CheckInDto.toDomain() = BackupCheckIn(

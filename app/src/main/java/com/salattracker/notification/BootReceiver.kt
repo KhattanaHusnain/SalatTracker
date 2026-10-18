@@ -17,6 +17,7 @@ class BootReceiver : BroadcastReceiver() {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
             PrayerReminderWorker.enqueueOneTime(workManager)
             GoalReminderWorker.enqueueOneTime(workManager)
+            MosqueModeSyncWorker.enqueueOneTime(workManager)
         }
     }
 }

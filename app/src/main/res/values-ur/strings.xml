@@ -411,4 +411,52 @@
         <item>ذیقعد</item>
         <item>ذیالحج</item>
     </string-array>
+
+    <string name="mosque_mode">مسجد موڈ</string>
+    <string name="topbar_mosque_mode">مسجد موڈ</string>
+    <string name="mosque_toggle_title">مساجد میں وائبریٹ</string>
+    <string name="mosque_toggle_desc">محفوظ شدہ مسجد میں ایک منٹ رہنے کے بعد آپ کا فون وائبریٹ پر چلا جاتا ہے، اور نکلنے پر واپس آ جاتا ہے۔</string>
+    <string name="mosque_vibrate_on">وائبریٹ آن ہے · %1$s</string>
+    <string name="mosque_restore_sound">آواز بحال کریں</string>
+    <string name="mosque_unavailable">اس ڈیوائس میں وائبریشن موٹر نہیں ہے، اس لیے مسجد موڈ دستیاب نہیں۔</string>
+    <string name="mosque_access_needed">لوکیشن کو «ہر وقت» کی اجازت دیں تاکہ ایپ بند ہونے پر بھی مسجد موڈ آپ کے پہنچنے کا پتا لگا سکے۔</string>
+    <string name="mosque_access_allow">اجازت دیں</string>
+    <string name="mosque_access_open_settings">سیٹنگز کھولیں</string>
+    <string name="mosque_location_off">لوکیشن بند ہے، اس لیے مسجد موڈ آپ کے پہنچنے کا پتا نہیں لگا سکتا۔</string>
+    <string name="mosque_location_turn_on">آن کریں</string>
+    <string name="mosque_my_mosques">میری مساجد</string>
+    <string name="mosque_empty">ابھی کوئی مسجد نہیں۔ وہ مسجد شامل کریں جہاں آپ نماز پڑھتے ہیں، وہاں پہنچنے پر آپ کا فون خاموش ہو جائے گا۔</string>
+    <string name="mosque_add_current">موجودہ مقام شامل کریں</string>
+    <string name="mosque_find_nearby">قریبی مساجد تلاش کریں</string>
+    <string name="mosque_distance_meters">%1$d میٹر</string>
+    <string name="mosque_sheet_add_title">مسجد شامل کریں</string>
+    <string name="mosque_sheet_edit_title">مسجد میں ترمیم کریں</string>
+    <string name="mosque_open_in_maps">میپس میں کھولیں</string>
+    <string name="mosque_name_label">مسجد کا نام</string>
+    <string name="mosque_name_required">نام درج کریں</string>
+    <string name="mosque_radius_label">مسجد کے گرد علاقہ</string>
+    <string name="mosque_radius_hint">عمارتوں کے اندر وسیع علاقہ زیادہ قابلِ بھروسا ہوتا ہے۔</string>
+    <string name="mosque_save">محفوظ کریں</string>
+    <string name="mosque_delete_title">یہ مسجد حذف کریں؟</string>
+    <string name="mosque_delete_desc">مسجد موڈ اب یہاں آپ کے فون کو وائبریٹ پر نہیں کرے گا۔</string>
+    <string name="mosque_nearby_title">آپ کے قریب مساجد</string>
+    <string name="mosque_nearby_empty">OpenStreetMap پر 2 کلومیٹر کے اندر کوئی مسجد نہیں ملی۔ اپنی مسجد کے اندر کھڑے ہو کر «موجودہ مقام شامل کریں» استعمال کریں۔</string>
+    <string name="mosque_nearby_failed">تلاش نہیں ہو سکی۔ اپنا کنکشن چیک کریں اور دوبارہ کوشش کریں۔</string>
+    <string name="mosque_nearby_location_failed">آپ کی لوکیشن حاصل نہیں ہو سکی۔ دیکھیں کہ لوکیشن آن ہے اور دوبارہ کوشش کریں۔</string>
+    <string name="mosque_nearby_retry">دوبارہ کوشش کریں</string>
+    <string name="mosque_nearby_added">شامل ہو گئی</string>
+    <string name="mosque_nearby_unnamed">بے نام مسجد</string>
+    <string name="mosque_osm_credit">© OpenStreetMap کے معاونین</string>
+    <string name="mosque_disclosure_title">پس منظر میں لوکیشن</string>
+    <string name="mosque_disclosure_body">یہ ایپ آپ کی لوکیشن پس منظر میں استعمال کرتی ہے — ایپ بند ہو یا استعمال میں نہ ہو تب بھی — تاکہ محفوظ شدہ مسجد میں آپ کے پہنچنے یا نکلنے کا پتا لگا کر فون کو وائبریٹ پر کرے اور پھر واپس لائے۔ ایپ آپ کی لوکیشن محفوظ یا شیئر نہیں کرتی۔ اگلی اسکرین پر «ہر وقت اجازت دیں» منتخب کریں۔</string>
+    <string name="mosque_msg_location_unavailable">آپ کی لوکیشن حاصل نہیں ہو سکی۔ دیکھیں کہ لوکیشن آن ہے اور دوبارہ کوشش کریں۔</string>
+    <string name="mosque_msg_limit">آپ زیادہ سے زیادہ 100 مساجد محفوظ کر سکتے ہیں۔</string>
+    <string name="mosque_msg_save_failed">محفوظ نہیں ہو سکا۔ دوبارہ کوشش کریں۔</string>
+    <string name="mosque_msg_sync_failed">آپ کی مساجد کی نگرانی شروع نہیں ہو سکی۔ بعد میں کوشش کریں۔</string>
+    <string name="mosque_notif_title">وائبریٹ آن ہے</string>
+    <string name="mosque_notif_body">آپ %1$s میں ہیں۔ نکلنے پر آواز بحال ہو جائے گی۔</string>
+    <string name="mosque_notif_restore">آواز بحال کریں</string>
+    <string name="notification_channel_mosque_id">mosque_mode</string>
+    <string name="notification_channel_mosque_name">مسجد موڈ</string>
+    <string name="notification_channel_mosque_desc">محفوظ شدہ مسجد میں فون وائبریٹ پر ہونے کے دوران دکھائی جاتی ہے</string>
 </resources>

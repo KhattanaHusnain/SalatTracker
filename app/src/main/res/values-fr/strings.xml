@@ -411,4 +411,52 @@
         <item>Dhou al-Qi\'da</item>
         <item>Dhou al-Hijja</item>
     </string-array>
+
+    <string name="mosque_mode">Mode mosquée</string>
+    <string name="topbar_mosque_mode">Mode mosquée</string>
+    <string name="mosque_toggle_title">Vibreur dans les mosquées</string>
+    <string name="mosque_toggle_desc">Passe votre téléphone en mode vibreur après une minute dans une mosquée enregistrée, puis le rétablit à votre départ.</string>
+    <string name="mosque_vibrate_on">Vibreur activé · %1$s</string>
+    <string name="mosque_restore_sound">Rétablir le son</string>
+    <string name="mosque_unavailable">Cet appareil n\'a pas de vibreur, le mode mosquée n\'est donc pas disponible.</string>
+    <string name="mosque_access_needed">Autorisez la localisation « Tout le temps » pour que le mode mosquée détecte votre arrivée, même quand l\'application est fermée.</string>
+    <string name="mosque_access_allow">Autoriser</string>
+    <string name="mosque_access_open_settings">Ouvrir les réglages</string>
+    <string name="mosque_location_off">La localisation est désactivée : le mode mosquée ne peut pas détecter votre arrivée.</string>
+    <string name="mosque_location_turn_on">Activer</string>
+    <string name="mosque_my_mosques">Mes mosquées</string>
+    <string name="mosque_empty">Aucune mosquée pour l\'instant. Ajoutez celle où vous priez et votre téléphone se taira à votre arrivée.</string>
+    <string name="mosque_add_current">Ajouter la position actuelle</string>
+    <string name="mosque_find_nearby">Trouver des mosquées proches</string>
+    <string name="mosque_distance_meters">%1$d m</string>
+    <string name="mosque_sheet_add_title">Ajouter une mosquée</string>
+    <string name="mosque_sheet_edit_title">Modifier la mosquée</string>
+    <string name="mosque_open_in_maps">Ouvrir dans Maps</string>
+    <string name="mosque_name_label">Nom de la mosquée</string>
+    <string name="mosque_name_required">Saisissez un nom</string>
+    <string name="mosque_radius_label">Zone autour de la mosquée</string>
+    <string name="mosque_radius_hint">Une zone plus large est plus fiable à l\'intérieur des bâtiments.</string>
+    <string name="mosque_save">Enregistrer</string>
+    <string name="mosque_delete_title">Supprimer cette mosquée ?</string>
+    <string name="mosque_delete_desc">Le mode mosquée ne passera plus votre téléphone en vibreur ici.</string>
+    <string name="mosque_nearby_title">Mosquées près de vous</string>
+    <string name="mosque_nearby_empty">Aucune mosquée trouvée dans un rayon de 2 km sur OpenStreetMap. Placez-vous dans la vôtre et utilisez « Ajouter la position actuelle ».</string>
+    <string name="mosque_nearby_failed">Recherche impossible. Vérifiez votre connexion et réessayez.</string>
+    <string name="mosque_nearby_location_failed">Impossible d\'obtenir votre position. Vérifiez que la localisation est activée et réessayez.</string>
+    <string name="mosque_nearby_retry">Réessayer</string>
+    <string name="mosque_nearby_added">Ajoutée</string>
+    <string name="mosque_nearby_unnamed">Mosquée sans nom</string>
+    <string name="mosque_osm_credit">© Contributeurs OpenStreetMap</string>
+    <string name="mosque_disclosure_title">Localisation en arrière-plan</string>
+    <string name="mosque_disclosure_body">Cette application utilise votre position en arrière-plan, même lorsqu\'elle est fermée ou inutilisée, pour détecter votre arrivée dans une mosquée enregistrée ou votre départ, afin de passer votre téléphone en vibreur puis de le rétablir. L\'application ne conserve ni ne partage votre position. À l\'étape suivante, choisissez « Toujours autoriser ».</string>
+    <string name="mosque_msg_location_unavailable">Impossible d\'obtenir votre position. Vérifiez que la localisation est activée et réessayez.</string>
+    <string name="mosque_msg_limit">Vous pouvez enregistrer jusqu\'à 100 mosquées.</string>
+    <string name="mosque_msg_save_failed">Enregistrement impossible. Réessayez.</string>
+    <string name="mosque_msg_sync_failed">Impossible de surveiller vos mosquées. Réessayez plus tard.</string>
+    <string name="mosque_notif_title">Vibreur activé</string>
+    <string name="mosque_notif_body">Vous êtes à %1$s. Le son reviendra à votre départ.</string>
+    <string name="mosque_notif_restore">Rétablir le son</string>
+    <string name="notification_channel_mosque_id">mosque_mode</string>
+    <string name="notification_channel_mosque_name">Mode mosquée</string>
+    <string name="notification_channel_mosque_desc">Affichée quand votre téléphone est en vibreur dans une mosquée enregistrée</string>
 </resources>
