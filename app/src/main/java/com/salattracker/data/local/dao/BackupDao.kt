@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.salattracker.data.local.entity.GoalCheckInEntity
+import com.salattracker.data.local.entity.MosqueEntity
 import com.salattracker.data.local.entity.PrayerEntryEntity
 import com.salattracker.data.local.entity.SpiritualGoalEntity
 
@@ -33,6 +34,9 @@ interface BackupDao {
     @Query("SELECT * FROM goal_check_ins ORDER BY goal_id ASC, date ASC, id ASC")
     suspend fun getAllCheckIns(): List<GoalCheckInEntity>
 
+    @Query("SELECT * FROM mosques ORDER BY id ASC")
+    suspend fun getAllMosques(): List<MosqueEntity>
+
     // ── Counts for the shrink guard (cheaper than reading every row) ──
 
     @Query("SELECT COUNT(*) FROM prayer_entries WHERE user_id = :userId")
@@ -55,6 +59,9 @@ interface BackupDao {
     @Query("DELETE FROM streak_snapshots WHERE user_id = :userId")
     suspend fun clearStreaks(userId: String)
 
+    @Query("DELETE FROM mosques")
+    suspend fun clearMosques()
+
     // ── Bulk insert for restore. Goals and check-ins keep their original ids (nullif(?, 0)
     // in Room's generated SQL preserves a non-zero id instead of autogenerating one). ──
 
@@ -66,4 +73,7 @@ interface BackupDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCheckIns(checkIns: List<GoalCheckInEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertMosques(mosques: List<MosqueEntity>)
 }

@@ -2,6 +2,7 @@ package com.salattracker.data.backup
 
 import com.salattracker.domain.model.GoalCategory
 import com.salattracker.domain.model.GoalFrequency
+import com.salattracker.domain.model.Mosque
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.repository.UserPrefs
@@ -106,6 +107,45 @@ class BackupCodecTest {
         val (_, decoded) = BackupCodec.decode(bytes)
 
         assertTrue(decoded.settings.useDeviceLocation)
+    }
+
+    @Test
+    fun `round trip preserves saved mosques`() {
+        val snapshot = sampleSnapshot().copy(
+            mosques = listOf(
+                Mosque(3, "Masjid Quba", 24.4393, 39.6175, 150),
+                Mosque(4, "Al-Noor", 24.0, 39.0, 100),
+            ),
+        )
+        val (_, decoded) = BackupCodec.decode(BackupCodec.encode(snapshot, sampleMeta(snapshot)))
+
+        assertEquals(snapshot.mosques, decoded.mosques)
+    }
+
+    @Test
+    fun `a backup written before Mosque Mode existed restores with no mosques`() {
+        val json = """{"meta":{"formatVersion":1,"revisionId":"r","createdAt":1,"appVersionCode":1,"deviceModel":"x",
+            "prayerEntryCount":0},"payload":{"prayerEntries":[],"goals":[],"checkIns":[],"streaks":[],
+            "settings":{}}}""".trimIndent()
+        val bytes = java.io.ByteArrayOutputStream().also { out ->
+            java.util.zip.GZIPOutputStream(out).use { it.write(json.toByteArray()) }
+        }.toByteArray()
+
+        val (_, decoded) = BackupCodec.decode(bytes)
+
+        assertTrue(decoded.mosques.isEmpty())
+    }
+
+    @Test
+    fun `a mosque without coordinates is rejected rather than restored at 0,0`() {
+        val json = """{"meta":{"formatVersion":1,"revisionId":"r","createdAt":1,"appVersionCode":1,"deviceModel":"x",
+            "prayerEntryCount":0},"payload":{"prayerEntries":[],"goals":[],"checkIns":[],"streaks":[],
+            "settings":{},"mosques":[{"id":1,"name":"No Place"}]}}""".trimIndent()
+        val bytes = java.io.ByteArrayOutputStream().also { out ->
+            java.util.zip.GZIPOutputStream(out).use { it.write(json.toByteArray()) }
+        }.toByteArray()
+
+        assertThrows(BackupFormatException::class.java) { BackupCodec.decode(bytes) }
     }
 
     @Test

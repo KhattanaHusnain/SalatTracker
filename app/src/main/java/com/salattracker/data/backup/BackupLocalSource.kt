@@ -8,16 +8,19 @@ import com.salattracker.data.local.dao.BackupDao
 import com.salattracker.data.local.dao.StreakDao
 import com.salattracker.data.local.db.SalatDatabase
 import com.salattracker.data.local.entity.GoalCheckInEntity
+import com.salattracker.data.local.entity.MosqueEntity
 import com.salattracker.data.local.entity.PrayerEntryEntity
 import com.salattracker.data.local.entity.SpiritualGoalEntity
 import com.salattracker.data.local.entity.StreakSnapshotEntity
 import com.salattracker.data.repository.LOCAL_USER_ID
 import com.salattracker.core.locale.LocaleManager
+import com.salattracker.domain.model.Mosque
 import com.salattracker.domain.repository.PrayerRepository
 import com.salattracker.domain.repository.SettingsRepository
 import com.salattracker.notification.GoalAlarmScheduler
 import com.salattracker.notification.GoalReminderReceiver
 import com.salattracker.notification.GoalReminderWorker
+import com.salattracker.notification.MosqueModeSyncWorker
 import com.salattracker.notification.PrayerReminderWorker
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.time.LocalDate
@@ -71,6 +74,7 @@ class RoomBackupLocalSource @Inject constructor(
             BackupCheckIn(goalId = it.goalId, date = it.date, amount = it.amount, isSkip = it.isSkip)
         }
         val highestStreaks = streakDao.getAllSnapshots(userId).associate { it.prayerType to it.highestStreak }
+        val mosques = backupDao.getAllMosques().map { Mosque(it.id, it.name, it.latitude, it.longitude, it.radiusMeters) }
         val settings = settingsRepository.getCurrentPrefs()
 
         BackupSnapshot(
@@ -79,6 +83,7 @@ class RoomBackupLocalSource @Inject constructor(
             checkIns       = checkIns,
             highestStreaks = highestStreaks,
             settings       = settings,
+            mosques        = mosques,
         )
     }
 
@@ -96,6 +101,7 @@ class RoomBackupLocalSource @Inject constructor(
             backupDao.clearGoals()
             backupDao.clearCheckIns()
             backupDao.clearStreaks(userId)
+            backupDao.clearMosques()
 
             backupDao.insertPrayerEntries(
                 snapshot.prayerEntries.map {
@@ -114,6 +120,9 @@ class RoomBackupLocalSource @Inject constructor(
             )
             backupDao.insertCheckIns(
                 snapshot.checkIns.map { GoalCheckInEntity(goalId = it.goalId, date = it.date, amount = it.amount, isSkip = it.isSkip) }
+            )
+            backupDao.insertMosques(
+                snapshot.mosques.map { MosqueEntity(it.id, it.name, it.latitude, it.longitude, it.radiusMeters) }
             )
             // Seed highest streak so recalculateStreaks() carries it forward correctly;
             // current streak is always recomputed below, never trusted from the backup.
@@ -155,6 +164,7 @@ class RoomBackupLocalSource @Inject constructor(
 
         PrayerReminderWorker.enqueueOneTime(workManager)
         GoalReminderWorker.enqueueOneTime(workManager)
+        MosqueModeSyncWorker.enqueueOneTime(workManager)
         LocaleManager.apply(s.language)
 
         return previousGoalIds
