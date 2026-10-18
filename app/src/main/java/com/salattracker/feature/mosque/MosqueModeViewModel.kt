@@ -37,10 +37,12 @@ data class MosqueDraft(
 
 data class NearbyItem(val mosque: NearbyMosque, val alreadyAdded: Boolean)
 
+enum class NearbyFailure { LOCATION_UNAVAILABLE, SEARCH_FAILED }
+
 data class NearbyUiState(
     val isLoading: Boolean = true,
     val results: List<NearbyItem> = emptyList(),
-    val failed: Boolean = false,
+    val failure: NearbyFailure? = null,
 )
 
 data class MosqueModeUiState(
@@ -135,7 +137,7 @@ class MosqueModeViewModel @Inject constructor(
             _uiState.update { it.copy(nearby = NearbyUiState(isLoading = true)) }
             val fix = locationProvider.getCurrentLocation()
             if (fix == null) {
-                _uiState.update { it.copy(nearby = NearbyUiState(isLoading = false, failed = true)) }
+                _uiState.update { it.copy(nearby = NearbyUiState(isLoading = false, failure = NearbyFailure.LOCATION_UNAVAILABLE)) }
                 return@launch
             }
             val saved = _uiState.value.mosques
@@ -146,7 +148,7 @@ class MosqueModeViewModel @Inject constructor(
                     }
                     _uiState.update { it.copy(nearby = NearbyUiState(isLoading = false, results = items)) }
                 }
-                .onFailure { _uiState.update { it.copy(nearby = NearbyUiState(isLoading = false, failed = true)) } }
+                .onFailure { _uiState.update { it.copy(nearby = NearbyUiState(isLoading = false, failure = NearbyFailure.SEARCH_FAILED)) } }
         }
     }
 

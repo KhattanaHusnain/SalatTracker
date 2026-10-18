@@ -462,6 +462,7 @@
     <string name="mosque_nearby_title">Mosques near you</string>
     <string name="mosque_nearby_empty">No mosques found within 2 km on OpenStreetMap. Stand inside yours and use Add current location.</string>
     <string name="mosque_nearby_failed">Couldn\'t search. Check your connection and try again.</string>
+    <string name="mosque_nearby_location_failed">Couldn\'t get your location. Check that location is on and try again.</string>
     <string name="mosque_nearby_retry">Try again</string>
     <string name="mosque_nearby_added">Added</string>
     <string name="mosque_nearby_unnamed">Unnamed mosque</string>

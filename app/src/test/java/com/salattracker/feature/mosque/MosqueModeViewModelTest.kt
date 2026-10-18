@@ -227,7 +227,7 @@ class MosqueModeViewModelTest {
 
         val nearby = viewModel.uiState.value.nearby!!
         assertFalse(nearby.isLoading)
-        assertFalse(nearby.failed)
+        assertNull(nearby.failure)
         assertEquals(listOf(true, false), nearby.results.map { it.alreadyAdded })
     }
 
@@ -240,7 +240,7 @@ class MosqueModeViewModelTest {
 
         val nearby = viewModel.uiState.value.nearby!!
         assertFalse(nearby.isLoading)
-        assertFalse(nearby.failed)
+        assertNull(nearby.failure)
         assertTrue(nearby.results.isEmpty())
     }
 
@@ -251,25 +251,25 @@ class MosqueModeViewModelTest {
         val viewModel = createViewModel()
 
         viewModel.onFindNearby()
-        assertTrue(viewModel.uiState.value.nearby!!.failed)
+        assertEquals(NearbyFailure.SEARCH_FAILED, viewModel.uiState.value.nearby!!.failure)
 
         repository.nearbyError = null
         repository.nearby = listOf(NearbyMosque("Jamia", 24.01, 39.0, 1100))
         viewModel.onNearbyRetry()
 
         val nearby = viewModel.uiState.value.nearby!!
-        assertFalse(nearby.failed)
+        assertNull(nearby.failure)
         assertEquals(1, nearby.results.size)
     }
 
     @Test
-    fun `nearby search without a location fix fails without calling the network`() {
+    fun `nearby search without a location fix reports a location failure without calling the network`() {
         locationProvider.nextLocation = null
         val viewModel = createViewModel()
 
         viewModel.onFindNearby()
 
-        assertTrue(viewModel.uiState.value.nearby!!.failed)
+        assertEquals(NearbyFailure.LOCATION_UNAVAILABLE, viewModel.uiState.value.nearby!!.failure)
         assertEquals(0, repository.findNearbyCalls)
     }
 

@@ -442,6 +442,7 @@
     <string name="mosque_nearby_title">مساجد بالقرب منك</string>
     <string name="mosque_nearby_empty">لم يتم العثور على مساجد ضمن 2 كم على OpenStreetMap. قف داخل مسجدك واستخدم «إضافة الموقع الحالي».</string>
     <string name="mosque_nearby_failed">تعذّر البحث. تحقق من اتصالك وحاول مرة أخرى.</string>
+    <string name="mosque_nearby_location_failed">تعذّر تحديد موقعك. تأكد من تشغيل الموقع وحاول مرة أخرى.</string>
     <string name="mosque_nearby_retry">حاول مرة أخرى</string>
     <string name="mosque_nearby_added">تمت الإضافة</string>
     <string name="mosque_nearby_unnamed">مسجد بلا اسم</string>

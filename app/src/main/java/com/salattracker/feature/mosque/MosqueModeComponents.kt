@@ -248,8 +248,12 @@ fun NearbyMosquesSheet(
                 state.isLoading -> Box(Modifier.fillMaxWidth().padding(vertical = 32.dp), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(color = SalatPrimary)
                 }
-                state.failed -> Column(Modifier.fillMaxWidth().padding(vertical = 16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(stringResource(R.string.mosque_nearby_failed), color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = InterFamily, textAlign = TextAlign.Center)
+                state.failure != null -> Column(Modifier.fillMaxWidth().padding(vertical = 16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    val message = when (state.failure) {
+                        NearbyFailure.LOCATION_UNAVAILABLE -> stringResource(R.string.mosque_nearby_location_failed)
+                        NearbyFailure.SEARCH_FAILED -> stringResource(R.string.mosque_nearby_failed)
+                    }
+                    Text(message, color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = InterFamily, textAlign = TextAlign.Center)
                     Spacer(Modifier.height(8.dp))
                     TextButton(onClick = onRetry) {
                         Text(stringResource(R.string.mosque_nearby_retry), color = SalatPrimary, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)

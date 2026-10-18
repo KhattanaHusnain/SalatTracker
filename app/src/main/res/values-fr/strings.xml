@@ -442,6 +442,7 @@
     <string name="mosque_nearby_title">Mosquées près de vous</string>
     <string name="mosque_nearby_empty">Aucune mosquée trouvée dans un rayon de 2 km sur OpenStreetMap. Placez-vous dans la vôtre et utilisez « Ajouter la position actuelle ».</string>
     <string name="mosque_nearby_failed">Recherche impossible. Vérifiez votre connexion et réessayez.</string>
+    <string name="mosque_nearby_location_failed">Impossible d\'obtenir votre position. Vérifiez que la localisation est activée et réessayez.</string>
     <string name="mosque_nearby_retry">Réessayer</string>
     <string name="mosque_nearby_added">Ajoutée</string>
     <string name="mosque_nearby_unnamed">Mosquée sans nom</string>
