@@ -49,6 +49,8 @@ import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.isDark
 import com.salattracker.domain.usecase.CalendarViewType
 import com.salattracker.feature.backup.BackupEntry
+import com.salattracker.feature.developers.DevelopersEntry
+import com.salattracker.feature.donate.DonateEntry
 import com.salattracker.feature.bulkupdate.BulkUpdateEntry
 import com.salattracker.feature.calendar.CalendarEntry
 import com.salattracker.feature.calendar.CalendarViewModel
@@ -257,6 +259,8 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                 onPrayerRemindersClick = { navController.push(Routes.PRAYER_REMINDERS) },
                 onMosqueModeClick = { navController.push(Routes.MOSQUE_MODE) },
                 onBackupClick          = { navController.push(Routes.BACKUP) },
+                onDonateClick          = { navController.push(Routes.DONATE) },
+                onDevelopersClick      = { navController.push(Routes.DEVELOPERS) },
                 onSettingsClick        = { navController.push(Routes.SETTINGS) },
             )
         },
@@ -342,6 +346,12 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                 }
                 composable(Routes.MOSQUE_MODE) {
                     MosqueModeEntry()
+                }
+                composable(Routes.DONATE) {
+                    DonateEntry()
+                }
+                composable(Routes.DEVELOPERS) {
+                    DevelopersEntry()
                 }
                 composable(
                     Routes.BULK_UPDATE,
@@ -554,6 +564,8 @@ private fun topBarTitle(route: String?): String = stringResource(
         Routes.BULK_UPDATE            -> R.string.topbar_bulk_update
         Routes.PRAYER_REMINDERS       -> R.string.prayer_reminders
         Routes.MOSQUE_MODE            -> R.string.topbar_mosque_mode
+        Routes.DONATE                 -> R.string.topbar_donate
+        Routes.DEVELOPERS             -> R.string.topbar_developers
         Routes.ADD_GOAL               -> R.string.topbar_new_goal
         Routes.MISSED_PRAYERS         -> R.string.topbar_missed_prayers
         else -> when {

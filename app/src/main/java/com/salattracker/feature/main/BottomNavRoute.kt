@@ -32,6 +32,8 @@ object Routes {
     const val BULK_UPDATE      = "bulk_update?status={status}"
     const val PRAYER_REMINDERS = "prayer_reminders"
     const val MOSQUE_MODE      = "mosque_mode"
+    const val DONATE           = "donate"
+    const val DEVELOPERS       = "developers"
     const val ADD_GOAL         = "add_goal"
     const val EDIT_GOAL        = "edit_goal/{goalId}"
     const val GOAL_DETAILS     = "goal_details/{goalId}"
