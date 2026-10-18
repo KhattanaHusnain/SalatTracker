@@ -68,6 +68,7 @@ fun MosqueModeScreen(
     onDraftSave: () -> Unit,
     onDraftDismiss: () -> Unit,
     onDeleteClick: () -> Unit,
+    onOpenInMaps: (latitude: Double, longitude: Double, name: String) -> Unit,
     onDeleteConfirm: () -> Unit,
     onDeleteDismiss: () -> Unit,
     onNearbySelect: (NearbyItem) -> Unit,
@@ -171,6 +172,7 @@ fun MosqueModeScreen(
             onRadiusChange = onDraftRadiusChange,
             onSave = onDraftSave,
             onDelete = onDeleteClick,
+            onOpenInMaps = onOpenInMaps,
             onDismiss = onDraftDismiss,
         )
         if (uiState.showDeleteConfirm) {
@@ -261,7 +263,7 @@ fun MosqueModeScreenPreview() {
         onEnabledChange = {}, onAccessAction = {}, onTurnOnLocation = {}, onRestoreSound = {},
         onAddCurrentLocation = {}, onFindNearby = {}, onMosqueClick = {},
         onDraftNameChange = {}, onDraftRadiusChange = {}, onDraftSave = {}, onDraftDismiss = {},
-        onDeleteClick = {}, onDeleteConfirm = {}, onDeleteDismiss = {},
+        onDeleteClick = {}, onOpenInMaps = { _, _, _ -> }, onDeleteConfirm = {}, onDeleteDismiss = {},
         onNearbySelect = {}, onNearbyRetry = {}, onNearbyDismiss = {},
         onDisclosureContinue = {}, onDisclosureDismiss = {}, onMessageDismiss = {},
     )

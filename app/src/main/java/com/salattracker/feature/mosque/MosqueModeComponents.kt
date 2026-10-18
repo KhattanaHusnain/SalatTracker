@@ -24,6 +24,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -125,6 +126,7 @@ fun MosqueEditSheet(
     onRadiusChange: (Int) -> Unit,
     onSave: () -> Unit,
     onDelete: () -> Unit,
+    onOpenInMaps: (latitude: Double, longitude: Double, name: String) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val isEditing = draft.id != null
@@ -150,6 +152,16 @@ fun MosqueEditSheet(
                 supportingText = if (draft.nameMissing) {
                     { Text(stringResource(R.string.mosque_name_required), fontFamily = InterFamily) }
                 } else null,
+                trailingIcon = {
+                    IconButton(onClick = { onOpenInMaps(draft.latitude, draft.longitude, draft.name) }) {
+                        Icon(
+                            painterResource(R.drawable.ic_map_pin),
+                            contentDescription = stringResource(R.string.mosque_open_in_maps),
+                            tint = SalatPrimary,
+                            modifier = Modifier.size(22.dp),
+                        )
+                    }
+                },
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 textStyle = LocalTextStyle.current.copy(fontFamily = InterFamily, fontSize = 14.sp, color = SalatOnSurface),
                 colors = OutlinedTextFieldDefaults.colors(

@@ -1,6 +1,7 @@
 package com.salattracker.feature.mosque
 
 import android.Manifest
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -109,6 +110,7 @@ fun MosqueModeEntry(viewModel: MosqueModeViewModel = hiltViewModel()) {
         onDraftSave = viewModel::onSaveMosque,
         onDraftDismiss = viewModel::onDraftDismiss,
         onDeleteClick = viewModel::onDeleteClick,
+        onOpenInMaps = { lat, lon, name -> context.openInMaps(lat, lon, name) },
         onDeleteConfirm = viewModel::onConfirmDelete,
         onDeleteDismiss = viewModel::onDeleteDismiss,
         onNearbySelect = viewModel::onNearbySelected,
@@ -139,6 +141,22 @@ private fun Context.locationAccess(): LocationAccess {
     if (!hasFineLocation()) return LocationAccess.NONE
     val background = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q || granted(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
     return if (background) LocationAccess.FULL else LocationAccess.FOREGROUND_ONLY
+}
+
+/** Prefers Google Maps, then any map app, then the browser. */
+private fun Context.openInMaps(latitude: Double, longitude: Double, name: String) {
+    val label = Uri.encode(name.ifBlank { "Mosque" })
+    val geo = Intent(Intent.ACTION_VIEW, Uri.parse("geo:$latitude,$longitude?q=$latitude,$longitude($label)"))
+    val web = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com/maps/search/?api=1&query=$latitude,$longitude"))
+    val attempts = listOf(Intent(geo).setPackage("com.google.android.apps.maps"), geo, web)
+    for (intent in attempts) {
+        try {
+            startActivity(intent)
+            return
+        } catch (e: ActivityNotFoundException) {
+            // try the next option
+        }
+    }
 }
 
 private fun Context.openAppSettings() {

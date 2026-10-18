@@ -431,6 +431,7 @@
     <string name="mosque_distance_meters">%1$d م</string>
     <string name="mosque_sheet_add_title">إضافة مسجد</string>
     <string name="mosque_sheet_edit_title">تعديل المسجد</string>
+    <string name="mosque_open_in_maps">فتح في الخرائط</string>
     <string name="mosque_name_label">اسم المسجد</string>
     <string name="mosque_name_required">أدخل اسماً</string>
     <string name="mosque_radius_label">المنطقة حول المسجد</string>

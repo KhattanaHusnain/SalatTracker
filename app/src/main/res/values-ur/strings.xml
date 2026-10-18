@@ -431,6 +431,7 @@
     <string name="mosque_distance_meters">%1$d میٹر</string>
     <string name="mosque_sheet_add_title">مسجد شامل کریں</string>
     <string name="mosque_sheet_edit_title">مسجد میں ترمیم کریں</string>
+    <string name="mosque_open_in_maps">میپس میں کھولیں</string>
     <string name="mosque_name_label">مسجد کا نام</string>
     <string name="mosque_name_required">نام درج کریں</string>
     <string name="mosque_radius_label">مسجد کے گرد علاقہ</string>

@@ -431,6 +431,7 @@
     <string name="mosque_distance_meters">%1$d m</string>
     <string name="mosque_sheet_add_title">Ajouter une mosquée</string>
     <string name="mosque_sheet_edit_title">Modifier la mosquée</string>
+    <string name="mosque_open_in_maps">Ouvrir dans Maps</string>
     <string name="mosque_name_label">Nom de la mosquée</string>
     <string name="mosque_name_required">Saisissez un nom</string>
     <string name="mosque_radius_label">Zone autour de la mosquée</string>
