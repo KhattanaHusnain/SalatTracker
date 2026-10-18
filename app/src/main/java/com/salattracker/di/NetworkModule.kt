@@ -123,8 +123,11 @@ object NetworkModule {
     @Provides
     @Singleton
     @OverpassRetrofit
-    fun provideOverpassOkHttpClient(): OkHttpClient =
-        OkHttpClient.Builder()
+    fun provideOverpassOkHttpClient(): OkHttpClient {
+        val logging = HttpLoggingInterceptor().apply {
+            level = if (BuildConfig.ENABLE_LOGGING) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
+        }
+        return OkHttpClient.Builder()
             .addInterceptor { chain ->
                 chain.proceed(
                     chain.request().newBuilder()
@@ -132,9 +135,11 @@ object NetworkModule {
                         .build()
                 )
             }
+            .addInterceptor(logging)
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(40, TimeUnit.SECONDS)
             .build()
+    }
 
     @Provides
     @Singleton
