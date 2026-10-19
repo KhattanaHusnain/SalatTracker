@@ -67,7 +67,9 @@ fun CompletionTrendChart(points: List<TrendPoint>, bucket: TrendBucket, modifier
             startAxis = VerticalAxis.rememberStart(label = axisLabel),
             bottomAxis = HorizontalAxis.rememberBottom(
                 label = axisLabel,
-                valueFormatter = CartesianValueFormatter { _, x, _ -> labels.getOrElse(x.toInt()) { "" } },
+                valueFormatter = CartesianValueFormatter { _, x, _ ->
+                    labels.getOrNull(x.toInt())?.ifEmpty { " " } ?: " "
+                },
             ),
             marker = rememberDefaultCartesianMarker(label = markerLabel),
         ),

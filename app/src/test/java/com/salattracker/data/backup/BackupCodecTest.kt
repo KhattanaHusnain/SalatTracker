@@ -220,4 +220,14 @@ class BackupCodecTest {
         assertTrue(decoded.prayerEntries.isEmpty())
         assertNull(meta.oldestPrayerDate)
     }
+
+    @Test
+    fun `decode accepts empty or blank contentSha256 without throwing`() {
+        val snapshot = sampleSnapshot()
+        val meta = sampleMeta(snapshot).copy(contentSha256 = "")
+        val bytes = BackupCodec.encode(snapshot, meta)
+
+        val (_, decoded) = BackupCodec.decode(bytes)
+        assertEquals(snapshot.prayerEntries, decoded.prayerEntries)
+    }
 }

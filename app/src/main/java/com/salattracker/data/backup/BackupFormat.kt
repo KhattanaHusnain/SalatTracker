@@ -1,6 +1,8 @@
 package com.salattracker.data.backup
 
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonElement
+import com.google.gson.JsonObject
 import com.google.gson.annotations.SerializedName
 import com.salattracker.domain.model.GoalCategory
 import com.salattracker.domain.model.GoalFrequency
@@ -193,6 +195,12 @@ object BackupCodec {
         return digest.joinToString("") { "%02x".format(it) }
     }
 
+    private fun payloadSha256(element: JsonElement): String {
+        val bytes = gson.toJson(element).toByteArray(Charsets.UTF_8)
+        val digest = MessageDigest.getInstance("SHA-256").digest(bytes)
+        return digest.joinToString("") { "%02x".format(it) }
+    }
+
     fun encode(snapshot: BackupSnapshot, meta: BackupMeta): ByteArray {
         val fileDto = BackupFileDto(meta = meta.toDto(), payload = snapshot.toPayloadDto())
         val json = gson.toJson(fileDto)
@@ -235,8 +243,16 @@ object BackupCodec {
 
         val expectedHash = metaDto.contentSha256
         val actualHash = payloadSha256(payloadDto)
-        if (expectedHash != null && expectedHash != actualHash) {
-            throw BackupFormatException("Backup content hash does not match — file may be corrupt")
+        if (!expectedHash.isNullOrBlank()) {
+            val rawPayloadElement = try {
+                gson.fromJson(json, JsonObject::class.java)?.get("payload")
+            } catch (_: Exception) {
+                null
+            }
+            val rawHash = rawPayloadElement?.let { payloadSha256(it) }
+            if (expectedHash != actualHash && (rawHash == null || expectedHash != rawHash)) {
+                throw BackupFormatException("Backup content hash does not match — file may be corrupt")
+            }
         }
 
         // Only after the hash is verified do we map to the domain snapshot, which may drop
@@ -251,7 +267,7 @@ object BackupCodec {
             deviceModel      = metaDto.deviceModel ?: "",
             prayerEntryCount = snapshot.prayerEntries.size,
             oldestPrayerDate = snapshot.prayerEntries.minOfOrNull { it.date },
-            contentSha256    = actualHash,
+            contentSha256    = expectedHash.takeIf { !it.isNullOrBlank() } ?: actualHash,
         )
         return meta to snapshot
     }

@@ -168,4 +168,20 @@ class BackupRepositoryImplTest {
 
         assertEquals(RestoreResult.NoBackup, result)
     }
+
+    @Test
+    fun `restore catches corrupt backup exception gracefully without crashing`() = runTest {
+        val remoteSnapshot = emptySnapshot()
+        val meta = BackupMeta(
+            formatVersion = BACKUP_FORMAT_VERSION, revisionId = "remote-rev", createdAt = 1L, appVersionCode = 1,
+            deviceModel = "Other Device", prayerEntryCount = 0, oldestPrayerDate = null,
+            contentSha256 = "invalid_hash_that_does_not_match",
+        )
+        remoteStore.put("setup-token", previous = null, bytes = BackupCodec.encode(remoteSnapshot, meta), meta = meta)
+
+        val result = repository.restore()
+
+        assertTrue(result is RestoreResult.Failed)
+        assertTrue((result as RestoreResult.Failed).message.contains("corrupt"))
+    }
 }
