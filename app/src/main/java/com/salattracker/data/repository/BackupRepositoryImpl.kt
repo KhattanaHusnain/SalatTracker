@@ -282,6 +282,8 @@ class BackupRepositoryImpl @Inject constructor(
             } else {
                 Result.failure(e)
             }
+        } catch (e: Throwable) {
+            Result.failure(e)
         }
     }
 }
