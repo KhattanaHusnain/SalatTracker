@@ -268,7 +268,7 @@ private fun ReaderLineBlock(line: ReaderLine, isFirstLine: Boolean) {
 }
 
 @Composable
-private fun UrduTranslation(text: String, textAlign: TextAlign = TextAlign.Right) {
+private fun UrduTranslation(text: String, textAlign: TextAlign = TextAlign.Center) {
     val textMeasurer = rememberTextMeasurer()
     val density = LocalDensity.current
     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
