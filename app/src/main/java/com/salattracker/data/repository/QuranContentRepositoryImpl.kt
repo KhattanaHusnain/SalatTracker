@@ -65,7 +65,7 @@ class QuranContentRepositoryImpl @Inject constructor(
 
     override suspend fun firstVerseOfJuz(juzNumber: Int): VerseLocation? = verseDao.firstOfJuz(juzNumber)?.toLocation()
 
-    override suspend fun chapterNumbersForJuz(juzNumber: Int): List<Int> = verseDao.chapterNumbersForJuz(juzNumber)
+    override suspend fun verseCountForJuz(juzNumber: Int): Int = verseDao.verseCountForJuz(juzNumber)
 
     override suspend fun firstVerseOfHizb(hizbNumber: Int): VerseLocation? = verseDao.firstOfHizb(hizbNumber)?.toLocation()
 

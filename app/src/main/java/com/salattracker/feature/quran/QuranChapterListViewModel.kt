@@ -25,7 +25,7 @@ data class QuranJuzUi(
     val juzNumber: Int,
     val pageNumber: Int,
     val pageCount: Int,
-    val surahCount: Int,
+    val ayahCount: Int,
 )
 
 data class QuranChapterListUiState(
@@ -70,12 +70,11 @@ class QuranChapterListViewModel @Inject constructor(
                 val nextJuzFirstPage = contentRepository.firstVerseOfJuz(juzNumber + 1)
                     ?.let { contentRepository.getVerse(it.chapterNumber, it.verseNumber)?.pageNumber }
                     ?: MUSHAF_TOTAL_PAGES + 1
-                val surahCount = contentRepository.chapterNumbersForJuz(juzNumber).size
                 QuranJuzUi(
                     juzNumber = juzNumber,
                     pageNumber = firstVerse.pageNumber,
                     pageCount = nextJuzFirstPage - firstVerse.pageNumber,
-                    surahCount = surahCount,
+                    ayahCount = contentRepository.verseCountForJuz(juzNumber),
                 )
             }
             _uiState.update { it.copy(juzEntries = entries) }
