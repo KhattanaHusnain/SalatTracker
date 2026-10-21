@@ -57,6 +57,7 @@ import com.salattracker.domain.model.Verse
 // all — each surah's own verse-1 QCF words start directly at that surah's real first word — so
 // it's rendered with a regular Arabic-capable font instead of print-accurate QCF glyphs.
 private const val BISMILLAH_ARABIC = "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ"
+private const val BISMILLAH_URDU = "اللہ کے نام سے جو بہت مہربان رحم کرنے والا ہے"
 private const val SURAH_WITHOUT_BISMILLAH = 9
 
 // The header's page/juz/revelation-place figures are Quran-content facts, like Bismillah above —
@@ -109,8 +110,7 @@ fun QuranReaderScreen(
             }
         } else {
             // Robustness fallback only — shouldn't trigger in practice, since Mushaf data is
-            // bundled for every verse. Keep this Arabic-only as well: meanings are intentionally
-            // not part of the Surah page yet.
+            // bundled for every verse.
             items(uiState.verses, key = { it.verseNumber }) { verse ->
                 Text(
                     text = verse.textUthmani,
@@ -118,6 +118,10 @@ fun QuranReaderScreen(
                     textAlign = TextAlign.End, lineHeight = 36.sp,
                     modifier = Modifier.fillMaxWidth(),
                 )
+                uiState.translations[verse.verseNumber]?.let { translation ->
+                    Spacer(Modifier.height(8.dp))
+                    UrduTranslation(verseTranslationWithNumber(translation, verse.verseNumber))
+                }
                 Spacer(Modifier.height(18.dp))
             }
         }
@@ -176,6 +180,8 @@ private fun ChapterHeader(chapter: Chapter, onClick: () -> Unit) {
 private fun BismillahLine() {
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
         Text(BISMILLAH_ARABIC, color = SalatOnSurface, fontSize = 26.sp, fontFamily = AmiriQuranFamily, textAlign = TextAlign.Center)
+        Spacer(Modifier.height(8.dp))
+        UrduTranslation(BISMILLAH_URDU, textAlign = TextAlign.Center)
     }
 }
 
@@ -195,7 +201,24 @@ private fun ReaderLineBlock(line: ReaderLine, isFirstLine: Boolean) {
         } else {
             MushafLineArabic(line, textColor = SalatOnSurface)
         }
+        line.translationChunks.forEach { translation ->
+            Spacer(Modifier.height(8.dp))
+            UrduTranslation(translation.text)
+        }
     }
+}
+
+@Composable
+private fun UrduTranslation(text: String, textAlign: TextAlign = TextAlign.Right) {
+    Text(
+        text = text,
+        color = SalatOnSurfaceVariant,
+        fontSize = 14.sp,
+        fontFamily = NastaliqUrduFamily,
+        lineHeight = 26.sp,
+        style = TextStyle(textDirection = TextDirection.Rtl, textAlign = textAlign),
+        modifier = Modifier.fillMaxWidth(),
+    )
 }
 
 /** One real printed Mushaf line's Arabic, in that page's own print-accurate QCF glyph font —
