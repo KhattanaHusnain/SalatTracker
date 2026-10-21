@@ -320,7 +320,7 @@ private fun ChapterRow(chapter: Chapter, onClick: () -> Unit) {
         }
         Text(
             text = chapter.nameArabic,
-            color = SalatOnSurface, fontSize = 20.sp, fontFamily = InterFamily, textAlign = TextAlign.End,
+            color = SalatOnSurface, fontSize = 20.sp, fontFamily = AmiriQuranFamily, textAlign = TextAlign.End,
         )
     }
 }
