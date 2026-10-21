@@ -3,6 +3,7 @@ package com.salattracker.feature.quran
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.salattracker.domain.model.Chapter
+import com.salattracker.domain.model.MUSHAF_TOTAL_PAGES
 import com.salattracker.domain.model.QuranReadHistoryEntry
 import com.salattracker.domain.repository.QuranContentRepository
 import com.salattracker.domain.repository.QuranUserDataRepository
@@ -19,12 +20,12 @@ enum class QuranBrowseTab { SURAH, JUZ }
 /** What a page/hizb jump number is being resolved against. */
 enum class QuranJumpType { PAGE, HIZB }
 
-/** A juz's actual starting point and every surah it spans. */
+/** A juz's first printed page and its compact structural summary. */
 data class QuranJuzUi(
     val juzNumber: Int,
-    val verseNumber: Int,
     val pageNumber: Int,
-    val chapterNames: List<String>,
+    val pageCount: Int,
+    val surahCount: Int,
 )
 
 data class QuranChapterListUiState(
@@ -66,9 +67,16 @@ class QuranChapterListViewModel @Inject constructor(
                 val location = contentRepository.firstVerseOfJuz(juzNumber) ?: return@mapNotNull null
                 val firstVerse = contentRepository.getVerse(location.chapterNumber, location.verseNumber)
                     ?: return@mapNotNull null
-                val chapterNames = contentRepository.chapterNumbersForJuz(juzNumber)
-                    .mapNotNull { contentRepository.getChapter(it)?.nameTransliteration }
-                QuranJuzUi(juzNumber, location.verseNumber, firstVerse.pageNumber, chapterNames)
+                val nextJuzFirstPage = contentRepository.firstVerseOfJuz(juzNumber + 1)
+                    ?.let { contentRepository.getVerse(it.chapterNumber, it.verseNumber)?.pageNumber }
+                    ?: MUSHAF_TOTAL_PAGES + 1
+                val surahCount = contentRepository.chapterNumbersForJuz(juzNumber).size
+                QuranJuzUi(
+                    juzNumber = juzNumber,
+                    pageNumber = firstVerse.pageNumber,
+                    pageCount = nextJuzFirstPage - firstVerse.pageNumber,
+                    surahCount = surahCount,
+                )
             }
             _uiState.update { it.copy(juzEntries = entries) }
         }

@@ -243,30 +243,24 @@ private fun JuzRow(juz: QuranJuzUi, onClick: () -> Unit) {
             modifier = Modifier.size(36.dp).clip(CircleShape).background(SalatPrimaryContainer),
             contentAlignment = Alignment.Center,
         ) {
-            Text(juz.juzNumber.toString(), color = SalatPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
+            Text(juz.juzNumber.toArabicNumeral(), color = SalatPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, fontFamily = AmiriQuranFamily)
         }
         Column {
             Text(
-                text = stringResource(R.string.quran_juz_label, juz.juzNumber),
-                color = SalatOnSurface, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily,
+                text = "الْجُزْءُ ${juz.juzNumber.toArabicNumeral()}",
+                color = SalatOnSurface, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = AmiriQuranFamily,
             )
             Spacer(Modifier.height(2.dp))
             Text(
-                text = juz.chapterNames.joinToString(" · "),
-                color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily,
-            )
-            Spacer(Modifier.height(2.dp))
-            Text(
-                text = stringResource(
-                    R.string.quran_juz_starts_at,
-                    juz.chapterNames.firstOrNull().orEmpty(),
-                    juz.verseNumber,
-                ),
+                text = "${juz.pageCount} pages · ${juz.surahCount} surahs",
                 color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily,
             )
         }
     }
 }
+
+private val ARABIC_INDIC_DIGITS = charArrayOf('٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩')
+private fun Int.toArabicNumeral(): String = toString().map { ARABIC_INDIC_DIGITS[it - '0'] }.joinToString("")
 
 @Composable
 private fun ContinueReadingCard(chapter: Chapter, verseNumber: Int, onClick: () -> Unit) {
