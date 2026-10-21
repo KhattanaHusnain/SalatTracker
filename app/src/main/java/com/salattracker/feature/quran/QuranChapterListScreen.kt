@@ -241,12 +241,12 @@ private fun JuzRow(juz: QuranJuzUi, onClick: () -> Unit) {
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = juz.title.transliteration,
+                text = "Juz ${juz.juzNumber}",
                 color = SalatOnSurface, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily,
             )
             Spacer(Modifier.height(2.dp))
             Text(
-                text = "الْجُزْءُ ${juz.juzNumber.toArabicNumeral()} · ${juz.pageCount} pages · ${juz.ayahCount} ayahs",
+                text = "${juz.title.transliteration} · ${juz.pageCount} pages · ${juz.ayahCount} ayahs",
                 color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily,
             )
         }
@@ -257,8 +257,6 @@ private fun JuzRow(juz: QuranJuzUi, onClick: () -> Unit) {
     }
 }
 
-private val ARABIC_INDIC_DIGITS = charArrayOf('٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩')
-private fun Int.toArabicNumeral(): String = toString().map { ARABIC_INDIC_DIGITS[it - '0'] }.joinToString("")
 
 @Composable
 private fun ContinueReadingCard(chapter: Chapter, verseNumber: Int, onClick: () -> Unit) {
