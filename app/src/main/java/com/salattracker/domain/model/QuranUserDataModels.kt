@@ -18,6 +18,8 @@ data class QuranReadHistoryEntry(
     val id: Long = 0,
     val chapterNumber: Int,
     val verseNumber: Int,
+    val juzNumber: Int? = null,
+    val pageNumber: Int? = null,
     val readAt: Long = System.currentTimeMillis(),
 )
 

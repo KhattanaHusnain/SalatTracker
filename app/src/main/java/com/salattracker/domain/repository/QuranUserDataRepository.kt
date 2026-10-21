@@ -24,7 +24,9 @@ interface QuranUserDataRepository {
 
     /** The single most recent read, i.e. where "Continue reading" resumes. Null once no read has ever been recorded. */
     fun observeLastRead(): Flow<QuranReadHistoryEntry?>
-    suspend fun recordRead(chapterNumber: Int, verseNumber: Int)
+    /** Records either a Surah ayah position, or a bounded Juz Mushaf page when [juzNumber] and
+     * [pageNumber] are supplied. */
+    suspend fun recordRead(chapterNumber: Int, verseNumber: Int, juzNumber: Int? = null, pageNumber: Int? = null)
     suspend fun clearReadHistory()
 
     // Search history

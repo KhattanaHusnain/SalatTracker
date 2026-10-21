@@ -19,7 +19,7 @@ import com.salattracker.data.local.entity.*
         QuranSearchHistoryEntity::class,
         QuranContentPackEntity::class,
     ],
-    version  = 10,
+    version  = 11,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)

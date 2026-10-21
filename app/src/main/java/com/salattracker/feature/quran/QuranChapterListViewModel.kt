@@ -33,7 +33,7 @@ data class QuranChapterListUiState(
     val isLoading: Boolean = true,
     val chapters: List<Chapter> = emptyList(),
     val continueReading: QuranReadHistoryEntry? = null,
-    val selectedTab: QuranBrowseTab = QuranBrowseTab.SURAH,
+    val selectedTab: QuranBrowseTab = QuranBrowseTab.JUZ,
     val juzEntries: List<QuranJuzUi> = emptyList(),
     val showJumpDialog: Boolean = false,
     val jumpType: QuranJumpType = QuranJumpType.PAGE,

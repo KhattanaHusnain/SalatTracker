@@ -147,6 +147,10 @@ data class QuranReadHistoryEntity(
     @ColumnInfo(name = "id")             val id: Long = 0,
     @ColumnInfo(name = "chapter_number") val chapterNumber: Int,
     @ColumnInfo(name = "verse_number")   val verseNumber: Int,
+    /** Set only for a bounded Juz reading session. */
+    @ColumnInfo(name = "juz_number")     val juzNumber: Int? = null,
+    /** The printed Mushaf page to restore for a Juz session. */
+    @ColumnInfo(name = "page_number")    val pageNumber: Int? = null,
     @ColumnInfo(name = "read_at")        val readAt: Long = System.currentTimeMillis(),
 )
 

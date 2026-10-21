@@ -46,6 +46,7 @@ import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.core.ui.label
 import com.salattracker.domain.model.PrayerStatus
+import com.salattracker.domain.model.QuranReadHistoryEntry as QuranReadingPosition
 import com.salattracker.domain.model.isDark
 import com.salattracker.domain.usecase.CalendarViewType
 import com.salattracker.feature.backup.BackupEntry
@@ -250,6 +251,7 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
     var quranReaderPageNumber by remember { mutableStateOf(1) }
     var quranPageControls by remember { mutableStateOf<QuranPageControls?>(null) }
     var quranSearchRequest by remember { mutableStateOf(0) }
+    var quranLastRead by remember { mutableStateOf<QuranReadingPosition?>(null) }
     val isQuranPageRoute = currentDest?.route == Routes.QURAN_READER || currentDest?.route == Routes.QURAN_MUSHAF
 
     // A notification's deep link, delivered after this scaffold (and its NavHost) already
@@ -302,11 +304,20 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                     onAddGoalClick       = { navController.push(Routes.ADD_GOAL) },
                     showBulkUpdate       = currentDest?.route == BottomNavRoute.Calendar.route,
                     onBulkUpdateClick    = { navController.push(Routes.bulkUpdate()) },
-                    showQuranBookmarks   = currentDest?.route == BottomNavRoute.Quran.route,
-                    onQuranBookmarksClick = { navController.push(Routes.QURAN_BOOKMARKS) },
-                    onQuranReadHistoryClick = { navController.push(Routes.QURAN_READ_HISTORY) },
                     showQuranSearch      = currentDest?.route == BottomNavRoute.Quran.route,
                     onQuranSearchClick   = { quranSearchRequest++ },
+                    showQuranResume      = currentDest?.route == BottomNavRoute.Quran.route,
+                    quranResumeEnabled   = quranLastRead != null,
+                    onQuranResumeClick   = {
+                        quranLastRead?.let { position ->
+                            val juzNumber = position.juzNumber
+                            if (juzNumber != null) {
+                                navController.push(Routes.quranMushaf(position.pageNumber ?: 1, juzNumber))
+                            } else {
+                                navController.push(Routes.quranReader(position.chapterNumber, position.verseNumber))
+                            }
+                        }
+                    },
                     showMushafButton     = currentDest?.route == Routes.QURAN_READER,
                     onMushafButtonClick  = { navController.push(Routes.quranMushaf(quranReaderPageNumber)) },
                     quranPageControls    = if (isQuranPageRoute) quranPageControls else null,
@@ -355,6 +366,7 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                         },
                         searchRequest = quranSearchRequest,
                         onSearchRequestConsumed = { quranSearchRequest = 0 },
+                        onLastReadChanged = { lastRead -> quranLastRead = lastRead },
                     )
                 }
                 composable(
@@ -490,11 +502,11 @@ private fun TopBar(
     onAddGoalClick: () -> Unit,
     showBulkUpdate: Boolean,
     onBulkUpdateClick: () -> Unit,
-    showQuranBookmarks: Boolean,
-    onQuranBookmarksClick: () -> Unit,
-    onQuranReadHistoryClick: () -> Unit,
     showQuranSearch: Boolean,
     onQuranSearchClick: () -> Unit,
+    showQuranResume: Boolean,
+    quranResumeEnabled: Boolean,
+    onQuranResumeClick: () -> Unit,
     showMushafButton: Boolean,
     onMushafButtonClick: () -> Unit,
     quranPageControls: QuranPageControls?,
@@ -561,17 +573,14 @@ private fun TopBar(
                     Icon(painterResource(R.drawable.ic_edit_square), stringResource(R.string.action_bulk_update), tint = SalatPrimary)
                 }
             }
-            if (showQuranBookmarks) {
-                if (showQuranSearch) {
-                    IconButton(onClick = onQuranSearchClick) {
-                        Icon(painterResource(R.drawable.ic_search), stringResource(R.string.quran_jump_title), tint = SalatPrimary)
-                    }
+            if (showQuranSearch) {
+                IconButton(onClick = onQuranSearchClick) {
+                    Icon(painterResource(R.drawable.ic_search), stringResource(R.string.quran_jump_title), tint = SalatPrimary)
                 }
-                IconButton(onClick = onQuranReadHistoryClick) {
-                    Icon(painterResource(R.drawable.ic_history), stringResource(R.string.topbar_quran_read_history), tint = SalatPrimary)
-                }
-                IconButton(onClick = onQuranBookmarksClick) {
-                    Icon(painterResource(R.drawable.ic_bookmark), stringResource(R.string.topbar_quran_bookmarks), tint = SalatPrimary)
+            }
+            if (showQuranResume) {
+                IconButton(onClick = onQuranResumeClick, enabled = quranResumeEnabled) {
+                    Icon(painterResource(R.drawable.ic_play), stringResource(R.string.quran_continue_reading), tint = SalatPrimary)
                 }
             }
             if (showMushafButton) {

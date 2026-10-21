@@ -62,7 +62,7 @@ fun QuranChapterListScreen(
     onJumpTypeSelected: (QuranJumpType) -> Unit,
     onJumpConfirm: (String) -> Unit,
 ) {
-    val continueReading = uiState.continueReading?.let { last ->
+    val continueReading = uiState.continueReading?.takeIf { it.juzNumber == null }?.let { last ->
         uiState.chapters.find { it.number == last.chapterNumber }?.let { it to last.verseNumber }
     }
 
@@ -117,15 +117,15 @@ private fun BrowseTabRow(selected: QuranBrowseTab, onTabSelected: (QuranBrowseTa
         verticalAlignment = Alignment.CenterVertically,
     ) {
         BrowseTabChip(
-            label = stringResource(R.string.quran_tab_surah),
-            isSelected = selected == QuranBrowseTab.SURAH,
-            onClick = { onTabSelected(QuranBrowseTab.SURAH) },
-            modifier = Modifier.weight(1f),
-        )
-        BrowseTabChip(
             label = stringResource(R.string.quran_tab_juz),
             isSelected = selected == QuranBrowseTab.JUZ,
             onClick = { onTabSelected(QuranBrowseTab.JUZ) },
+            modifier = Modifier.weight(1f),
+        )
+        BrowseTabChip(
+            label = stringResource(R.string.quran_tab_surah),
+            isSelected = selected == QuranBrowseTab.SURAH,
+            onClick = { onTabSelected(QuranBrowseTab.SURAH) },
             modifier = Modifier.weight(1f),
         )
     }

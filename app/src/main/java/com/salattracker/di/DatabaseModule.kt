@@ -8,6 +8,7 @@ import com.salattracker.data.local.db.MIGRATION_6_7
 import com.salattracker.data.local.db.MIGRATION_7_8
 import com.salattracker.data.local.db.MIGRATION_8_9
 import com.salattracker.data.local.db.MIGRATION_9_10
+import com.salattracker.data.local.db.MIGRATION_10_11
 import com.salattracker.data.local.db.SalatDatabase
 import dagger.Module
 import dagger.Provides
@@ -28,7 +29,7 @@ object DatabaseModule {
             SalatDatabase::class.java,
             "salat_tracker.db",
         )
-            .addMigrations(MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
+            .addMigrations(MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
             // Applies only when NO registered migration covers the device's current version —
             // i.e. a schema older than the oldest migration above, not "any missing path".
             // Every version bump from here on needs its own Migration, or upgrading users lose

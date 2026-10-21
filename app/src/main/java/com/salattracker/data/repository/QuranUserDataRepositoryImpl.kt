@@ -41,8 +41,15 @@ class QuranUserDataRepositoryImpl @Inject constructor(
     override fun observeLastRead(): Flow<QuranReadHistoryEntry?> =
         readHistoryDao.observeLast().map { it?.toDomain() }
 
-    override suspend fun recordRead(chapterNumber: Int, verseNumber: Int) {
-        readHistoryDao.insert(QuranReadHistoryEntity(chapterNumber = chapterNumber, verseNumber = verseNumber))
+    override suspend fun recordRead(chapterNumber: Int, verseNumber: Int, juzNumber: Int?, pageNumber: Int?) {
+        readHistoryDao.insert(
+            QuranReadHistoryEntity(
+                chapterNumber = chapterNumber,
+                verseNumber = verseNumber,
+                juzNumber = juzNumber,
+                pageNumber = pageNumber,
+            )
+        )
     }
 
     override suspend fun clearReadHistory() = readHistoryDao.clear()
@@ -76,7 +83,9 @@ class QuranUserDataRepositoryImpl @Inject constructor(
 private fun QuranBookmarkEntity.toDomain() = QuranBookmark(id, chapterNumber, fromVerse, toVerse, note, createdAt)
 private fun QuranBookmark.toEntity() = QuranBookmarkEntity(id, chapterNumber, fromVerse, toVerse, note, createdAt)
 
-private fun QuranReadHistoryEntity.toDomain() = QuranReadHistoryEntry(id, chapterNumber, verseNumber, readAt)
+private fun QuranReadHistoryEntity.toDomain() = QuranReadHistoryEntry(
+    id, chapterNumber, verseNumber, juzNumber, pageNumber, readAt,
+)
 
 private fun QuranSearchHistoryEntity.toDomain() = QuranSearchHistoryEntry(id, query, searchedAt)
 

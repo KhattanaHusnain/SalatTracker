@@ -7,6 +7,7 @@ import com.salattracker.domain.model.MUSHAF_TOTAL_PAGES
 import com.salattracker.domain.model.MushafPage
 import com.salattracker.domain.repository.QuranContentRepository
 import com.salattracker.domain.repository.MushafRepository
+import com.salattracker.domain.repository.QuranUserDataRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,6 +31,7 @@ data class QuranMushafUiState(
 class QuranMushafViewModel @Inject constructor(
     private val mushafRepository: MushafRepository,
     private val contentRepository: QuranContentRepository,
+    private val userDataRepository: QuranUserDataRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -85,7 +87,17 @@ class QuranMushafViewModel @Inject constructor(
         _uiState.update { it.copy(isLoading = true, pageNumber = pageNumber, errorMessage = null) }
         viewModelScope.launch {
             runCatching { mushafRepository.getPage(pageNumber) }.fold(
-                onSuccess = { page -> _uiState.update { it.copy(isLoading = false, page = page) } },
+                onSuccess = { page ->
+                    _uiState.update { it.copy(isLoading = false, page = page) }
+                    selectedJuzNumber?.let { juzNumber ->
+                        userDataRepository.recordRead(
+                            chapterNumber = page.firstVerse.chapterNumber,
+                            verseNumber = page.firstVerse.verseNumber,
+                            juzNumber = juzNumber,
+                            pageNumber = page.pageNumber,
+                        )
+                    }
+                },
                 onFailure = { e -> _uiState.update { it.copy(isLoading = false, errorMessage = e.message ?: "Couldn't load this page") } },
             )
         }

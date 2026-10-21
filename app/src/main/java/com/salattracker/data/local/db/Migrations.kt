@@ -75,3 +75,11 @@ val MIGRATION_9_10 = object : Migration(9, 10) {
         db.execSQL("DROP TABLE IF EXISTS `verse_cache`")
     }
 }
+
+/** v10 -> v11: a read can now represent a bounded Juz Mushaf page, not only a Surah ayah. */
+val MIGRATION_10_11 = object : Migration(10, 11) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE quran_read_history ADD COLUMN juz_number INTEGER")
+        db.execSQL("ALTER TABLE quran_read_history ADD COLUMN page_number INTEGER")
+    }
+}
