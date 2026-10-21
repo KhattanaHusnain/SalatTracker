@@ -210,15 +210,31 @@ private fun ReaderLineBlock(line: ReaderLine, isFirstLine: Boolean) {
 
 @Composable
 private fun UrduTranslation(text: String, textAlign: TextAlign = TextAlign.Right) {
-    Text(
-        text = text,
-        color = SalatOnSurfaceVariant,
-        fontSize = 14.sp,
-        fontFamily = NastaliqUrduFamily,
-        lineHeight = 26.sp,
-        style = TextStyle(textDirection = TextDirection.Rtl, textAlign = textAlign),
-        modifier = Modifier.fillMaxWidth(),
-    )
+    val textMeasurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        val availableWidthPx = with(density) { maxWidth.toPx() }
+        val fontSize = remember(text, textAlign, availableWidthPx) {
+            val referenceSize = 14.sp
+            val measuredWidth = textMeasurer.measure(
+                text = text,
+                style = TextStyle(fontFamily = NastaliqUrduFamily, fontSize = referenceSize, textDirection = TextDirection.Rtl),
+            ).size.width
+            if (measuredWidth <= 0) referenceSize else referenceSize *
+                (availableWidthPx * 0.98f / measuredWidth).coerceAtMost(1f)
+        }
+        Text(
+            text = text,
+            color = SalatOnSurfaceVariant,
+            fontSize = fontSize,
+            fontFamily = NastaliqUrduFamily,
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Clip,
+            style = TextStyle(textDirection = TextDirection.Rtl, textAlign = textAlign),
+            modifier = Modifier.fillMaxWidth(),
+        )
+    }
 }
 
 /** One real printed Mushaf line's Arabic, in that page's own print-accurate QCF glyph font —

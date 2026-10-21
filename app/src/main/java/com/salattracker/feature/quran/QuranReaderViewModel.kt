@@ -22,18 +22,16 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/** A complete Urdu translation displayed below the Mushaf line that finishes its ayah.
- * Keeping the translation whole prevents a grammatical Urdu sentence from being split to mimic
- * Arabic print-line boundaries. */
+/** An approximate Urdu translation slice displayed below one Arabic Mushaf line.
+ * Translation packs are written per ayah rather than per printed line, so a verse spanning lines
+ * is distributed proportionally by word count. Adjacent slices are rendered as one Urdu row. */
 data class ReaderTranslationChunk(
     val verseNumber: Int,
     val text: String,
     val isVerseComplete: Boolean,
 )
 
-/** One real printed Mushaf line of this chapter's Arabic, ready for the reader to flow verses
- * continuously exactly as printed. [translationChunks] contains only the complete ayahs that end
- * on this line — see [ReaderTranslationChunk]. */
+/** One real printed Mushaf line of this chapter's Arabic and its approximate Urdu row. */
 data class ReaderLine(
     val pageNumber: Int,
     val words: List<MushafWord>,
@@ -147,8 +145,11 @@ private fun List<MushafLine>.toReaderLines(translations: Map<Int, String>): List
     val totalWordsByVerse = HashMap<Int, Int>()
     forEach { line -> line.words.forEach { totalWordsByVerse[it.verseNumber] = (totalWordsByVerse[it.verseNumber] ?: 0) + 1 } }
 
-    // Running totals identify the printed line that contains each ayah's final glyph.
+    val urduWordsByVerse = translations.mapValues { (_, text) -> text.trim().split(WHITESPACE).filter { it.isNotEmpty() } }
+
+    // Running totals distribute a verse's translation across the same printed Arabic lines.
     val arabicWordsConsumed = HashMap<Int, Int>()
+    val urduWordsEmitted = HashMap<Int, Int>()
 
     return map { line ->
         val versesOnLine = LinkedHashSet<Int>().apply { line.words.forEach { add(it.verseNumber) } }
@@ -156,20 +157,27 @@ private fun List<MushafLine>.toReaderLines(translations: Map<Int, String>): List
 
         val chunks = versesOnLine.mapNotNull { verseNumber ->
             val totalArabicWords = totalWordsByVerse[verseNumber] ?: return@mapNotNull null
-            val translation = translations[verseNumber] ?: return@mapNotNull null
+            val urduWords = urduWordsByVerse[verseNumber]
+            if (urduWords.isNullOrEmpty()) return@mapNotNull null
 
             val consumed = (arabicWordsConsumed[verseNumber] ?: 0) + (arabicWordsOnLineByVerse[verseNumber] ?: 0)
             arabicWordsConsumed[verseNumber] = consumed
             val isVerseComplete = consumed >= totalArabicWords
-            if (isVerseComplete) {
-                ReaderTranslationChunk(
-                    verseNumber = verseNumber,
-                    text = verseTranslationWithNumber(translation, verseNumber),
-                    isVerseComplete = true,
-                )
+            val alreadyEmitted = urduWordsEmitted[verseNumber] ?: 0
+            val targetEmitted = if (isVerseComplete) {
+                urduWords.size
             } else {
-                null
+                ((urduWords.size.toDouble() * consumed / totalArabicWords).toInt()).coerceIn(alreadyEmitted, urduWords.size)
             }
+            if (targetEmitted <= alreadyEmitted) return@mapNotNull null
+            urduWordsEmitted[verseNumber] = targetEmitted
+
+            val text = urduWords.subList(alreadyEmitted, targetEmitted).joinToString(" ")
+            ReaderTranslationChunk(
+                verseNumber = verseNumber,
+                text = if (isVerseComplete) verseTranslationWithNumber(text, verseNumber) else text,
+                isVerseComplete = isVerseComplete,
+            )
         }
 
         ReaderLine(
@@ -179,3 +187,5 @@ private fun List<MushafLine>.toReaderLines(translations: Map<Int, String>): List
         )
     }
 }
+
+private val WHITESPACE = Regex("\\s+")
