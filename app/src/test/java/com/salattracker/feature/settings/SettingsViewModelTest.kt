@@ -2,6 +2,9 @@ package com.salattracker.feature.settings
 
 import com.salattracker.domain.model.AppLanguage
 import com.salattracker.domain.model.CalculationMethod
+import com.salattracker.domain.model.HighLatitudeRule
+import com.salattracker.domain.model.Madhab
+import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.ThemeMode
 import com.salattracker.domain.repository.UserPrefs
 import com.salattracker.testutil.FakeLocaleApplier
@@ -101,6 +104,40 @@ class SettingsViewModelTest {
         assertEquals(CalculationMethod.UMM_AL_QURA, viewModel.uiState.value.calculationMethod)
         assertFalse(viewModel.uiState.value.showCalculationMethodSheet)
         assertEquals(listOf(CalculationMethod.UMM_AL_QURA.id), repository.calculationMethodIdCalls)
+        assertEquals(1, rescheduler.rescheduleCount)
+    }
+
+    @Test
+    fun `onMadhabChanged writes and reschedules`() {
+        val viewModel = createViewModel()
+
+        viewModel.onMadhabChanged(Madhab.HANAFI)
+
+        assertEquals(Madhab.HANAFI, viewModel.uiState.value.madhab)
+        assertEquals(listOf(Madhab.HANAFI), repository.madhabCalls)
+        assertEquals(1, rescheduler.rescheduleCount)
+    }
+
+    @Test
+    fun `onHighLatitudeRuleChanged writes and reschedules`() {
+        val viewModel = createViewModel()
+
+        viewModel.onHighLatitudeRuleChanged(HighLatitudeRule.SEVENTH_OF_THE_NIGHT)
+
+        assertEquals(HighLatitudeRule.SEVENTH_OF_THE_NIGHT, viewModel.uiState.value.highLatitudeRule)
+        assertEquals(listOf(HighLatitudeRule.SEVENTH_OF_THE_NIGHT), repository.highLatitudeRuleCalls)
+        assertEquals(1, rescheduler.rescheduleCount)
+    }
+
+    @Test
+    fun `onPrayerTimeAdjustChanged writes only the changed prayer and reschedules`() {
+        val viewModel = createViewModel()
+
+        viewModel.onPrayerTimeAdjustChanged(PrayerType.FAJR, 5)
+
+        assertEquals(5, viewModel.uiState.value.prayerTimeAdjustMinutes[PrayerType.FAJR])
+        assertEquals(0, viewModel.uiState.value.prayerTimeAdjustMinutes[PrayerType.ASR])
+        assertEquals(listOf(PrayerType.FAJR to 5), repository.prayerTimeAdjustCalls)
         assertEquals(1, rescheduler.rescheduleCount)
     }
 

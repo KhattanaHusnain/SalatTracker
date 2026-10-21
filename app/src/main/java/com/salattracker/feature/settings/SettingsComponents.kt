@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salattracker.R
@@ -106,6 +107,43 @@ fun SettingsNavRow(
                 Text(trailingText, color = trailingColor, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
             }
             Icon(painterResource(R.drawable.ic_chevron_right), null, tint = SalatOnSurfaceVariant, modifier = Modifier.size(18.dp))
+        }
+    }
+}
+
+// ── Minute stepper (per-prayer time correction) ────────────────────────────────
+
+/** A "-" / value / "+" control for a small signed-minutes value, clamped to [range]. Used by the
+ * "Adjust prayer times" card — one per [com.salattracker.domain.model.PrayerType]. */
+@Composable
+fun MinuteStepper(
+    minutes: Int,
+    onMinutesChanged: (Int) -> Unit,
+    range: IntRange = -30..30,
+) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+        IconButton(
+            onClick = { if (minutes > range.first) onMinutesChanged(minutes - 1) },
+            enabled = minutes > range.first,
+            modifier = Modifier.size(32.dp),
+        ) {
+            Icon(painterResource(R.drawable.ic_remove), null, tint = SalatPrimary, modifier = Modifier.size(16.dp))
+        }
+        Text(
+            text = stringResource(R.string.settings_prayer_time_adjust_value, minutes),
+            modifier = Modifier.widthIn(min = 48.dp),
+            textAlign = TextAlign.Center,
+            color = SalatOnSurface,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium,
+            fontFamily = InterFamily,
+        )
+        IconButton(
+            onClick = { if (minutes < range.last) onMinutesChanged(minutes + 1) },
+            enabled = minutes < range.last,
+            modifier = Modifier.size(32.dp),
+        ) {
+            Icon(painterResource(R.drawable.ic_add), null, tint = SalatPrimary, modifier = Modifier.size(16.dp))
         }
     }
 }

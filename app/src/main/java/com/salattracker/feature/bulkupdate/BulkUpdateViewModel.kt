@@ -158,7 +158,7 @@ class BulkUpdateViewModel @Inject constructor(
             _uiState.update { it.copy(isApplying = true) }
             runCatching {
                 val today = LocalDate.now()
-                val todayTimes = prayerRepository.getCachedPrayerTimes(today)
+                val todayTimes = prayerRepository.getPrayerTimes(today)
                 val dates = generateSequence(state.rangeFrom) { it.plusDays(1) }
                     .takeWhile { !it.isAfter(state.rangeTo) }
                     .toList()

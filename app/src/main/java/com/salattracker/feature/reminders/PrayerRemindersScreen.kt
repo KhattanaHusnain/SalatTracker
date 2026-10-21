@@ -34,8 +34,10 @@ import androidx.compose.ui.window.Dialog
 import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.core.ui.label
+import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.repository.DEVICE_DEFAULT_SOUND_URI
+import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -53,6 +55,8 @@ fun PrayerRemindersScreen(
     onVibrationChanged: (PrayerType, Boolean) -> Unit,
     onSoundSelected: (PrayerType, String?) -> Unit,
     onChooseFromDevice: (PrayerType) -> Unit,
+    onJumuahEnabledChanged: (Boolean) -> Unit,
+    onJumuahReminderLeadChanged: (Int) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -65,6 +69,7 @@ fun PrayerRemindersScreen(
         uiState.reminders.forEach { setting ->
             ReminderCard(
                 setting                  = setting,
+                madhab                   = uiState.madhab,
                 expanded                 = uiState.expandedPrayer == setting.prayerType,
                 onExpandToggle           = { onExpandToggle(setting.prayerType) },
                 onEnabledChanged         = { onEnabledChanged(setting.prayerType, it) },
@@ -76,12 +81,20 @@ fun PrayerRemindersScreen(
                 onChooseFromDevice       = { onChooseFromDevice(setting.prayerType) },
             )
         }
+
+        JumuahCard(
+            enabled         = uiState.jumuahEnabled,
+            leadMinutes     = uiState.jumuahReminderLeadMinutes,
+            onEnabledChanged = onJumuahEnabledChanged,
+            onLeadChanged    = onJumuahReminderLeadChanged,
+        )
     }
 }
 
 @Composable
 private fun ReminderCard(
     setting: ReminderSetting,
+    madhab: Madhab,
     expanded: Boolean,
     onExpandToggle: () -> Unit,
     onEnabledChanged: (Boolean) -> Unit,
@@ -122,7 +135,7 @@ private fun ReminderCard(
                     )
                     Column {
                         Text(
-                            text       = setting.prayerType.label(),
+                            text       = setting.prayerType.label(LocalDate.now(), jumuahEnabled = false, madhab = madhab),
                             color      = if (setting.enabled) SalatPrimary else SalatOnSurfaceVariant,
                             fontSize   = 16.sp,
                             fontWeight = FontWeight.Medium,
@@ -182,6 +195,104 @@ private fun ReminderCard(
                 }
             }
         }
+    }
+}
+
+// ── Jumu'ah card ────────────────────────────────────────────────────────────
+
+private val JUMUAH_LEAD_OPTIONS = listOf(0, 15, 30, 45, 60)
+
+/** Separate from the five per-prayer cards: relabels Friday Dhuhr as "Jumu'ah" app-wide (Home,
+ * the full-screen reminder, notifications) and optionally adds one early heads-up notification,
+ * on top of (not instead of) the normal Dhuhr reminder. Off by default for the lead time, since
+ * most users don't want an extra notification; the relabeling itself defaults on but can be
+ * switched off entirely — women, travellers and the sick aren't obliged to attend Jumu'ah and
+ * pray Dhuhr instead. */
+@Composable
+private fun JumuahCard(
+    enabled: Boolean,
+    leadMinutes: Int,
+    onEnabledChanged: (Boolean) -> Unit,
+    onLeadChanged: (Int) -> Unit,
+) {
+    Surface(
+        modifier        = Modifier.fillMaxWidth(),
+        shape           = RoundedCornerShape(16.dp),
+        color           = SalatSurfaceContainerLowest,
+        border          = BorderStroke(1.dp, SalatSecondaryContainer),
+        shadowElevation = 2.dp,
+    ) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(
+                modifier              = Modifier.fillMaxWidth(),
+                verticalAlignment     = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text       = stringResource(R.string.reminders_jumuah_title),
+                        color      = SalatPrimary,
+                        fontSize   = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        fontFamily = InterFamily,
+                    )
+                    Text(
+                        text       = stringResource(R.string.reminders_jumuah_desc),
+                        color      = SalatOnSurfaceVariant,
+                        fontSize   = 12.sp,
+                        fontFamily = InterFamily,
+                    )
+                }
+                Switch(
+                    checked         = enabled,
+                    onCheckedChange = onEnabledChanged,
+                    colors          = SwitchDefaults.colors(
+                        checkedThumbColor   = SalatOnPrimary,
+                        checkedTrackColor   = SalatPrimary,
+                        uncheckedThumbColor = SalatOutline,
+                        uncheckedTrackColor = SalatOutlineVariant,
+                    ),
+                )
+            }
+
+            if (enabled) {
+                HorizontalDivider(color = SalatOutlineVariant.copy(alpha = 0.3f))
+                Text(
+                    text       = stringResource(R.string.reminders_jumuah_lead),
+                    color      = SalatOnSurfaceVariant,
+                    fontSize   = 14.sp,
+                    fontFamily = InterFamily,
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    JUMUAH_LEAD_OPTIONS.forEach { minutes ->
+                        JumuahLeadChip(
+                            minutes    = minutes,
+                            isSelected = leadMinutes == minutes,
+                            onClick    = { onLeadChanged(minutes) },
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun JumuahLeadChip(minutes: Int, isSelected: Boolean, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        shape   = RoundedCornerShape(50),
+        color   = if (isSelected) SalatPrimaryContainer else SalatSurfaceContainerLow,
+        border  = BorderStroke(1.dp, if (isSelected) SalatPrimaryContainer else SalatOutlineVariant),
+    ) {
+        Text(
+            text       = if (minutes == 0) stringResource(R.string.reminders_jumuah_lead_off) else "${minutes}m",
+            modifier   = Modifier.padding(horizontal = 14.dp, vertical = 7.dp),
+            color      = if (isSelected) SalatOnPrimaryContainer else SalatOnSurfaceVariant,
+            fontSize   = 12.sp,
+            fontWeight = FontWeight.SemiBold,
+            fontFamily = InterFamily,
+        )
     }
 }
 
@@ -587,5 +698,7 @@ fun PrayerRemindersScreenPreview() {
         onVibrationChanged       = { _, _ -> },
         onSoundSelected          = { _, _ -> },
         onChooseFromDevice       = {},
+        onJumuahEnabledChanged      = {},
+        onJumuahReminderLeadChanged = {},
     )
 }

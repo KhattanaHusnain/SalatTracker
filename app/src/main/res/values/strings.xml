@@ -31,9 +31,16 @@
     <!-- Prayer names -->
     <string name="prayer_fajr">Fajr</string>
     <string name="prayer_dhuhr">Dhuhr</string>
+    <string name="prayer_jumuah">Jumu\'ah</string>
+    <string name="jumuah_lead_notif_title">Jumu\'ah is coming up</string>
+    <string name="jumuah_lead_notif_body">Get ready for Jumu\'ah prayer.</string>
+    <string name="prayer_zuhrain">Zuhrain</string>
     <string name="prayer_asr">Asr</string>
+    <string name="prayer_asr_zuhrain">Asr (Zuhrain)</string>
     <string name="prayer_maghrib">Maghrib</string>
     <string name="prayer_maghrib_short">Magh</string>
+    <string name="prayer_maghribain">Maghribain</string>
+    <string name="prayer_isha_maghribain">Isha (Maghribain)</string>
     <string name="prayer_isha">Isha</string>
 
     <!-- Status labels -->
@@ -94,6 +101,17 @@
     <string name="theme_dark_desc">Calm and deep</string>
     <string name="theme_system">System</string>
     <string name="theme_system_desc">Sync with device</string>
+    <string name="onboarding_school_title">Your School of Thought</string>
+    <string name="onboarding_school_subtitle">This decides when Asr (and Isha, for Ja\'fari) begins. You can change it anytime in Settings.</string>
+    <string name="school_standard_title">Shafi\'i, Maliki &amp; Hanbali</string>
+    <string name="school_standard_desc">Standard Asr time</string>
+    <string name="school_hanafi_title">Hanafi</string>
+    <string name="school_hanafi_desc">Later Asr time</string>
+    <string name="school_jafari_title">Ja\'fari</string>
+    <string name="school_jafari_desc">Asr with Dhuhr, Isha with Maghrib</string>
+    <string name="school_prompt_title">Your school of thought</string>
+    <string name="school_prompt_body">This app now lets you choose your school of thought for Asr (and Isha, for Ja\'fari). \"Standard\" keeps the time you\'re used to.</string>
+    <string name="school_prompt_save">Save</string>
     <string name="onboarding_location_title">Precise Prayer Times</string>
     <string name="onboarding_location_desc">We need your location to calculate accurate prayer times based on your current city. This ensures your daily prayers are always in sync with the sun\'s position.</string>
     <string name="onboarding_allow_location">Allow Location</string>
@@ -173,6 +191,16 @@
     <string name="settings_longitude">Longitude</string>
     <string name="settings_calc_method">Calculation Method</string>
     <string name="settings_calculation_method_sheet_title">Calculation Method</string>
+    <string name="settings_school">School of Thought</string>
+    <string name="settings_high_latitude">High-Latitude Rule</string>
+    <string name="settings_high_latitude_desc">Matters mainly above about 48° latitude, where the sun may not reach the angle a method needs.</string>
+    <string name="high_latitude_automatic">Automatic</string>
+    <string name="high_latitude_middle">Middle of the night</string>
+    <string name="high_latitude_seventh">Seventh of the night</string>
+    <string name="high_latitude_twilight">Angle-based</string>
+    <string name="settings_adjust_prayer_times">Adjust Prayer Times</string>
+    <string name="settings_adjust_prayer_times_desc">Fine-tune each prayer time by a few minutes, for example to match your local mosque.</string>
+    <string name="settings_prayer_time_adjust_value">%1$d min</string>
     <string name="settings_appearance">Appearance</string>
     <string name="settings_language">Language</string>
     <string name="settings_theme">Theme</string>
@@ -182,6 +210,10 @@
     <string name="reminders_snooze_length">Snooze Length</string>
     <string name="reminders_full_screen_alert">Full-Screen Alert</string>
     <string name="reminders_vibration">Vibration</string>
+    <string name="reminders_jumuah_title">Jumu\'ah on Fridays</string>
+    <string name="reminders_jumuah_desc">Label Friday Dhuhr as Jumu\'ah across the app.</string>
+    <string name="reminders_jumuah_lead">Early reminder</string>
+    <string name="reminders_jumuah_lead_off">Off</string>
     <string name="reminders_sound">Sound</string>
     <string name="reminders_sound_azan">Azan (App Default)</string>
     <string name="reminders_sound_default">Device Default</string>

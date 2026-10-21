@@ -37,7 +37,10 @@ interface PrayerRepository {
 
     // ── Prayer times ──────────────────────────────────────────────────────────
 
-    suspend fun getCachedPrayerTimes(date: LocalDate): Map<PrayerType, LocalTime>?
+    /** Calculated on-device (see [com.salattracker.domain.repository.PrayerTimeCalculator]) from
+     * the current [UserPrefs] — no network call, no cache. Null only when no location has been
+     * set yet (the (0.0, 0.0) default). */
+    suspend fun getPrayerTimes(date: LocalDate): Map<PrayerType, LocalTime>?
 
     // ── Streak ────────────────────────────────────────────────────────────────
 

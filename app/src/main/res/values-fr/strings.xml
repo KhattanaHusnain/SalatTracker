@@ -28,9 +28,16 @@
 
     <string name="prayer_fajr">Fajr</string>
     <string name="prayer_dhuhr">Dhuhr</string>
+    <string name="prayer_jumuah">Joumou\'a</string>
+    <string name="jumuah_lead_notif_title">La prière du vendredi approche</string>
+    <string name="jumuah_lead_notif_body">Préparez-vous pour la prière du Joumou\'a.</string>
+    <string name="prayer_zuhrain">Zuhrain</string>
     <string name="prayer_asr">Asr</string>
+    <string name="prayer_asr_zuhrain">Asr (Zuhrain)</string>
     <string name="prayer_maghrib">Maghrib</string>
     <string name="prayer_maghrib_short">Magh</string>
+    <string name="prayer_maghribain">Maghribain</string>
+    <string name="prayer_isha_maghribain">Isha (Maghribain)</string>
     <string name="prayer_isha">Isha</string>
 
     <string name="status_congregation">En groupe</string>
@@ -85,6 +92,17 @@
     <string name="theme_dark_desc">Calme et profond</string>
     <string name="theme_system">Système</string>
     <string name="theme_system_desc">Synchroniser avec l\'appareil</string>
+    <string name="onboarding_school_title">Votre école juridique</string>
+    <string name="onboarding_school_subtitle">Ceci détermine le début d\'Asr (et d\'Isha, pour l\'école Ja\'fari). Vous pouvez le modifier à tout moment dans les paramètres.</string>
+    <string name="school_standard_title">Chafi\'ite, malikite et hanbalite</string>
+    <string name="school_standard_desc">Heure d\'Asr standard</string>
+    <string name="school_hanafi_title">Hanafite</string>
+    <string name="school_hanafi_desc">Heure d\'Asr plus tardive</string>
+    <string name="school_jafari_title">Ja\'fari</string>
+    <string name="school_jafari_desc">Asr avec Dhuhr, Isha avec Maghrib</string>
+    <string name="school_prompt_title">Votre école juridique</string>
+    <string name="school_prompt_body">Cette application vous permet désormais de choisir votre école juridique pour Asr (et Isha, pour l\'école Ja\'fari). \"Standard\" conserve l\'heure à laquelle vous êtes habitué.</string>
+    <string name="school_prompt_save">Enregistrer</string>
     <string name="onboarding_location_title">Horaires de prière précis</string>
     <string name="onboarding_location_desc">Nous avons besoin de votre position pour calculer des horaires de prière précis selon votre ville actuelle. Cela garantit que vos prières quotidiennes restent synchronisées avec la position du soleil.</string>
     <string name="onboarding_allow_location">Autoriser la localisation</string>
@@ -163,6 +181,16 @@
     <string name="settings_longitude">Longitude</string>
     <string name="settings_calc_method">Méthode de calcul</string>
     <string name="settings_calculation_method_sheet_title">Méthode de calcul</string>
+    <string name="settings_school">École juridique</string>
+    <string name="settings_high_latitude">Règle de haute latitude</string>
+    <string name="settings_high_latitude_desc">Importe surtout au-dessus d\'environ 48° de latitude, où le soleil peut ne pas atteindre l\'angle requis par une méthode.</string>
+    <string name="high_latitude_automatic">Automatique</string>
+    <string name="high_latitude_middle">Milieu de la nuit</string>
+    <string name="high_latitude_seventh">Septième de la nuit</string>
+    <string name="high_latitude_twilight">Basé sur l\'angle</string>
+    <string name="settings_adjust_prayer_times">Ajuster les horaires de prière</string>
+    <string name="settings_adjust_prayer_times_desc">Ajustez chaque horaire de prière de quelques minutes, par exemple pour correspondre à votre mosquée locale.</string>
+    <string name="settings_prayer_time_adjust_value">%1$d min</string>
     <string name="settings_appearance">Apparence</string>
     <string name="settings_language">Langue</string>
     <string name="settings_theme">Thème</string>
@@ -171,6 +199,10 @@
     <string name="reminders_snooze_length">Durée de report</string>
     <string name="reminders_full_screen_alert">Alerte plein écran</string>
     <string name="reminders_vibration">Vibration</string>
+    <string name="reminders_jumuah_title">Joumou\'a le vendredi</string>
+    <string name="reminders_jumuah_desc">Afficher le Dhuhr du vendredi comme Joumou\'a dans toute l\'application.</string>
+    <string name="reminders_jumuah_lead">Rappel anticipé</string>
+    <string name="reminders_jumuah_lead_off">Désactivé</string>
     <string name="reminders_sound">Son</string>
     <string name="reminders_sound_azan">Azan (par défaut de l\'app)</string>
     <string name="reminders_sound_default">Par défaut de l\'appareil</string>

@@ -7,12 +7,14 @@ import androidx.compose.ui.res.stringResource
 import com.salattracker.R
 import com.salattracker.domain.model.GoalCategory
 import com.salattracker.domain.model.GoalFrequency
+import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.usecase.CalendarViewType
 import com.salattracker.domain.usecase.HijriDate
 import com.salattracker.domain.usecase.IslamicEvent
 import java.time.DayOfWeek
+import java.time.LocalDate
 
 /**
  * Locale-aware display labels for domain enums. Centralised here so the name→string-resource
@@ -66,6 +68,39 @@ val GoalFrequency.labelRes: Int get() = when (this) {
 
 @Composable fun PrayerType.label(): String = stringResource(nameRes)
 @Composable fun PrayerType.shortLabel(): String = stringResource(shortNameRes)
+
+/** Date-aware label: shows "Jumu'ah" for Dhuhr on a Friday when [jumuahEnabled] — otherwise
+ * identical to [label]. Only Dhuhr is ever affected; every other prayer type is unchanged.
+ * Women, travellers and the sick aren't obliged to attend Jumu'ah and pray Dhuhr instead, so
+ * this relabeling is opt-out via [jumuahEnabled] (Prayer Reminders screen), not forced. */
+@Composable
+fun PrayerType.label(date: LocalDate, jumuahEnabled: Boolean): String =
+    if (this == PrayerType.DHUHR && jumuahEnabled && date.dayOfWeek == DayOfWeek.FRIDAY) {
+        stringResource(R.string.prayer_jumuah)
+    } else {
+        stringResource(nameRes)
+    }
+
+/** Date- and school-aware label: adds [Madhab.JAFARI]'s Zuhrain/Maghribain relabeling (Asr
+ * combined with Dhuhr, Isha with Maghrib — see the [Madhab.JAFARI] class doc) on top of the
+ * Jumu'ah rule above, which still takes precedence on a Friday — Jumu'ah replaces Dhuhr's
+ * obligation outright rather than combining with it, in both Sunni and Shia fiqh, so showing
+ * plain "Jumu'ah" there is correct regardless of [madhab].
+ *
+ * Only for single-prayer "what is this reminder/row" displays (Home, the full-screen reminder,
+ * notifications, the Prayer Reminders card headers) — deliberately not used in Calendar, Qaza,
+ * Stats, or Settings' per-prayer time adjustment, where relabeling would either make a count
+ * ambiguous ("2 Zuhrain pending" — 2 total, or 2 Dhuhr + 2 Asr?) or misdescribe a control that's
+ * explicitly about one prayer's own underlying calculated instant. */
+@Composable
+fun PrayerType.label(date: LocalDate, jumuahEnabled: Boolean, madhab: Madhab): String = when {
+    this == PrayerType.DHUHR && jumuahEnabled && date.dayOfWeek == DayOfWeek.FRIDAY -> stringResource(R.string.prayer_jumuah)
+    madhab == Madhab.JAFARI && this == PrayerType.DHUHR   -> stringResource(R.string.prayer_zuhrain)
+    madhab == Madhab.JAFARI && this == PrayerType.ASR     -> stringResource(R.string.prayer_asr_zuhrain)
+    madhab == Madhab.JAFARI && this == PrayerType.MAGHRIB -> stringResource(R.string.prayer_maghribain)
+    madhab == Madhab.JAFARI && this == PrayerType.ISHA    -> stringResource(R.string.prayer_isha_maghribain)
+    else -> stringResource(nameRes)
+}
 @Composable fun PrayerStatus.label(): String = stringResource(labelRes)
 @Composable fun GoalCategory.label(): String = stringResource(labelRes)
 @Composable fun GoalFrequency.label(): String = stringResource(labelRes)

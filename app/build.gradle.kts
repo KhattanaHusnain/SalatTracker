@@ -112,6 +112,9 @@ dependencies {
     // Google Drive backup (AuthorizationClient for the drive.appdata scope)
     implementation(libs.play.services.auth)
 
+    // On-device prayer time calculation
+    implementation(libs.adhan2)
+
     testImplementation(libs.kotlinx.coroutines.test)
 }
 // Export Room schemas (committed under app/schemas) so migrations can be verified against them.

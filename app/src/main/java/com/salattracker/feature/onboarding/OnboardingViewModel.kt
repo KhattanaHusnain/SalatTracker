@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.salattracker.core.locale.LocaleManager
 import com.salattracker.domain.model.AppLanguage
+import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.ThemeMode
 import com.salattracker.domain.repository.SettingsRepository
 import com.salattracker.notification.PrayerReminderWorker
@@ -16,13 +17,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/** The four first-run onboarding steps, in order. */
-enum class OnboardingStep { LANGUAGE, THEME, LOCATION, NOTIFICATIONS }
+/** The first-run onboarding steps, in order. */
+enum class OnboardingStep { LANGUAGE, THEME, SCHOOL, LOCATION, NOTIFICATIONS }
 
 data class OnboardingUiState(
     val step: OnboardingStep = OnboardingStep.LANGUAGE,
     val language: AppLanguage = AppLanguage.ENGLISH,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val madhab: Madhab = Madhab.STANDARD,
     val prayerRemindersEnabled: Boolean = true,
     val isFinishing: Boolean = false,
     /** True while the "Restore from Google Drive" flow (feature/backup's BackupEntry) is shown
@@ -43,6 +45,7 @@ class OnboardingViewModel @Inject constructor(
 
     fun onLanguageSelected(language: AppLanguage) = _uiState.update { it.copy(language = language) }
     fun onThemeSelected(themeMode: ThemeMode) = _uiState.update { it.copy(themeMode = themeMode) }
+    fun onMadhabSelected(madhab: Madhab) = _uiState.update { it.copy(madhab = madhab) }
     fun onPrayerRemindersChanged(enabled: Boolean) = _uiState.update { it.copy(prayerRemindersEnabled = enabled) }
 
     fun onNext() {
@@ -68,6 +71,9 @@ class OnboardingViewModel @Inject constructor(
         viewModelScope.launch {
             settingsRepository.setLanguage(state.language)
             settingsRepository.setThemeMode(state.themeMode)
+            // Also marks madhabChosen = true, so a fresh install never sees the one-time
+            // existing-user prompt (MainActivity's MadhabPromptDialog) afterward.
+            settingsRepository.setMadhab(state.madhab)
             settingsRepository.setAllRemindersEnabled(state.prayerRemindersEnabled)
             // Reschedule prayer reminders to honour the master toggle chosen here.
             PrayerReminderWorker.enqueueOneTime(workManager)

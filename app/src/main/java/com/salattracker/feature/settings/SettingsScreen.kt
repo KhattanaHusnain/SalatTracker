@@ -26,9 +26,13 @@ import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.core.ui.SettingsCard
 import com.salattracker.core.ui.SettingsSectionLabel
+import com.salattracker.core.ui.label
 import com.salattracker.core.ui.salatSwitchColors
 import com.salattracker.domain.model.AppLanguage
 import com.salattracker.domain.model.CalculationMethod
+import com.salattracker.domain.model.HighLatitudeRule
+import com.salattracker.domain.model.Madhab
+import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.ThemeMode
 
 // ── Settings Screen — a hub of 3 cards, every control live-applies ──────────────
@@ -43,6 +47,9 @@ fun SettingsScreen(
     onCalculationMethodSheetOpen: () -> Unit,
     onCalculationMethodSheetDismiss: () -> Unit,
     onCalculationMethodChanged: (CalculationMethod) -> Unit,
+    onMadhabChanged: (Madhab) -> Unit,
+    onHighLatitudeRuleChanged: (HighLatitudeRule) -> Unit,
+    onPrayerTimeAdjustChanged: (PrayerType, Int) -> Unit,
     on24HourFormatChanged: (Boolean) -> Unit,
     onLanguageChanged: (AppLanguage) -> Unit,
     onThemeModeChanged: (ThemeMode) -> Unit,
@@ -71,11 +78,22 @@ fun SettingsScreen(
                 latitude          = uiState.latitude,
                 longitude         = uiState.longitude,
                 calculationMethod = uiState.calculationMethod,
+                madhab            = uiState.madhab,
+                highLatitudeRule  = uiState.highLatitudeRule,
                 onToggleDevice    = onUseDeviceLocationChanged,
                 onLatChanged      = onLatitudeChanged,
                 onLonChanged      = onLongitudeChanged,
                 onLocationCommit  = onLocationCommit,
                 onCalculationMethodClick = onCalculationMethodSheetOpen,
+                onMadhabChanged   = onMadhabChanged,
+                onHighLatitudeRuleChanged = onHighLatitudeRuleChanged,
+            )
+
+            // ── Adjust Prayer Times ──────────────────────────────────────────
+            SettingsSectionLabel(stringResource(R.string.settings_adjust_prayer_times))
+            AdjustPrayerTimesCard(
+                adjustMinutes = uiState.prayerTimeAdjustMinutes,
+                onChanged = onPrayerTimeAdjustChanged,
             )
 
             // ── Appearance ────────────────────────────────────────────────────
@@ -118,11 +136,15 @@ private fun LocationAndPrayerTimesCard(
     latitude: String,
     longitude: String,
     calculationMethod: CalculationMethod,
+    madhab: Madhab,
+    highLatitudeRule: HighLatitudeRule,
     onToggleDevice: (Boolean) -> Unit,
     onLatChanged: (String) -> Unit,
     onLonChanged: (String) -> Unit,
     onLocationCommit: () -> Unit,
     onCalculationMethodClick: () -> Unit,
+    onMadhabChanged: (Madhab) -> Unit,
+    onHighLatitudeRuleChanged: (HighLatitudeRule) -> Unit,
 ) {
     SettingsCard {
         // Device location toggle
@@ -188,6 +210,149 @@ private fun LocationAndPrayerTimesCard(
             fontFamily = InterFamily,
             maxLines = 1,
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
+        HorizontalDivider(color = SalatOutlineVariant.copy(alpha = 0.4f))
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // School of thought — changes Asr, and for Jafari also Isha.
+        Text(stringResource(R.string.settings_school), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily)
+        Spacer(Modifier.height(8.dp))
+        SchoolDropdown(selected = madhab, onSelect = onMadhabChanged)
+
+        Spacer(modifier = Modifier.height(16.dp))
+        HorizontalDivider(color = SalatOutlineVariant.copy(alpha = 0.4f))
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // High-latitude rule — bounds Fajr/Isha where the method's angle is never reached.
+        Text(stringResource(R.string.settings_high_latitude), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily)
+        Spacer(Modifier.height(4.dp))
+        Text(stringResource(R.string.settings_high_latitude_desc), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily, lineHeight = 15.sp)
+        Spacer(Modifier.height(8.dp))
+        HighLatitudeRuleDropdown(selected = highLatitudeRule, onSelect = onHighLatitudeRuleChanged)
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun HighLatitudeRuleDropdown(selected: HighLatitudeRule, onSelect: (HighLatitudeRule) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+        OutlinedTextField(
+            value         = stringResource(selected.labelRes),
+            onValueChange = {},
+            readOnly      = true,
+            modifier      = Modifier.fillMaxWidth().menuAnchor(),
+            singleLine    = true,
+            trailingIcon  = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            textStyle     = LocalTextStyle.current.copy(fontFamily = InterFamily, fontSize = 14.sp),
+            colors        = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor      = SalatPrimary,
+                unfocusedBorderColor    = SalatOutlineVariant,
+                focusedContainerColor   = SalatSurfaceContainerLow,
+                unfocusedContainerColor = SalatSurfaceContainerLow,
+            ),
+            shape = RoundedCornerShape(8.dp),
+        )
+        ExposedDropdownMenu(
+            expanded         = expanded,
+            onDismissRequest = { expanded = false },
+            modifier         = Modifier.background(SalatSurface),
+        ) {
+            HighLatitudeRule.values().forEach { rule ->
+                DropdownMenuItem(
+                    text    = { Text(stringResource(rule.labelRes), fontFamily = InterFamily, fontSize = 14.sp, color = SalatOnSurface) },
+                    onClick = { onSelect(rule); expanded = false },
+                    colors  = MenuDefaults.itemColors(
+                        textColor = if (rule == selected) SalatPrimary else SalatOnSurface,
+                    ),
+                )
+            }
+        }
+    }
+}
+
+private val HighLatitudeRule.labelRes get() = when (this) {
+    HighLatitudeRule.AUTOMATIC            -> R.string.high_latitude_automatic
+    HighLatitudeRule.MIDDLE_OF_THE_NIGHT  -> R.string.high_latitude_middle
+    HighLatitudeRule.SEVENTH_OF_THE_NIGHT -> R.string.high_latitude_seventh
+    HighLatitudeRule.TWILIGHT_ANGLE       -> R.string.high_latitude_twilight
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SchoolDropdown(selected: Madhab, onSelect: (Madhab) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+        OutlinedTextField(
+            value         = stringResource(selected.labelRes),
+            onValueChange = {},
+            readOnly      = true,
+            modifier      = Modifier.fillMaxWidth().menuAnchor(),
+            singleLine    = true,
+            trailingIcon  = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            textStyle     = LocalTextStyle.current.copy(fontFamily = InterFamily, fontSize = 14.sp),
+            colors        = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor      = SalatPrimary,
+                unfocusedBorderColor    = SalatOutlineVariant,
+                focusedContainerColor   = SalatSurfaceContainerLow,
+                unfocusedContainerColor = SalatSurfaceContainerLow,
+            ),
+            shape = RoundedCornerShape(8.dp),
+        )
+        ExposedDropdownMenu(
+            expanded         = expanded,
+            onDismissRequest = { expanded = false },
+            modifier         = Modifier.background(SalatSurface),
+        ) {
+            Madhab.values().forEach { school ->
+                DropdownMenuItem(
+                    text    = { Text(stringResource(school.labelRes), fontFamily = InterFamily, fontSize = 14.sp, color = SalatOnSurface) },
+                    onClick = { onSelect(school); expanded = false },
+                    colors  = MenuDefaults.itemColors(
+                        textColor = if (school == selected) SalatPrimary else SalatOnSurface,
+                    ),
+                )
+            }
+        }
+    }
+}
+
+private val Madhab.labelRes get() = when (this) {
+    Madhab.STANDARD -> R.string.school_standard_title
+    Madhab.HANAFI   -> R.string.school_hanafi_title
+    Madhab.JAFARI   -> R.string.school_jafari_title
+}
+
+// ── Adjust Prayer Times card ──────────────────────────────────────────────────
+
+@Composable
+private fun AdjustPrayerTimesCard(
+    adjustMinutes: Map<PrayerType, Int>,
+    onChanged: (PrayerType, Int) -> Unit,
+) {
+    SettingsCard {
+        Text(
+            stringResource(R.string.settings_adjust_prayer_times_desc),
+            color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily, lineHeight = 16.sp,
+        )
+        Spacer(Modifier.height(12.dp))
+        PrayerType.values().forEachIndexed { index, type ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(type.label(), color = SalatOnSurface, fontSize = 15.sp, fontFamily = InterFamily)
+                MinuteStepper(
+                    minutes = adjustMinutes[type] ?: 0,
+                    onMinutesChanged = { onChanged(type, it) },
+                )
+            }
+            if (index != PrayerType.values().lastIndex) {
+                Spacer(Modifier.height(10.dp))
+            }
+        }
     }
 }
 
@@ -367,6 +532,9 @@ fun SettingsScreenPreview() {
         onCalculationMethodSheetOpen    = {},
         onCalculationMethodSheetDismiss = {},
         onCalculationMethodChanged = {},
+        onMadhabChanged            = {},
+        onHighLatitudeRuleChanged  = {},
+        onPrayerTimeAdjustChanged  = { _, _ -> },
         on24HourFormatChanged      = {},
         onLanguageChanged          = {},
         onThemeModeChanged         = {},

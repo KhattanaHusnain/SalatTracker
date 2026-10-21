@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.core.ui.*
+import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.StreakInfo
@@ -66,6 +67,8 @@ fun HomeScreen(
                     nextPrayer       = uiState.nextPrayer,
                     minutesUntilNext = uiState.minutesUntilNext,
                     qazaPendingTotal = uiState.qazaPendingTotal,
+                    jumuahEnabled    = uiState.jumuahEnabled,
+                    madhab           = uiState.madhab,
                     onQazaClick      = onQazaClick,
                     modifier         = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp),
                 )
@@ -87,6 +90,9 @@ fun HomeScreen(
                     modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp).padding(top = 16.dp),
                 )
                 PrayerTimeline(
+                    todayDate     = uiState.todayDate,
+                    jumuahEnabled = uiState.jumuahEnabled,
+                    madhab        = uiState.madhab,
                     prayers       = uiState.prayers,
                     currentPrayer = uiState.currentPrayer,
                     onClick       = onPrayerCardClick,
@@ -125,6 +131,8 @@ private fun HeroCard(
     nextPrayer: NextPrayer?,
     minutesUntilNext: Long,
     qazaPendingTotal: Int,
+    jumuahEnabled: Boolean,
+    madhab: Madhab,
     onQazaClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -191,8 +199,9 @@ private fun HeroCard(
                         letterSpacing = 1.sp,
                     )
                     if (nextPrayer != null) {
+                        val nextPrayerDate = if (nextPrayer.isTomorrow) todayDate.plusDays(1) else todayDate
                         Text(
-                            text = nextPrayer.type.label(),
+                            text = nextPrayer.type.label(nextPrayerDate, jumuahEnabled, madhab),
                             color = Color.White,
                             fontSize = 22.sp,
                             fontWeight = FontWeight.Bold,
@@ -281,6 +290,9 @@ private fun HeroCard(
 
 @Composable
 private fun PrayerTimeline(
+    todayDate: LocalDate,
+    jumuahEnabled: Boolean,
+    madhab: Madhab,
     prayers: List<PrayerEntryUi>,
     currentPrayer: PrayerType?,
     onClick: (PrayerType) -> Unit,
@@ -290,6 +302,9 @@ private fun PrayerTimeline(
         prayers.forEachIndexed { index, entry ->
             TimelineRow(
                 entry     = entry,
+                date      = todayDate,
+                jumuahEnabled = jumuahEnabled,
+                madhab    = madhab,
                 isLast    = index == prayers.lastIndex,
                 // Only call attention to the current prayer while it still needs marking — once
                 // it's recorded, highlighting it again would just be noise next to the hero's
@@ -304,6 +319,9 @@ private fun PrayerTimeline(
 @Composable
 private fun TimelineRow(
     entry: PrayerEntryUi,
+    date: LocalDate,
+    jumuahEnabled: Boolean,
+    madhab: Madhab,
     isLast: Boolean,
     needsMarking: Boolean,
     onClick: () -> Unit,
@@ -340,7 +358,7 @@ private fun TimelineRow(
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(
-                        text = entry.type.label(),
+                        text = entry.type.label(date, jumuahEnabled, madhab),
                         color = SalatPrimary,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,

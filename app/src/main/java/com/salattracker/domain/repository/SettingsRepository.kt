@@ -1,6 +1,8 @@
 package com.salattracker.domain.repository
 
 import com.salattracker.domain.model.AppLanguage
+import com.salattracker.domain.model.HighLatitudeRule
+import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.ThemeMode
 import kotlinx.coroutines.flow.Flow
@@ -39,6 +41,12 @@ interface SettingsRepository {
         use24HourFormat: Boolean,
         language: AppLanguage,
         themeMode: ThemeMode,
+        madhab: Madhab,
+        highLatitudeRule: HighLatitudeRule,
+        prayerTimeAdjustMinutes: Map<PrayerType, Int>,
+        madhabChosen: Boolean,
+        jumuahEnabled: Boolean,
+        jumuahReminderLeadMinutes: Int,
     )
 
     /** One-shot read, used when prayer times need refreshing. */
@@ -54,6 +62,23 @@ interface SettingsRepository {
     suspend fun setCalculationMethodId(id: Int)
 
     suspend fun setUse24HourFormat(enabled: Boolean)
+
+    /** Also marks [UserPrefs.madhabChosen] true, so this is the single call both onboarding and
+     * the one-time existing-user prompt need — there's no separate "mark chosen" setter to
+     * forget. Bulk restore (which must set the flag independently of a real user choice) goes
+     * through [saveSettings] instead. */
+    suspend fun setMadhab(madhab: Madhab)
+
+    suspend fun setHighLatitudeRule(rule: HighLatitudeRule)
+
+    /** A correction to the displayed/alarmed prayer time itself — distinct from
+     * [setReminderOffsetMinutes], which only shifts when the *notification* fires. */
+    suspend fun setPrayerTimeAdjustMinutes(type: PrayerType, minutes: Int)
+
+    suspend fun setJumuahEnabled(enabled: Boolean)
+
+    /** 0 = no separate early reminder for Jumu'ah. */
+    suspend fun setJumuahReminderLeadMinutes(minutes: Int)
 
     // ── Onboarding / app-preference granular writes ────────────────────────────
 
@@ -113,4 +138,15 @@ data class UserPrefs(
     val language: AppLanguage = AppLanguage.ENGLISH,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val onboardingCompleted: Boolean = false,
+    val madhab: Madhab = Madhab.STANDARD,
+    val highLatitudeRule: HighLatitudeRule = HighLatitudeRule.AUTOMATIC,
+    /** A correction (in minutes) applied to the calculated prayer time itself — not to be
+     * confused with [reminderOffsetMinutes], which only shifts when the notification fires. */
+    val prayerTimeAdjustMinutes: Map<PrayerType, Int> = PrayerType.values()
+        .associateWith { 0 },
+    /** False only for installs that existed before [madhab] was introduced and haven't yet seen
+     * the one-time prompt (`MainActivity`'s `MadhabPromptDialog`) or been through onboarding. */
+    val madhabChosen: Boolean = false,
+    val jumuahEnabled: Boolean = true,
+    val jumuahReminderLeadMinutes: Int = 0,
 )

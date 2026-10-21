@@ -13,6 +13,8 @@ import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.StreakInfo
 import com.salattracker.domain.model.VerseInfo
 import com.salattracker.domain.model.AppLanguage
+import com.salattracker.domain.model.HighLatitudeRule
+import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.ThemeMode
 import com.salattracker.domain.repository.DayStatusCounts
 import com.salattracker.domain.repository.GoalReminderScheduler
@@ -112,7 +114,7 @@ class FakePrayerRepository : PrayerRepository {
         }
     }
 
-    override suspend fun getCachedPrayerTimes(date: LocalDate): Map<PrayerType, LocalTime>? = cachedTimes[date]
+    override suspend fun getPrayerTimes(date: LocalDate): Map<PrayerType, LocalTime>? = cachedTimes[date]
 
     override suspend fun upsertPrayerStatus(date: LocalDate, prayerType: PrayerType, status: PrayerStatus) {
         upserts += Triple(date, prayerType, status)
@@ -293,6 +295,11 @@ class FakeSettingsRepository(initial: UserPrefs = UserPrefs()) : SettingsReposit
     val use24HourFormatCalls = mutableListOf<Boolean>()
     val languageCalls = mutableListOf<AppLanguage>()
     val themeModeCalls = mutableListOf<ThemeMode>()
+    val madhabCalls = mutableListOf<Madhab>()
+    val highLatitudeRuleCalls = mutableListOf<HighLatitudeRule>()
+    val prayerTimeAdjustCalls = mutableListOf<Pair<PrayerType, Int>>()
+    val jumuahEnabledCalls = mutableListOf<Boolean>()
+    val jumuahReminderLeadCalls = mutableListOf<Int>()
 
     override fun observeSettings(): Flow<UserPrefs> = prefs
 
@@ -302,6 +309,8 @@ class FakeSettingsRepository(initial: UserPrefs = UserPrefs()) : SettingsReposit
         useDeviceLocation: Boolean, latitude: Double, longitude: Double, calculationMethodId: Int,
         reminderEnabled: Map<PrayerType, Boolean>, reminderOffsetMinutes: Map<PrayerType, Int>,
         use24HourFormat: Boolean, language: AppLanguage, themeMode: ThemeMode,
+        madhab: Madhab, highLatitudeRule: HighLatitudeRule, prayerTimeAdjustMinutes: Map<PrayerType, Int>,
+        madhabChosen: Boolean, jumuahEnabled: Boolean, jumuahReminderLeadMinutes: Int,
     ) = notUsed()
 
     override suspend fun setUseDeviceLocation(enabled: Boolean) {
@@ -342,6 +351,31 @@ class FakeSettingsRepository(initial: UserPrefs = UserPrefs()) : SettingsReposit
     override suspend fun setReminderFullScreenAlert(type: PrayerType, enabled: Boolean) = notUsed()
     override suspend fun setReminderVibrationEnabled(type: PrayerType, enabled: Boolean) = notUsed()
     override suspend fun setReminderSoundUri(type: PrayerType, uri: String?) = notUsed()
+
+    override suspend fun setMadhab(madhab: Madhab) {
+        madhabCalls += madhab
+        prefs.update { it.copy(madhab = madhab, madhabChosen = true) }
+    }
+
+    override suspend fun setHighLatitudeRule(rule: HighLatitudeRule) {
+        highLatitudeRuleCalls += rule
+        prefs.update { it.copy(highLatitudeRule = rule) }
+    }
+
+    override suspend fun setPrayerTimeAdjustMinutes(type: PrayerType, minutes: Int) {
+        prayerTimeAdjustCalls += type to minutes
+        prefs.update { it.copy(prayerTimeAdjustMinutes = it.prayerTimeAdjustMinutes + (type to minutes)) }
+    }
+
+    override suspend fun setJumuahEnabled(enabled: Boolean) {
+        jumuahEnabledCalls += enabled
+        prefs.update { it.copy(jumuahEnabled = enabled) }
+    }
+
+    override suspend fun setJumuahReminderLeadMinutes(minutes: Int) {
+        jumuahReminderLeadCalls += minutes
+        prefs.update { it.copy(jumuahReminderLeadMinutes = minutes) }
+    }
 
     private fun notUsed(): Nothing = throw NotImplementedError("not used by this test")
 }

@@ -70,5 +70,7 @@ fun PrayerRemindersEntry(viewModel: PrayerRemindersViewModel = hiltViewModel()) 
             }
             soundPickerLauncher.launch(intent)
         },
+        onJumuahEnabledChanged      = viewModel::onJumuahEnabledChanged,
+        onJumuahReminderLeadChanged = viewModel::onJumuahReminderLeadChanged,
     )
 }

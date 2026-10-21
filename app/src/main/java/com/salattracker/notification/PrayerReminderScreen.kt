@@ -36,16 +36,21 @@ import com.salattracker.core.theme.SalatPrimaryContainer
 import com.salattracker.core.theme.SalatPrimaryFixed
 import com.salattracker.core.theme.SalatPrimaryFixedDim
 import com.salattracker.core.ui.label
+import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.VerseInfo
 import kotlinx.coroutines.delay
+import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 @Composable
 fun PrayerReminderScreen(
     prayerType: PrayerType,
+    date: LocalDate,
+    jumuahEnabled: Boolean,
+    madhab: Madhab,
     scheduledTime: LocalTime?,
     verse: VerseInfo?,
     snoozeMinutes: Int,
@@ -87,7 +92,7 @@ fun PrayerReminderScreen(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text          = stringResource(R.string.reminder_prayer_title, prayerType.label()).uppercase(),
+                text          = stringResource(R.string.reminder_prayer_title, prayerType.label(date, jumuahEnabled, madhab)).uppercase(),
                 color         = Color.White,
                 fontSize      = 20.sp,
                 fontWeight    = FontWeight.SemiBold,
@@ -258,6 +263,9 @@ private fun ReminderActionTile(
 fun PrayerReminderScreenPreview() {
     PrayerReminderScreen(
         prayerType    = PrayerType.ASR,
+        date          = LocalDate.now(),
+        jumuahEnabled = true,
+        madhab        = Madhab.STANDARD,
         scheduledTime = LocalTime.of(15, 20),
         verse = VerseInfo(
             text = "Maintain with care the [obligatory] prayers and [in particular] the middle [i.e., ʿaṣr] prayer and stand before Allāh, devoutly obedient.",

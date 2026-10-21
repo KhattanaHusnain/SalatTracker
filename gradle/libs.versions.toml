@@ -1,4 +1,5 @@
 [versions]
+adhan2 = "0.0.6"
 agp = "9.2.1"
 converterGson = "3.0.0"
 coreKtx = "1.17.0"
@@ -27,6 +28,10 @@ vico = "2.5.0"
 workRuntimeKtx = "2.11.2"
 
 [libraries]
+# Pinned at 0.0.6, not the newer 0.0.7: 0.0.7 is built with Kotlin 2.4.0, and Hilt's
+# annotation processor on this project's Kotlin 2.3.0 can't read 2.4 metadata (the same
+# failure AboutLibraries 15.x hit here). 0.0.6 is built with Kotlin 2.2.20.
+adhan2 = { module = "com.batoulapps.adhan:adhan2", version.ref = "adhan2" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 androidx-hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hiltNavigationCompose" }

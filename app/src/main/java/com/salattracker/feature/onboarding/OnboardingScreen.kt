@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.domain.model.AppLanguage
+import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.ThemeMode
 
 @Composable
@@ -29,6 +30,7 @@ fun OnboardingScreen(
     uiState: OnboardingUiState,
     onLanguageSelected: (AppLanguage) -> Unit,
     onThemeSelected: (ThemeMode) -> Unit,
+    onMadhabSelected: (Madhab) -> Unit,
     onPrayerRemindersChanged: (Boolean) -> Unit,
     onNext: () -> Unit,
     onAllowLocation: () -> Unit,
@@ -44,6 +46,7 @@ fun OnboardingScreen(
         when (uiState.step) {
             OnboardingStep.LANGUAGE      -> LanguageStep(uiState.language, onLanguageSelected, onNext, onRestoreFromBackup)
             OnboardingStep.THEME         -> ThemeStep(uiState.themeMode, onThemeSelected, onNext)
+            OnboardingStep.SCHOOL        -> SchoolStep(uiState.madhab, onMadhabSelected, onNext)
             OnboardingStep.LOCATION      -> LocationStep(onAllowLocation = { onAllowLocation(); onNext() })
             OnboardingStep.NOTIFICATIONS -> NotificationsStep(
                 prayerRemindersEnabled = uiState.prayerRemindersEnabled,
@@ -121,7 +124,7 @@ private fun ThemeStep(
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         Spacer(Modifier.height(56.dp))
-        StepDots(current = 1, total = 4)
+        StepDots(current = 1, total = OnboardingStep.values().size)
         Spacer(Modifier.height(28.dp))
         Text(stringResource(R.string.onboarding_theme_title), color = SalatPrimary, fontSize = 26.sp, fontWeight = FontWeight.Bold, fontFamily = MontserratFamily, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
         Spacer(Modifier.height(8.dp))
@@ -130,9 +133,39 @@ private fun ThemeStep(
         Spacer(Modifier.height(36.dp))
 
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            ThemeOption(ThemeMode.LIGHT,  R.drawable.ic_light_mode, stringResource(R.string.theme_light),  stringResource(R.string.theme_light_desc),  selected == ThemeMode.LIGHT)  { onSelect(ThemeMode.LIGHT) }
-            ThemeOption(ThemeMode.DARK,   R.drawable.ic_dark_mode,  stringResource(R.string.theme_dark),   stringResource(R.string.theme_dark_desc),    selected == ThemeMode.DARK)   { onSelect(ThemeMode.DARK) }
-            ThemeOption(ThemeMode.SYSTEM, R.drawable.ic_contrast,   stringResource(R.string.theme_system), stringResource(R.string.theme_system_desc), selected == ThemeMode.SYSTEM) { onSelect(ThemeMode.SYSTEM) }
+            TitledOption(R.drawable.ic_light_mode, stringResource(R.string.theme_light),  stringResource(R.string.theme_light_desc),  selected == ThemeMode.LIGHT)  { onSelect(ThemeMode.LIGHT) }
+            TitledOption(R.drawable.ic_dark_mode,  stringResource(R.string.theme_dark),   stringResource(R.string.theme_dark_desc),   selected == ThemeMode.DARK)   { onSelect(ThemeMode.DARK) }
+            TitledOption(R.drawable.ic_contrast,   stringResource(R.string.theme_system), stringResource(R.string.theme_system_desc), selected == ThemeMode.SYSTEM) { onSelect(ThemeMode.SYSTEM) }
+        }
+
+        Spacer(Modifier.weight(1f))
+        PrimaryButton(text = stringResource(R.string.action_next), onClick = onNext)
+        Spacer(Modifier.height(24.dp))
+    }
+}
+
+// ── Step 3: School of thought (Asr calculation) ────────────────────────────────
+
+@Composable
+private fun SchoolStep(
+    selected: Madhab,
+    onSelect: (Madhab) -> Unit,
+    onNext: () -> Unit,
+) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        Spacer(Modifier.height(56.dp))
+        StepDots(current = 2, total = OnboardingStep.values().size)
+        Spacer(Modifier.height(28.dp))
+        Text(stringResource(R.string.onboarding_school_title), color = SalatPrimary, fontSize = 26.sp, fontWeight = FontWeight.Bold, fontFamily = MontserratFamily, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+        Spacer(Modifier.height(8.dp))
+        Text(stringResource(R.string.onboarding_school_subtitle), color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = InterFamily, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+
+        Spacer(Modifier.height(36.dp))
+
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            TitledOption(R.drawable.ic_mosque, stringResource(R.string.school_standard_title), stringResource(R.string.school_standard_desc), selected == Madhab.STANDARD) { onSelect(Madhab.STANDARD) }
+            TitledOption(R.drawable.ic_mosque, stringResource(R.string.school_hanafi_title),   stringResource(R.string.school_hanafi_desc),   selected == Madhab.HANAFI)   { onSelect(Madhab.HANAFI) }
+            TitledOption(R.drawable.ic_mosque, stringResource(R.string.school_jafari_title),   stringResource(R.string.school_jafari_desc),   selected == Madhab.JAFARI)   { onSelect(Madhab.JAFARI) }
         }
 
         Spacer(Modifier.weight(1f))
@@ -142,8 +175,7 @@ private fun ThemeStep(
 }
 
 @Composable
-private fun ThemeOption(
-    mode: ThemeMode,
+private fun TitledOption(
     icon: Int,
     title: String,
     subtitle: String,
@@ -368,7 +400,7 @@ private fun PrimaryButton(text: String, icon: Int? = null, enabled: Boolean = tr
 fun OnboardingLanguagePreview() {
     OnboardingScreen(
         uiState = OnboardingUiState(step = OnboardingStep.LANGUAGE),
-        onLanguageSelected = {}, onThemeSelected = {}, onPrayerRemindersChanged = {},
+        onLanguageSelected = {}, onThemeSelected = {}, onMadhabSelected = {}, onPrayerRemindersChanged = {},
         onNext = {}, onAllowLocation = {}, onFinish = {},
     )
 }
@@ -378,7 +410,7 @@ fun OnboardingLanguagePreview() {
 fun OnboardingNotificationsPreview() {
     OnboardingScreen(
         uiState = OnboardingUiState(step = OnboardingStep.NOTIFICATIONS),
-        onLanguageSelected = {}, onThemeSelected = {}, onPrayerRemindersChanged = {},
+        onLanguageSelected = {}, onThemeSelected = {}, onMadhabSelected = {}, onPrayerRemindersChanged = {},
         onNext = {}, onAllowLocation = {}, onFinish = {},
     )
 }
