@@ -350,6 +350,9 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                         onContinueReadingClick = { chapterNumber, verseNumber ->
                             navController.push(Routes.quranReader(chapterNumber, verseNumber))
                         },
+                        onJuzClick = { chapterNumber, verseNumber ->
+                            navController.push(Routes.quranReader(chapterNumber, verseNumber))
+                        },
                         searchRequest = quranSearchRequest,
                     )
                 }

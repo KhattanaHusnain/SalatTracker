@@ -23,6 +23,13 @@ interface QuranVerseDao {
     )
     suspend fun firstOfJuz(juzNumber: Int): VerseEntity?
 
+    /** Every surah that contributes at least one ayah to a juz, in Quran order. */
+    @Query(
+        "SELECT DISTINCT chapter_number FROM verses WHERE juz_number = :juzNumber " +
+            "ORDER BY chapter_number ASC"
+    )
+    suspend fun chapterNumbersForJuz(juzNumber: Int): List<Int>
+
     @Query(
         "SELECT * FROM verses WHERE hizb_number = :hizbNumber " +
             "ORDER BY chapter_number ASC, verse_number ASC LIMIT 1"

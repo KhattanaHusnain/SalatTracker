@@ -19,8 +19,13 @@ enum class QuranBrowseTab { SURAH, JUZ }
 /** What a page/hizb jump number is being resolved against. */
 enum class QuranJumpType { PAGE, HIZB }
 
-/** One juz's starting point — where chapter browsing lands you if you tap juz N. */
-data class QuranJuzUi(val juzNumber: Int, val chapterNumber: Int, val chapterName: String, val verseNumber: Int)
+/** A juz's actual starting point and every surah it spans. */
+data class QuranJuzUi(
+    val juzNumber: Int,
+    val chapterNumber: Int,
+    val verseNumber: Int,
+    val chapterNames: List<String>,
+)
 
 data class QuranChapterListUiState(
     val isLoading: Boolean = true,
@@ -59,8 +64,9 @@ class QuranChapterListViewModel @Inject constructor(
         viewModelScope.launch {
             val entries = (1..QURAN_JUZ_COUNT).mapNotNull { juzNumber ->
                 val location = contentRepository.firstVerseOfJuz(juzNumber) ?: return@mapNotNull null
-                val chapter = contentRepository.getChapter(location.chapterNumber) ?: return@mapNotNull null
-                QuranJuzUi(juzNumber, location.chapterNumber, chapter.nameTransliteration, location.verseNumber)
+                val chapterNames = contentRepository.chapterNumbersForJuz(juzNumber)
+                    .mapNotNull { contentRepository.getChapter(it)?.nameTransliteration }
+                QuranJuzUi(juzNumber, location.chapterNumber, location.verseNumber, chapterNames)
             }
             _uiState.update { it.copy(juzEntries = entries) }
         }

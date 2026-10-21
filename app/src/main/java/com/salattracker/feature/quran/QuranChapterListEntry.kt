@@ -10,6 +10,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 fun QuranChapterListEntry(
     onChapterClick: (Int) -> Unit,
     onContinueReadingClick: (chapterNumber: Int, verseNumber: Int) -> Unit,
+    onJuzClick: (chapterNumber: Int, verseNumber: Int) -> Unit,
     searchRequest: Int,
     viewModel: QuranChapterListViewModel = hiltViewModel(),
 ) {
@@ -30,6 +31,7 @@ fun QuranChapterListEntry(
         uiState = uiState,
         onChapterClick = onChapterClick,
         onContinueReadingClick = onContinueReadingClick,
+        onJuzClick = onJuzClick,
         onTabSelected = viewModel::onTabSelected,
         onJumpDialogDismiss = viewModel::onJumpDialogDismiss,
         onJumpTypeSelected = viewModel::onJumpTypeSelected,

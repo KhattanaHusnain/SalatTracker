@@ -24,6 +24,7 @@ interface QuranContentRepository {
     suspend fun getWordSegmentsForChapter(chapterNumber: Int): List<WordSegment>
 
     suspend fun firstVerseOfJuz(juzNumber: Int): VerseLocation?
+    suspend fun chapterNumbersForJuz(juzNumber: Int): List<Int>
     suspend fun firstVerseOfHizb(hizbNumber: Int): VerseLocation?
     suspend fun firstVerseOfPage(pageNumber: Int): VerseLocation?
 

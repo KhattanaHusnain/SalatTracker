@@ -56,6 +56,7 @@ fun QuranChapterListScreen(
     uiState: QuranChapterListUiState,
     onChapterClick: (Int) -> Unit,
     onContinueReadingClick: (chapterNumber: Int, verseNumber: Int) -> Unit,
+    onJuzClick: (chapterNumber: Int, verseNumber: Int) -> Unit,
     onTabSelected: (QuranBrowseTab) -> Unit,
     onJumpDialogDismiss: () -> Unit,
     onJumpTypeSelected: (QuranJumpType) -> Unit,
@@ -100,7 +101,7 @@ fun QuranChapterListScreen(
                 }
             } else {
                 items(uiState.juzEntries, key = { "juz-${it.juzNumber}" }) { juz ->
-                    JuzRow(juz = juz, onClick = { onChapterClick(juz.chapterNumber) })
+                    JuzRow(juz = juz, onClick = { onJuzClick(juz.chapterNumber, juz.verseNumber) })
                     Spacer(Modifier.height(8.dp))
                 }
             }
@@ -251,8 +252,17 @@ private fun JuzRow(juz: QuranJuzUi, onClick: () -> Unit) {
             )
             Spacer(Modifier.height(2.dp))
             Text(
-                text = stringResource(R.string.quran_juz_starts_at, juz.chapterName, juz.verseNumber),
+                text = juz.chapterNames.joinToString(" · "),
                 color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily,
+            )
+            Spacer(Modifier.height(2.dp))
+            Text(
+                text = stringResource(
+                    R.string.quran_juz_starts_at,
+                    juz.chapterNames.firstOrNull().orEmpty(),
+                    juz.verseNumber,
+                ),
+                color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily,
             )
         }
     }
@@ -333,6 +343,7 @@ private fun QuranChapterListScreenPreview() {
         ),
         onChapterClick = {},
         onContinueReadingClick = { _, _ -> },
+        onJuzClick = { _, _ -> },
         onTabSelected = {},
         onJumpDialogDismiss = {},
         onJumpTypeSelected = {},
