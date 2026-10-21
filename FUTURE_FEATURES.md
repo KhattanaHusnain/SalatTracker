@@ -1,6 +1,6 @@
 # Future Features — Salah Tracker
 
-_Researched and compiled: 2026-10-18. Updated: 2026-10-20 — prayer-time accuracy (section 3A) shipped._
+_Researched and compiled: 2026-10-18. Updated: 2026-10-22 — the offline Quran reader and prayer-time accuracy features shipped._
 
 Ideas for Salah Tracker's next features. The document covers:
 - how the app compares with other prayer and habit apps
@@ -33,8 +33,8 @@ This was checked against the code, not taken from memory.
 | Calendar | Shows Hijri dates through the `HijriDate` util. | The Hijri date isn't used for any reminders yet. |
 | Reminders | A device sound, snooze, full-screen alert and vibration. | There's no bundled azan audio, and no Friday or sunnah reminders. |
 | Mosque Mode | Geofenced auto-vibrate, nearby search through OpenStreetMap, background location. | Unique in the market. It isn't connected to prayer logging yet. |
-| Content | A verse of the day from the Quran.com API. | There's no hadith, dua or adhkar content, and no full Quran reader. |
-| Platform | Google Drive backup. English, Arabic, French and Urdu, with right-to-left layout for Arabic and Urdu. Dark mode. Donate and Developers screens. | There's no widget, no Wear OS app and no Qibla compass. |
+| Content | A verse of the day from the Quran.com API, plus a full offline Quran reader: Uthmani Arabic, a Nastaliq Urdu translation, Surah and Juz browsing, printed Mushaf pages, grid lines, Juz-bounded page navigation, and a saved resume position. | There's no hadith, dua or adhkar content, Quran audio/recitation playback, or a user-selectable translation/tafsir catalogue yet. |
+| Platform | Google Drive backup. English, Arabic, French and Urdu, with right-to-left layout for Arabic and Urdu; Urdu-localized labels use the same Nastaliq typeface as the Quran translation. Dark mode. Donate and Developers screens. | There's no widget, no Wear OS app and no Qibla compass. |
 
 ---
 
@@ -132,7 +132,7 @@ All five of these shipped on 2026-10-20, together, by switching the whole prayer
 |---|---|---|---|
 | **Hadith of the day** | S | Strong | Reuse the verse-of-the-day pattern. `fawazahmed0/hadith-api` is free to reuse (Unlicense), comes in several languages and includes authenticity grades. Show the grade with each hadith. |
 | **Morning and evening adhkar with reminders** | M | Medium | **Licensing is unresolved.** No clear licence turned up for Hisnul Muslim data. Confirm a content source before building. |
-| **Full Quran reader** | L | Medium | `QuranApiService` is already set up, but a good reader needs offline text, translations (often copyrighted), audio and bookmarks. |
+| **Full Quran reader** | ✅ Done | Strong | Shipped 2026-10-22 as an offline reader with Uthmani Arabic, Fateh Muhammad Jalandhry Urdu translation, Surah and Juz lists, real Mushaf page layout, Juz-bounded pagination and resume reading. Quran content sources and licences are documented in `QURAN_CONTENT_SOURCES.md`. |
 
 ### D. Deeper tracking
 
@@ -280,7 +280,7 @@ Small effort and high impact. Most of it reuses existing code.
 
 ### Phase 4: evaluate before committing
 - Wear OS app (N6)
-- Full Quran reader
+- ~~Full Quran reader~~ — ✅ done 2026-10-22; the next Quran priorities are audio recitation and selectable translations/tafsir
 - Bundled azan audio
 - Social groups and family mode (need a backend and children's privacy compliance)
 - Any AI feature. Never use AI to answer fiqh questions.
