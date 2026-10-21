@@ -138,7 +138,6 @@ fun QuranReaderScreen(
                         line = line,
                         isFirstLine = uiState.currentPageIndex == 0 && index == 0,
                     )
-                    Spacer(Modifier.height(18.dp))
                 }
             } else {
                 // Robustness fallback only — shouldn't trigger in practice, since Mushaf data is
@@ -246,23 +245,32 @@ private fun BismillahLine() {
 
 @Composable
 private fun ReaderLineBlock(line: ReaderLine, isFirstLine: Boolean) {
-    Column(modifier = Modifier.fillMaxWidth()) {
+    // A ruled pair of cells mirrors a printed Urdu Mushaf page while deliberately omitting the
+    // vertical word-by-word columns until that feature is added.
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, SalatOutlineVariant),
+    ) {
         if (isFirstLine) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp))
                     .background(Color.Black)
                     .padding(horizontal = 14.dp, vertical = 12.dp),
             ) {
                 MushafLineArabic(line, textColor = Color.White)
             }
         } else {
-            MushafLineArabic(line, textColor = SalatOnSurface)
+            Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp)) {
+                MushafLineArabic(line, textColor = SalatOnSurface)
+            }
         }
         if (line.translationChunks.isNotEmpty()) {
-            Spacer(Modifier.height(8.dp))
-            UrduTranslation(line.translationChunks.joinToString(" ") { it.text })
+            Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(SalatOutlineVariant))
+            Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp)) {
+                UrduTranslation(line.translationChunks.joinToString(" ") { it.text })
+            }
         }
     }
 }

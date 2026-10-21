@@ -1,15 +1,14 @@
 package com.salattracker.feature.quran
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -122,19 +121,28 @@ private fun MushafPageContent(page: MushafPage) {
         }
 
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(vertical = 16.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 12.dp, vertical = 8.dp)
+                .border(1.dp, SalatOutlineVariant),
+            contentPadding = PaddingValues(0.dp),
         ) {
             itemsIndexed(lineTexts, key = { _, (lineNumber, _) -> lineNumber }) { _, (_, text) ->
-                Text(
-                    text = text,
-                    fontFamily = fontFamily,
-                    fontSize = fittedFontSize,
-                    style = TextStyle(textDirection = TextDirection.Rtl, textAlign = TextAlign.Center),
-                    color = SalatOnSurface,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                Spacer(Modifier.height(10.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, SalatOutlineVariant)
+                        .padding(vertical = 5.dp),
+                ) {
+                    Text(
+                        text = text,
+                        fontFamily = fontFamily,
+                        fontSize = fittedFontSize,
+                        style = TextStyle(textDirection = TextDirection.Rtl, textAlign = TextAlign.Center),
+                        color = SalatOnSurface,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
             }
         }
     }
