@@ -52,7 +52,7 @@ fun QuranMushafScreen(
                 CircularProgressIndicator(color = SalatPrimary)
             }
             uiState.errorMessage != null -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(uiState.errorMessage, color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = InterFamily)
+                Text(uiState.errorMessage, color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = AppUiFontFamily)
             }
             uiState.page != null -> MushafPageContent(page = uiState.page)
         }

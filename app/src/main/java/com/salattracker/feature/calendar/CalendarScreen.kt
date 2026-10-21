@@ -183,7 +183,7 @@ fun CalendarScreen(
                 action         = { TextButton(onClick = onErrorDismiss) { Text(stringResource(R.string.action_ok), color = SalatPrimaryFixed) } },
                 containerColor = SalatInverseSurface,
                 contentColor   = SalatInverseOnSurface,
-            ) { Text(msg, fontFamily = InterFamily) }
+            ) { Text(msg, fontFamily = AppUiFontFamily) }
         }
     }
 
@@ -297,7 +297,7 @@ private fun CalendarHeader(
                 color      = SalatPrimary,
                 fontSize   = 20.sp,
                 fontWeight = FontWeight.SemiBold,
-                fontFamily = MontserratFamily,
+                fontFamily = AppTitleFontFamily,
                 textAlign  = TextAlign.Center,
             )
             if (subtitleText != null) {
@@ -305,7 +305,7 @@ private fun CalendarHeader(
                     text       = subtitleText,
                     color      = SalatOnSurfaceVariant,
                     fontSize   = 11.sp,
-                    fontFamily = InterFamily,
+                    fontFamily = AppUiFontFamily,
                     textAlign  = TextAlign.Center,
                 )
             }
@@ -367,7 +367,7 @@ private fun DotLegend(items: List<LegendItem> = legendItems()) {
 private fun LegendDot(item: LegendItem) {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
         Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(item.color))
-        Text(stringResource(item.labelRes), color = SalatOnSurfaceVariant, fontSize = 9.sp, fontFamily = InterFamily, fontWeight = FontWeight.Medium)
+        Text(stringResource(item.labelRes), color = SalatOnSurfaceVariant, fontSize = 9.sp, fontFamily = AppUiFontFamily, fontWeight = FontWeight.Medium)
     }
 }
 
@@ -385,7 +385,7 @@ private fun VerseCard(verse: VerseInfo) {
                 text       = "“${verse.text}”",
                 color      = SalatOnPrimary,
                 fontSize   = 14.sp,
-                fontFamily = InterFamily,
+                fontFamily = AppUiFontFamily,
                 lineHeight = 20.sp,
             )
             if (verse.citation.isNotEmpty()) {
@@ -394,7 +394,7 @@ private fun VerseCard(verse: VerseInfo) {
                     text       = verse.citation,
                     color      = SalatOnPrimaryContainer,
                     fontSize   = 11.sp,
-                    fontFamily = InterFamily,
+                    fontFamily = AppUiFontFamily,
                 )
             }
         }
@@ -421,7 +421,7 @@ private fun WeekdayHeaderRow() {
                 color         = if (isFriday) SalatPrimary else SalatOutline,
                 fontSize      = 10.sp,
                 fontWeight    = if (isFriday) FontWeight.Bold else FontWeight.SemiBold,
-                fontFamily    = InterFamily,
+                fontFamily    = AppUiFontFamily,
                 letterSpacing = 1.sp,
             )
         }
@@ -525,7 +525,7 @@ private fun RingDayCell(
                 color      = if (isToday) SalatOnPrimary else SalatOnSurface,
                 fontSize   = 13.sp,
                 fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
-                fontFamily = InterFamily,
+                fontFamily = AppUiFontFamily,
                 modifier   = Modifier.alpha(if (isToday) 1f else dimAlpha),
             )
         }
@@ -536,7 +536,7 @@ private fun RingDayCell(
                 color      = if (hijriDay == 1) SalatPrimary else SalatOutline,
                 fontSize   = 9.sp,
                 fontWeight = if (hijriDay == 1) FontWeight.SemiBold else FontWeight.Normal,
-                fontFamily = InterFamily,
+                fontFamily = AppUiFontFamily,
                 modifier   = Modifier.alpha(dimAlpha),
             )
         }
@@ -591,7 +591,7 @@ private fun WeekTable(
                         color      = if (isFriday) SalatPrimary else SalatOutline,
                         fontSize   = 9.sp,
                         fontWeight = if (isFriday) FontWeight.Bold else FontWeight.SemiBold,
-                        fontFamily = InterFamily,
+                        fontFamily = AppUiFontFamily,
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Box(
@@ -606,7 +606,7 @@ private fun WeekTable(
                             color      = if (date == today) SalatOnPrimary else SalatOnSurface,
                             fontSize   = 12.sp,
                             fontWeight = if (date == today) FontWeight.Bold else FontWeight.Normal,
-                            fontFamily = InterFamily,
+                            fontFamily = AppUiFontFamily,
                         )
                     }
                 }
@@ -619,7 +619,7 @@ private fun WeekTable(
                     modifier   = Modifier.width(WEEK_TABLE_LABEL_WIDTH),
                     color      = SalatOnSurfaceVariant,
                     fontSize   = 11.sp,
-                    fontFamily = InterFamily,
+                    fontFamily = AppUiFontFamily,
                 )
                 dates.forEach { date ->
                     if (isLoading) {
@@ -730,7 +730,7 @@ private fun MiniMonthTile(
             color      = if (isCurrentMonth) SalatPrimary else SalatOnSurfaceVariant,
             fontSize   = 12.sp,
             fontWeight = if (isCurrentMonth) FontWeight.SemiBold else FontWeight.Medium,
-            fontFamily = InterFamily,
+            fontFamily = AppUiFontFamily,
         )
         Spacer(modifier = Modifier.height(4.dp))
         Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(1.5.dp)) {
@@ -809,7 +809,7 @@ private fun IslamicEventBanner(event: IslamicEvent) {
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Icon(painterResource(R.drawable.ic_mosque), null, tint = SalatOnPrimaryContainer, modifier = Modifier.size(16.dp))
-        Text(event.label(), color = SalatOnPrimaryContainer, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
+        Text(event.label(), color = SalatOnPrimaryContainer, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
     }
 }
 

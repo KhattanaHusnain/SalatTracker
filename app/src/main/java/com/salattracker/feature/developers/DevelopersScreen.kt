@@ -35,7 +35,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salattracker.R
-import com.salattracker.core.theme.InterFamily
+import com.salattracker.core.theme.AppUiFontFamily
 import com.salattracker.core.theme.SalatOnPrimary
 import com.salattracker.core.theme.SalatOnSurface
 import com.salattracker.core.theme.SalatOnSurfaceVariant
@@ -100,7 +100,7 @@ fun DevelopersScreen(
                 stringResource(R.string.developers_subtitle),
                 color = SalatOnSurfaceVariant,
                 fontSize = 13.sp,
-                fontFamily = InterFamily,
+                fontFamily = AppUiFontFamily,
             )
         }
         DEVELOPERS.forEach { developer ->
@@ -112,14 +112,14 @@ fun DevelopersScreen(
                 color = SalatPrimary,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
-                fontFamily = InterFamily,
+                fontFamily = AppUiFontFamily,
             )
             Spacer(Modifier.height(6.dp))
             Text(
                 stringResource(R.string.developer_contribute_body),
                 color = SalatOnSurfaceVariant,
                 fontSize = 13.sp,
-                fontFamily = InterFamily,
+                fontFamily = AppUiFontFamily,
                 lineHeight = 19.sp,
             )
             Spacer(Modifier.height(12.dp))
@@ -128,7 +128,7 @@ fun DevelopersScreen(
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = SalatPrimary, contentColor = SalatOnPrimary),
             ) {
-                Text(stringResource(R.string.developer_contribute_button), fontFamily = InterFamily, fontWeight = FontWeight.Medium)
+                Text(stringResource(R.string.developer_contribute_button), fontFamily = AppUiFontFamily, fontWeight = FontWeight.Medium)
             }
         }
     }
@@ -151,13 +151,13 @@ private fun DeveloperCard(developer: Developer, onLinkedInClick: () -> Unit) {
                     color = SalatOnSurface,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold,
-                    fontFamily = InterFamily,
+                    fontFamily = AppUiFontFamily,
                 )
                 Text(
                     developer.role,
                     color = SalatOnSurfaceVariant,
                     fontSize = 12.sp,
-                    fontFamily = InterFamily,
+                    fontFamily = AppUiFontFamily,
                 )
             }
         }
@@ -166,7 +166,7 @@ private fun DeveloperCard(developer: Developer, onLinkedInClick: () -> Unit) {
             developer.bio,
             color = SalatOnSurface,
             fontSize = 13.sp,
-            fontFamily = InterFamily,
+            fontFamily = AppUiFontFamily,
             lineHeight = 19.sp,
         )
         Spacer(Modifier.height(10.dp))
@@ -176,7 +176,7 @@ private fun DeveloperCard(developer: Developer, onLinkedInClick: () -> Unit) {
                 developer.location,
                 color = SalatOnSurfaceVariant,
                 fontSize = 12.sp,
-                fontFamily = InterFamily,
+                fontFamily = AppUiFontFamily,
             )
         }
         if (developer.skills.isNotEmpty()) {
@@ -203,7 +203,7 @@ private fun DeveloperCard(developer: Developer, onLinkedInClick: () -> Unit) {
                 color = SalatPrimary,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
-                fontFamily = InterFamily,
+                fontFamily = AppUiFontFamily,
             )
         }
     }
@@ -221,7 +221,7 @@ private fun SkillChip(label: String) {
             color = SalatOnSurfaceVariant,
             fontSize = 11.sp,
             fontWeight = FontWeight.Medium,
-            fontFamily = InterFamily,
+            fontFamily = AppUiFontFamily,
         )
     }
 }

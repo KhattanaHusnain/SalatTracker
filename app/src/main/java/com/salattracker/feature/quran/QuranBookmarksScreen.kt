@@ -45,7 +45,7 @@ fun QuranBookmarksScreen(
         Box(modifier = Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
             Text(
                 text = stringResource(R.string.quran_no_bookmarks),
-                color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = InterFamily, textAlign = TextAlign.Center,
+                color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = AppUiFontFamily, textAlign = TextAlign.Center,
             )
         }
         return
@@ -75,15 +75,15 @@ private fun BookmarkRow(item: QuranBookmarkUi, onClick: () -> Unit, onDeleteClic
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(item.chapterName, color = SalatOnSurface, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily)
+            Text(item.chapterName, color = SalatOnSurface, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily)
             Spacer(Modifier.height(2.dp))
             Text(
                 text = stringResource(R.string.quran_bookmark_verse_label, item.bookmark.fromVerse),
-                color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily,
+                color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily,
             )
             if (!item.bookmark.note.isNullOrBlank()) {
                 Spacer(Modifier.height(4.dp))
-                Text(item.bookmark.note, color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily, maxLines = 2)
+                Text(item.bookmark.note, color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily, maxLines = 2)
             }
         }
         IconButton(onClick = onDeleteClick) {

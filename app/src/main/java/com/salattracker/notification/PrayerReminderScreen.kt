@@ -29,8 +29,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salattracker.R
-import com.salattracker.core.theme.InterFamily
-import com.salattracker.core.theme.MontserratFamily
+import com.salattracker.core.theme.AppUiFontFamily
+import com.salattracker.core.theme.AppTitleFontFamily
 import com.salattracker.core.theme.SalatPrimary
 import com.salattracker.core.theme.SalatPrimaryContainer
 import com.salattracker.core.theme.SalatPrimaryFixed
@@ -88,7 +88,7 @@ fun PrayerReminderScreen(
                 color      = SalatPrimaryFixed,
                 fontSize   = 64.sp,
                 fontWeight = FontWeight.Bold,
-                fontFamily = MontserratFamily,
+                fontFamily = AppTitleFontFamily,
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
@@ -96,7 +96,7 @@ fun PrayerReminderScreen(
                 color         = Color.White,
                 fontSize      = 20.sp,
                 fontWeight    = FontWeight.SemiBold,
-                fontFamily    = MontserratFamily,
+                fontFamily    = AppTitleFontFamily,
                 letterSpacing = 3.sp,
             )
             if (scheduledTime != null) {
@@ -104,7 +104,7 @@ fun PrayerReminderScreen(
                     text     = stringResource(R.string.reminder_scheduled_for, scheduledTime.format(timeFormatter)),
                     color    = SalatPrimaryFixedDim.copy(alpha = 0.8f),
                     fontSize = 14.sp,
-                    fontFamily = InterFamily,
+                    fontFamily = AppUiFontFamily,
                 )
             }
 
@@ -141,7 +141,7 @@ fun PrayerReminderScreen(
                     text       = "“${verse.text}”",
                     color      = Color.White.copy(alpha = 0.9f),
                     fontSize   = 16.sp,
-                    fontFamily = InterFamily,
+                    fontFamily = AppUiFontFamily,
                     textAlign  = TextAlign.Center,
                     lineHeight = 24.sp,
                     modifier   = Modifier.padding(horizontal = 8.dp),
@@ -152,7 +152,7 @@ fun PrayerReminderScreen(
                         text     = verse.citation,
                         color    = SalatPrimaryFixedDim.copy(alpha = 0.6f),
                         fontSize = 11.sp,
-                        fontFamily = InterFamily,
+                        fontFamily = AppUiFontFamily,
                     )
                 }
             }
@@ -210,7 +210,7 @@ fun PrayerReminderScreen(
                     text          = stringResource(R.string.reminder_dismiss),
                     color         = Color.White.copy(alpha = 0.6f),
                     fontSize      = 12.sp,
-                    fontFamily    = InterFamily,
+                    fontFamily    = AppUiFontFamily,
                     letterSpacing = 2.sp,
                 )
             }
@@ -250,7 +250,7 @@ private fun ReminderActionTile(
                 color      = Color.White,
                 fontSize   = 12.sp,
                 fontWeight = FontWeight.SemiBold,
-                fontFamily = InterFamily,
+                fontFamily = AppUiFontFamily,
             )
         }
     }

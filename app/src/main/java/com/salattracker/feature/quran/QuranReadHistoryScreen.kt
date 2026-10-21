@@ -46,7 +46,7 @@ fun QuranReadHistoryScreen(
         Box(modifier = Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
             Text(
                 text = stringResource(R.string.quran_no_read_history),
-                color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = InterFamily, textAlign = TextAlign.Center,
+                color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = AppUiFontFamily, textAlign = TextAlign.Center,
             )
         }
         return
@@ -56,7 +56,7 @@ fun QuranReadHistoryScreen(
         if (uiState.entries.isNotEmpty()) {
             Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp), horizontalArrangement = Arrangement.End) {
                 TextButton(onClick = onClearHistory) {
-                    Text(stringResource(R.string.quran_clear_history), color = SalatPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
+                    Text(stringResource(R.string.quran_clear_history), color = SalatPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
                 }
             }
         }
@@ -85,14 +85,14 @@ private fun ReadHistoryRow(item: QuranReadHistoryUi, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column {
-            Text(item.chapterName, color = SalatOnSurface, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily)
+            Text(item.chapterName, color = SalatOnSurface, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily)
             Spacer(Modifier.height(2.dp))
             Text(
                 text = stringResource(R.string.quran_bookmark_verse_label, item.entry.verseNumber),
-                color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily,
+                color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily,
             )
         }
-        Text(formatReadAt(item.entry.readAt), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily)
+        Text(formatReadAt(item.entry.readAt), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily)
     }
 }
 

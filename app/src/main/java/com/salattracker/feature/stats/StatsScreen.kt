@@ -82,7 +82,7 @@ fun StatsScreen(
                 modifier       = Modifier.align(Alignment.BottomCenter).padding(16.dp),
                 action         = { TextButton(onClick = onErrorDismiss) { Text(stringResource(R.string.action_ok), color = SalatPrimaryFixed) } },
                 containerColor = SalatInverseSurface, contentColor = SalatInverseOnSurface,
-            ) { Text(msg, fontFamily = InterFamily) }
+            ) { Text(msg, fontFamily = AppUiFontFamily) }
         }
     }
 }
@@ -128,7 +128,7 @@ private fun PeriodChip(label: String, isSelected: Boolean, onClick: () -> Unit) 
             color      = if (isSelected) SalatOnPrimaryContainer else SalatOnSurfaceVariant,
             fontSize   = 12.sp,
             fontWeight = FontWeight.SemiBold,
-            fontFamily = InterFamily,
+            fontFamily = AppUiFontFamily,
             maxLines   = 1,
         )
     }
@@ -155,7 +155,7 @@ private fun EmptyStateText(text: String, modifier: Modifier = Modifier, onClick:
         modifier = modifier.fillMaxWidth().let { if (onClick != null) it.clickable(onClick = onClick) else it }.padding(vertical = 24.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text, color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = InterFamily, textAlign = TextAlign.Center)
+        Text(text, color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = AppUiFontFamily, textAlign = TextAlign.Center)
     }
 }
 
@@ -185,7 +185,7 @@ private fun StatusBar(counts: StatusCounts, modifier: Modifier = Modifier, heigh
 private fun LegendCount(color: Color, label: String, count: Int, modifier: Modifier = Modifier) {
     Row(modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
         Box(Modifier.size(9.dp).clip(CircleShape).background(color))
-        Text("$label: $count", color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text("$label: $count", color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 
@@ -195,7 +195,7 @@ private fun LegendCount(color: Color, label: String, count: Int, modifier: Modif
 private fun SummaryCard(state: OverviewUiState) {
     StatsCard {
         Text(stringResource(R.string.stats_prayed_on_time), color = SalatOnSurfaceVariant, fontSize = 11.sp,
-            fontWeight = FontWeight.SemiBold, fontFamily = InterFamily, letterSpacing = 1.sp)
+            fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily, letterSpacing = 1.sp)
         Spacer(Modifier.height(6.dp))
         if (state.isLoading) {
             ShimmerBox(Modifier.fillMaxWidth(0.4f).height(36.dp))
@@ -207,19 +207,19 @@ private fun SummaryCard(state: OverviewUiState) {
         Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
                 text = state.completionPct?.let { "$it%" } ?: "—",
-                color = SalatPrimary, fontSize = 36.sp, fontWeight = FontWeight.Bold, fontFamily = MontserratFamily,
+                color = SalatPrimary, fontSize = 36.sp, fontWeight = FontWeight.Bold, fontFamily = AppTitleFontFamily,
             )
             state.completionDelta?.let { delta ->
                 Text(
                     text = stringResource(R.string.stats_vs_last, "${if (delta > 0) "+" else ""}$delta"),
                     color = if (delta > 0) SalatSurfaceTint else SalatError,
-                    fontSize = 11.sp, fontFamily = InterFamily, modifier = Modifier.padding(bottom = 6.dp),
+                    fontSize = 11.sp, fontFamily = AppUiFontFamily, modifier = Modifier.padding(bottom = 6.dp),
                 )
             }
         }
         if (state.completionPct == null) {
             Spacer(Modifier.height(2.dp))
-            Text(stringResource(R.string.stats_no_data_period), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily)
+            Text(stringResource(R.string.stats_no_data_period), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
         }
         Spacer(Modifier.height(16.dp))
         StatusBar(state.counts)
@@ -251,7 +251,7 @@ private fun SummaryCard(state: OverviewUiState) {
             Spacer(Modifier.height(10.dp))
             Text(
                 text = stringResource(R.string.stats_excused_not_counted, state.counts.excused),
-                color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily,
+                color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily,
             )
         }
     }
@@ -262,7 +262,7 @@ private fun SummaryCard(state: OverviewUiState) {
 @Composable
 private fun TrendCard(state: OverviewUiState, period: StatsPeriod) {
     StatsCard {
-        Text(stringResource(R.string.stats_trend), color = SalatPrimary, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily)
+        Text(stringResource(R.string.stats_trend), color = SalatPrimary, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily)
         Spacer(Modifier.height(16.dp))
         when {
             state.isLoading -> ShimmerBox(Modifier.fillMaxWidth().height(180.dp))
@@ -277,7 +277,7 @@ private fun TrendCard(state: OverviewUiState, period: StatsPeriod) {
 @Composable
 private fun PrayerBreakdownCard(state: PrayerBreakdownUiState) {
     StatsCard {
-        Text(stringResource(R.string.stats_by_prayer), color = SalatPrimary, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily)
+        Text(stringResource(R.string.stats_by_prayer), color = SalatPrimary, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily)
         Spacer(Modifier.height(16.dp))
         when {
             state.isLoading -> Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -294,12 +294,12 @@ private fun PrayerBreakdownCard(state: PrayerBreakdownUiState) {
                 if (weakest != null) {
                     Text(
                         text = stringResource(R.string.stats_weakest_prayer, weakest.prayerType.shortLabel()),
-                        color = SalatError, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily,
+                        color = SalatError, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily,
                     )
                 } else if (allOnTrack) {
                     Text(
                         text = stringResource(R.string.stats_all_on_track),
-                        color = SalatSurfaceTint, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily,
+                        color = SalatSurfaceTint, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily,
                     )
                 }
             }
@@ -313,7 +313,7 @@ private fun PrayerBarRow(entry: PrayerBreakdown, modifier: Modifier = Modifier) 
         Icon(painterResource(entry.prayerType.iconRes), null, tint = SalatPrimary, modifier = Modifier.size(16.dp))
         Spacer(Modifier.width(8.dp))
         Text(
-            text = entry.prayerType.shortLabel(), color = SalatOnSurface, fontSize = 13.sp, fontFamily = InterFamily,
+            text = entry.prayerType.shortLabel(), color = SalatOnSurface, fontSize = 13.sp, fontFamily = AppUiFontFamily,
             maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.width(76.dp),
         )
         Spacer(Modifier.width(8.dp))
@@ -322,7 +322,7 @@ private fun PrayerBarRow(entry: PrayerBreakdown, modifier: Modifier = Modifier) 
         Text(
             text = entry.completionRate?.let { "${(it * 100).toInt()}%" } ?: "—",
             color = SalatPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold,
-            fontFamily = InterFamily, textAlign = TextAlign.End, modifier = Modifier.width(36.dp),
+            fontFamily = AppUiFontFamily, textAlign = TextAlign.End, modifier = Modifier.width(36.dp),
         )
     }
 }
@@ -337,7 +337,7 @@ private val weekOrder = listOf(
 @Composable
 private fun WeekdayCard(weekday: Map<DayOfWeek, Int?>, isLoading: Boolean) {
     StatsCard {
-        Text(stringResource(R.string.stats_by_weekday), color = SalatPrimary, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily)
+        Text(stringResource(R.string.stats_by_weekday), color = SalatPrimary, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily)
         Spacer(Modifier.height(16.dp))
         if (isLoading) {
             ShimmerBox(Modifier.fillMaxWidth().height(96.dp))
@@ -355,7 +355,7 @@ private fun WeekdayCard(weekday: Map<DayOfWeek, Int?>, isLoading: Boolean) {
             val fullName = remember(weakest, locale) { weakest.getDisplayName(TextStyle.FULL, locale) }
             Text(
                 text = stringResource(R.string.stats_weakest_day, fullName),
-                color = SalatError, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily,
+                color = SalatError, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily,
             )
         }
     }
@@ -375,7 +375,7 @@ private fun WeekdayBar(day: DayOfWeek, pct: Int?, isWeakest: Boolean, modifier: 
             Box(Modifier.width(18.dp).fillMaxHeight(animFraction).clip(RoundedCornerShape(4.dp)).background(color))
         }
         Spacer(Modifier.height(6.dp))
-        Text(day.shortLabel(), color = SalatOnSurfaceVariant, fontSize = 10.sp, fontFamily = InterFamily, maxLines = 1)
+        Text(day.shortLabel(), color = SalatOnSurfaceVariant, fontSize = 10.sp, fontFamily = AppUiFontFamily, maxLines = 1)
     }
 }
 
@@ -385,8 +385,8 @@ private fun WeekdayBar(day: DayOfWeek, pct: Int?, isWeakest: Boolean, modifier: 
 private fun GoalsCard(state: GoalsUiState, onAddGoalClick: () -> Unit) {
     StatsCard {
         Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.CenterVertically) {
-            Text(stringResource(R.string.nav_goals), color = SalatPrimary, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily)
-            Text(stringResource(R.string.stats_targets_hit), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily)
+            Text(stringResource(R.string.nav_goals), color = SalatPrimary, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily)
+            Text(stringResource(R.string.stats_targets_hit), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily)
         }
         Spacer(Modifier.height(16.dp))
         when {
@@ -412,15 +412,15 @@ private fun GoalStatRow(item: GoalPeriodStat) {
                 Icon(painterResource(item.category.iconRes), null, tint = SalatOnPrimaryContainer, modifier = Modifier.size(16.dp))
             }
             Column(Modifier.weight(1f)) {
-                Text(item.goalName.shortLabel(), color = SalatOnSurface, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(item.goalName.shortLabel(), color = SalatOnSurface, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(
                     text = "${item.loggedAmount} ${goalUnitLabel(item.unit)} · ${item.frequency.label()}",
-                    color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                    color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis,
                 )
             }
             Text(
                 text = if (item.periodsCounted > 0) "${item.periodsHit}/${item.periodsCounted}" else "—",
-                color = SalatPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily,
+                color = SalatPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily,
             )
         }
         Spacer(Modifier.height(8.dp))

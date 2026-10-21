@@ -65,7 +65,7 @@ internal fun DayDetailHeader(
                 color      = SalatPrimary,
                 fontSize   = 28.sp,
                 fontWeight = FontWeight.Bold,
-                fontFamily = MontserratFamily,
+                fontFamily = AppTitleFontFamily,
                 lineHeight = 34.sp,
             )
             Spacer(modifier = Modifier.height(4.dp))
@@ -74,7 +74,7 @@ internal fun DayDetailHeader(
                 text     = if (hijriLabel != null) "$hijriLabel  •  $summary" else summary,
                 color    = SalatOnSurfaceVariant,
                 fontSize = 14.sp,
-                fontFamily = InterFamily,
+                fontFamily = AppUiFontFamily,
             )
         }
 
@@ -105,7 +105,7 @@ internal fun DayDetailHeader(
                     color      = SalatOnPrimaryContainer,
                     fontSize   = 11.sp,
                     fontWeight = FontWeight.SemiBold,
-                    fontFamily = InterFamily,
+                    fontFamily = AppUiFontFamily,
                     letterSpacing = 0.3.sp,
                 )
             }
@@ -160,13 +160,13 @@ internal fun DayDetailPrayerRowItem(
                     color      = SalatPrimary,
                     fontSize   = 20.sp,
                     fontWeight = FontWeight.SemiBold,
-                    fontFamily = MontserratFamily,
+                    fontFamily = AppTitleFontFamily,
                 )
                 Text(
                     text     = row.timeLabel,
                     color    = SalatOnSurfaceVariant,
                     fontSize = 11.sp,
-                    fontFamily = InterFamily,
+                    fontFamily = AppUiFontFamily,
                 )
             }
 
@@ -230,7 +230,7 @@ internal fun PrayerStatusChip(status: PrayerStatus, isUpcoming: Boolean = false)
                 color      = fg,
                 fontSize   = 11.sp,
                 fontWeight = FontWeight.SemiBold,
-                fontFamily = InterFamily,
+                fontFamily = AppUiFontFamily,
                 letterSpacing = 0.3.sp,
             )
         }

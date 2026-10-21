@@ -35,7 +35,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salattracker.R
-import com.salattracker.core.theme.InterFamily
+import com.salattracker.core.theme.AppUiFontFamily
 import com.salattracker.core.theme.SalatInverseOnSurface
 import com.salattracker.core.theme.SalatInverseSurface
 import com.salattracker.core.theme.SalatOnPrimary
@@ -115,7 +115,7 @@ fun MosqueModeScreen(
             SettingsSectionLabel(stringResource(R.string.mosque_my_mosques))
             if (uiState.mosques.isEmpty()) {
                 SettingsCard {
-                    Text(stringResource(R.string.mosque_empty), color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = InterFamily)
+                    Text(stringResource(R.string.mosque_empty), color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = AppUiFontFamily)
                 }
             } else {
                 SettingsCard(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp)) {
@@ -139,7 +139,7 @@ fun MosqueModeScreen(
                     Icon(painterResource(R.drawable.ic_my_location), null, modifier = Modifier.size(20.dp))
                 }
                 Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.mosque_add_current), fontFamily = InterFamily, fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.mosque_add_current), fontFamily = AppUiFontFamily, fontWeight = FontWeight.SemiBold)
             }
             OutlinedButton(
                 onClick = onFindNearby,
@@ -151,7 +151,7 @@ fun MosqueModeScreen(
             ) {
                 Icon(painterResource(R.drawable.ic_search), null, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.mosque_find_nearby), fontFamily = InterFamily, fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.mosque_find_nearby), fontFamily = AppUiFontFamily, fontWeight = FontWeight.SemiBold)
             }
         }
 
@@ -161,7 +161,7 @@ fun MosqueModeScreen(
                 action = { TextButton(onClick = onMessageDismiss) { Text(stringResource(R.string.action_ok), color = SalatPrimaryFixed) } },
                 containerColor = SalatInverseSurface,
                 contentColor = SalatInverseOnSurface,
-            ) { Text(stringResource(message.textRes), fontFamily = InterFamily) }
+            ) { Text(stringResource(message.textRes), fontFamily = AppUiFontFamily) }
         }
     }
 
@@ -204,7 +204,7 @@ private fun MainCard(
             Icon(painterResource(R.drawable.ic_mosque_outline), null, tint = SalatPrimary, modifier = Modifier.size(24.dp))
             Text(
                 stringResource(R.string.mosque_toggle_title),
-                modifier = Modifier.weight(1f), color = SalatOnSurface, fontSize = 16.sp, fontFamily = InterFamily,
+                modifier = Modifier.weight(1f), color = SalatOnSurface, fontSize = 16.sp, fontFamily = AppUiFontFamily,
             )
             Switch(
                 checked = uiState.enabled,
@@ -217,7 +217,7 @@ private fun MainCard(
         Text(
             stringResource(R.string.mosque_toggle_desc),
             modifier = Modifier.padding(start = 36.dp),
-            color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily,
+            color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily,
         )
 
         uiState.vibrateActiveAt?.let { name ->
@@ -228,10 +228,10 @@ private fun MainCard(
                 Text(
                     stringResource(R.string.mosque_vibrate_on, name),
                     modifier = Modifier.weight(1f), color = SalatOnSurface, fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium, fontFamily = InterFamily,
+                    fontWeight = FontWeight.Medium, fontFamily = AppUiFontFamily,
                 )
                 TextButton(onClick = onRestoreSound) {
-                    Text(stringResource(R.string.mosque_restore_sound), color = SalatPrimary, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
+                    Text(stringResource(R.string.mosque_restore_sound), color = SalatPrimary, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
                 }
             }
         }

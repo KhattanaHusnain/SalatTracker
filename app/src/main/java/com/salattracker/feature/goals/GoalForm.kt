@@ -109,7 +109,7 @@ fun GoalFormFields(form: GoalFormState, actions: GoalFormActions) {
 
     actions.onTemplateSelected?.let { onTemplate ->
         FormCard {
-            Text(stringResource(R.string.addgoal_templates), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily)
+            Text(stringResource(R.string.addgoal_templates), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
             Spacer(Modifier.height(10.dp))
             Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 GoalTemplate.values().forEach { template ->
@@ -122,7 +122,7 @@ fun GoalFormFields(form: GoalFormState, actions: GoalFormActions) {
                     ) {
                         Text(
                             templateName, modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
-                            color = SalatOnSurfaceVariant, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily, maxLines = 1,
+                            color = SalatOnSurfaceVariant, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily, maxLines = 1,
                         )
                     }
                 }
@@ -132,12 +132,12 @@ fun GoalFormFields(form: GoalFormState, actions: GoalFormActions) {
 
     // ── Goal name ─────────────────────────────────────────────────────────────
     FormCard {
-        Text(stringResource(R.string.addgoal_name), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily)
+        Text(stringResource(R.string.addgoal_name), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
         Spacer(Modifier.height(6.dp))
         OutlinedTextField(
             value         = form.name,
             onValueChange = actions.onNameChanged,
-            placeholder   = { Text(stringResource(R.string.addgoal_name_hint), fontFamily = InterFamily) },
+            placeholder   = { Text(stringResource(R.string.addgoal_name_hint), fontFamily = AppUiFontFamily) },
             modifier      = Modifier.fillMaxWidth(),
             singleLine    = true,
             colors        = outlinedFieldColors(),
@@ -147,7 +147,7 @@ fun GoalFormFields(form: GoalFormState, actions: GoalFormActions) {
 
     // ── Category ──────────────────────────────────────────────────────────────
     FormCard {
-        Text(stringResource(R.string.addgoal_category), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily)
+        Text(stringResource(R.string.addgoal_category), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
         Spacer(Modifier.height(12.dp))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             GoalCategory.values().forEach { category ->
@@ -158,13 +158,13 @@ fun GoalFormFields(form: GoalFormState, actions: GoalFormActions) {
 
     // ── Frequency + target (+ weekdays for daily goals) ───────────────────────
     FormCard {
-        Text(stringResource(R.string.addgoal_target_freq), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily)
+        Text(stringResource(R.string.addgoal_target_freq), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
         Spacer(Modifier.height(12.dp))
         FrequencyTabs(selected = form.frequency, onSelected = actions.onFrequencyChanged)
         Spacer(Modifier.height(16.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Column(Modifier.weight(1f)) {
-                Text(stringResource(R.string.addgoal_amount), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily)
+                Text(stringResource(R.string.addgoal_amount), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
                 Spacer(Modifier.height(6.dp))
                 OutlinedTextField(
                     value = form.targetAmount,
@@ -177,7 +177,7 @@ fun GoalFormFields(form: GoalFormState, actions: GoalFormActions) {
                 )
             }
             Column(Modifier.weight(1f)) {
-                Text(stringResource(R.string.addgoal_unit), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily)
+                Text(stringResource(R.string.addgoal_unit), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
                 Spacer(Modifier.height(6.dp))
                 UnitDropdown(selected = form.unit, onSelected = actions.onUnitChanged)
             }
@@ -185,7 +185,7 @@ fun GoalFormFields(form: GoalFormState, actions: GoalFormActions) {
 
         if (form.frequency == GoalFrequency.DAILY) {
             Spacer(Modifier.height(16.dp))
-            Text(stringResource(R.string.addgoal_repeat_on), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily)
+            Text(stringResource(R.string.addgoal_repeat_on), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
             Spacer(Modifier.height(8.dp))
             WeekdayChips(
                 selected = form.daysOfWeek,
@@ -200,7 +200,7 @@ fun GoalFormFields(form: GoalFormState, actions: GoalFormActions) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Icon(painterResource(R.drawable.ic_schedule), null, tint = SalatPrimary, modifier = Modifier.size(20.dp))
-                Text(stringResource(R.string.addgoal_reminder), color = SalatOnSurface, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
+                Text(stringResource(R.string.addgoal_reminder), color = SalatOnSurface, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
             }
             Switch(
                 checked = form.reminderEnabled,
@@ -214,12 +214,12 @@ fun GoalFormFields(form: GoalFormState, actions: GoalFormActions) {
         if (form.reminderEnabled) {
             Spacer(Modifier.height(12.dp))
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(stringResource(R.string.addgoal_notify_at), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily)
+                Text(stringResource(R.string.addgoal_notify_at), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
                 Surface(onClick = { showTimePicker = true }, shape = RoundedCornerShape(8.dp), color = SalatSurfaceContainerLow) {
                     Text(
                         text = form.reminderTime.format(timeFormatter),
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                        color = SalatPrimaryContainer, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily,
+                        color = SalatPrimaryContainer, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily,
                     )
                 }
             }
@@ -231,7 +231,7 @@ fun GoalFormFields(form: GoalFormState, actions: GoalFormActions) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Text(
                 stringResource(R.string.addgoal_end_after), color = SalatOnSurface, fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold, fontFamily = InterFamily, modifier = Modifier.weight(1f),
+                fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily, modifier = Modifier.weight(1f),
             )
             Switch(
                 checked = form.endsAfterDuration,
@@ -244,7 +244,7 @@ fun GoalFormFields(form: GoalFormState, actions: GoalFormActions) {
         }
         if (form.endsAfterDuration) {
             Spacer(Modifier.height(12.dp))
-            Text(stringResource(R.string.addgoal_duration_days), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily)
+            Text(stringResource(R.string.addgoal_duration_days), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
             Spacer(Modifier.height(6.dp))
             OutlinedTextField(
                 value = form.durationDays,
@@ -287,7 +287,7 @@ private fun WeekdayChips(
             Text(
                 stringResource(R.string.addgoal_every_day), modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp),
                 color = if (everyDay) SalatOnPrimaryContainer else SalatOnSurfaceVariant,
-                fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily,
+                fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily,
             )
         }
         Row(Modifier.fillMaxWidth()) {
@@ -305,7 +305,7 @@ private fun WeekdayChips(
                         Box(Modifier.size(36.dp), contentAlignment = Alignment.Center) {
                             Text(
                                 day.shortLabel(), color = if (isSelected) SalatOnPrimaryContainer else SalatSecondary,
-                                fontSize = 9.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily, maxLines = 1,
+                                fontSize = 9.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily, maxLines = 1,
                             )
                         }
                     }

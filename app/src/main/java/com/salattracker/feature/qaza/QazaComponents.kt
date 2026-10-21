@@ -108,7 +108,7 @@ fun QazaPrayerPill(
         if (state == QazaPillState.SELECTED) {
             Icon(painterResource(R.drawable.ic_check_circle_filled), null, tint = fg, modifier = Modifier.size(14.dp))
         }
-        Text(label, color = fg, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
+        Text(label, color = fg, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
     }
 }
 
@@ -163,14 +163,14 @@ fun QazaDayCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
-                    Text(day.date.format(dateFormatter), color = SalatOnSurface, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
+                    Text(day.date.format(dateFormatter), color = SalatOnSurface, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
                     if (hijriLabel != null) {
-                        Text(hijriLabel, color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(hijriLabel, color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                 }
                 if (!selectionMode) {
                     TextButton(onClick = onMakeUpAll) {
-                        Text(stringResource(R.string.qaza_make_up_all), color = SalatPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
+                        Text(stringResource(R.string.qaza_make_up_all), color = SalatPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
                     }
                 }
             }
@@ -203,12 +203,12 @@ fun QazaMonthHeader(month: QazaMonth, modifier: Modifier = Modifier) {
     ) {
         Text(
             text = month.month.atDay(1).format(formatter),
-            color = SalatOnSurfaceVariant, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily,
+            color = SalatOnSurfaceVariant, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily,
         )
         Box(
             modifier = Modifier.clip(RoundedCornerShape(50)).background(QazaPendingPillBg).padding(horizontal = 8.dp, vertical = 1.dp),
         ) {
-            Text("$count", color = QazaPendingPillFg, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
+            Text("$count", color = QazaPendingPillFg, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
         }
     }
 }
@@ -228,11 +228,11 @@ fun QuickLogSheet(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(bottom = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(stringResource(R.string.qaza_log_title), color = SalatPrimary, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily)
+            Text(stringResource(R.string.qaza_log_title), color = SalatPrimary, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily)
             Spacer(Modifier.height(4.dp))
             Text(
                 stringResource(R.string.qaza_log_hint), color = SalatOnSurfaceVariant, fontSize = 12.sp,
-                fontFamily = InterFamily, textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                fontFamily = AppUiFontFamily, textAlign = androidx.compose.ui.text.style.TextAlign.Center,
             )
             Spacer(Modifier.height(16.dp))
 
@@ -250,7 +250,7 @@ fun QuickLogSheet(
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = SalatPrimary, contentColor = SalatOnPrimary),
             ) {
-                Text(stringResource(R.string.qaza_log_confirm, state.totalCount), fontFamily = InterFamily, fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.qaza_log_confirm, state.totalCount), fontFamily = AppUiFontFamily, fontWeight = FontWeight.SemiBold)
             }
         }
     }
@@ -265,8 +265,8 @@ private fun QuickLogRow(row: QuickLogRowUi, onCountChanged: (Int) -> Unit) {
         Icon(painterResource(row.prayerType.iconRes), null, tint = SalatSecondary, modifier = Modifier.size(20.dp))
         Spacer(Modifier.width(10.dp))
         Column(Modifier.weight(1f)) {
-            Text(row.prayerType.label(), color = SalatOnSurface, fontSize = 14.sp, fontWeight = FontWeight.Medium, fontFamily = InterFamily)
-            Text(stringResource(R.string.qaza_log_outstanding, row.outstanding), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily)
+            Text(row.prayerType.label(), color = SalatOnSurface, fontSize = 14.sp, fontWeight = FontWeight.Medium, fontFamily = AppUiFontFamily)
+            Text(stringResource(R.string.qaza_log_outstanding, row.outstanding), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily)
         }
         FilledTonalIconButton(
             onClick = { onCountChanged((row.count - 1).coerceAtLeast(0)) },
@@ -275,7 +275,7 @@ private fun QuickLogRow(row: QuickLogRowUi, onCountChanged: (Int) -> Unit) {
         ) { Text("−", fontSize = 16.sp) }
         Text(
             "${row.count}", color = if (row.count > 0) SalatPrimary else SalatOutline, fontSize = 17.sp,
-            fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily,
+            fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily,
             modifier = Modifier.width(32.dp), textAlign = androidx.compose.ui.text.style.TextAlign.Center,
         )
         FilledTonalIconButton(

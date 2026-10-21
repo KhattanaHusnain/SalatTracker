@@ -68,7 +68,7 @@ fun AddGoalScreen(
             if (uiState.isSaving) {
                 CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp, color = SalatOnPrimary)
             } else {
-                Text(stringResource(R.string.addgoal_create), fontFamily = MontserratFamily, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                Text(stringResource(R.string.addgoal_create), fontFamily = AppTitleFontFamily, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
                 Spacer(modifier = Modifier.width(8.dp))
                 Icon(painterResource(R.drawable.ic_add), null, modifier = Modifier.size(20.dp))
             }
@@ -80,7 +80,7 @@ fun AddGoalScreen(
                 action         = { TextButton(onClick = onErrorDismiss) { Text(stringResource(R.string.action_ok), color = SalatPrimaryFixed) } },
                 containerColor = SalatInverseSurface,
                 contentColor   = SalatInverseOnSurface,
-            ) { Text(msg, fontFamily = InterFamily) }
+            ) { Text(msg, fontFamily = AppUiFontFamily) }
         }
         if (uiState.saveSuccess) {
             Snackbar(
@@ -88,7 +88,7 @@ fun AddGoalScreen(
                 action         = { TextButton(onClick = onClearSaveSuccess) { Text(stringResource(R.string.action_ok), color = SalatPrimary) } },
                 containerColor = SalatSecondaryContainer,
                 contentColor   = SalatOnSecondaryContainer,
-            ) { Text(stringResource(R.string.addgoal_created), fontFamily = InterFamily) }
+            ) { Text(stringResource(R.string.addgoal_created), fontFamily = AppUiFontFamily) }
         }
     }
 }
@@ -140,7 +140,7 @@ internal fun CategoryOption(category: GoalCategory, isSelected: Boolean, onClick
             text = category.label(),
             color = if (isSelected) SalatPrimary else SalatSecondary,
             fontSize = 10.sp,
-            fontFamily = InterFamily,
+            fontFamily = AppUiFontFamily,
         )
     }
 }
@@ -172,7 +172,7 @@ internal fun FrequencyTabs(selected: GoalFrequency, onSelected: (GoalFrequency) 
                     color      = if (isSelected) SalatOnPrimaryContainer else SalatSecondary,
                     fontSize   = 12.sp,
                     fontWeight = FontWeight.SemiBold,
-                    fontFamily = InterFamily,
+                    fontFamily = AppUiFontFamily,
                 )
             }
         }
@@ -199,7 +199,7 @@ internal fun UnitDropdown(selected: String, onSelected: (String) -> Unit) {
         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             GOAL_UNITS.forEach { unit ->
                 DropdownMenuItem(
-                    text = { Text(goalUnitLabel(unit), fontFamily = InterFamily) },
+                    text = { Text(goalUnitLabel(unit), fontFamily = AppUiFontFamily) },
                     onClick = { onSelected(unit); expanded = false },
                 )
             }
@@ -225,9 +225,9 @@ internal fun TimePickerModal(
                 TimePicker(state = state)
                 Spacer(modifier = Modifier.height(12.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel), fontFamily = InterFamily) }
+                    TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel), fontFamily = AppUiFontFamily) }
                     TextButton(onClick = { onTimePicked(LocalTime.of(state.hour, state.minute)) }) {
-                        Text(stringResource(R.string.action_ok), fontFamily = InterFamily, color = SalatPrimary)
+                        Text(stringResource(R.string.action_ok), fontFamily = AppUiFontFamily, color = SalatPrimary)
                     }
                 }
             }

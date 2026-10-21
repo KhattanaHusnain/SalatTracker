@@ -80,12 +80,12 @@ fun MissedPrayersScreen(
                     TextButton(onClick = onToggleSortOrder) {
                         Text(
                             text = stringResource(if (uiState.sortNewestFirst) R.string.sort_newest else R.string.sort_oldest),
-                            color = SalatPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily,
+                            color = SalatPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily,
                         )
                     }
                     if (!uiState.isSelectionMode) {
                         TextButton(onClick = onSelectClick) {
-                            Text(stringResource(R.string.qaza_select), color = SalatPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
+                            Text(stringResource(R.string.qaza_select), color = SalatPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
                         }
                     }
                 }
@@ -137,14 +137,14 @@ fun MissedPrayersScreen(
                     ) {
                         Text(
                             text = stringResource(R.string.qaza_selected_count, uiState.selectedSlots.size),
-                            color = SalatOnPrimary, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily,
+                            color = SalatOnPrimary, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily,
                         )
                         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                             TextButton(onClick = onSelectAll) {
-                                Text(stringResource(R.string.action_select_all), color = SalatOnPrimary, fontSize = 12.sp, fontFamily = InterFamily)
+                                Text(stringResource(R.string.action_select_all), color = SalatOnPrimary, fontSize = 12.sp, fontFamily = AppUiFontFamily)
                             }
                             TextButton(onClick = onClearSelection) {
-                                Text(stringResource(R.string.qaza_clear_selection), color = SalatOnPrimary, fontSize = 12.sp, fontFamily = InterFamily)
+                                Text(stringResource(R.string.qaza_clear_selection), color = SalatOnPrimary, fontSize = 12.sp, fontFamily = AppUiFontFamily)
                             }
                         }
                     }
@@ -154,13 +154,13 @@ fun MissedPrayersScreen(
                             onClick = onCancelSelection,
                             border  = BorderStroke(1.dp, SalatOnPrimary),
                             colors  = ButtonDefaults.outlinedButtonColors(contentColor = SalatOnPrimary),
-                        ) { Text(stringResource(R.string.action_cancel), fontSize = 12.sp, fontFamily = InterFamily) }
+                        ) { Text(stringResource(R.string.action_cancel), fontSize = 12.sp, fontFamily = AppUiFontFamily) }
                         Button(
                             onClick = onMakeUpSelected,
                             enabled = uiState.selectedSlots.isNotEmpty(),
                             modifier = Modifier.weight(1f),
                             colors  = ButtonDefaults.buttonColors(containerColor = SalatSecondaryFixed, contentColor = SalatPrimary),
-                        ) { Text(stringResource(R.string.qaza_log_confirm, uiState.selectedSlots.size), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily) }
+                        ) { Text(stringResource(R.string.qaza_log_confirm, uiState.selectedSlots.size), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily) }
                     }
                 }
             }
@@ -175,7 +175,7 @@ fun MissedPrayersScreen(
             ) {
                 Text(
                     text = if (undo.count == 1) stringResource(R.string.qaza_made_up_one) else stringResource(R.string.qaza_made_up_many, undo.count),
-                    fontFamily = InterFamily, fontSize = 14.sp,
+                    fontFamily = AppUiFontFamily, fontSize = 14.sp,
                 )
             }
         }
@@ -186,7 +186,7 @@ fun MissedPrayersScreen(
                 modifier = Modifier.align(Alignment.BottomCenter).padding(16.dp),
                 action = { TextButton(onClick = onErrorDismiss) { Text(stringResource(R.string.action_ok), color = SalatPrimaryFixed) } },
                 containerColor = SalatInverseSurface, contentColor = SalatInverseOnSurface,
-            ) { Text(message, fontFamily = InterFamily, fontSize = 14.sp) }
+            ) { Text(message, fontFamily = AppUiFontFamily, fontSize = 14.sp) }
         }
     }
 }
@@ -208,11 +208,11 @@ private fun FilterChip(label: String, count: Int, isSelected: Boolean, onClick: 
         ) {
             Text(
                 text = label, color = if (isSelected) SalatOnPrimaryContainer else SalatOnSurfaceVariant,
-                fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily,
+                fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily,
             )
             Text(
                 text = "$count", color = if (isSelected) SalatOnPrimaryContainer else SalatOutline,
-                fontSize = 11.sp, fontFamily = InterFamily,
+                fontSize = 11.sp, fontFamily = AppUiFontFamily,
             )
         }
     }
@@ -240,12 +240,12 @@ private fun MissedPrayersEmptyState(onBackToDashboard: () -> Unit) {
         Spacer(Modifier.height(24.dp))
         Text(
             text = stringResource(R.string.missed_empty_title), color = SalatPrimary, fontSize = 24.sp,
-            fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily, textAlign = TextAlign.Center,
+            fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily, textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(8.dp))
         Text(
             text = stringResource(R.string.missed_empty_desc), color = SalatOnSurfaceVariant, fontSize = 14.sp,
-            fontFamily = InterFamily, textAlign = TextAlign.Center,
+            fontFamily = AppUiFontFamily, textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(24.dp))
         Button(
@@ -255,7 +255,7 @@ private fun MissedPrayersEmptyState(onBackToDashboard: () -> Unit) {
         ) {
             Icon(painterResource(R.drawable.ic_mosque), null, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(8.dp))
-            Text(stringResource(R.string.action_back_dashboard), fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
+            Text(stringResource(R.string.action_back_dashboard), fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
         }
     }
 }

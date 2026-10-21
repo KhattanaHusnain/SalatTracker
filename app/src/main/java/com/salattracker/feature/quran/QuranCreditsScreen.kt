@@ -27,7 +27,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salattracker.R
-import com.salattracker.core.theme.InterFamily
+import com.salattracker.core.theme.AppUiFontFamily
 import com.salattracker.core.theme.SalatOnSurface
 import com.salattracker.core.theme.SalatOnSurfaceVariant
 import com.salattracker.core.theme.SalatOutlineVariant
@@ -64,7 +64,7 @@ fun QuranCreditsScreen(onSourceClick: (String) -> Unit) {
     ) {
         Text(
             stringResource(R.string.quran_credits_intro),
-            color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = InterFamily, lineHeight = 19.sp,
+            color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = AppUiFontFamily, lineHeight = 19.sp,
         )
         QURAN_CREDITS.forEach { credit ->
             QuranCreditCard(credit = credit, onSourceClick = { onSourceClick(credit.url) })
@@ -77,12 +77,12 @@ private fun QuranCreditCard(credit: QuranCredit, onSourceClick: () -> Unit) {
     SettingsCard {
         Text(
             stringResource(credit.titleRes),
-            color = SalatPrimary, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily,
+            color = SalatPrimary, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily,
         )
         Spacer(Modifier.height(6.dp))
         Text(
             stringResource(credit.bodyRes),
-            color = SalatOnSurface, fontSize = 13.sp, fontFamily = InterFamily, lineHeight = 19.sp,
+            color = SalatOnSurface, fontSize = 13.sp, fontFamily = AppUiFontFamily, lineHeight = 19.sp,
         )
         Spacer(Modifier.height(12.dp))
         HorizontalDivider(color = SalatOutlineVariant)
@@ -99,7 +99,7 @@ private fun QuranCreditCard(credit: QuranCredit, onSourceClick: () -> Unit) {
             Icon(painterResource(R.drawable.ic_external_link), contentDescription = null, tint = SalatPrimary, modifier = Modifier.size(20.dp))
             Text(
                 stringResource(R.string.quran_credits_visit_source),
-                color = SalatPrimary, fontSize = 14.sp, fontWeight = FontWeight.Medium, fontFamily = InterFamily,
+                color = SalatPrimary, fontSize = 14.sp, fontWeight = FontWeight.Medium, fontFamily = AppUiFontFamily,
             )
         }
     }

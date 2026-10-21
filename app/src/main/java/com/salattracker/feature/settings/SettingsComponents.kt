@@ -36,7 +36,7 @@ fun CalculationMethodSheet(
         Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(bottom = 12.dp)) {
             Text(
                 stringResource(R.string.settings_calculation_method_sheet_title),
-                color = SalatPrimary, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily,
+                color = SalatPrimary, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily,
             )
             Spacer(Modifier.height(12.dp))
             LazyColumn(
@@ -71,7 +71,7 @@ private fun CalculationMethodRow(method: CalculationMethod, isSelected: Boolean,
             color = if (isSelected) SalatPrimary else SalatOnSurface,
             fontSize = 14.sp,
             fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-            fontFamily = InterFamily,
+            fontFamily = AppUiFontFamily,
         )
         if (isSelected) {
             Icon(painterResource(R.drawable.ic_check_circle_filled), null, tint = SalatPrimary, modifier = Modifier.size(20.dp))
@@ -100,11 +100,11 @@ fun SettingsNavRow(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Icon(painterResource(icon), null, tint = SalatPrimary, modifier = Modifier.size(24.dp))
-            Text(label, color = SalatOnSurface, fontSize = 16.sp, fontFamily = InterFamily)
+            Text(label, color = SalatOnSurface, fontSize = 16.sp, fontFamily = AppUiFontFamily)
         }
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             if (trailingText != null) {
-                Text(trailingText, color = trailingColor, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
+                Text(trailingText, color = trailingColor, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
             }
             Icon(painterResource(R.drawable.ic_chevron_right), null, tint = SalatOnSurfaceVariant, modifier = Modifier.size(18.dp))
         }
@@ -136,7 +136,7 @@ fun MinuteStepper(
             color = SalatOnSurface,
             fontSize = 13.sp,
             fontWeight = FontWeight.Medium,
-            fontFamily = InterFamily,
+            fontFamily = AppUiFontFamily,
         )
         IconButton(
             onClick = { if (minutes < range.last) onMinutesChanged(minutes + 1) },

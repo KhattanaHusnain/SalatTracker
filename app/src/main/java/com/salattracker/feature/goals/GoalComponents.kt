@@ -95,7 +95,7 @@ fun StreakBadge(count: Int, modifier: Modifier = Modifier) {
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Icon(painterResource(R.drawable.ic_local_fire_department), null, tint = SalatOnTertiaryContainer, modifier = Modifier.size(14.dp))
-        Text("$count", color = SalatOnTertiaryContainer, fontSize = 12.sp, fontWeight = FontWeight.Bold, fontFamily = MontserratFamily)
+        Text("$count", color = SalatOnTertiaryContainer, fontSize = 12.sp, fontWeight = FontWeight.Bold, fontFamily = AppTitleFontFamily)
     }
 }
 
@@ -161,7 +161,7 @@ fun GoalDayCell(
                     drawArc(trackColor, 0f, 360f, false, Offset.Zero, arcSize, style = stroke)
                     drawArc(progressColor, -90f, 360f * fraction, false, Offset.Zero, arcSize, style = stroke)
                 }
-                Text("${day.amount}", color = SalatPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold, fontFamily = InterFamily)
+                Text("${day.amount}", color = SalatPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold, fontFamily = AppUiFontFamily)
             }
             GoalDayState.MISSED ->
                 Icon(painterResource(R.drawable.ic_close), null, tint = SalatError.copy(alpha = 0.6f), modifier = Modifier.size(14.dp))
@@ -172,7 +172,7 @@ fun GoalDayCell(
             GoalDayState.NOT_DUE ->
                 Box(Modifier.size(6.dp).clip(CircleShape).background(SalatOutlineVariant))
             GoalDayState.LOGGED ->
-                Text("${day.amount}", color = SalatOnSecondaryContainer, fontSize = 11.sp, fontWeight = FontWeight.Bold, fontFamily = InterFamily)
+                Text("${day.amount}", color = SalatOnSecondaryContainer, fontSize = 11.sp, fontWeight = FontWeight.Bold, fontFamily = AppUiFontFamily)
             GoalDayState.NONE, GoalDayState.LOCKED -> Unit
         }
     }
@@ -196,7 +196,7 @@ fun SevenDayStrip(
                     color = if (day.isToday) SalatPrimary else SalatOnSurfaceVariant,
                     fontSize = 10.sp,
                     fontWeight = if (day.isToday) FontWeight.Bold else FontWeight.Normal,
-                    fontFamily = InterFamily,
+                    fontFamily = AppUiFontFamily,
                     maxLines = 1,
                 )
                 GoalDayCell(
@@ -229,12 +229,12 @@ fun LogDaySheet(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(bottom = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(state.goalName, color = SalatPrimary, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily, textAlign = TextAlign.Center)
-            Text(state.date.format(formatter), color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = InterFamily)
+            Text(state.goalName, color = SalatPrimary, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily, textAlign = TextAlign.Center)
+            Text(state.date.format(formatter), color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = AppUiFontFamily)
             Spacer(Modifier.height(20.dp))
 
             val amountEnabled = !state.skipped
-            Text(stringResource(R.string.goal_log_amount), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily)
+            Text(stringResource(R.string.goal_log_amount), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(20.dp)) {
                 FilledTonalIconButton(
                     onClick = { onAmountChanged((state.amount - 1).coerceAtLeast(0)) },
@@ -244,9 +244,9 @@ fun LogDaySheet(
                     Text(
                         text = "${state.amount}",
                         color = if (amountEnabled) SalatPrimary else SalatOutline,
-                        fontSize = 36.sp, fontWeight = FontWeight.Bold, fontFamily = MontserratFamily,
+                        fontSize = 36.sp, fontWeight = FontWeight.Bold, fontFamily = AppTitleFontFamily,
                     )
-                    Text("/ ${state.target} ${goalUnitLabel(state.unit)}", color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily)
+                    Text("/ ${state.target} ${goalUnitLabel(state.unit)}", color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
                 }
                 FilledTonalIconButton(
                     onClick = { onAmountChanged((state.amount + 1).coerceAtMost(MAX_LOG_AMOUNT)) },
@@ -255,13 +255,13 @@ fun LogDaySheet(
             }
             Spacer(Modifier.height(12.dp))
             OutlinedButton(onClick = onMarkDone, enabled = amountEnabled, shape = RoundedCornerShape(12.dp)) {
-                Text(stringResource(R.string.action_mark_done), color = SalatPrimary, fontFamily = InterFamily, fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.action_mark_done), color = SalatPrimary, fontFamily = AppUiFontFamily, fontWeight = FontWeight.SemiBold)
             }
 
             if (state.canSkip) {
                 Spacer(Modifier.height(16.dp))
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(stringResource(R.string.goal_log_excused), color = SalatOnSurface, fontSize = 14.sp, fontFamily = InterFamily)
+                    Text(stringResource(R.string.goal_log_excused), color = SalatOnSurface, fontSize = 14.sp, fontFamily = AppUiFontFamily)
                     Switch(
                         checked = state.skipped,
                         onCheckedChange = onSkippedChanged,
@@ -276,14 +276,14 @@ fun LogDaySheet(
             Spacer(Modifier.height(20.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 TextButton(onClick = onClear, modifier = Modifier.weight(1f)) {
-                    Text(stringResource(R.string.goal_log_clear), color = SalatError, fontFamily = InterFamily)
+                    Text(stringResource(R.string.goal_log_clear), color = SalatError, fontFamily = AppUiFontFamily)
                 }
                 Button(
                     onClick = onSave,
                     modifier = Modifier.weight(1f).height(48.dp),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = SalatPrimary, contentColor = SalatOnPrimary),
-                ) { Text(stringResource(R.string.goal_log_save), fontFamily = InterFamily, fontWeight = FontWeight.SemiBold) }
+                ) { Text(stringResource(R.string.goal_log_save), fontFamily = AppUiFontFamily, fontWeight = FontWeight.SemiBold) }
             }
         }
     }

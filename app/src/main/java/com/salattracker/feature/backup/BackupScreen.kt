@@ -62,9 +62,9 @@ fun BackupScreen(
                     Icon(painterResource(R.drawable.ic_cloud_upload), null, tint = SalatPrimary, modifier = Modifier.size(32.dp))
                 }
                 Spacer(Modifier.height(12.dp))
-                Text(stringResource(R.string.backup_title), color = SalatPrimary, fontSize = 22.sp, fontWeight = FontWeight.Bold, fontFamily = MontserratFamily)
+                Text(stringResource(R.string.backup_title), color = SalatPrimary, fontSize = 22.sp, fontWeight = FontWeight.Bold, fontFamily = AppTitleFontFamily)
                 Spacer(Modifier.height(4.dp))
-                Text(stringResource(R.string.backup_subtitle), color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = InterFamily)
+                Text(stringResource(R.string.backup_subtitle), color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = AppUiFontFamily)
             }
 
             if (uiState.attention != BackupAttention.NONE && uiState.conflictInfo == null) {
@@ -91,7 +91,7 @@ fun BackupScreen(
                 action         = { TextButton(onClick = onErrorDismiss) { Text(stringResource(R.string.action_ok), color = SalatPrimaryFixed) } },
                 containerColor = SalatInverseSurface,
                 contentColor   = SalatInverseOnSurface,
-            ) { Text(msg, fontFamily = InterFamily) }
+            ) { Text(msg, fontFamily = AppUiFontFamily) }
         }
 
         uiState.message?.let { msg ->
@@ -100,7 +100,7 @@ fun BackupScreen(
                 action         = { TextButton(onClick = onMessageDismiss) { Text(stringResource(R.string.action_ok), color = SalatPrimary) } },
                 containerColor = SalatSecondaryContainer,
                 contentColor   = SalatOnSecondaryContainer,
-            ) { Text(msg, fontFamily = InterFamily) }
+            ) { Text(msg, fontFamily = AppUiFontFamily) }
         }
     }
 
@@ -126,7 +126,7 @@ private fun NotConnectedCard(isWorking: Boolean, onConnectClick: () -> Unit) {
     SettingsCard {
         Text(
             stringResource(R.string.backup_not_connected_desc),
-            color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = InterFamily,
+            color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = AppUiFontFamily,
         )
         Spacer(Modifier.height(16.dp))
         Button(
@@ -140,7 +140,7 @@ private fun NotConnectedCard(isWorking: Boolean, onConnectClick: () -> Unit) {
                 CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp, color = SalatOnPrimary)
                 Spacer(Modifier.width(8.dp))
             }
-            Text(stringResource(R.string.backup_connect), fontFamily = InterFamily, fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.backup_connect), fontFamily = AppUiFontFamily, fontWeight = FontWeight.SemiBold)
         }
     }
 }
@@ -176,7 +176,7 @@ private fun ConnectedCard(
                 CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp, color = SalatOnPrimary)
                 Spacer(Modifier.width(8.dp))
             }
-            Text(stringResource(R.string.backup_back_up_now), fontFamily = InterFamily, fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.backup_back_up_now), fontFamily = AppUiFontFamily, fontWeight = FontWeight.SemiBold)
         }
 
         if (!isOnboarding) {
@@ -188,15 +188,15 @@ private fun ConnectedCard(
                 shape    = RoundedCornerShape(12.dp),
                 border   = BorderStroke(1.dp, SalatOutlineVariant),
                 colors   = ButtonDefaults.outlinedButtonColors(contentColor = SalatPrimary),
-            ) { Text(stringResource(R.string.backup_restore), fontFamily = InterFamily, fontWeight = FontWeight.SemiBold) }
+            ) { Text(stringResource(R.string.backup_restore), fontFamily = AppUiFontFamily, fontWeight = FontWeight.SemiBold) }
 
             Spacer(Modifier.height(10.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 TextButton(onClick = onConnectClick, enabled = !uiState.isWorking) {
-                    Text(stringResource(R.string.backup_switch_account), color = SalatOnSurfaceVariant, fontFamily = InterFamily, fontSize = 13.sp)
+                    Text(stringResource(R.string.backup_switch_account), color = SalatOnSurfaceVariant, fontFamily = AppUiFontFamily, fontSize = 13.sp)
                 }
                 TextButton(onClick = onDisconnectClick, enabled = !uiState.isWorking) {
-                    Text(stringResource(R.string.backup_disconnect), color = SalatError, fontFamily = InterFamily, fontSize = 13.sp)
+                    Text(stringResource(R.string.backup_disconnect), color = SalatError, fontFamily = AppUiFontFamily, fontSize = 13.sp)
                 }
             }
         }
@@ -206,8 +206,8 @@ private fun ConnectedCard(
 @Composable
 private fun LabeledRow(label: String, value: String) {
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(label, color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = InterFamily)
-        Text(value, color = SalatOnSurface, fontSize = 13.sp, fontWeight = FontWeight.Medium, fontFamily = InterFamily)
+        Text(label, color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = AppUiFontFamily)
+        Text(value, color = SalatOnSurface, fontSize = 13.sp, fontWeight = FontWeight.Medium, fontFamily = AppUiFontFamily)
     }
 }
 
@@ -229,7 +229,7 @@ private fun AttentionBanner(attention: BackupAttention) {
     ) {
         Text(
             text, modifier = Modifier.padding(14.dp),
-            color = SalatOnErrorContainer, fontSize = 13.sp, fontFamily = InterFamily,
+            color = SalatOnErrorContainer, fontSize = 13.sp, fontFamily = AppUiFontFamily,
         )
     }
 }
@@ -248,13 +248,13 @@ private fun ConflictDialog(
         onDismissRequest = onDismiss,
         containerColor    = SalatSurfaceContainerLowest,
         title = {
-            Text(stringResource(R.string.backup_conflict_title), color = SalatOnSurface, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily)
+            Text(stringResource(R.string.backup_conflict_title), color = SalatOnSurface, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily)
         },
         text = {
             val deviceLabel = info.deviceModel.ifBlank { stringResource(R.string.backup_unknown_device) }
             Text(
                 stringResource(R.string.backup_conflict_desc, deviceLabel, formatEpoch(info.createdAt)),
-                color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = InterFamily,
+                color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = AppUiFontFamily,
             )
         },
         confirmButton = {
@@ -262,13 +262,13 @@ private fun ConflictDialog(
                 onClick = onRestore,
                 colors  = ButtonDefaults.buttonColors(containerColor = SalatPrimary, contentColor = SalatOnPrimary),
                 shape   = RoundedCornerShape(12.dp),
-            ) { Text(stringResource(R.string.backup_conflict_restore), fontFamily = InterFamily, fontWeight = FontWeight.SemiBold) }
+            ) { Text(stringResource(R.string.backup_conflict_restore), fontFamily = AppUiFontFamily, fontWeight = FontWeight.SemiBold) }
         },
         dismissButton = {
             if (isOnboarding) {
-                TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel), color = SalatOnSurfaceVariant, fontFamily = InterFamily) }
+                TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel), color = SalatOnSurfaceVariant, fontFamily = AppUiFontFamily) }
             } else {
-                TextButton(onClick = onReplace) { Text(stringResource(R.string.backup_conflict_replace), color = SalatError, fontFamily = InterFamily) }
+                TextButton(onClick = onReplace) { Text(stringResource(R.string.backup_conflict_replace), color = SalatError, fontFamily = AppUiFontFamily) }
             }
         },
     )
@@ -281,17 +281,17 @@ private fun DisconnectConfirmDialog(onConfirm: () -> Unit, onDismiss: () -> Unit
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor    = SalatSurfaceContainerLowest,
-        title = { Text(stringResource(R.string.backup_disconnect_title), color = SalatOnSurface, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily) },
-        text  = { Text(stringResource(R.string.backup_disconnect_desc), color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = InterFamily) },
+        title = { Text(stringResource(R.string.backup_disconnect_title), color = SalatOnSurface, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily) },
+        text  = { Text(stringResource(R.string.backup_disconnect_desc), color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = AppUiFontFamily) },
         confirmButton = {
             Button(
                 onClick = onConfirm,
                 colors  = ButtonDefaults.buttonColors(containerColor = SalatError, contentColor = SalatOnPrimary),
                 shape   = RoundedCornerShape(12.dp),
-            ) { Text(stringResource(R.string.backup_disconnect), fontFamily = InterFamily, fontWeight = FontWeight.SemiBold) }
+            ) { Text(stringResource(R.string.backup_disconnect), fontFamily = AppUiFontFamily, fontWeight = FontWeight.SemiBold) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel), color = SalatOnSurfaceVariant, fontFamily = InterFamily) }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel), color = SalatOnSurfaceVariant, fontFamily = AppUiFontFamily) }
         },
     )
 }

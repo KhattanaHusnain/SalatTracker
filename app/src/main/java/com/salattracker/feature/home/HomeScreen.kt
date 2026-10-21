@@ -157,7 +157,7 @@ private fun HeroCard(
                 text = if (hijriText != null) "${todayDate.format(dateFormatter)} · $hijriText" else todayDate.format(dateFormatter),
                 color = Color.White.copy(alpha = 0.85f),
                 fontSize = 13.sp,
-                fontFamily = InterFamily,
+                fontFamily = AppUiFontFamily,
             )
             Spacer(modifier = Modifier.height(18.dp))
             Row(
@@ -178,13 +178,13 @@ private fun HeroCard(
                             color = Color.White,
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
-                            fontFamily = MontserratFamily,
+                            fontFamily = AppTitleFontFamily,
                         )
                         Text(
                             text = stringResource(R.string.home_ring_caption),
                             color = Color.White.copy(alpha = 0.75f),
                             fontSize = 9.sp,
-                            fontFamily = InterFamily,
+                            fontFamily = AppUiFontFamily,
                         )
                     }
                 }
@@ -195,7 +195,7 @@ private fun HeroCard(
                         color = Color.White.copy(alpha = 0.7f),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.SemiBold,
-                        fontFamily = InterFamily,
+                        fontFamily = AppUiFontFamily,
                         letterSpacing = 1.sp,
                     )
                     if (nextPrayer != null) {
@@ -205,7 +205,7 @@ private fun HeroCard(
                             color = Color.White,
                             fontSize = 22.sp,
                             fontWeight = FontWeight.Bold,
-                            fontFamily = MontserratFamily,
+                            fontFamily = AppTitleFontFamily,
                         )
                         Text(
                             text = if (nextPrayer.isTomorrow)
@@ -214,7 +214,7 @@ private fun HeroCard(
                                 nextPrayer.time.format(timeFormatter),
                             color = Color.White.copy(alpha = 0.85f),
                             fontSize = 13.sp,
-                            fontFamily = InterFamily,
+                            fontFamily = AppUiFontFamily,
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
@@ -225,7 +225,7 @@ private fun HeroCard(
                             color = Color.White,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.SemiBold,
-                            fontFamily = InterFamily,
+                            fontFamily = AppUiFontFamily,
                         )
                     } else {
                         Text(
@@ -233,7 +233,7 @@ private fun HeroCard(
                             color = Color.White,
                             fontSize = 15.sp,
                             fontWeight = FontWeight.SemiBold,
-                            fontFamily = MontserratFamily,
+                            fontFamily = AppTitleFontFamily,
                         )
                     }
                     if (qazaPendingTotal > 0) {
@@ -254,7 +254,7 @@ private fun HeroCard(
                                 color = Color.White,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                fontFamily = InterFamily,
+                                fontFamily = AppUiFontFamily,
                                 modifier = Modifier.weight(1f),
                             )
                             Icon(
@@ -279,7 +279,7 @@ private fun HeroCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Icon(painterResource(R.drawable.ic_mosque), null, tint = Color.White, modifier = Modifier.size(16.dp))
-                    Text(islamicEvent.label(), color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
+                    Text(islamicEvent.label(), color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
                 }
             }
         }
@@ -362,25 +362,25 @@ private fun TimelineRow(
                         color = SalatPrimary,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
-                        fontFamily = MontserratFamily,
+                        fontFamily = AppTitleFontFamily,
                     )
                     if (needsMarking) {
                         Box(
                             modifier = Modifier.clip(RoundedCornerShape(50)).background(SalatPrimary).padding(horizontal = 8.dp, vertical = 2.dp),
                         ) {
-                            Text(stringResource(R.string.home_now), color = SalatOnPrimary, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily, maxLines = 1)
+                            Text(stringResource(R.string.home_now), color = SalatOnPrimary, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily, maxLines = 1)
                         }
                     }
                 }
                 if (entry.time != null) {
-                    Text(entry.time.format(timeFormatter), color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = InterFamily)
+                    Text(entry.time.format(timeFormatter), color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = AppUiFontFamily)
                 }
                 if (entry.reminderTime != null) {
                     Text(
                         text = stringResource(R.string.home_reminder_at, entry.reminderTime.format(timeFormatter)),
                         color = SalatPrimary,
                         fontSize = 11.sp,
-                        fontFamily = InterFamily,
+                        fontFamily = AppUiFontFamily,
                     )
                 }
             }
@@ -410,7 +410,7 @@ private fun SectionTitle(text: String, modifier: Modifier = Modifier) {
         color = SalatPrimary,
         fontSize = 18.sp,
         fontWeight = FontWeight.SemiBold,
-        fontFamily = MontserratFamily,
+        fontFamily = AppTitleFontFamily,
     )
 }
 
@@ -437,11 +437,11 @@ private fun ConsistencyCard(
                 Icon(painterResource(R.drawable.ic_local_fire_department), null, tint = Color(0xFFFF9939), modifier = Modifier.size(28.dp))
                 if (perfectStreak > 0) {
                     Column {
-                        Text("$perfectStreak", color = SalatPrimary, fontSize = 24.sp, fontWeight = FontWeight.Bold, fontFamily = MontserratFamily)
-                        Text(stringResource(R.string.home_streak_caption), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily)
+                        Text("$perfectStreak", color = SalatPrimary, fontSize = 24.sp, fontWeight = FontWeight.Bold, fontFamily = AppTitleFontFamily)
+                        Text(stringResource(R.string.home_streak_caption), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
                     }
                 } else {
-                    Text(stringResource(R.string.home_streak_start), color = SalatPrimary, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily)
+                    Text(stringResource(R.string.home_streak_start), color = SalatPrimary, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily)
                 }
             }
             Spacer(modifier = Modifier.height(14.dp))
@@ -458,7 +458,7 @@ private fun ConsistencyCard(
                 color = SalatOnSurfaceVariant,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold,
-                fontFamily = InterFamily,
+                fontFamily = AppUiFontFamily,
             )
             Spacer(modifier = Modifier.height(10.dp))
             WeekRings(todayDate = todayDate, lastSevenDays = lastSevenDays, onDayClick = onDayClick)
@@ -473,9 +473,9 @@ private fun StreakChip(type: PrayerType, info: StreakInfo, modifier: Modifier = 
         modifier = modifier.clip(RoundedCornerShape(10.dp)).background(SalatSurfaceContainer).padding(vertical = 8.dp, horizontal = 2.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(type.shortLabel(), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(type.shortLabel(), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Spacer(modifier = Modifier.height(2.dp))
-        Text("${info.currentStreak}", color = SalatPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold, fontFamily = MontserratFamily)
+        Text("${info.currentStreak}", color = SalatPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold, fontFamily = AppTitleFontFamily)
         Spacer(modifier = Modifier.height(4.dp))
         Box(modifier = Modifier.fillMaxWidth(0.8f).height(4.dp).clip(RoundedCornerShape(2.dp)).background(SalatSurfaceVariant)) {
             Box(modifier = Modifier.fillMaxWidth(fraction).fillMaxHeight().clip(RoundedCornerShape(2.dp)).background(SalatPrimary))
@@ -485,7 +485,7 @@ private fun StreakChip(type: PrayerType, info: StreakInfo, modifier: Modifier = 
             text = stringResource(R.string.home_best_streak, info.highestStreak),
             color = SalatOnSurfaceVariant,
             fontSize = 11.sp,
-            fontFamily = InterFamily,
+            fontFamily = AppUiFontFamily,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
@@ -525,7 +525,7 @@ private fun WeekRings(
                     color = if (isToday) SalatPrimary else SalatOnSurfaceVariant,
                     fontSize = 11.sp,
                     fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
-                    fontFamily = InterFamily,
+                    fontFamily = AppUiFontFamily,
                     maxLines = 1,
                 )
             }
@@ -555,7 +555,7 @@ private fun InspirationBanner(verse: VerseInfo, modifier: Modifier = Modifier) {
                 color = Color.White,
                 fontSize = 16.sp,
                 fontStyle = FontStyle.Italic,
-                fontFamily = InterFamily,
+                fontFamily = AppUiFontFamily,
                 lineHeight = 22.sp,
             )
             if (verse.citation.isNotEmpty()) {
@@ -564,7 +564,7 @@ private fun InspirationBanner(verse: VerseInfo, modifier: Modifier = Modifier) {
                     text = verse.citation,
                     color = Color.White.copy(alpha = 0.7f),
                     fontSize = 12.sp,
-                    fontFamily = InterFamily,
+                    fontFamily = AppUiFontFamily,
                 )
             }
         }

@@ -52,11 +52,11 @@ fun QuranChapterInfoScreen(uiState: QuranChapterInfoUiState, onReadClick: (Int) 
             .padding(top = 8.dp, bottom = 32.dp),
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-            Text(chapter.nameArabic, color = SalatOnSurface, fontSize = 32.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
+            Text(chapter.nameArabic, color = SalatOnSurface, fontSize = 32.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
             Spacer(Modifier.height(4.dp))
             Text(
                 text = "${chapter.nameTransliteration} · ${chapter.nameTranslation}",
-                color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = InterFamily,
+                color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = AppUiFontFamily,
             )
         }
         Spacer(Modifier.height(20.dp))
@@ -99,7 +99,7 @@ fun QuranChapterInfoScreen(uiState: QuranChapterInfoUiState, onReadClick: (Int) 
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(containerColor = SalatPrimary, contentColor = SalatOnPrimary),
         ) {
-            Text(stringResource(R.string.quran_info_start_reading), fontFamily = InterFamily, fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.quran_info_start_reading), fontFamily = AppUiFontFamily, fontWeight = FontWeight.SemiBold)
         }
     }
 }

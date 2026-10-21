@@ -115,7 +115,7 @@ fun SettingsScreen(
                 action         = { TextButton(onClick = onErrorDismiss) { Text(stringResource(R.string.action_ok), color = SalatPrimaryFixed) } },
                 containerColor = SalatInverseSurface,
                 contentColor   = SalatInverseOnSurface,
-            ) { Text(msg, fontFamily = InterFamily) }
+            ) { Text(msg, fontFamily = AppUiFontFamily) }
         }
     }
 
@@ -159,7 +159,7 @@ private fun LocationAndPrayerTimesCard(
             ) {
                 Icon(painterResource(R.drawable.ic_my_location), null,
                     tint = SalatPrimary, modifier = Modifier.size(24.dp))
-                Text(stringResource(R.string.settings_device_location), color = SalatOnSurface, fontSize = 16.sp, fontFamily = InterFamily)
+                Text(stringResource(R.string.settings_device_location), color = SalatOnSurface, fontSize = 16.sp, fontFamily = AppUiFontFamily)
             }
             Switch(
                 checked         = useDeviceLocation,
@@ -207,7 +207,7 @@ private fun LocationAndPrayerTimesCard(
             modifier = Modifier.padding(start = 36.dp, top = 2.dp),
             color    = SalatOnSurfaceVariant,
             fontSize = 12.sp,
-            fontFamily = InterFamily,
+            fontFamily = AppUiFontFamily,
             maxLines = 1,
         )
 
@@ -216,7 +216,7 @@ private fun LocationAndPrayerTimesCard(
         Spacer(modifier = Modifier.height(16.dp))
 
         // School of thought — changes Asr, and for Jafari also Isha.
-        Text(stringResource(R.string.settings_school), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily)
+        Text(stringResource(R.string.settings_school), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily)
         Spacer(Modifier.height(8.dp))
         SchoolDropdown(selected = madhab, onSelect = onMadhabChanged)
 
@@ -225,9 +225,9 @@ private fun LocationAndPrayerTimesCard(
         Spacer(modifier = Modifier.height(16.dp))
 
         // High-latitude rule — bounds Fajr/Isha where the method's angle is never reached.
-        Text(stringResource(R.string.settings_high_latitude), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily)
+        Text(stringResource(R.string.settings_high_latitude), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily)
         Spacer(Modifier.height(4.dp))
-        Text(stringResource(R.string.settings_high_latitude_desc), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily, lineHeight = 15.sp)
+        Text(stringResource(R.string.settings_high_latitude_desc), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily, lineHeight = 15.sp)
         Spacer(Modifier.height(8.dp))
         HighLatitudeRuleDropdown(selected = highLatitudeRule, onSelect = onHighLatitudeRuleChanged)
     }
@@ -245,7 +245,7 @@ private fun HighLatitudeRuleDropdown(selected: HighLatitudeRule, onSelect: (High
             modifier      = Modifier.fillMaxWidth().menuAnchor(),
             singleLine    = true,
             trailingIcon  = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            textStyle     = LocalTextStyle.current.copy(fontFamily = InterFamily, fontSize = 14.sp),
+            textStyle     = LocalTextStyle.current.copy(fontFamily = AppUiFontFamily, fontSize = 14.sp),
             colors        = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor      = SalatPrimary,
                 unfocusedBorderColor    = SalatOutlineVariant,
@@ -261,7 +261,7 @@ private fun HighLatitudeRuleDropdown(selected: HighLatitudeRule, onSelect: (High
         ) {
             HighLatitudeRule.values().forEach { rule ->
                 DropdownMenuItem(
-                    text    = { Text(stringResource(rule.labelRes), fontFamily = InterFamily, fontSize = 14.sp, color = SalatOnSurface) },
+                    text    = { Text(stringResource(rule.labelRes), fontFamily = AppUiFontFamily, fontSize = 14.sp, color = SalatOnSurface) },
                     onClick = { onSelect(rule); expanded = false },
                     colors  = MenuDefaults.itemColors(
                         textColor = if (rule == selected) SalatPrimary else SalatOnSurface,
@@ -291,7 +291,7 @@ private fun SchoolDropdown(selected: Madhab, onSelect: (Madhab) -> Unit) {
             modifier      = Modifier.fillMaxWidth().menuAnchor(),
             singleLine    = true,
             trailingIcon  = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            textStyle     = LocalTextStyle.current.copy(fontFamily = InterFamily, fontSize = 14.sp),
+            textStyle     = LocalTextStyle.current.copy(fontFamily = AppUiFontFamily, fontSize = 14.sp),
             colors        = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor      = SalatPrimary,
                 unfocusedBorderColor    = SalatOutlineVariant,
@@ -307,7 +307,7 @@ private fun SchoolDropdown(selected: Madhab, onSelect: (Madhab) -> Unit) {
         ) {
             Madhab.values().forEach { school ->
                 DropdownMenuItem(
-                    text    = { Text(stringResource(school.labelRes), fontFamily = InterFamily, fontSize = 14.sp, color = SalatOnSurface) },
+                    text    = { Text(stringResource(school.labelRes), fontFamily = AppUiFontFamily, fontSize = 14.sp, color = SalatOnSurface) },
                     onClick = { onSelect(school); expanded = false },
                     colors  = MenuDefaults.itemColors(
                         textColor = if (school == selected) SalatPrimary else SalatOnSurface,
@@ -334,7 +334,7 @@ private fun AdjustPrayerTimesCard(
     SettingsCard {
         Text(
             stringResource(R.string.settings_adjust_prayer_times_desc),
-            color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily, lineHeight = 16.sp,
+            color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily, lineHeight = 16.sp,
         )
         Spacer(Modifier.height(12.dp))
         PrayerType.values().forEachIndexed { index, type ->
@@ -343,7 +343,7 @@ private fun AdjustPrayerTimesCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(type.label(), color = SalatOnSurface, fontSize = 15.sp, fontFamily = InterFamily)
+                Text(type.label(), color = SalatOnSurface, fontSize = 15.sp, fontFamily = AppUiFontFamily)
                 MinuteStepper(
                     minutes = adjustMinutes[type] ?: 0,
                     onMinutesChanged = { onChanged(type, it) },
@@ -368,7 +368,7 @@ private fun CoordField(
     val focusManager = LocalFocusManager.current
 
     Column(modifier = modifier) {
-        Text(label, color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily)
+        Text(label, color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily)
         Spacer(Modifier.height(4.dp))
         OutlinedTextField(
             value         = value,
@@ -377,7 +377,7 @@ private fun CoordField(
             modifier      = Modifier.fillMaxWidth().onFocusChanged { if (!it.isFocused) onCommit() },
             singleLine    = true,
             textStyle     = LocalTextStyle.current.copy(
-                fontFamily = InterFamily, fontSize = 14.sp, color = SalatOnSurface,
+                fontFamily = AppUiFontFamily, fontSize = 14.sp, color = SalatOnSurface,
             ),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus(); onCommit() }),
@@ -408,7 +408,7 @@ private fun AppearanceCard(
 ) {
     SettingsCard {
         // Theme
-        Text(stringResource(R.string.settings_theme), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily)
+        Text(stringResource(R.string.settings_theme), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily)
         Spacer(Modifier.height(8.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             ThemeMode.values().forEach { mode ->
@@ -426,7 +426,7 @@ private fun AppearanceCard(
         Spacer(Modifier.height(16.dp))
 
         // Language
-        Text(stringResource(R.string.settings_language), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily)
+        Text(stringResource(R.string.settings_language), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily)
         Spacer(Modifier.height(4.dp))
         var expanded by remember { mutableStateOf(false) }
         ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
@@ -438,7 +438,7 @@ private fun AppearanceCard(
                 singleLine    = true,
                 leadingIcon   = { Icon(painterResource(R.drawable.ic_language), null, tint = SalatPrimary, modifier = Modifier.size(20.dp)) },
                 trailingIcon  = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                textStyle     = LocalTextStyle.current.copy(fontFamily = InterFamily, fontSize = 14.sp),
+                textStyle     = LocalTextStyle.current.copy(fontFamily = AppUiFontFamily, fontSize = 14.sp),
                 colors        = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor      = SalatPrimary,
                     unfocusedBorderColor    = SalatOutlineVariant,
@@ -454,7 +454,7 @@ private fun AppearanceCard(
             ) {
                 AppLanguage.values().forEach { lang ->
                     DropdownMenuItem(
-                        text    = { Text(lang.displayName, fontFamily = InterFamily, fontSize = 14.sp, color = SalatOnSurface) },
+                        text    = { Text(lang.displayName, fontFamily = AppUiFontFamily, fontSize = 14.sp, color = SalatOnSurface) },
                         onClick = { onLanguageChanged(lang); expanded = false },
                         colors  = MenuDefaults.itemColors(
                             textColor = if (lang == language) SalatPrimary else SalatOnSurface,
@@ -474,7 +474,7 @@ private fun AppearanceCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment     = Alignment.CenterVertically,
         ) {
-            Text(stringResource(R.string.settings_24hour), color = SalatOnSurface, fontSize = 16.sp, fontFamily = InterFamily)
+            Text(stringResource(R.string.settings_24hour), color = SalatOnSurface, fontSize = 16.sp, fontFamily = AppUiFontFamily)
             Switch(
                 checked         = use24Hour,
                 onCheckedChange = on24HourChanged,
@@ -500,7 +500,7 @@ private fun ThemeModeChip(label: String, isSelected: Boolean, onClick: () -> Uni
             color      = if (isSelected) SalatOnPrimary else SalatOnSurfaceVariant,
             fontSize   = 13.sp,
             fontWeight = FontWeight.SemiBold,
-            fontFamily = InterFamily,
+            fontFamily = AppUiFontFamily,
         )
     }
 }

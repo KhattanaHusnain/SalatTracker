@@ -77,9 +77,9 @@ private fun LanguageStep(
                 Icon(painterResource(R.drawable.ic_mosque), null, tint = SalatOnPrimary, modifier = Modifier.size(36.dp))
             }
             Spacer(Modifier.height(20.dp))
-            Text(stringResource(R.string.onboarding_welcome_title), color = SalatPrimary, fontSize = 26.sp, fontWeight = FontWeight.Bold, fontFamily = MontserratFamily, textAlign = TextAlign.Center)
+            Text(stringResource(R.string.onboarding_welcome_title), color = SalatPrimary, fontSize = 26.sp, fontWeight = FontWeight.Bold, fontFamily = AppTitleFontFamily, textAlign = TextAlign.Center)
             Spacer(Modifier.height(8.dp))
-            Text(stringResource(R.string.onboarding_welcome_subtitle), color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = InterFamily, textAlign = TextAlign.Center)
+            Text(stringResource(R.string.onboarding_welcome_subtitle), color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = AppUiFontFamily, textAlign = TextAlign.Center)
         }
 
         Spacer(Modifier.height(40.dp))
@@ -102,13 +102,13 @@ private fun LanguageStep(
         TextButton(onClick = onRestoreFromBackup, modifier = Modifier.fillMaxWidth()) {
             Icon(painterResource(R.drawable.ic_cloud_upload), null, tint = SalatPrimary, modifier = Modifier.size(16.dp))
             Spacer(Modifier.width(6.dp))
-            Text(stringResource(R.string.backup_onboarding_restore_action), color = SalatPrimary, fontSize = 13.sp, fontFamily = InterFamily, fontWeight = FontWeight.Medium)
+            Text(stringResource(R.string.backup_onboarding_restore_action), color = SalatPrimary, fontSize = 13.sp, fontFamily = AppUiFontFamily, fontWeight = FontWeight.Medium)
         }
         Spacer(Modifier.height(4.dp))
         Text(
             stringResource(R.string.onboarding_change_later),
             modifier = Modifier.fillMaxWidth(),
-            color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily, textAlign = TextAlign.Center,
+            color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily, textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(24.dp))
     }
@@ -126,9 +126,9 @@ private fun ThemeStep(
         Spacer(Modifier.height(56.dp))
         StepDots(current = 1, total = OnboardingStep.values().size)
         Spacer(Modifier.height(28.dp))
-        Text(stringResource(R.string.onboarding_theme_title), color = SalatPrimary, fontSize = 26.sp, fontWeight = FontWeight.Bold, fontFamily = MontserratFamily, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+        Text(stringResource(R.string.onboarding_theme_title), color = SalatPrimary, fontSize = 26.sp, fontWeight = FontWeight.Bold, fontFamily = AppTitleFontFamily, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
         Spacer(Modifier.height(8.dp))
-        Text(stringResource(R.string.onboarding_theme_subtitle), color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = InterFamily, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+        Text(stringResource(R.string.onboarding_theme_subtitle), color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = AppUiFontFamily, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
 
         Spacer(Modifier.height(36.dp))
 
@@ -156,9 +156,9 @@ private fun SchoolStep(
         Spacer(Modifier.height(56.dp))
         StepDots(current = 2, total = OnboardingStep.values().size)
         Spacer(Modifier.height(28.dp))
-        Text(stringResource(R.string.onboarding_school_title), color = SalatPrimary, fontSize = 26.sp, fontWeight = FontWeight.Bold, fontFamily = MontserratFamily, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+        Text(stringResource(R.string.onboarding_school_title), color = SalatPrimary, fontSize = 26.sp, fontWeight = FontWeight.Bold, fontFamily = AppTitleFontFamily, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
         Spacer(Modifier.height(8.dp))
-        Text(stringResource(R.string.onboarding_school_subtitle), color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = InterFamily, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+        Text(stringResource(R.string.onboarding_school_subtitle), color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = AppUiFontFamily, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
 
         Spacer(Modifier.height(36.dp))
 
@@ -201,8 +201,8 @@ private fun TitledOption(
                 Icon(painterResource(icon), null, tint = SalatPrimary, modifier = Modifier.size(24.dp))
             }
             Column(modifier = Modifier.weight(1f)) {
-                Text(title, color = SalatOnSurface, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily)
-                Text(subtitle, color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily)
+                Text(title, color = SalatOnSurface, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily)
+                Text(subtitle, color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
             }
             SelectionIndicator(isSelected)
         }
@@ -222,18 +222,18 @@ private fun LocationStep(onAllowLocation: () -> Unit) {
             Icon(painterResource(R.drawable.ic_my_location), null, tint = SalatPrimary, modifier = Modifier.size(56.dp))
         }
         Spacer(Modifier.height(28.dp))
-        Text(stringResource(R.string.onboarding_location_title), color = SalatPrimary, fontSize = 28.sp, fontWeight = FontWeight.Bold, fontFamily = MontserratFamily, textAlign = TextAlign.Center)
+        Text(stringResource(R.string.onboarding_location_title), color = SalatPrimary, fontSize = 28.sp, fontWeight = FontWeight.Bold, fontFamily = AppTitleFontFamily, textAlign = TextAlign.Center)
         Spacer(Modifier.height(12.dp))
         Text(
             stringResource(R.string.onboarding_location_desc),
-            color = SalatOnSurfaceVariant, fontSize = 15.sp, fontFamily = InterFamily, textAlign = TextAlign.Center, lineHeight = 22.sp,
+            color = SalatOnSurfaceVariant, fontSize = 15.sp, fontFamily = AppUiFontFamily, textAlign = TextAlign.Center, lineHeight = 22.sp,
         )
         Spacer(Modifier.height(36.dp))
         PrimaryButton(text = stringResource(R.string.onboarding_allow_location), icon = R.drawable.ic_my_location, onClick = onAllowLocation)
         Spacer(Modifier.weight(1f))
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             Icon(painterResource(R.drawable.ic_check_circle_filled), null, tint = SalatOnSurfaceVariant, modifier = Modifier.size(14.dp))
-            Text(stringResource(R.string.onboarding_location_privacy), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily)
+            Text(stringResource(R.string.onboarding_location_privacy), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily)
         }
         Spacer(Modifier.height(24.dp))
     }
@@ -258,9 +258,9 @@ private fun NotificationsStep(
                 Icon(painterResource(R.drawable.ic_notifications), null, tint = SalatOnPrimary, modifier = Modifier.size(44.dp))
             }
             Spacer(Modifier.height(24.dp))
-            Text(stringResource(R.string.onboarding_notifications_title), color = SalatPrimary, fontSize = 26.sp, fontWeight = FontWeight.Bold, fontFamily = MontserratFamily, textAlign = TextAlign.Center)
+            Text(stringResource(R.string.onboarding_notifications_title), color = SalatPrimary, fontSize = 26.sp, fontWeight = FontWeight.Bold, fontFamily = AppTitleFontFamily, textAlign = TextAlign.Center)
             Spacer(Modifier.height(8.dp))
-            Text(stringResource(R.string.onboarding_notifications_subtitle), color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = InterFamily, textAlign = TextAlign.Center)
+            Text(stringResource(R.string.onboarding_notifications_subtitle), color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = AppUiFontFamily, textAlign = TextAlign.Center)
         }
 
         Spacer(Modifier.height(36.dp))
@@ -300,7 +300,7 @@ private fun SelectableRow(icon: Int, label: String, isSelected: Boolean, onClick
             ) {
                 Icon(painterResource(icon), null, tint = SalatOnSecondaryContainer, modifier = Modifier.size(20.dp))
             }
-            Text(label, color = SalatOnSurface, fontSize = 16.sp, fontWeight = FontWeight.Medium, fontFamily = InterFamily, modifier = Modifier.weight(1f))
+            Text(label, color = SalatOnSurface, fontSize = 16.sp, fontWeight = FontWeight.Medium, fontFamily = AppUiFontFamily, modifier = Modifier.weight(1f))
             SelectionIndicator(isSelected)
         }
     }
@@ -339,7 +339,7 @@ private fun ToggleRow(icon: Int, label: String, checked: Boolean, onCheckedChang
                 ) {
                     Icon(painterResource(icon), null, tint = SalatOnSecondaryContainer, modifier = Modifier.size(20.dp))
                 }
-                Text(label, color = SalatOnSurface, fontSize = 16.sp, fontWeight = FontWeight.Medium, fontFamily = InterFamily)
+                Text(label, color = SalatOnSurface, fontSize = 16.sp, fontWeight = FontWeight.Medium, fontFamily = AppUiFontFamily)
             }
             Switch(
                 checked         = checked,
@@ -385,7 +385,7 @@ private fun PrimaryButton(text: String, icon: Int? = null, enabled: Boolean = tr
         shape    = RoundedCornerShape(16.dp),
         colors   = ButtonDefaults.buttonColors(containerColor = SalatPrimary, contentColor = SalatOnPrimary),
     ) {
-        Text(text, fontFamily = MontserratFamily, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+        Text(text, fontFamily = AppTitleFontFamily, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
         if (icon != null) {
             Spacer(Modifier.width(8.dp))
             Icon(painterResource(icon), null, modifier = Modifier.size(20.dp))

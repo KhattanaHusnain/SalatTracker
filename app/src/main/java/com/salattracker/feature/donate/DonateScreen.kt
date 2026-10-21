@@ -34,8 +34,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salattracker.R
-import com.salattracker.core.theme.InterFamily
-import com.salattracker.core.theme.MontserratFamily
+import com.salattracker.core.theme.AppUiFontFamily
+import com.salattracker.core.theme.AppTitleFontFamily
 import com.salattracker.core.theme.SalatOnPrimary
 import com.salattracker.core.theme.SalatOnSurface
 import com.salattracker.core.theme.SalatOnSurfaceVariant
@@ -75,14 +75,14 @@ fun DonateScreen(onContactClick: () -> Unit) {
                     color = SalatPrimary,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    fontFamily = MontserratFamily,
+                    fontFamily = AppTitleFontFamily,
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
                     stringResource(R.string.donate_subtitle),
                     color = SalatOnSurfaceVariant,
                     fontSize = 13.sp,
-                    fontFamily = InterFamily,
+                    fontFamily = AppUiFontFamily,
                 )
             }
         }
@@ -91,7 +91,7 @@ fun DonateScreen(onContactClick: () -> Unit) {
                 stringResource(R.string.donate_body),
                 color = SalatOnSurface,
                 fontSize = 14.sp,
-                fontFamily = InterFamily,
+                fontFamily = AppUiFontFamily,
                 lineHeight = 20.sp,
             )
         }
@@ -121,7 +121,7 @@ fun DonateScreen(onContactClick: () -> Unit) {
                 stringResource(R.string.donate_wallet_available_label),
                 color = SalatOnSurfaceVariant,
                 fontSize = 12.sp,
-                fontFamily = InterFamily,
+                fontFamily = AppUiFontFamily,
             )
             Spacer(Modifier.height(8.dp))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -133,7 +133,7 @@ fun DonateScreen(onContactClick: () -> Unit) {
                 stringResource(R.string.donate_contact_hint),
                 color = SalatOnSurfaceVariant,
                 fontSize = 13.sp,
-                fontFamily = InterFamily,
+                fontFamily = AppUiFontFamily,
             )
             Spacer(Modifier.height(12.dp))
             Button(
@@ -141,7 +141,7 @@ fun DonateScreen(onContactClick: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = SalatPrimary, contentColor = SalatOnPrimary),
             ) {
-                Text(stringResource(R.string.donate_contact_button), fontFamily = InterFamily, fontWeight = FontWeight.Medium)
+                Text(stringResource(R.string.donate_contact_button), fontFamily = AppUiFontFamily, fontWeight = FontWeight.Medium)
             }
         }
     }
@@ -150,9 +150,9 @@ fun DonateScreen(onContactClick: () -> Unit) {
 @Composable
 private fun SectionHeading(title: String, trailing: String?) {
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-        Text(title, color = SalatPrimary, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
+        Text(title, color = SalatPrimary, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
         if (trailing != null) {
-            Text(trailing, color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily)
+            Text(trailing, color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
         }
     }
 }
@@ -164,8 +164,8 @@ private fun CopyableRow(label: String, value: String) {
     val copiedMessage = stringResource(R.string.donate_copied)
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(label, color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily)
-            Text(value, color = SalatOnSurface, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
+            Text(label, color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
+            Text(value, color = SalatOnSurface, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
         }
         IconButton(onClick = {
             clipboardManager.setText(AnnotatedString(value))
@@ -190,7 +190,7 @@ private fun ProviderChip(label: String) {
             color = SalatOnSurfaceVariant,
             fontSize = 11.sp,
             fontWeight = FontWeight.Medium,
-            fontFamily = InterFamily,
+            fontFamily = AppUiFontFamily,
         )
     }
 }

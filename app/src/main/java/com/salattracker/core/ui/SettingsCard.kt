@@ -16,7 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.salattracker.core.theme.InterFamily
+import com.salattracker.core.theme.AppUiFontFamily
 import com.salattracker.core.theme.SalatOnPrimary
 import com.salattracker.core.theme.SalatOutline
 import com.salattracker.core.theme.SalatOutlineVariant
@@ -53,7 +53,7 @@ fun SettingsSectionLabel(text: String, modifier: Modifier = Modifier) {
         color         = SalatPrimaryContainer,
         fontSize      = 11.sp,
         fontWeight    = FontWeight.SemiBold,
-        fontFamily    = InterFamily,
+        fontFamily    = AppUiFontFamily,
         letterSpacing = 1.5.sp,
     )
 }

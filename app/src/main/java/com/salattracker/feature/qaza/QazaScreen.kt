@@ -116,7 +116,7 @@ fun QazaScreen(
             ) {
                 Text(
                     text = if (undo.count == 1) stringResource(R.string.qaza_made_up_one) else stringResource(R.string.qaza_made_up_many, undo.count),
-                    fontFamily = InterFamily, fontSize = 14.sp,
+                    fontFamily = AppUiFontFamily, fontSize = 14.sp,
                 )
             }
         }
@@ -128,7 +128,7 @@ fun QazaScreen(
                 action = { TextButton(onClick = onErrorDismiss) { Text(stringResource(R.string.action_ok), color = SalatPrimaryFixed) } },
                 containerColor = SalatInverseSurface,
                 contentColor = SalatInverseOnSurface,
-            ) { Text(message, fontFamily = InterFamily, fontSize = 14.sp) }
+            ) { Text(message, fontFamily = AppUiFontFamily, fontSize = 14.sp) }
         }
     }
 }
@@ -154,12 +154,12 @@ private fun ProgressCard(uiState: QazaUiState, onLogClick: () -> Unit, onAddMiss
 
             val progress = uiState.progress
             if (!uiState.hasOutstanding) {
-                Text(stringResource(R.string.qaza_all_caught_up), color = SalatPrimary, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily)
+                Text(stringResource(R.string.qaza_all_caught_up), color = SalatPrimary, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily)
             } else {
                 Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(stringResource(R.string.qaza_outstanding), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily, modifier = Modifier.padding(bottom = 6.dp))
+                    Text(stringResource(R.string.qaza_outstanding), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily, modifier = Modifier.padding(bottom = 6.dp))
                 }
-                Text("${progress.outstanding}", color = SalatPrimary, fontSize = 34.sp, fontWeight = FontWeight.Bold, fontFamily = MontserratFamily)
+                Text("${progress.outstanding}", color = SalatPrimary, fontSize = 34.sp, fontWeight = FontWeight.Bold, fontFamily = AppTitleFontFamily)
             }
 
             Spacer(Modifier.height(10.dp))
@@ -173,7 +173,7 @@ private fun ProgressCard(uiState: QazaUiState, onLogClick: () -> Unit, onAddMiss
             Spacer(Modifier.height(6.dp))
             Text(
                 text = stringResource(R.string.qaza_made_up_of, progress.madeUpTotal, progress.madeUpTotal + progress.outstanding),
-                color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily,
+                color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily,
             )
 
             Spacer(Modifier.height(16.dp))
@@ -187,7 +187,7 @@ private fun ProgressCard(uiState: QazaUiState, onLogClick: () -> Unit, onAddMiss
             Spacer(Modifier.height(10.dp))
             Text(
                 text = etaText(progress.eta, progress.hasEnoughSamplesForEta),
-                color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily,
+                color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily,
             )
 
             if (uiState.hasOutstanding) {
@@ -198,12 +198,12 @@ private fun ProgressCard(uiState: QazaUiState, onLogClick: () -> Unit, onAddMiss
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = SalatPrimary, contentColor = SalatOnPrimary),
                 ) {
-                    Text(stringResource(R.string.qaza_action_log), fontFamily = InterFamily, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.qaza_action_log), fontFamily = AppUiFontFamily, fontWeight = FontWeight.SemiBold)
                 }
             }
             Spacer(Modifier.height(8.dp))
             TextButton(onClick = onAddMissedClick, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.qaza_action_add_missed), color = SalatPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
+                Text(stringResource(R.string.qaza_action_add_missed), color = SalatPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
             }
         }
     }
@@ -247,8 +247,8 @@ private fun PrayerTilesRow(pendingByPrayer: Map<PrayerType, Int>, isLoading: Boo
                         val alpha = if (count == 0) 0.4f else 1f
                         Icon(painterResource(type.iconRes), null, tint = SalatSecondary.copy(alpha = alpha), modifier = Modifier.size(18.dp))
                         Spacer(Modifier.height(4.dp))
-                        Text(type.shortLabel(), color = SalatOnSurfaceVariant.copy(alpha = alpha), fontSize = 10.sp, fontFamily = InterFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        Text("$count", color = if (count == 0) SalatOutline else SalatPrimary, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily)
+                        Text(type.shortLabel(), color = SalatOnSurfaceVariant.copy(alpha = alpha), fontSize = 10.sp, fontFamily = AppUiFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text("$count", color = if (count == 0) SalatOutline else SalatPrimary, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily)
                     }
                 }
             }
@@ -273,13 +273,13 @@ private fun LatestMissedSection(
     ) {
         Text(
             text = stringResource(R.string.qaza_latest_missed),
-            color = SalatOnSurface, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily,
+            color = SalatOnSurface, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily,
         )
         if (!uiState.isLoading && uiState.totalPendingDays > 0) {
             TextButton(onClick = onViewAllClick) {
                 Text(
                     text = stringResource(R.string.qaza_view_all_count, uiState.progress.outstanding),
-                    color = SalatPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily,
+                    color = SalatPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily,
                 )
             }
         }
@@ -331,7 +331,7 @@ private fun QazaEmptyState() {
         )
         Text(
             text = stringResource(R.string.qaza_all_caught_up),
-            color = SalatPrimary, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily,
+            color = SalatPrimary, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily,
         )
     }
 }
@@ -357,7 +357,7 @@ private fun RecentlyMadeUpSection(
         ) {
             Text(
                 text = stringResource(R.string.qaza_recently_made_up, entries.size),
-                color = SalatOnSurfaceVariant, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily,
+                color = SalatOnSurfaceVariant, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily,
             )
             Icon(
                 painterResource(R.drawable.ic_expand_more), null, tint = SalatOnSurfaceVariant,
@@ -387,14 +387,14 @@ private fun RecentMadeUpRow(entry: RecentMadeUpUi, onUndo: () -> Unit) {
         ) {
             Icon(painterResource(entry.slot.prayerType.iconRes), null, tint = SalatSecondary, modifier = Modifier.size(20.dp))
             Column(Modifier.weight(1f)) {
-                Text(entry.slot.prayerType.label(), color = SalatOnSurface, fontSize = 14.sp, fontWeight = FontWeight.Medium, fontFamily = InterFamily)
+                Text(entry.slot.prayerType.label(), color = SalatOnSurface, fontSize = 14.sp, fontWeight = FontWeight.Medium, fontFamily = AppUiFontFamily)
                 Text(
                     stringResource(R.string.qaza_made_up_on, entry.madeUpOn.format(dateFormatter)),
-                    color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily,
+                    color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily,
                 )
             }
             TextButton(onClick = onUndo) {
-                Text(stringResource(R.string.qaza_undo), color = SalatPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
+                Text(stringResource(R.string.qaza_undo), color = SalatPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
             }
         }
     }

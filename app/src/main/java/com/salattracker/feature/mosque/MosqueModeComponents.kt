@@ -46,8 +46,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salattracker.R
-import com.salattracker.core.theme.InterFamily
-import com.salattracker.core.theme.MontserratFamily
+import com.salattracker.core.theme.AppUiFontFamily
+import com.salattracker.core.theme.AppTitleFontFamily
 import com.salattracker.core.theme.SalatError
 import com.salattracker.core.theme.SalatErrorContainer
 import com.salattracker.core.theme.SalatOnErrorContainer
@@ -79,11 +79,11 @@ fun MosqueNoticeCard(
         Column(Modifier.padding(14.dp)) {
             Text(
                 text, color = if (isError) SalatOnErrorContainer else SalatOnSecondaryContainer,
-                fontSize = 13.sp, fontFamily = InterFamily,
+                fontSize = 13.sp, fontFamily = AppUiFontFamily,
             )
             if (actionLabel != null) {
                 TextButton(onClick = onAction, modifier = Modifier.align(Alignment.End)) {
-                    Text(actionLabel, color = SalatPrimary, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
+                    Text(actionLabel, color = SalatPrimary, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
                 }
             }
         }
@@ -106,11 +106,11 @@ fun MosqueRow(name: String, radiusMeters: Int, onClick: () -> Unit) {
         Icon(painterResource(R.drawable.ic_mosque_outline), null, tint = SalatPrimary, modifier = Modifier.size(24.dp))
         Text(
             name, modifier = Modifier.weight(1f), color = SalatOnSurface, fontSize = 16.sp,
-            fontFamily = InterFamily, maxLines = 1, overflow = TextOverflow.Ellipsis,
+            fontFamily = AppUiFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis,
         )
         Text(
             stringResource(R.string.mosque_distance_meters, radiusMeters),
-            color = SalatOnSurfaceVariant, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily,
+            color = SalatOnSurfaceVariant, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily,
         )
         Icon(painterResource(R.drawable.ic_chevron_right), null, tint = SalatOnSurfaceVariant, modifier = Modifier.size(18.dp))
     }
@@ -138,7 +138,7 @@ fun MosqueEditSheet(
         Column(Modifier.fillMaxWidth().imePadding().padding(horizontal = 20.dp).padding(bottom = 24.dp)) {
             Text(
                 stringResource(if (isEditing) R.string.mosque_sheet_edit_title else R.string.mosque_sheet_add_title),
-                color = SalatPrimary, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily,
+                color = SalatPrimary, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily,
             )
             Spacer(Modifier.height(16.dp))
 
@@ -148,9 +148,9 @@ fun MosqueEditSheet(
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 isError = draft.nameMissing,
-                label = { Text(stringResource(R.string.mosque_name_label), fontFamily = InterFamily) },
+                label = { Text(stringResource(R.string.mosque_name_label), fontFamily = AppUiFontFamily) },
                 supportingText = if (draft.nameMissing) {
-                    { Text(stringResource(R.string.mosque_name_required), fontFamily = InterFamily) }
+                    { Text(stringResource(R.string.mosque_name_required), fontFamily = AppUiFontFamily) }
                 } else null,
                 trailingIcon = {
                     IconButton(onClick = { onOpenInMaps(draft.latitude, draft.longitude, draft.name) }) {
@@ -163,7 +163,7 @@ fun MosqueEditSheet(
                     }
                 },
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                textStyle = LocalTextStyle.current.copy(fontFamily = InterFamily, fontSize = 14.sp, color = SalatOnSurface),
+                textStyle = LocalTextStyle.current.copy(fontFamily = AppUiFontFamily, fontSize = 14.sp, color = SalatOnSurface),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = SalatPrimary,
                     unfocusedBorderColor = SalatOutlineVariant,
@@ -174,7 +174,7 @@ fun MosqueEditSheet(
             )
 
             Spacer(Modifier.height(16.dp))
-            Text(stringResource(R.string.mosque_radius_label), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily)
+            Text(stringResource(R.string.mosque_radius_label), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily)
             Spacer(Modifier.height(8.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 MosqueMode.RADIUS_OPTIONS_METERS.forEach { radius ->
@@ -187,7 +187,7 @@ fun MosqueEditSheet(
                 }
             }
             Spacer(Modifier.height(6.dp))
-            Text(stringResource(R.string.mosque_radius_hint), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily)
+            Text(stringResource(R.string.mosque_radius_hint), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
 
             Spacer(Modifier.height(20.dp))
             Button(
@@ -195,12 +195,12 @@ fun MosqueEditSheet(
                 modifier = Modifier.fillMaxWidth().height(52.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = SalatPrimary, contentColor = SalatOnPrimary),
-            ) { Text(stringResource(R.string.mosque_save), fontFamily = InterFamily, fontWeight = FontWeight.SemiBold) }
+            ) { Text(stringResource(R.string.mosque_save), fontFamily = AppUiFontFamily, fontWeight = FontWeight.SemiBold) }
 
             if (isEditing) {
                 Spacer(Modifier.height(4.dp))
                 TextButton(onClick = onDelete, modifier = Modifier.fillMaxWidth()) {
-                    Text(stringResource(R.string.action_delete), color = SalatError, fontFamily = InterFamily, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.action_delete), color = SalatError, fontFamily = AppUiFontFamily, fontWeight = FontWeight.SemiBold)
                 }
             }
         }
@@ -221,7 +221,7 @@ private fun RadiusChip(label: String, isSelected: Boolean, onClick: () -> Unit, 
             modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp),
             textAlign = TextAlign.Center,
             color = if (isSelected) SalatOnPrimary else SalatOnSurfaceVariant,
-            fontSize = 13.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily,
+            fontSize = 13.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily,
         )
     }
 }
@@ -240,7 +240,7 @@ fun NearbyMosquesSheet(
         Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(bottom = 16.dp)) {
             Text(
                 stringResource(R.string.mosque_nearby_title),
-                color = SalatPrimary, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily,
+                color = SalatPrimary, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily,
             )
             Spacer(Modifier.height(12.dp))
 
@@ -253,16 +253,16 @@ fun NearbyMosquesSheet(
                         NearbyFailure.LOCATION_UNAVAILABLE -> stringResource(R.string.mosque_nearby_location_failed)
                         NearbyFailure.SEARCH_FAILED -> stringResource(R.string.mosque_nearby_failed)
                     }
-                    Text(message, color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = InterFamily, textAlign = TextAlign.Center)
+                    Text(message, color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = AppUiFontFamily, textAlign = TextAlign.Center)
                     Spacer(Modifier.height(8.dp))
                     TextButton(onClick = onRetry) {
-                        Text(stringResource(R.string.mosque_nearby_retry), color = SalatPrimary, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
+                        Text(stringResource(R.string.mosque_nearby_retry), color = SalatPrimary, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
                     }
                 }
                 state.results.isEmpty() -> Text(
                     stringResource(R.string.mosque_nearby_empty),
                     modifier = Modifier.padding(vertical = 16.dp),
-                    color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = InterFamily,
+                    color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = AppUiFontFamily,
                 )
                 else -> LazyColumn(Modifier.heightIn(max = 420.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     items(state.results) { item -> NearbyRow(item, onClick = { onSelect(item) }) }
@@ -272,7 +272,7 @@ fun NearbyMosquesSheet(
             Spacer(Modifier.height(12.dp))
             Text(
                 stringResource(R.string.mosque_osm_credit),
-                color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily,
+                color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily,
             )
         }
     }
@@ -293,18 +293,18 @@ private fun NearbyRow(item: NearbyItem, onClick: () -> Unit) {
             Text(
                 item.mosque.name ?: stringResource(R.string.mosque_nearby_unnamed),
                 color = if (item.alreadyAdded) SalatOnSurfaceVariant else SalatOnSurface,
-                fontSize = 14.sp, fontWeight = FontWeight.Medium, fontFamily = InterFamily,
+                fontSize = 14.sp, fontWeight = FontWeight.Medium, fontFamily = AppUiFontFamily,
                 maxLines = 2, overflow = TextOverflow.Ellipsis,
             )
             Text(
                 stringResource(R.string.mosque_distance_meters, item.mosque.distanceMeters),
-                color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily,
+                color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily,
             )
         }
         if (item.alreadyAdded) {
             Text(
                 stringResource(R.string.mosque_nearby_added),
-                color = SalatPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily,
+                color = SalatPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily,
             )
         }
     }
@@ -321,13 +321,13 @@ fun BackgroundLocationDisclosureDialog(onContinue: () -> Unit, onDismiss: () -> 
         title = {
             Text(
                 stringResource(R.string.mosque_disclosure_title),
-                color = SalatOnSurface, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily,
+                color = SalatOnSurface, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily,
             )
         },
         text = {
             Text(
                 stringResource(R.string.mosque_disclosure_body),
-                color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = InterFamily,
+                color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = AppUiFontFamily,
             )
         },
         confirmButton = {
@@ -335,10 +335,10 @@ fun BackgroundLocationDisclosureDialog(onContinue: () -> Unit, onDismiss: () -> 
                 onClick = onContinue,
                 colors = ButtonDefaults.buttonColors(containerColor = SalatPrimary, contentColor = SalatOnPrimary),
                 shape = RoundedCornerShape(12.dp),
-            ) { Text(stringResource(R.string.action_continue), fontFamily = InterFamily, fontWeight = FontWeight.SemiBold) }
+            ) { Text(stringResource(R.string.action_continue), fontFamily = AppUiFontFamily, fontWeight = FontWeight.SemiBold) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel), color = SalatOnSurfaceVariant, fontFamily = InterFamily) }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel), color = SalatOnSurfaceVariant, fontFamily = AppUiFontFamily) }
         },
     )
 }
@@ -359,14 +359,14 @@ fun DeleteMosqueDialog(mosqueName: String, onConfirm: () -> Unit, onDismiss: () 
         title = {
             Text(
                 stringResource(R.string.mosque_delete_title),
-                color = SalatOnSurface, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily,
+                color = SalatOnSurface, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily,
             )
         },
         text = {
             Column {
-                Text(stringResource(R.string.mosque_delete_desc), color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = InterFamily)
+                Text(stringResource(R.string.mosque_delete_desc), color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = AppUiFontFamily)
                 Spacer(Modifier.height(12.dp))
-                Text(mosqueName, color = SalatOnSurface, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
+                Text(mosqueName, color = SalatOnSurface, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
             }
         },
         confirmButton = {
@@ -374,10 +374,10 @@ fun DeleteMosqueDialog(mosqueName: String, onConfirm: () -> Unit, onDismiss: () 
                 onClick = onConfirm,
                 colors = ButtonDefaults.buttonColors(containerColor = SalatError, contentColor = SalatOnPrimary),
                 shape = RoundedCornerShape(12.dp),
-            ) { Text(stringResource(R.string.action_delete), fontFamily = InterFamily, fontWeight = FontWeight.SemiBold) }
+            ) { Text(stringResource(R.string.action_delete), fontFamily = AppUiFontFamily, fontWeight = FontWeight.SemiBold) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel), color = SalatOnSurfaceVariant, fontFamily = InterFamily) }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel), color = SalatOnSurfaceVariant, fontFamily = AppUiFontFamily) }
         },
     )
 }

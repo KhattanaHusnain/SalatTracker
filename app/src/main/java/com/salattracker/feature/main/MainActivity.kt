@@ -522,7 +522,7 @@ private fun TopBar(
                 color      = SalatPrimary,
                 fontSize   = 20.sp,
                 fontWeight = FontWeight.SemiBold,
-                fontFamily = MontserratFamily,
+                fontFamily = AppTitleFontFamily,
             )
         },
         navigationIcon = {
@@ -551,7 +551,7 @@ private fun TopBar(
                     text = stringResource(R.string.quran_mushaf_page_label, controls.pageNumber),
                     color = SalatOnSurface,
                     fontSize = 12.sp,
-                    fontFamily = InterFamily,
+                    fontFamily = AppUiFontFamily,
                 )
                 IconButton(onClick = controls.onNextPage, enabled = controls.hasNextPage) {
                     Icon(painterResource(R.drawable.ic_chevron_right), stringResource(R.string.quran_mushaf_next_page), tint = SalatPrimary)
@@ -617,7 +617,7 @@ private fun CalendarViewMenu(
                 verticalAlignment     = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(2.dp),
             ) {
-                Text(currentView.label(), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
+                Text(currentView.label(), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
                 Icon(
                     painter            = painterResource(R.drawable.ic_expand_more),
                     contentDescription = stringResource(R.string.cd_change_view),
@@ -658,7 +658,7 @@ private fun SalatBottomNavBar(
                     Text(
                         stringResource(route.labelRes),
                         fontSize   = 11.sp,
-                        fontFamily = InterFamily,
+                        fontFamily = AppUiFontFamily,
                         fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                     )
                 },

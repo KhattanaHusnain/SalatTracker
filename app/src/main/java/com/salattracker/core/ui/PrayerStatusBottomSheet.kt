@@ -97,14 +97,14 @@ fun PrayerStatusBottomSheet(
                     color = SalatPrimary,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.SemiBold,
-                    fontFamily = MontserratFamily,
+                    fontFamily = AppTitleFontFamily,
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = stringResource(R.string.sheet_update_status),
                     color = SalatOnSurfaceVariant,
                     fontSize = 14.sp,
-                    fontFamily = InterFamily,
+                    fontFamily = AppUiFontFamily,
                 )
             }
 
@@ -142,7 +142,7 @@ fun PrayerStatusBottomSheet(
                         color = SalatOnPrimary,
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(stringResource(R.string.sheet_updating), fontFamily = InterFamily, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.sheet_updating), fontFamily = AppUiFontFamily, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                 } else {
                     Icon(
                         painter = painterResource(R.drawable.ic_save),
@@ -150,7 +150,7 @@ fun PrayerStatusBottomSheet(
                         modifier = Modifier.size(20.dp),
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(stringResource(R.string.sheet_save_status), fontFamily = InterFamily, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.sheet_save_status), fontFamily = AppUiFontFamily, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
         }
@@ -199,7 +199,7 @@ private fun StatusOptionRow(
             color = SalatOnSurface,
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
-            fontFamily = InterFamily,
+            fontFamily = AppUiFontFamily,
         )
         if (isSelected) {
             Icon(

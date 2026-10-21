@@ -139,13 +139,13 @@ private fun ReminderCard(
                             color      = if (setting.enabled) SalatPrimary else SalatOnSurfaceVariant,
                             fontSize   = 16.sp,
                             fontWeight = FontWeight.Medium,
-                            fontFamily = InterFamily,
+                            fontFamily = AppUiFontFamily,
                         )
                         Text(
                             text       = setting.prayerTime?.format(timeFormatter) ?: "--:--",
                             color      = SalatOnSurfaceVariant,
                             fontSize   = 12.sp,
-                            fontFamily = InterFamily,
+                            fontFamily = AppUiFontFamily,
                         )
                     }
                 }
@@ -234,13 +234,13 @@ private fun JumuahCard(
                         color      = SalatPrimary,
                         fontSize   = 16.sp,
                         fontWeight = FontWeight.Medium,
-                        fontFamily = InterFamily,
+                        fontFamily = AppUiFontFamily,
                     )
                     Text(
                         text       = stringResource(R.string.reminders_jumuah_desc),
                         color      = SalatOnSurfaceVariant,
                         fontSize   = 12.sp,
-                        fontFamily = InterFamily,
+                        fontFamily = AppUiFontFamily,
                     )
                 }
                 Switch(
@@ -261,7 +261,7 @@ private fun JumuahCard(
                     text       = stringResource(R.string.reminders_jumuah_lead),
                     color      = SalatOnSurfaceVariant,
                     fontSize   = 14.sp,
-                    fontFamily = InterFamily,
+                    fontFamily = AppUiFontFamily,
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     JUMUAH_LEAD_OPTIONS.forEach { minutes ->
@@ -291,7 +291,7 @@ private fun JumuahLeadChip(minutes: Int, isSelected: Boolean, onClick: () -> Uni
             color      = if (isSelected) SalatOnPrimaryContainer else SalatOnSurfaceVariant,
             fontSize   = 12.sp,
             fontWeight = FontWeight.SemiBold,
-            fontFamily = InterFamily,
+            fontFamily = AppUiFontFamily,
         )
     }
 }
@@ -312,7 +312,7 @@ private fun OffsetRow(enabled: Boolean, offsetMinutes: String, onChanged: (Strin
         verticalAlignment     = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Text(stringResource(R.string.settings_minutes_offset), color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = InterFamily)
+        Text(stringResource(R.string.settings_minutes_offset), color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = AppUiFontFamily)
         Surface(
             onClick  = { showPicker = true },
             enabled  = enabled,
@@ -325,7 +325,7 @@ private fun OffsetRow(enabled: Boolean, offsetMinutes: String, onChanged: (Strin
                 modifier   = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).widthIn(min = 24.dp),
                 color      = if (enabled) SalatOnSurface else SalatOnSurfaceVariant.copy(alpha = 0.4f),
                 fontSize   = 14.sp,
-                fontFamily = InterFamily,
+                fontFamily = AppUiFontFamily,
                 textAlign  = TextAlign.Center,
             )
         }
@@ -372,7 +372,7 @@ private fun OffsetPickerDialog(
                     color      = SalatPrimary,
                     fontSize   = 16.sp,
                     fontWeight = FontWeight.SemiBold,
-                    fontFamily = MontserratFamily,
+                    fontFamily = AppTitleFontFamily,
                 )
                 LazyColumn(
                     state    = listState,
@@ -391,7 +391,7 @@ private fun OffsetPickerDialog(
                                 color      = if (selected) SalatOnPrimaryContainer else SalatOnSurfaceVariant,
                                 fontSize   = 15.sp,
                                 fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-                                fontFamily = InterFamily,
+                                fontFamily = AppUiFontFamily,
                                 textAlign  = TextAlign.Center,
                             )
                         }
@@ -405,7 +405,7 @@ private fun OffsetPickerDialog(
 @Composable
 private fun SnoozeRow(selected: Int, onChanged: (Int) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(stringResource(R.string.reminders_snooze_length), color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = InterFamily)
+        Text(stringResource(R.string.reminders_snooze_length), color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = AppUiFontFamily)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             SNOOZE_OPTIONS.forEach { minutes ->
                 SnoozeChip(minutes = minutes, isSelected = selected == minutes, onClick = { onChanged(minutes) })
@@ -428,7 +428,7 @@ private fun SnoozeChip(minutes: Int, isSelected: Boolean, onClick: () -> Unit) {
             color      = if (isSelected) SalatOnPrimaryContainer else SalatOnSurfaceVariant,
             fontSize   = 12.sp,
             fontWeight = FontWeight.SemiBold,
-            fontFamily = InterFamily,
+            fontFamily = AppUiFontFamily,
         )
     }
 }
@@ -440,7 +440,7 @@ private fun SwitchDetailRow(label: String, checked: Boolean, onChanged: (Boolean
         verticalAlignment     = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Text(label, color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = InterFamily)
+        Text(label, color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = AppUiFontFamily)
         Switch(
             checked         = checked,
             onCheckedChange = onChanged,
@@ -478,9 +478,9 @@ private fun SoundRow(
         verticalAlignment     = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Text(stringResource(R.string.reminders_sound), color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = InterFamily)
+        Text(stringResource(R.string.reminders_sound), color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = AppUiFontFamily)
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(label, color = SalatPrimary, fontSize = 14.sp, fontFamily = InterFamily, maxLines = 1)
+            Text(label, color = SalatPrimary, fontSize = 14.sp, fontFamily = AppUiFontFamily, maxLines = 1)
             Icon(painterResource(R.drawable.ic_chevron_right), null, tint = SalatOnSurfaceVariant, modifier = Modifier.size(16.dp))
         }
     }
@@ -575,7 +575,7 @@ private fun SoundChooserDialog(
                     color      = SalatPrimary,
                     fontSize   = 16.sp,
                     fontWeight = FontWeight.SemiBold,
-                    fontFamily = MontserratFamily,
+                    fontFamily = AppTitleFontFamily,
                 )
                 if (isRingerSilent) {
                     Row(
@@ -593,7 +593,7 @@ private fun SoundChooserDialog(
                             text       = stringResource(R.string.reminders_sound_silenced_banner),
                             color      = SalatOnSurfaceVariant,
                             fontSize   = 12.sp,
-                            fontFamily = InterFamily,
+                            fontFamily = AppUiFontFamily,
                         )
                     }
                     Spacer(modifier = Modifier.height(8.dp))
@@ -645,7 +645,7 @@ private fun SoundChoiceRow(
             color      = if (selected) SalatPrimary else SalatOnSurface,
             fontSize   = 15.sp,
             fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-            fontFamily = InterFamily,
+            fontFamily = AppUiFontFamily,
         )
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             when {

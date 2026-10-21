@@ -4,6 +4,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -32,6 +33,22 @@ val InterFamily = FontFamily(
 // translation text, replacing the plain system-fallback rendering used until now.
 val AmiriQuranFamily = FontFamily(Font(R.font.amiri_quran, FontWeight.Normal))
 val NastaliqUrduFamily = FontFamily(Font(R.font.noto_nastaliq_urdu, FontWeight.Normal))
+
+/**
+ * The Urdu translations use Noto Nastaliq, so Urdu-localized app chrome should use the same
+ * familiar, legible script rather than falling back to Inter/Montserrat.  Keeping the switch
+ * here gives every ordinary app label the appropriate face while preserving the dedicated
+ * Arabic Quran font above.
+ */
+val AppUiFontFamily: FontFamily
+    @Composable get() = if (LocalConfiguration.current.locales[0]?.language == "ur") {
+        NastaliqUrduFamily
+    } else {
+        InterFamily
+    }
+
+val AppTitleFontFamily: FontFamily
+    @Composable get() = AppUiFontFamily
 
 // ── Material 3 color schemes ──────────────────────────────────────────────────
 

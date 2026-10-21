@@ -98,7 +98,7 @@ fun BulkUpdateScreen(
                     Text(
                         text = stringResource(if (allSelected) R.string.action_deselect_all else R.string.action_select_all),
                         color = SalatPrimary,
-                        fontFamily = InterFamily,
+                        fontFamily = AppUiFontFamily,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 12.sp,
                     )
@@ -130,7 +130,7 @@ fun BulkUpdateScreen(
                 ),
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(stringResource(R.string.bulk_apply_changes), fontFamily = MontserratFamily, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                    Text(stringResource(R.string.bulk_apply_changes), fontFamily = AppTitleFontFamily, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
                     val prayersPart = pluralStringResource(R.plurals.bulk_prayers_count, uiState.selectedPrayers.size, uiState.selectedPrayers.size)
                     val daysPart = pluralStringResource(R.plurals.bulk_days_count, uiState.dayCount, uiState.dayCount)
                     Text(
@@ -139,7 +139,7 @@ fun BulkUpdateScreen(
                             stringResource(uiState.selectedStatus.labelRes).uppercase(),
                             "$prayersPart $daysPart",
                         ),
-                        fontFamily = InterFamily,
+                        fontFamily = AppUiFontFamily,
                         fontSize   = 10.sp,
                         letterSpacing = 1.sp,
                         color      = SalatPrimaryFixed.copy(alpha = 0.9f),
@@ -161,7 +161,7 @@ fun BulkUpdateScreen(
                         stringResource(R.string.bulk_applied_skipped, uiState.skippedFutureCount)
                     else
                         stringResource(R.string.bulk_applied),
-                    fontFamily = InterFamily,
+                    fontFamily = AppUiFontFamily,
                 )
             }
         }
@@ -171,7 +171,7 @@ fun BulkUpdateScreen(
                 action         = { TextButton(onClick = onErrorDismiss) { Text(stringResource(R.string.action_ok), color = SalatPrimaryFixed) } },
                 containerColor = SalatInverseSurface,
                 contentColor   = SalatInverseOnSurface,
-            ) { Text(msg, fontFamily = InterFamily) }
+            ) { Text(msg, fontFamily = AppUiFontFamily) }
         }
     }
 
@@ -217,7 +217,7 @@ private fun SectionLabel(text: String, modifier: Modifier = Modifier.fillMaxWidt
         color         = SalatOnSurfaceVariant,
         fontSize      = 11.sp,
         fontWeight    = FontWeight.SemiBold,
-        fontFamily    = InterFamily,
+        fontFamily    = AppUiFontFamily,
         letterSpacing = 1.5.sp,
     )
 }
@@ -250,7 +250,7 @@ private fun DurationTabs(selected: DurationOption, onSelected: (DurationOption) 
                     color      = if (isSelected) SalatPrimary else SalatOnSurfaceVariant,
                     fontSize   = 12.sp,
                     fontWeight = FontWeight.SemiBold,
-                    fontFamily = InterFamily,
+                    fontFamily = AppUiFontFamily,
                 )
             }
         }
@@ -297,13 +297,13 @@ private fun DateRangeCard(
                 verticalAlignment     = Alignment.CenterVertically,
             ) {
                 Column {
-                    Text(stringResource(R.string.bulk_date_range), color = SalatOutline, fontSize = 12.sp, fontFamily = InterFamily)
+                    Text(stringResource(R.string.bulk_date_range), color = SalatOutline, fontSize = 12.sp, fontFamily = AppUiFontFamily)
                     Text(
                         text       = rangeDisplayLabel(duration, rangeFrom, rangeTo),
                         color      = SalatOnSurface,
                         fontSize   = 20.sp,
                         fontWeight = FontWeight.SemiBold,
-                        fontFamily = MontserratFamily,
+                        fontFamily = AppTitleFontFamily,
                     )
                 }
                 if (isCustom) {
@@ -335,10 +335,10 @@ private fun DateRangeCard(
             if (isCustom) {
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     OutlinedButton(onClick = onPickStart, modifier = Modifier.weight(1f)) {
-                        Text(stringResource(R.string.bulk_start, rangeFrom.format(rangeLabelFormatter)), fontFamily = InterFamily, fontSize = 12.sp)
+                        Text(stringResource(R.string.bulk_start, rangeFrom.format(rangeLabelFormatter)), fontFamily = AppUiFontFamily, fontSize = 12.sp)
                     }
                     OutlinedButton(onClick = onPickEnd, modifier = Modifier.weight(1f)) {
-                        Text(stringResource(R.string.bulk_end, rangeTo.format(rangeLabelFormatter)), fontFamily = InterFamily, fontSize = 12.sp)
+                        Text(stringResource(R.string.bulk_end, rangeTo.format(rangeLabelFormatter)), fontFamily = AppUiFontFamily, fontSize = 12.sp)
                     }
                 }
             }
@@ -374,7 +374,7 @@ private fun MiniCalendarGrid(
                     textAlign = TextAlign.Center,
                     color     = SalatOutline,
                     fontSize  = 10.sp,
-                    fontFamily = InterFamily,
+                    fontFamily = AppUiFontFamily,
                 )
             }
         }
@@ -410,7 +410,7 @@ private fun MiniCalendarGrid(
                                 else       -> SalatOutline
                             },
                             fontSize = 11.sp,
-                            fontFamily = InterFamily,
+                            fontFamily = AppUiFontFamily,
                         )
                     }
                 }
@@ -438,7 +438,7 @@ private fun PrayerCheckRow(type: PrayerType, checked: Boolean, onToggle: () -> U
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Icon(painterResource(type.iconRes), null, tint = SalatPrimary)
-                Text(type.label(), color = SalatOnSurface, fontSize = 16.sp, fontFamily = InterFamily)
+                Text(type.label(), color = SalatOnSurface, fontSize = 16.sp, fontFamily = AppUiFontFamily)
             }
             Checkbox(
                 checked = checked,
@@ -490,7 +490,7 @@ private fun StatusChipRow(selected: PrayerStatus, onSelected: (PrayerStatus) -> 
                         text       = chip.status.label(),
                         color      = if (isSelected) SalatOnPrimaryContainer else SalatOnSurfaceVariant,
                         fontSize   = 12.sp,
-                        fontFamily = InterFamily,
+                        fontFamily = AppUiFontFamily,
                         fontWeight = FontWeight.SemiBold,
                     )
                 }
@@ -520,7 +520,7 @@ private fun BulkUpdateConfirmDialog(
             }
         },
         title = {
-            Text(stringResource(R.string.bulk_confirm_title), color = SalatOnSurface, fontFamily = MontserratFamily, fontWeight = FontWeight.SemiBold, fontSize = 20.sp)
+            Text(stringResource(R.string.bulk_confirm_title), color = SalatOnSurface, fontFamily = AppTitleFontFamily, fontWeight = FontWeight.SemiBold, fontSize = 20.sp)
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -536,7 +536,7 @@ private fun BulkUpdateConfirmDialog(
                     ),
                     color = SalatOnSurfaceVariant,
                     fontSize = 15.sp,
-                    fontFamily = InterFamily,
+                    fontFamily = AppUiFontFamily,
                     lineHeight = 22.sp,
                 )
                 Surface(
@@ -552,7 +552,7 @@ private fun BulkUpdateConfirmDialog(
                             text = stringResource(R.string.bulk_confirm_desc),
                             color = SalatOnErrorContainer,
                             fontSize = 11.sp,
-                            fontFamily = InterFamily,
+                            fontFamily = AppUiFontFamily,
                             lineHeight = 16.sp,
                         )
                     }
@@ -569,13 +569,13 @@ private fun BulkUpdateConfirmDialog(
                 if (uiState.isApplying) {
                     CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp, color = SalatOnPrimary)
                 } else {
-                    Text(stringResource(R.string.bulk_confirm_update), fontFamily = InterFamily, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.bulk_confirm_update), fontFamily = AppUiFontFamily, fontWeight = FontWeight.SemiBold)
                 }
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss, enabled = !uiState.isApplying) {
-                Text(stringResource(R.string.action_cancel), color = SalatOnSecondaryContainer, fontFamily = InterFamily, fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.action_cancel), color = SalatOnSecondaryContainer, fontFamily = AppUiFontFamily, fontWeight = FontWeight.SemiBold)
             }
         },
     )

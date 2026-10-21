@@ -62,7 +62,7 @@ fun EditGoalScreen(
             if (uiState.isSaving) {
                 CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp, color = SalatOnPrimary)
             } else {
-                Text(stringResource(R.string.editgoal_save), fontFamily = MontserratFamily, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                Text(stringResource(R.string.editgoal_save), fontFamily = AppTitleFontFamily, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
             }
         }
 
@@ -72,7 +72,7 @@ fun EditGoalScreen(
                 action         = { TextButton(onClick = onErrorDismiss) { Text(stringResource(R.string.action_ok), color = SalatPrimaryFixed) } },
                 containerColor = SalatInverseSurface,
                 contentColor   = SalatInverseOnSurface,
-            ) { Text(msg, fontFamily = InterFamily) }
+            ) { Text(msg, fontFamily = AppUiFontFamily) }
         }
         if (uiState.saveSuccess) {
             Snackbar(
@@ -80,7 +80,7 @@ fun EditGoalScreen(
                 action         = { TextButton(onClick = onClearSaveSuccess) { Text(stringResource(R.string.action_ok), color = SalatPrimary) } },
                 containerColor = SalatSecondaryContainer,
                 contentColor   = SalatOnSecondaryContainer,
-            ) { Text(stringResource(R.string.editgoal_updated), fontFamily = InterFamily) }
+            ) { Text(stringResource(R.string.editgoal_updated), fontFamily = AppUiFontFamily) }
         }
     }
 }

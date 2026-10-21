@@ -146,7 +146,7 @@ private fun QuranJumpDialog(
         title = {
             Text(
                 stringResource(R.string.quran_jump_title),
-                color = SalatOnSurface, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily,
+                color = SalatOnSurface, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily,
             )
         },
         text = {
@@ -175,14 +175,14 @@ private fun QuranJumpDialog(
                     label = {
                         Text(
                             stringResource(if (jumpType == QuranJumpType.PAGE) R.string.quran_jump_page_label else R.string.quran_jump_hizb_label),
-                            fontFamily = InterFamily,
+                            fontFamily = AppUiFontFamily,
                         )
                     },
                     supportingText = if (isError) {
-                        { Text(stringResource(R.string.quran_jump_error), fontFamily = InterFamily) }
+                        { Text(stringResource(R.string.quran_jump_error), fontFamily = AppUiFontFamily) }
                     } else null,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    textStyle = LocalTextStyle.current.copy(fontFamily = InterFamily, fontSize = 14.sp, color = SalatOnSurface),
+                    textStyle = LocalTextStyle.current.copy(fontFamily = AppUiFontFamily, fontSize = 14.sp, color = SalatOnSurface),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = SalatPrimary,
                         unfocusedBorderColor = SalatOutlineVariant,
@@ -198,10 +198,10 @@ private fun QuranJumpDialog(
                 onClick = { onConfirm(input) },
                 colors = ButtonDefaults.buttonColors(containerColor = SalatPrimary, contentColor = SalatOnPrimary),
                 shape = RoundedCornerShape(12.dp),
-            ) { Text(stringResource(R.string.quran_jump_go), fontFamily = InterFamily, fontWeight = FontWeight.SemiBold) }
+            ) { Text(stringResource(R.string.quran_jump_go), fontFamily = AppUiFontFamily, fontWeight = FontWeight.SemiBold) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel), color = SalatOnSurfaceVariant, fontFamily = InterFamily) }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel), color = SalatOnSurfaceVariant, fontFamily = AppUiFontFamily) }
         },
     )
 }
@@ -222,7 +222,7 @@ private fun BrowseTabChip(label: String, isSelected: Boolean, onClick: () -> Uni
             color      = if (isSelected) SalatOnPrimary else SalatOnSurfaceVariant,
             fontSize   = 13.sp,
             fontWeight = FontWeight.SemiBold,
-            fontFamily = InterFamily,
+            fontFamily = AppUiFontFamily,
         )
     }
 }
@@ -243,17 +243,17 @@ private fun JuzRow(juz: QuranJuzUi, onClick: () -> Unit) {
             modifier = Modifier.size(36.dp).clip(CircleShape).background(SalatPrimaryContainer),
             contentAlignment = Alignment.Center,
         ) {
-            Text(juz.juzNumber.toString(), color = SalatOnPrimaryContainer, fontSize = 16.sp, fontWeight = FontWeight.Bold, fontFamily = InterFamily)
+            Text(juz.juzNumber.toString(), color = SalatOnPrimaryContainer, fontSize = 16.sp, fontWeight = FontWeight.Bold, fontFamily = AppUiFontFamily)
         }
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = juz.title.transliteration,
-                color = SalatOnSurface, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily,
+                color = SalatOnSurface, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily,
             )
             Spacer(Modifier.height(2.dp))
             Text(
                 text = "${juz.pageCount} pages · ${juz.ayahCount} ayahs",
-                color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily,
+                color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily,
             )
         }
         Text(
@@ -277,12 +277,12 @@ private fun ContinueReadingCard(chapter: Chapter, verseNumber: Int, onClick: () 
         Column {
             Text(
                 text = stringResource(R.string.quran_continue_reading),
-                color = SalatPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily,
+                color = SalatPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily,
             )
             Spacer(Modifier.height(4.dp))
             Text(
                 text = stringResource(R.string.quran_continue_reading_subtitle, chapter.nameTransliteration, verseNumber),
-                color = SalatOnSurface, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily,
+                color = SalatOnSurface, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily,
             )
         }
     }
@@ -304,14 +304,14 @@ private fun ChapterRow(chapter: Chapter, onClick: () -> Unit) {
             modifier = Modifier.size(36.dp).clip(CircleShape).background(SalatPrimaryContainer),
             contentAlignment = Alignment.Center,
         ) {
-            Text(chapter.number.toString(), color = SalatOnPrimaryContainer, fontSize = 16.sp, fontWeight = FontWeight.Bold, fontFamily = InterFamily)
+            Text(chapter.number.toString(), color = SalatOnPrimaryContainer, fontSize = 16.sp, fontWeight = FontWeight.Bold, fontFamily = AppUiFontFamily)
         }
         Column(modifier = Modifier.weight(1f)) {
-            Text(chapter.nameTransliteration, color = SalatOnSurface, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily)
+            Text(chapter.nameTransliteration, color = SalatOnSurface, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily)
             Spacer(Modifier.height(2.dp))
             Text(
                 text = "${chapter.nameTranslation} · ${chapter.versesCount} " + stringResource(R.string.quran_verses_suffix),
-                color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily,
+                color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily,
             )
         }
         Text(

@@ -106,7 +106,7 @@ fun GoalDetailsScreen(
                 action         = { TextButton(onClick = onErrorDismiss) { Text(stringResource(R.string.action_ok), color = SalatPrimaryFixed) } },
                 containerColor = SalatInverseSurface,
                 contentColor   = SalatInverseOnSurface,
-            ) { Text(msg, fontFamily = InterFamily) }
+            ) { Text(msg, fontFamily = AppUiFontFamily) }
         }
     }
 
@@ -140,8 +140,8 @@ private fun HeaderCard(goal: SpiritualGoal, status: GoalStatus, dayIndex: Int?) 
                 contentAlignment = Alignment.Center,
             ) { Icon(painterResource(goal.category.iconRes), null, tint = SalatOnPrimaryContainer) }
             Column(Modifier.weight(1f)) {
-                Text(goal.name, color = SalatOnSurface, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                Text(goal.category.label(), color = SalatSecondary, fontSize = 12.sp, fontFamily = InterFamily)
+                Text(goal.name, color = SalatOnSurface, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                Text(goal.category.label(), color = SalatSecondary, fontSize = 12.sp, fontFamily = AppUiFontFamily)
             }
             when (status) {
                 GoalStatus.COMPLETED -> StatusChip(stringResource(R.string.goal_status_completed))
@@ -177,15 +177,15 @@ private fun HeaderCard(goal: SpiritualGoal, status: GoalStatus, dayIndex: Int?) 
 @Composable
 private fun StatusChip(text: String) {
     Box(Modifier.clip(RoundedCornerShape(50)).background(SalatTertiaryContainer).padding(horizontal = 8.dp, vertical = 4.dp)) {
-        Text(text, color = SalatOnTertiaryContainer, fontSize = 10.sp, fontWeight = FontWeight.Bold, fontFamily = InterFamily)
+        Text(text, color = SalatOnTertiaryContainer, fontSize = 10.sp, fontWeight = FontWeight.Bold, fontFamily = AppUiFontFamily)
     }
 }
 
 @Composable
 private fun DetailLine(label: String, value: String) {
     Row(Modifier.fillMaxWidth().padding(vertical = 3.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(label, color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily, modifier = Modifier.weight(1f))
-        Text(value, color = SalatOnSurface, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily, textAlign = TextAlign.End, modifier = Modifier.weight(1.4f))
+        Text(label, color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily, modifier = Modifier.weight(1f))
+        Text(value, color = SalatOnSurface, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily, textAlign = TextAlign.End, modifier = Modifier.weight(1.4f))
     }
 }
 
@@ -219,10 +219,10 @@ private fun BigTile(iconRes: Int, value: String, unit: String, label: String, mo
             Icon(painterResource(iconRes), null, tint = SalatOnTertiaryContainer, modifier = Modifier.size(24.dp))
             Spacer(Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(value, color = SalatPrimary, fontSize = 28.sp, fontWeight = FontWeight.Bold, fontFamily = MontserratFamily)
-                Text(unit, color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily, modifier = Modifier.padding(bottom = 5.dp))
+                Text(value, color = SalatPrimary, fontSize = 28.sp, fontWeight = FontWeight.Bold, fontFamily = AppTitleFontFamily)
+                Text(unit, color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily, modifier = Modifier.padding(bottom = 5.dp))
             }
-            Text(label, color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = InterFamily)
+            Text(label, color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
         }
     }
 }
@@ -245,9 +245,9 @@ private fun TotalsTiles(goal: SpiritualGoal, totals: GoalTotals) {
 @Composable
 private fun SmallTile(value: String, label: String, modifier: Modifier = Modifier) {
     Column(modifier.clip(RoundedCornerShape(12.dp)).background(SalatSurfaceContainer).padding(12.dp)) {
-        Text(value, color = SalatPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold, fontFamily = MontserratFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(value, color = SalatPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold, fontFamily = AppTitleFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Spacer(Modifier.height(2.dp))
-        Text(label, color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily, maxLines = 2)
+        Text(label, color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily, maxLines = 2)
     }
 }
 
@@ -280,7 +280,7 @@ private fun CalendarCard(
                     stringResource(R.string.bulk_previous), tint = if (canGoPrev) SalatPrimary else SalatOutlineVariant,
                 )
             }
-            Text(month.format(monthFormatter), color = SalatPrimary, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily)
+            Text(month.format(monthFormatter), color = SalatPrimary, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily)
             IconButton(onClick = onNextMonth, enabled = canGoNext) {
                 Icon(
                     painterResource(if (rtl) R.drawable.ic_chevron_left else R.drawable.ic_chevron_right),
@@ -293,7 +293,7 @@ private fun CalendarCard(
             SUNDAY_FIRST.forEach { day ->
                 Text(
                     text = day.shortLabel(), modifier = Modifier.weight(1f), textAlign = TextAlign.Center,
-                    color = SalatOutline, fontSize = 10.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily,
+                    color = SalatOutline, fontSize = 10.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily,
                 )
             }
         }
@@ -328,7 +328,7 @@ private fun ActionsRow(status: GoalStatus, onEditClick: () -> Unit, onArchiveTog
             ) {
                 Icon(painterResource(R.drawable.ic_edit_square), null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.goal_action_edit), fontFamily = InterFamily, fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.goal_action_edit), fontFamily = AppUiFontFamily, fontWeight = FontWeight.SemiBold)
             }
             // A finished goal can't be archived/restored — editing it (extending the end) is how it comes back.
             if (status != GoalStatus.COMPLETED) {
@@ -339,13 +339,13 @@ private fun ActionsRow(status: GoalStatus, onEditClick: () -> Unit, onArchiveTog
                 ) {
                     Text(
                         stringResource(if (status == GoalStatus.ARCHIVED) R.string.goal_action_restore else R.string.goal_action_archive),
-                        fontFamily = InterFamily, fontWeight = FontWeight.SemiBold,
+                        fontFamily = AppUiFontFamily, fontWeight = FontWeight.SemiBold,
                     )
                 }
             }
         }
         TextButton(onClick = onDeleteClick, modifier = Modifier.fillMaxWidth()) {
-            Text(stringResource(R.string.editgoal_delete), color = SalatError, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
+            Text(stringResource(R.string.editgoal_delete), color = SalatError, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
         }
     }
 }

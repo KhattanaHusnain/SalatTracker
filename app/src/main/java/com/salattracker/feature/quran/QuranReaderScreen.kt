@@ -134,7 +134,7 @@ fun QuranReaderScreen(
                 items(uiState.verses, key = { it.verseNumber }) { verse ->
                     Text(
                         text = verse.textUthmani,
-                        color = SalatOnSurface, fontSize = 22.sp, fontFamily = InterFamily,
+                        color = SalatOnSurface, fontSize = 22.sp, fontFamily = AppUiFontFamily,
                         textAlign = TextAlign.End, lineHeight = 36.sp,
                         modifier = Modifier.fillMaxWidth(),
                     )
@@ -168,11 +168,11 @@ private fun SurahHeaderFrame(chapter: Chapter, pageNumber: Int?, juzNumber: Int?
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(
                     text = pageNumber?.let { "$PAGE_LABEL_ARABIC ${it.toArabicNumeral()}" } ?: "",
-                    color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily,
+                    color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily,
                 )
                 Text(
                     text = juzNumber?.let { "$JUZ_LABEL_ARABIC ${it.toArabicNumeral()}" } ?: "",
-                    color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily,
+                    color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily,
                 )
             }
             Spacer(Modifier.height(4.dp))
@@ -192,7 +192,7 @@ private fun ChapterHeader(chapter: Chapter, onClick: () -> Unit) {
         Text(
             text = "${if (chapter.revelationPlace == RevelationPlace.MECCAN) MECCAN_ARABIC else MEDINAN_ARABIC} · " +
                 "${chapter.versesCount.toArabicNumeral()} $VERSES_LABEL_ARABIC",
-            color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = InterFamily,
+            color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = AppUiFontFamily,
         )
     }
 }

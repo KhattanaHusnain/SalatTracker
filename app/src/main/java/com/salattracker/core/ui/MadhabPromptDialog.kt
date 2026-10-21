@@ -28,8 +28,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import com.salattracker.R
-import com.salattracker.core.theme.InterFamily
-import com.salattracker.core.theme.MontserratFamily
+import com.salattracker.core.theme.AppUiFontFamily
+import com.salattracker.core.theme.AppTitleFontFamily
 import com.salattracker.core.theme.SalatOnSurface
 import com.salattracker.core.theme.SalatOnSurfaceVariant
 import com.salattracker.core.theme.SalatOutlineVariant
@@ -60,12 +60,12 @@ fun MadhabPromptDialog(onSave: (Madhab) -> Unit) {
         title = {
             Text(
                 stringResource(R.string.school_prompt_title),
-                color = SalatPrimary, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily,
+                color = SalatPrimary, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily,
             )
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text(stringResource(R.string.school_prompt_body), color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = InterFamily)
+                Text(stringResource(R.string.school_prompt_body), color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = AppUiFontFamily)
                 Spacer(Modifier.height(2.dp))
                 MadhabPromptOption(
                     title = stringResource(R.string.school_standard_title),
@@ -89,7 +89,7 @@ fun MadhabPromptDialog(onSave: (Madhab) -> Unit) {
         },
         confirmButton = {
             TextButton(onClick = { onSave(selected) }) {
-                Text(stringResource(R.string.school_prompt_save), color = SalatPrimary, fontFamily = InterFamily, fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.school_prompt_save), color = SalatPrimary, fontFamily = AppUiFontFamily, fontWeight = FontWeight.SemiBold)
             }
         },
     )
@@ -111,8 +111,8 @@ private fun MadhabPromptOption(title: String, subtitle: String, isSelected: Bool
         ) {
             RadioButton(selected = isSelected, onClick = onClick, colors = RadioButtonDefaults.colors(selectedColor = SalatPrimary))
             Column(modifier = Modifier.weight(1f)) {
-                Text(title, color = SalatOnSurface, fontSize = 14.sp, fontWeight = FontWeight.Medium, fontFamily = InterFamily)
-                Text(subtitle, color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily)
+                Text(title, color = SalatOnSurface, fontSize = 14.sp, fontWeight = FontWeight.Medium, fontFamily = AppUiFontFamily)
+                Text(subtitle, color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily)
             }
         }
     }

@@ -21,8 +21,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.salattracker.core.theme.InterFamily
-import com.salattracker.core.theme.MontserratFamily
+import com.salattracker.core.theme.AppUiFontFamily
+import com.salattracker.core.theme.AppTitleFontFamily
 import com.salattracker.core.theme.SalatOnSurfaceVariant
 import com.salattracker.core.theme.SalatPrimary
 import com.salattracker.core.theme.SalatSurfaceContainer
@@ -43,8 +43,8 @@ fun StatTile(label: String, value: String, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier.clip(RoundedCornerShape(12.dp)).background(SalatSurfaceContainer).padding(vertical = 12.dp, horizontal = 10.dp),
     ) {
-        Text(value, color = SalatPrimary, fontSize = 18.sp, fontWeight = FontWeight.Bold, fontFamily = MontserratFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(value, color = SalatPrimary, fontSize = 18.sp, fontWeight = FontWeight.Bold, fontFamily = AppTitleFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Spacer(Modifier.height(2.dp))
-        Text(label, color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily, maxLines = 2)
+        Text(label, color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily, maxLines = 2)
     }
 }

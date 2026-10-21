@@ -81,7 +81,7 @@ fun GoalsScreen(
                             color      = SalatPrimary,
                             fontSize   = 20.sp,
                             fontWeight = FontWeight.SemiBold,
-                            fontFamily = MontserratFamily,
+                            fontFamily = AppTitleFontFamily,
                         )
                         uiState.active.forEach { card ->
                             GoalCard(
@@ -106,7 +106,7 @@ fun GoalsScreen(
                 action         = { TextButton(onClick = onErrorDismiss) { Text(stringResource(R.string.action_ok), color = SalatPrimaryFixed) } },
                 containerColor = SalatInverseSurface,
                 contentColor   = SalatInverseOnSurface,
-            ) { Text(msg, fontFamily = InterFamily) }
+            ) { Text(msg, fontFamily = AppUiFontFamily) }
         }
     }
 
@@ -143,19 +143,19 @@ private fun TodayCard(summary: TodaySummary) {
                 if (summary.dailyTotal > 0) {
                     Text(
                         text = stringResource(R.string.goals_done_today, summary.dailyDone, summary.dailyTotal),
-                        color = SalatPrimary, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily,
+                        color = SalatPrimary, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily,
                     )
                 } else {
                     Text(
                         text = stringResource(R.string.goals_nothing_due),
-                        color = SalatPrimary, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily,
+                        color = SalatPrimary, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily,
                     )
                 }
                 if (summary.periodicTotal > 0) {
                     Spacer(Modifier.height(4.dp))
                     Text(
                         text = stringResource(R.string.goals_periodic_done, summary.periodicDone, summary.periodicTotal),
-                        color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = InterFamily,
+                        color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = AppUiFontFamily,
                     )
                 }
             }
@@ -195,7 +195,7 @@ private fun EmptyGoalsCard(onAddGoalClick: () -> Unit) {
             Text(
                 text = stringResource(R.string.goals_none_yet),
                 color = SalatOnSurfaceVariant,
-                fontFamily = InterFamily,
+                fontFamily = AppUiFontFamily,
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
             )
@@ -207,7 +207,7 @@ private fun EmptyGoalsCard(onAddGoalClick: () -> Unit) {
             ) {
                 Icon(painterResource(R.drawable.ic_add), null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.action_add_goal), fontFamily = InterFamily, fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.action_add_goal), fontFamily = AppUiFontFamily, fontWeight = FontWeight.SemiBold)
             }
         }
     }
@@ -240,8 +240,8 @@ private fun GoalCard(
                     Icon(painterResource(goal.category.iconRes), null, tint = SalatOnPrimaryContainer)
                 }
                 Column(Modifier.weight(1f)) {
-                    Text(goal.name, color = SalatOnSurface, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    Text(cardSubtitle(card), color = SalatSecondary, fontSize = 12.sp, fontFamily = InterFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(goal.name, color = SalatOnSurface, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(cardSubtitle(card), color = SalatSecondary, fontSize = 12.sp, fontFamily = AppUiFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
                 if (card.streak > 0) StreakBadge(card.streak)
             }
@@ -287,7 +287,7 @@ private fun ArchivedSection(archived: List<ArchivedGoalUi>, onGoalClick: (Long) 
         ) {
             Text(
                 text = stringResource(R.string.goals_archived, archived.size),
-                color = SalatOnSurfaceVariant, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily,
+                color = SalatOnSurfaceVariant, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily,
             )
             Icon(
                 painterResource(R.drawable.ic_expand_more), null, tint = SalatOnSurfaceVariant,
@@ -309,10 +309,10 @@ private fun ArchivedSection(archived: List<ArchivedGoalUi>, onGoalClick: (Long) 
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
                             Icon(painterResource(item.goal.category.iconRes), null, tint = SalatSecondary, modifier = Modifier.size(20.dp))
-                            Text(item.goal.name, color = SalatOnSurface, fontSize = 14.sp, fontFamily = InterFamily, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                            Text(item.goal.name, color = SalatOnSurface, fontSize = 14.sp, fontFamily = AppUiFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
                             Text(
                                 text = stringResource(if (item.status == GoalStatus.COMPLETED) R.string.goal_status_completed else R.string.goal_status_archived),
-                                color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily,
+                                color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily,
                             )
                         }
                     }
@@ -343,7 +343,7 @@ internal fun DeleteGoalConfirmDialog(goalName: String, onConfirm: () -> Unit, on
                 color = SalatOnSurface,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.SemiBold,
-                fontFamily = MontserratFamily,
+                fontFamily = AppTitleFontFamily,
             )
         },
         text = {
@@ -352,7 +352,7 @@ internal fun DeleteGoalConfirmDialog(goalName: String, onConfirm: () -> Unit, on
                     text = stringResource(R.string.goal_delete_desc),
                     color = SalatOnSurfaceVariant,
                     fontSize = 13.sp,
-                    fontFamily = InterFamily,
+                    fontFamily = AppUiFontFamily,
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Surface(
@@ -367,7 +367,7 @@ internal fun DeleteGoalConfirmDialog(goalName: String, onConfirm: () -> Unit, on
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 0.5.sp,
-                            fontFamily = InterFamily,
+                            fontFamily = AppUiFontFamily,
                         )
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
@@ -375,7 +375,7 @@ internal fun DeleteGoalConfirmDialog(goalName: String, onConfirm: () -> Unit, on
                             color = SalatOnSurface,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.SemiBold,
-                            fontFamily = InterFamily,
+                            fontFamily = AppUiFontFamily,
                         )
                     }
                 }
@@ -386,10 +386,10 @@ internal fun DeleteGoalConfirmDialog(goalName: String, onConfirm: () -> Unit, on
                 onClick = onConfirm,
                 colors  = ButtonDefaults.buttonColors(containerColor = SalatError, contentColor = SalatOnPrimary),
                 shape   = RoundedCornerShape(12.dp),
-            ) { Text(stringResource(R.string.action_delete), fontFamily = InterFamily, fontWeight = FontWeight.SemiBold) }
+            ) { Text(stringResource(R.string.action_delete), fontFamily = AppUiFontFamily, fontWeight = FontWeight.SemiBold) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel), color = SalatOnSurfaceVariant, fontFamily = InterFamily) }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel), color = SalatOnSurfaceVariant, fontFamily = AppUiFontFamily) }
         },
     )
 }

@@ -19,8 +19,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salattracker.R
-import com.salattracker.core.theme.InterFamily
-import com.salattracker.core.theme.MontserratFamily
+import com.salattracker.core.theme.AppUiFontFamily
+import com.salattracker.core.theme.AppTitleFontFamily
 import com.salattracker.core.theme.SalatError
 import com.salattracker.core.theme.SalatOutlineVariant
 import com.salattracker.core.theme.SalatPrimary
@@ -53,7 +53,7 @@ fun AppDrawer(
             color = SalatPrimary,
             fontSize = 18.sp,
             fontWeight = FontWeight.SemiBold,
-            fontFamily = MontserratFamily,
+            fontFamily = AppTitleFontFamily,
         )
         HorizontalDivider(color = SalatOutlineVariant)
         Spacer(modifier = Modifier.height(8.dp))
@@ -121,9 +121,9 @@ private fun DrawerItem(
         icon = { Icon(painterResource(iconRes), contentDescription = null) },
         label = {
             Column {
-                Text(label, fontSize = 14.sp, fontFamily = InterFamily, fontWeight = FontWeight.Medium)
+                Text(label, fontSize = 14.sp, fontFamily = AppUiFontFamily, fontWeight = FontWeight.Medium)
                 if (subtitle != null) {
-                    Text(subtitle, fontSize = 11.sp, fontFamily = InterFamily, color = SalatError)
+                    Text(subtitle, fontSize = 11.sp, fontFamily = AppUiFontFamily, color = SalatError)
                 }
             }
         },
