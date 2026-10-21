@@ -22,8 +22,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -38,7 +36,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -60,7 +57,6 @@ fun QuranChapterListScreen(
     onChapterClick: (Int) -> Unit,
     onContinueReadingClick: (chapterNumber: Int, verseNumber: Int) -> Unit,
     onTabSelected: (QuranBrowseTab) -> Unit,
-    onJumpDialogOpen: () -> Unit,
     onJumpDialogDismiss: () -> Unit,
     onJumpTypeSelected: (QuranJumpType) -> Unit,
     onJumpConfirm: (String) -> Unit,
@@ -80,7 +76,7 @@ fun QuranChapterListScreen(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        BrowseTabRow(selected = uiState.selectedTab, onTabSelected = onTabSelected, onJumpClick = onJumpDialogOpen)
+        BrowseTabRow(selected = uiState.selectedTab, onTabSelected = onTabSelected)
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -113,7 +109,7 @@ fun QuranChapterListScreen(
 }
 
 @Composable
-private fun BrowseTabRow(selected: QuranBrowseTab, onTabSelected: (QuranBrowseTab) -> Unit, onJumpClick: () -> Unit) {
+private fun BrowseTabRow(selected: QuranBrowseTab, onTabSelected: (QuranBrowseTab) -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -131,13 +127,6 @@ private fun BrowseTabRow(selected: QuranBrowseTab, onTabSelected: (QuranBrowseTa
             onClick = { onTabSelected(QuranBrowseTab.JUZ) },
             modifier = Modifier.weight(1f),
         )
-        IconButton(onClick = onJumpClick) {
-            Icon(
-                painter = painterResource(R.drawable.ic_search),
-                contentDescription = stringResource(R.string.quran_jump_title),
-                tint = SalatOnSurfaceVariant,
-            )
-        }
     }
 }
 
@@ -345,7 +334,6 @@ private fun QuranChapterListScreenPreview() {
         onChapterClick = {},
         onContinueReadingClick = { _, _ -> },
         onTabSelected = {},
-        onJumpDialogOpen = {},
         onJumpDialogDismiss = {},
         onJumpTypeSelected = {},
         onJumpConfirm = {},

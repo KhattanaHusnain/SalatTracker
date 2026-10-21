@@ -10,9 +10,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 fun QuranChapterListEntry(
     onChapterClick: (Int) -> Unit,
     onContinueReadingClick: (chapterNumber: Int, verseNumber: Int) -> Unit,
+    searchRequest: Int,
     viewModel: QuranChapterListViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(searchRequest) {
+        if (searchRequest > 0) viewModel.onJumpDialogOpen()
+    }
 
     LaunchedEffect(uiState.navigateToChapter) {
         uiState.navigateToChapter?.let { chapterNumber ->
@@ -26,7 +31,6 @@ fun QuranChapterListEntry(
         onChapterClick = onChapterClick,
         onContinueReadingClick = onContinueReadingClick,
         onTabSelected = viewModel::onTabSelected,
-        onJumpDialogOpen = viewModel::onJumpDialogOpen,
         onJumpDialogDismiss = viewModel::onJumpDialogDismiss,
         onJumpTypeSelected = viewModel::onJumpTypeSelected,
         onJumpConfirm = viewModel::onJumpConfirm,

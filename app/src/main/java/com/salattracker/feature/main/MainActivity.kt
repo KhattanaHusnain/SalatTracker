@@ -249,6 +249,7 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
     // screen) knows which page to jump to — see QuranReaderEntry's onPageLoaded.
     var quranReaderPageNumber by remember { mutableStateOf(1) }
     var quranPageControls by remember { mutableStateOf<QuranPageControls?>(null) }
+    var quranSearchRequest by remember { mutableStateOf(0) }
     val isQuranPageRoute = currentDest?.route == Routes.QURAN_READER || currentDest?.route == Routes.QURAN_MUSHAF
 
     // A notification's deep link, delivered after this scaffold (and its NavHost) already
@@ -304,6 +305,8 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                     showQuranBookmarks   = currentDest?.route == BottomNavRoute.Quran.route,
                     onQuranBookmarksClick = { navController.push(Routes.QURAN_BOOKMARKS) },
                     onQuranReadHistoryClick = { navController.push(Routes.QURAN_READ_HISTORY) },
+                    showQuranSearch      = currentDest?.route == BottomNavRoute.Quran.route,
+                    onQuranSearchClick   = { quranSearchRequest++ },
                     showMushafButton     = currentDest?.route == Routes.QURAN_READER,
                     onMushafButtonClick  = { navController.push(Routes.quranMushaf(quranReaderPageNumber)) },
                     quranPageControls    = if (isQuranPageRoute) quranPageControls else null,
@@ -347,6 +350,7 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                         onContinueReadingClick = { chapterNumber, verseNumber ->
                             navController.push(Routes.quranReader(chapterNumber, verseNumber))
                         },
+                        searchRequest = quranSearchRequest,
                     )
                 }
                 composable(
@@ -482,6 +486,8 @@ private fun TopBar(
     showQuranBookmarks: Boolean,
     onQuranBookmarksClick: () -> Unit,
     onQuranReadHistoryClick: () -> Unit,
+    showQuranSearch: Boolean,
+    onQuranSearchClick: () -> Unit,
     showMushafButton: Boolean,
     onMushafButtonClick: () -> Unit,
     quranPageControls: QuranPageControls?,
@@ -549,6 +555,11 @@ private fun TopBar(
                 }
             }
             if (showQuranBookmarks) {
+                if (showQuranSearch) {
+                    IconButton(onClick = onQuranSearchClick) {
+                        Icon(painterResource(R.drawable.ic_search), stringResource(R.string.quran_jump_title), tint = SalatPrimary)
+                    }
+                }
                 IconButton(onClick = onQuranReadHistoryClick) {
                     Icon(painterResource(R.drawable.ic_history), stringResource(R.string.topbar_quran_read_history), tint = SalatPrimary)
                 }
