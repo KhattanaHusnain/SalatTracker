@@ -67,6 +67,7 @@ import com.salattracker.feature.qaza.QazaEntry
 import com.salattracker.feature.quran.QuranBookmarksEntry
 import com.salattracker.feature.quran.QuranChapterInfoEntry
 import com.salattracker.feature.quran.QuranMushafEntry
+import com.salattracker.feature.quran.QuranPageControls
 import com.salattracker.feature.quran.QuranChapterListEntry
 import com.salattracker.feature.quran.QuranCreditsEntry
 import com.salattracker.feature.quran.QuranReadHistoryEntry
@@ -247,6 +248,8 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
     // button (a route-level action, a sibling of the NavHost rather than a child of the reader
     // screen) knows which page to jump to — see QuranReaderEntry's onPageLoaded.
     var quranReaderPageNumber by remember { mutableStateOf(1) }
+    var quranPageControls by remember { mutableStateOf<QuranPageControls?>(null) }
+    val isQuranPageRoute = currentDest?.route == Routes.QURAN_READER || currentDest?.route == Routes.QURAN_MUSHAF
 
     // A notification's deep link, delivered after this scaffold (and its NavHost) already
     // exist — navigate once, then let the caller clear it so a config change or
@@ -303,6 +306,7 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                     onQuranReadHistoryClick = { navController.push(Routes.QURAN_READ_HISTORY) },
                     showMushafButton     = currentDest?.route == Routes.QURAN_READER,
                     onMushafButtonClick  = { navController.push(Routes.quranMushaf(quranReaderPageNumber)) },
+                    quranPageControls    = if (isQuranPageRoute) quranPageControls else null,
                     calendarView             = calendarUiState.view,
                     onCalendarViewChanged    = calendarViewModel::onViewChanged,
                     calendarAwayFromToday    = calendarUiState.awayFromToday,
@@ -355,6 +359,7 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                     QuranReaderEntry(
                         onChapterInfoClick = { number -> navController.push(Routes.quranChapterInfo(number)) },
                         onPageLoaded = { page -> quranReaderPageNumber = page },
+                        onPageControlsChanged = { controls -> quranPageControls = controls },
                     )
                 }
                 composable(
@@ -367,7 +372,7 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                     Routes.QURAN_MUSHAF,
                     arguments = listOf(navArgument("pageNumber") { type = NavType.IntType }),
                 ) {
-                    QuranMushafEntry()
+                    QuranMushafEntry(onPageControlsChanged = { controls -> quranPageControls = controls })
                 }
                 composable(Routes.QURAN_BOOKMARKS) {
                     QuranBookmarksEntry(onBookmarkClick = { number -> navController.push(Routes.quranReader(number)) })
@@ -479,6 +484,7 @@ private fun TopBar(
     onQuranReadHistoryClick: () -> Unit,
     showMushafButton: Boolean,
     onMushafButtonClick: () -> Unit,
+    quranPageControls: QuranPageControls?,
     calendarView: CalendarViewType,
     onCalendarViewChanged: (CalendarViewType) -> Unit,
     calendarAwayFromToday: Boolean,
@@ -512,6 +518,20 @@ private fun TopBar(
             }
         },
         actions = {
+            quranPageControls?.let { controls ->
+                IconButton(onClick = controls.onPreviousPage, enabled = controls.hasPreviousPage) {
+                    Icon(painterResource(R.drawable.ic_chevron_left), stringResource(R.string.quran_mushaf_previous_page), tint = SalatPrimary)
+                }
+                Text(
+                    text = stringResource(R.string.quran_mushaf_page_label, controls.pageNumber),
+                    color = SalatOnSurface,
+                    fontSize = 12.sp,
+                    fontFamily = InterFamily,
+                )
+                IconButton(onClick = controls.onNextPage, enabled = controls.hasNextPage) {
+                    Icon(painterResource(R.drawable.ic_chevron_right), stringResource(R.string.quran_mushaf_next_page), tint = SalatPrimary)
+                }
+            }
             if (showAddGoal) {
                 IconButton(onClick = onAddGoalClick) {
                     Icon(painterResource(R.drawable.ic_add), stringResource(R.string.action_add_goal), tint = SalatPrimary)

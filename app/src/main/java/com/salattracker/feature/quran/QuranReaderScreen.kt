@@ -83,8 +83,6 @@ private const val VERSES_LABEL_ARABIC = "آية"
 fun QuranReaderScreen(
     uiState: QuranReaderUiState,
     onChapterInfoClick: (Int) -> Unit,
-    onPreviousPage: () -> Unit,
-    onNextPage: () -> Unit,
 ) {
     if (uiState.isLoading) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -102,15 +100,6 @@ fun QuranReaderScreen(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        if (uiState.pages.size > 1 && readerPage != null) {
-            ReaderPager(
-                pageNumber = readerPage.pageNumber,
-                hasPreviousPage = uiState.currentPageIndex > 0,
-                hasNextPage = uiState.currentPageIndex < uiState.pages.lastIndex,
-                onPreviousPage = onPreviousPage,
-                onNextPage = onNextPage,
-            )
-        }
         LazyColumn(
             state = listState,
             modifier = Modifier.weight(1f),
@@ -156,39 +145,6 @@ fun QuranReaderScreen(
                     Spacer(Modifier.height(18.dp))
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun ReaderPager(
-    pageNumber: Int,
-    hasPreviousPage: Boolean,
-    hasNextPage: Boolean,
-    onPreviousPage: () -> Unit,
-    onNextPage: () -> Unit,
-) {
-    Box(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
-    ) {
-        IconButton(
-            onClick = onPreviousPage,
-            enabled = hasPreviousPage,
-            modifier = Modifier.align(Alignment.CenterStart),
-        ) {
-            Icon(painterResource(R.drawable.ic_chevron_left), stringResource(R.string.quran_mushaf_previous_page))
-        }
-        Text(
-            text = stringResource(R.string.quran_mushaf_page_label, pageNumber),
-            color = SalatOnSurface, fontSize = 13.sp, fontFamily = InterFamily,
-            modifier = Modifier.align(Alignment.Center),
-        )
-        IconButton(
-            onClick = onNextPage,
-            enabled = hasNextPage,
-            modifier = Modifier.align(Alignment.CenterEnd),
-        ) {
-            Icon(painterResource(R.drawable.ic_chevron_right), stringResource(R.string.quran_mushaf_next_page))
         }
     }
 }
@@ -365,7 +321,5 @@ private fun QuranReaderScreenPreview() {
             ),
         ),
         onChapterInfoClick = {},
-        onPreviousPage = {},
-        onNextPage = {},
     )
 }

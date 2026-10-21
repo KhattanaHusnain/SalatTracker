@@ -34,6 +34,9 @@ class QuranMushafViewModel @Inject constructor(
     )
     val uiState: StateFlow<QuranMushafUiState> = _uiState.asStateFlow()
 
+    val hasPreviousPage: Boolean get() = _uiState.value.pageNumber > FIRST_MUSHAF_PAGE
+    val hasNextPage: Boolean get() = _uiState.value.pageNumber < MUSHAF_TOTAL_PAGES
+
     init {
         loadPage(_uiState.value.pageNumber)
     }
