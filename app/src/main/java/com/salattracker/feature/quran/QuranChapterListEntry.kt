@@ -12,12 +12,16 @@ fun QuranChapterListEntry(
     onContinueReadingClick: (chapterNumber: Int, verseNumber: Int) -> Unit,
     onJuzClick: (chapterNumber: Int, verseNumber: Int) -> Unit,
     searchRequest: Int,
+    onSearchRequestConsumed: () -> Unit,
     viewModel: QuranChapterListViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(searchRequest) {
-        if (searchRequest > 0) viewModel.onJumpDialogOpen()
+        if (searchRequest > 0) {
+            viewModel.onJumpDialogOpen()
+            onSearchRequestConsumed()
+        }
     }
 
     LaunchedEffect(uiState.navigateToChapter) {

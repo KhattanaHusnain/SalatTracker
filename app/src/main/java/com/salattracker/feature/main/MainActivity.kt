@@ -354,6 +354,7 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                             navController.push(Routes.quranReader(chapterNumber, verseNumber))
                         },
                         searchRequest = quranSearchRequest,
+                        onSearchRequestConsumed = { quranSearchRequest = 0 },
                     )
                 }
                 composable(
