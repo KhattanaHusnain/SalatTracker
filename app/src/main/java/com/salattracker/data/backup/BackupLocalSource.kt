@@ -141,15 +141,21 @@ class RoomBackupLocalSource @Inject constructor(
         // onboarding over incompletely-applied data.
         val s = snapshot.settings
         settingsRepository.saveSettings(
-            useDeviceLocation     = s.useDeviceLocation,
-            latitude               = s.latitude,
-            longitude              = s.longitude,
-            calculationMethodId    = s.calculationMethodId,
-            reminderEnabled        = s.reminderEnabled,
-            reminderOffsetMinutes  = s.reminderOffsetMinutes,
-            use24HourFormat        = s.use24HourFormat,
-            language               = s.language,
-            themeMode               = s.themeMode,
+            useDeviceLocation         = s.useDeviceLocation,
+            latitude                  = s.latitude,
+            longitude                 = s.longitude,
+            calculationMethodId       = s.calculationMethodId,
+            reminderEnabled           = s.reminderEnabled,
+            reminderOffsetMinutes     = s.reminderOffsetMinutes,
+            use24HourFormat           = s.use24HourFormat,
+            language                  = s.language,
+            themeMode                 = s.themeMode,
+            madhab                    = s.madhab,
+            highLatitudeRule          = s.highLatitudeRule,
+            prayerTimeAdjustMinutes   = s.prayerTimeAdjustMinutes,
+            madhabChosen              = s.madhabChosen,
+            jumuahEnabled             = s.jumuahEnabled,
+            jumuahReminderLeadMinutes = s.jumuahReminderLeadMinutes,
         )
         settingsRepository.setOnboardingCompleted(true)
 

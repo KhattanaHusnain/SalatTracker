@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.salattracker.core.ui.PrayerStatusSheetArgs
+import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerEntry
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
@@ -41,6 +42,8 @@ data class HomeUiState(
     val streaks: Map<PrayerType, StreakInfo> = emptyMap(),
     val lastSevenDays: Map<LocalDate, Map<PrayerType, PrayerStatus>> = emptyMap(),
     val qazaPendingTotal: Int = 0,
+    val jumuahEnabled: Boolean = true,
+    val madhab: Madhab = Madhab.STANDARD,
     val verse: VerseInfo? = null,
     val sheetArgs: PrayerStatusSheetArgs? = null,   // null = sheet hidden
     val isSaving: Boolean = false,
@@ -63,6 +66,8 @@ private data class TodaySnapshot(
     val nextPrayer: NextPrayer?,
     val minutesUntilNext: Long,
     val currentPrayer: PrayerType?,
+    val jumuahEnabled: Boolean,
+    val madhab: Madhab,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class) // flatMapLatest below
@@ -123,6 +128,8 @@ class HomeViewModel @Inject constructor(
                             nextPrayer       = snapshot.nextPrayer,
                             minutesUntilNext = snapshot.minutesUntilNext,
                             currentPrayer    = snapshot.currentPrayer,
+                            jumuahEnabled    = snapshot.jumuahEnabled,
+                            madhab           = snapshot.madhab,
                         )
                     }
                 }
@@ -135,8 +142,8 @@ class HomeViewModel @Inject constructor(
         prefs: UserPrefs,
         now: LocalDateTime,
     ): TodaySnapshot {
-        val times = prayerRepository.getCachedPrayerTimes(date)
-        val tomorrowFajr = prayerRepository.getCachedPrayerTimes(date.plusDays(1))?.get(PrayerType.FAJR)
+        val times = prayerRepository.getPrayerTimes(date)
+        val tomorrowFajr = prayerRepository.getPrayerTimes(date.plusDays(1))?.get(PrayerType.FAJR)
         val nowTime = now.toLocalTime()
 
         val prayers = PrayerType.values().map { type ->
@@ -159,6 +166,8 @@ class HomeViewModel @Inject constructor(
             nextPrayer       = nextPrayer,
             minutesUntilNext = nextPrayer?.let { minutesUntil(it, nowTime) } ?: 0,
             currentPrayer    = currentPrayerOf(times, nowTime),
+            jumuahEnabled    = prefs.jumuahEnabled,
+            madhab           = prefs.madhab,
         )
     }
 

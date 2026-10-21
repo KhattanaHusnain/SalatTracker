@@ -13,6 +13,7 @@ import androidx.compose.runtime.setValue
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.lifecycleScope
 import com.salattracker.core.theme.SalatTrackerTheme
+import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.VerseInfo
@@ -50,17 +51,24 @@ class PrayerReminderActivity : AppCompatActivity() {
             var scheduledTime by remember { mutableStateOf<LocalTime?>(null) }
             var verse by remember { mutableStateOf<VerseInfo?>(null) }
             var snoozeMinutes by remember { mutableStateOf(PrayerReminderReceiver.DEFAULT_SNOOZE_MINUTES) }
+            var jumuahEnabled by remember { mutableStateOf(true) }
+            var madhab by remember { mutableStateOf(Madhab.STANDARD) }
 
             LaunchedEffect(type) {
-                scheduledTime = prayerRepository.getCachedPrayerTimes(LocalDate.now())?.get(type)
+                scheduledTime = prayerRepository.getPrayerTimes(LocalDate.now())?.get(type)
                 verse = verseRepository.getRandomVerse()
-                snoozeMinutes = settingsRepository.getCurrentPrefs().reminderSnoozeMinutes[type]
-                    ?: PrayerReminderReceiver.DEFAULT_SNOOZE_MINUTES
+                val prefs = settingsRepository.getCurrentPrefs()
+                snoozeMinutes = prefs.reminderSnoozeMinutes[type] ?: PrayerReminderReceiver.DEFAULT_SNOOZE_MINUTES
+                jumuahEnabled = prefs.jumuahEnabled
+                madhab = prefs.madhab
             }
 
             SalatTrackerTheme {
                 PrayerReminderScreen(
                     prayerType    = type,
+                    date          = LocalDate.now(),
+                    jumuahEnabled = jumuahEnabled,
+                    madhab        = madhab,
                     scheduledTime = scheduledTime,
                     verse         = verse,
                     snoozeMinutes = snoozeMinutes,

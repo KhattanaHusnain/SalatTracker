@@ -1,8 +1,13 @@
 package com.salattracker.domain.model
 
 /**
- * A prayer-time calculation method, as defined by the AlAdhan API
- * (https://api.aladhan.com/v1/methods — fetched 2026; ids 0–23, no id 6).
+ * A prayer-time calculation method. [id] follows the AlAdhan API's own numbering
+ * (https://api.aladhan.com/v1/methods — fetched 2026; ids 0–23, no id 6) purely as a stable,
+ * already-chosen storage key for [com.salattracker.domain.repository.UserPrefs.calculationMethodId]
+ * — prayer times are calculated on-device (see `data/prayertimes/CalculationParametersFactory`),
+ * which maps each [id] to the matching `adhan2` preset or, for methods the library has no preset
+ * for, to the equivalent custom Fajr/Isha angles published at the URL above. No network call is
+ * made for this anymore.
  *
  * [displayName] is the method's institution/place name — a proper noun, so unlike every other
  * enum in this app it is NOT localized via a string resource: "Umm Al-Qura University, Makkah"

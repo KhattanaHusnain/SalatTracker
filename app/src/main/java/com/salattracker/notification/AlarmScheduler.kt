@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.repository.UserPrefs
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
@@ -32,6 +33,62 @@ class AlarmScheduler(private val context: Context) {
             }
             scheduleOne(type, todayTimes[type], tomorrowTimes[type], prefs.reminderOffsetMinutes[type] ?: 0)
         }
+
+        val leadMinutes = if (prefs.jumuahEnabled) prefs.jumuahReminderLeadMinutes else 0
+        scheduleJumuahLead(leadMinutes, todayTimes[PrayerType.DHUHR], tomorrowTimes[PrayerType.DHUHR])
+    }
+
+    /** Separate from [scheduleOne]: it isn't tied to a single [PrayerType] alarm slot, and only
+     * fires on the next Friday Dhuhr, [leadMinutes] early. [leadMinutes] <= 0 means "off". */
+    private fun scheduleJumuahLead(leadMinutes: Int, todayDhuhr: LocalTime?, tomorrowDhuhr: LocalTime?) {
+        if (leadMinutes <= 0) {
+            cancelJumuahLead()
+            return
+        }
+        val zoneId = ZoneId.systemDefault()
+        val now = System.currentTimeMillis()
+        val today = LocalDate.now()
+
+        val todayTrigger = if (today.dayOfWeek == DayOfWeek.FRIDAY) {
+            todayDhuhr?.let { triggerMillis(it, -leadMinutes, today, zoneId) }
+        } else null
+
+        val triggerAt = if (todayTrigger != null && todayTrigger > now) {
+            todayTrigger
+        } else {
+            val tomorrow = today.plusDays(1)
+            if (tomorrow.dayOfWeek == DayOfWeek.FRIDAY) {
+                tomorrowDhuhr?.let { triggerMillis(it, -leadMinutes, tomorrow, zoneId) }
+            } else null
+        }
+
+        if (triggerAt == null) {
+            cancelJumuahLead()
+            return
+        }
+
+        try {
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, jumuahLeadPendingIntent())
+        } catch (_: SecurityException) {
+            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, jumuahLeadPendingIntent())
+        }
+    }
+
+    private fun cancelJumuahLead() {
+        alarmManager.cancel(jumuahLeadPendingIntent())
+    }
+
+    private fun jumuahLeadPendingIntent(): PendingIntent {
+        val intent = Intent(context, PrayerReminderReceiver::class.java).apply {
+            putExtra(EXTRA_PRAYER_TYPE, PrayerType.DHUHR.name)
+            putExtra(EXTRA_JUMUAH_LEAD, true)
+        }
+        return PendingIntent.getBroadcast(
+            context,
+            JUMUAH_LEAD_REQUEST_CODE,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
     }
 
     private fun scheduleOne(
@@ -70,6 +127,7 @@ class AlarmScheduler(private val context: Context) {
 
     fun cancelAll() {
         PrayerType.values().forEach { cancel(it) }
+        cancelJumuahLead()
     }
 
     private fun cancel(type: PrayerType) {
@@ -90,5 +148,7 @@ class AlarmScheduler(private val context: Context) {
 
     companion object {
         const val EXTRA_PRAYER_TYPE = "prayer_type"
+        const val EXTRA_JUMUAH_LEAD = "jumuah_lead"
+        private const val JUMUAH_LEAD_REQUEST_CODE = 100
     }
 }

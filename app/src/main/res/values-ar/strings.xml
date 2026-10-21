@@ -28,9 +28,16 @@
 
     <string name="prayer_fajr">الفجر</string>
     <string name="prayer_dhuhr">الظهر</string>
+    <string name="prayer_jumuah">الجمعة</string>
+    <string name="jumuah_lead_notif_title">صلاة الجمعة تقترب</string>
+    <string name="jumuah_lead_notif_body">استعد لصلاة الجمعة.</string>
+    <string name="prayer_zuhrain">الظهرين</string>
     <string name="prayer_asr">العصر</string>
+    <string name="prayer_asr_zuhrain">العصر (الظهرين)</string>
     <string name="prayer_maghrib">المغرب</string>
     <string name="prayer_maghrib_short">مغرب</string>
+    <string name="prayer_maghribain">المغربين</string>
+    <string name="prayer_isha_maghribain">العشاء (المغربين)</string>
     <string name="prayer_isha">العشاء</string>
 
     <string name="status_congregation">جماعة</string>
@@ -85,6 +92,17 @@
     <string name="theme_dark_desc">هادئ وعميق</string>
     <string name="theme_system">النظام</string>
     <string name="theme_system_desc">مزامنة مع الجهاز</string>
+    <string name="onboarding_school_title">مذهبك الفقهي</string>
+    <string name="onboarding_school_subtitle">يحدد هذا وقت بدء صلاة العصر (والعشاء في المذهب الجعفري). يمكنك تغييره لاحقاً في الإعدادات.</string>
+    <string name="school_standard_title">الشافعي والمالكي والحنبلي</string>
+    <string name="school_standard_desc">وقت العصر المعتاد</string>
+    <string name="school_hanafi_title">الحنفي</string>
+    <string name="school_hanafi_desc">وقت عصر متأخر</string>
+    <string name="school_jafari_title">جعفري</string>
+    <string name="school_jafari_desc">العصر مع الظهر، والعشاء مع المغرب</string>
+    <string name="school_prompt_title">مذهبك الفقهي</string>
+    <string name="school_prompt_body">يتيح لك هذا التطبيق الآن اختيار مذهبك الفقهي لصلاة العصر (والعشاء في المذهب الجعفري). \"المعتاد\" يبقي الوقت الذي اعتدت عليه.</string>
+    <string name="school_prompt_save">حفظ</string>
     <string name="onboarding_location_title">أوقات صلاة دقيقة</string>
     <string name="onboarding_location_desc">نحتاج إلى موقعك لحساب أوقات الصلاة بدقّة بناءً على مدينتك الحالية. يضمن ذلك بقاء صلواتك اليومية متزامنة مع موضع الشمس.</string>
     <string name="onboarding_allow_location">السماح بالوصول للموقع</string>
@@ -163,6 +181,16 @@
     <string name="settings_longitude">خط الطول</string>
     <string name="settings_calc_method">طريقة الحساب</string>
     <string name="settings_calculation_method_sheet_title">طريقة الحساب</string>
+    <string name="settings_school">المذهب الفقهي</string>
+    <string name="settings_high_latitude">قاعدة خطوط العرض العالية</string>
+    <string name="settings_high_latitude_desc">تهم بشكل أساسي فوق خط عرض 48° تقريباً، حيث قد لا تصل الشمس إلى الزاوية التي تحتاجها طريقة الحساب.</string>
+    <string name="high_latitude_automatic">تلقائي</string>
+    <string name="high_latitude_middle">منتصف الليل</string>
+    <string name="high_latitude_seventh">سُبع الليل</string>
+    <string name="high_latitude_twilight">قائم على الزاوية</string>
+    <string name="settings_adjust_prayer_times">تعديل أوقات الصلاة</string>
+    <string name="settings_adjust_prayer_times_desc">اضبط كل وقت صلاة بدقائق قليلة، مثلاً لمطابقة مسجدك المحلي.</string>
+    <string name="settings_prayer_time_adjust_value">%1$d دقيقة</string>
     <string name="settings_appearance">المظهر</string>
     <string name="settings_language">اللغة</string>
     <string name="settings_theme">المظهر</string>
@@ -171,6 +199,10 @@
     <string name="reminders_snooze_length">مدة التأجيل</string>
     <string name="reminders_full_screen_alert">تنبيه ملء الشاشة</string>
     <string name="reminders_vibration">الاهتزاز</string>
+    <string name="reminders_jumuah_title">الجمعة أيام الجمعة</string>
+    <string name="reminders_jumuah_desc">عرض ظهر يوم الجمعة باسم "الجمعة" في جميع أنحاء التطبيق.</string>
+    <string name="reminders_jumuah_lead">تذكير مبكر</string>
+    <string name="reminders_jumuah_lead_off">إيقاف</string>
     <string name="reminders_sound">النغمة</string>
     <string name="reminders_sound_azan">الأذان (افتراضي التطبيق)</string>
     <string name="reminders_sound_default">افتراضي الجهاز</string>

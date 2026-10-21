@@ -2,6 +2,8 @@ package com.salattracker.data.repository
 
 import com.salattracker.data.local.preferences.DataStoreSettingsRepository
 import com.salattracker.domain.model.AppLanguage
+import com.salattracker.domain.model.HighLatitudeRule
+import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.ThemeMode
 import com.salattracker.domain.repository.SettingsRepository
@@ -36,16 +38,28 @@ class SettingsRepositoryImpl @Inject constructor(
         use24HourFormat: Boolean,
         language: AppLanguage,
         themeMode: ThemeMode,
+        madhab: Madhab,
+        highLatitudeRule: HighLatitudeRule,
+        prayerTimeAdjustMinutes: Map<PrayerType, Int>,
+        madhabChosen: Boolean,
+        jumuahEnabled: Boolean,
+        jumuahReminderLeadMinutes: Int,
     ) = dataStore.saveSettings(
-        useDeviceLocation     = useDeviceLocation,
-        latitude              = latitude,
-        longitude             = longitude,
-        calculationMethodId   = calculationMethodId,
-        reminderEnabled       = reminderEnabled,
-        reminderOffsetMinutes = reminderOffsetMinutes,
-        use24HourFormat       = use24HourFormat,
-        language              = language,
-        themeMode             = themeMode,
+        useDeviceLocation         = useDeviceLocation,
+        latitude                  = latitude,
+        longitude                 = longitude,
+        calculationMethodId       = calculationMethodId,
+        reminderEnabled           = reminderEnabled,
+        reminderOffsetMinutes     = reminderOffsetMinutes,
+        use24HourFormat           = use24HourFormat,
+        language                  = language,
+        themeMode                 = themeMode,
+        madhab                    = madhab,
+        highLatitudeRule          = highLatitudeRule,
+        prayerTimeAdjustMinutes   = prayerTimeAdjustMinutes,
+        madhabChosen              = madhabChosen,
+        jumuahEnabled             = jumuahEnabled,
+        jumuahReminderLeadMinutes = jumuahReminderLeadMinutes,
     )
 
     override suspend fun setUseDeviceLocation(enabled: Boolean) = dataStore.setUseDeviceLocation(enabled)
@@ -81,4 +95,16 @@ class SettingsRepositoryImpl @Inject constructor(
 
     override suspend fun setReminderSoundUri(type: PrayerType, uri: String?) =
         dataStore.setReminderSoundUri(type, uri)
+
+    override suspend fun setMadhab(madhab: Madhab) = dataStore.setMadhab(madhab)
+
+    override suspend fun setHighLatitudeRule(rule: HighLatitudeRule) = dataStore.setHighLatitudeRule(rule)
+
+    override suspend fun setPrayerTimeAdjustMinutes(type: PrayerType, minutes: Int) =
+        dataStore.setPrayerTimeAdjustMinutes(type, minutes)
+
+    override suspend fun setJumuahEnabled(enabled: Boolean) = dataStore.setJumuahEnabled(enabled)
+
+    override suspend fun setJumuahReminderLeadMinutes(minutes: Int) =
+        dataStore.setJumuahReminderLeadMinutes(minutes)
 }

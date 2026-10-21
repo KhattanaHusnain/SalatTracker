@@ -8,6 +8,7 @@ import android.content.Intent
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.salattracker.R
+import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.repository.PrayerRepository
@@ -34,6 +35,10 @@ class PrayerReminderReceiver : BroadcastReceiver() {
     @Inject lateinit var channels: PrayerReminderChannels
 
     override fun onReceive(context: Context, intent: Intent) {
+        if (intent.getBooleanExtra(AlarmScheduler.EXTRA_JUMUAH_LEAD, false)) {
+            showJumuahLeadNotification(context)
+            return
+        }
         val typeName = intent.getStringExtra(AlarmScheduler.EXTRA_PRAYER_TYPE) ?: return
         val type = try {
             PrayerType.valueOf(typeName)
@@ -76,14 +81,15 @@ class PrayerReminderReceiver : BroadcastReceiver() {
                 val vibrationEnabled = prefs.reminderVibrationEnabled[type] ?: true
                 val fullScreenAlert = prefs.reminderFullScreenAlert[type] ?: true
                 val snoozeMinutes = prefs.reminderSnoozeMinutes[type] ?: DEFAULT_SNOOZE_MINUTES
+                val label = type.label(LocalDate.now(), prefs.jumuahEnabled, prefs.madhab)
 
                 channels.ensure(type, soundUri, vibrationEnabled)
                 val fullScreenPendingIntent = fullScreenPendingIntent(context, type)
 
                 val builder = NotificationCompat.Builder(context, channels.channelId(type))
                     .setSmallIcon(R.drawable.ic_mosque)
-                    .setContentTitle(context.getString(R.string.notification_prayer_title, type.label))
-                    .setContentText(context.getString(R.string.notification_prayer_body, type.label))
+                    .setContentTitle(context.getString(R.string.notification_prayer_title, label))
+                    .setContentText(context.getString(R.string.notification_prayer_body, label))
                     .setPriority(NotificationCompat.PRIORITY_HIGH)
                     .setCategory(NotificationCompat.CATEGORY_ALARM)
                     .setAutoCancel(true)
@@ -97,6 +103,34 @@ class PrayerReminderReceiver : BroadcastReceiver() {
                 }
 
                 NotificationManagerCompat.from(context).notify(type.ordinal, builder.build())
+            } finally {
+                pendingResult.finish()
+            }
+        }
+    }
+
+    /** The optional early Jumu'ah heads-up — a plain, low-priority notification, distinct from
+     * the actual Dhuhr/Jumu'ah alarm (no full-screen intent, no mark/snooze actions). */
+    private fun showJumuahLeadNotification(context: Context) {
+        val pendingResult = goAsync()
+        CoroutineScope(SupervisorJob() + Dispatchers.Default).launch {
+            try {
+                channels.ensure(PrayerType.DHUHR, null, true)
+                val contentIntent = Intent(context, com.salattracker.feature.main.MainActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                }
+                val pendingIntent = PendingIntent.getActivity(
+                    context, JUMUAH_LEAD_NOTIFICATION_ID, contentIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+                )
+                val builder = NotificationCompat.Builder(context, channels.channelId(PrayerType.DHUHR))
+                    .setSmallIcon(R.drawable.ic_mosque)
+                    .setContentTitle(context.getString(R.string.jumuah_lead_notif_title))
+                    .setContentText(context.getString(R.string.jumuah_lead_notif_body))
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .setAutoCancel(true)
+                    .setContentIntent(pendingIntent)
+                NotificationManagerCompat.from(context).notify(JUMUAH_LEAD_NOTIFICATION_ID, builder.build())
             } finally {
                 pendingResult.finish()
             }
@@ -148,6 +182,7 @@ class PrayerReminderReceiver : BroadcastReceiver() {
 
         private const val SNOOZE_REQUEST_CODE_OFFSET = 1000
         private const val FULLSCREEN_REQUEST_CODE_OFFSET = 2000
+        private const val JUMUAH_LEAD_NOTIFICATION_ID = 3000
 
         /** Shared by the notification's Snooze action and the full-screen reminder Activity. */
         fun scheduleSnooze(context: Context, type: PrayerType, snoozeMinutes: Int) {
@@ -171,10 +206,21 @@ class PrayerReminderReceiver : BroadcastReceiver() {
     }
 }
 
-private val PrayerType.label: String get() = when (this) {
-    PrayerType.FAJR    -> "Fajr"
-    PrayerType.DHUHR   -> "Dhuhr"
-    PrayerType.ASR     -> "Asr"
-    PrayerType.MAGHRIB -> "Maghrib"
-    PrayerType.ISHA    -> "Isha"
+/** Not localized, matching every other label in this file's notification text (pre-existing;
+ * out of scope to change here). Mirrors [com.salattracker.core.ui.label]'s Jumu'ah and Ja'fari
+ * (Zuhrain/Maghribain) rules, but can't reuse it directly since that's a `@Composable`
+ * `stringResource` helper and this runs from a `BroadcastReceiver`. */
+private fun PrayerType.label(date: LocalDate, jumuahEnabled: Boolean, madhab: Madhab): String = when {
+    this == PrayerType.DHUHR && jumuahEnabled && date.dayOfWeek == java.time.DayOfWeek.FRIDAY -> "Jumu'ah"
+    madhab == Madhab.JAFARI && this == PrayerType.DHUHR   -> "Zuhrain"
+    madhab == Madhab.JAFARI && this == PrayerType.ASR     -> "Asr (Zuhrain)"
+    madhab == Madhab.JAFARI && this == PrayerType.MAGHRIB -> "Maghribain"
+    madhab == Madhab.JAFARI && this == PrayerType.ISHA    -> "Isha (Maghribain)"
+    else -> when (this) {
+        PrayerType.FAJR    -> "Fajr"
+        PrayerType.DHUHR   -> "Dhuhr"
+        PrayerType.ASR     -> "Asr"
+        PrayerType.MAGHRIB -> "Maghrib"
+        PrayerType.ISHA    -> "Isha"
+    }
 }

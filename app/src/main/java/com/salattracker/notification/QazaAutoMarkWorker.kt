@@ -43,7 +43,7 @@ class QazaAutoMarkWorker @AssistedInject constructor(
     }
 
     private suspend fun markOverdue(date: LocalDate) {
-        val times = prayerRepository.getCachedPrayerTimes(date) ?: return
+        val times = prayerRepository.getPrayerTimes(date) ?: return
         val entries = prayerRepository.getPrayerEntriesForDate(date)
         val now = LocalDateTime.now()
 

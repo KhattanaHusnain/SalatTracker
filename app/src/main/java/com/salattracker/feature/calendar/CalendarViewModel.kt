@@ -95,7 +95,7 @@ class CalendarViewModel @Inject constructor(
             _uiState
                 .map { it.selectedDate }
                 .distinctUntilChanged()
-                .mapLatest { date -> date to prayerRepository.getCachedPrayerTimes(date) }
+                .mapLatest { date -> date to prayerRepository.getPrayerTimes(date) }
                 .collect { (date, times) ->
                     _uiState.update { if (it.selectedDate == date) it.copy(selectedTimes = times) else it }
                 }
@@ -149,7 +149,7 @@ class CalendarViewModel @Inject constructor(
     fun onPrayerClick(date: LocalDate, type: PrayerType) {
         viewModelScope.launch {
             val today = _uiState.value.today
-            val prayerTime = if (date == today) prayerRepository.getCachedPrayerTimes(date)?.get(type) else null
+            val prayerTime = if (date == today) prayerRepository.getPrayerTimes(date)?.get(type) else null
             if (!isPrayerMarkable(date, prayerTime, today)) return@launch
             val current = _uiState.value.marks[date]?.get(type) ?: PrayerStatus.NOT_RECORDED
             _uiState.update { it.copy(statusSheet = PrayerStatusSheetArgs(type, date, current)) }

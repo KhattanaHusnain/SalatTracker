@@ -3,7 +3,6 @@ package com.salattracker.di
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.salattracker.BuildConfig
-import com.salattracker.data.remote.api.AlAdhanService
 import com.salattracker.data.remote.api.DriveApiService
 import com.salattracker.data.remote.api.OverpassService
 import com.salattracker.data.remote.api.QuranApiService
@@ -35,7 +34,6 @@ annotation class OverpassRetrofit
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val ALADHAN_BASE_URL = "https://api.aladhan.com/"
     private const val QURAN_API_BASE_URL = "https://api.quran.com/api/v4/"
     private const val DRIVE_BASE_URL = "https://www.googleapis.com/"
     private const val OVERPASS_BASE_URL = "https://overpass-api.de/"
@@ -59,20 +57,6 @@ object NetworkModule {
             .readTimeout(15, TimeUnit.SECONDS)
             .build()
     }
-
-    @Provides
-    @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient, gson: Gson): Retrofit =
-        Retrofit.Builder()
-            .baseUrl(ALADHAN_BASE_URL)
-            .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create(gson))
-            .build()
-
-    @Provides
-    @Singleton
-    fun provideAlAdhanService(retrofit: Retrofit): AlAdhanService =
-        retrofit.create(AlAdhanService::class.java)
 
     @Provides
     @Singleton

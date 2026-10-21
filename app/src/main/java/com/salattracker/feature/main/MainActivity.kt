@@ -60,6 +60,7 @@ import com.salattracker.feature.goals.GoalDetailsEntry
 import com.salattracker.feature.goals.GoalsEntry
 import com.salattracker.feature.home.HomeEntry
 import com.salattracker.feature.mosque.MosqueModeEntry
+import com.salattracker.core.ui.MadhabPromptDialog
 import com.salattracker.feature.onboarding.OnboardingEntry
 import com.salattracker.feature.qaza.MissedPrayersEntry
 import com.salattracker.feature.qaza.QazaEntry
@@ -160,7 +161,12 @@ class MainActivity : AppCompatActivity() {
                             }
                         },
                     )
-                    true  -> MainScaffold(initialRoute = pendingRoute, onRouteConsumed = { pendingRoute = null })
+                    true  -> {
+                        MainScaffold(initialRoute = pendingRoute, onRouteConsumed = { pendingRoute = null })
+                        if (appStart.needsMadhabPrompt) {
+                            MadhabPromptDialog(onSave = appStartViewModel::onMadhabChosen)
+                        }
+                    }
                 }
             }
         }

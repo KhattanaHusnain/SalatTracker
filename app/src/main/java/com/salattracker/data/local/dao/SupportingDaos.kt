@@ -22,29 +22,6 @@ interface StreakDao {
     suspend fun upsertSnapshot(snapshot: StreakSnapshotEntity)
 }
 
-// ── Prayer times cache DAO ────────────────────────────────────────────────────
-
-@Dao
-interface PrayerTimesDao {
-    @Query("""
-        SELECT * FROM prayer_times_cache
-        WHERE date = :date AND latitude = :lat AND longitude = :lon AND method = :method
-        LIMIT 1
-    """)
-    suspend fun getCached(
-        date: LocalDate,
-        lat: Double,
-        lon: Double,
-        method: Int,
-    ): PrayerTimeCacheEntity?
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertCache(entity: PrayerTimeCacheEntity)
-
-    @Query("DELETE FROM prayer_times_cache WHERE cached_at < :before")
-    suspend fun evictOlderThan(before: Long)
-}
-
 // ── Verse cache DAO ───────────────────────────────────────────────────────────
 
 @Dao

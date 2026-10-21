@@ -4,6 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.salattracker.domain.model.AppLanguage
 import com.salattracker.domain.model.CalculationMethod
+import com.salattracker.domain.model.HighLatitudeRule
+import com.salattracker.domain.model.Madhab
+import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.ThemeMode
 import com.salattracker.domain.repository.LocaleApplier
 import com.salattracker.domain.repository.LocationProvider
@@ -20,6 +23,9 @@ data class SettingsUiState(
     val latitude: String = "",
     val longitude: String = "",
     val calculationMethod: CalculationMethod = CalculationMethod.DEFAULT,
+    val madhab: Madhab = Madhab.STANDARD,
+    val highLatitudeRule: HighLatitudeRule = HighLatitudeRule.AUTOMATIC,
+    val prayerTimeAdjustMinutes: Map<PrayerType, Int> = PrayerType.values().associateWith { 0 },
     val use24HourFormat: Boolean = false,
     val language: AppLanguage = AppLanguage.ENGLISH,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
@@ -60,6 +66,9 @@ class SettingsViewModel @Inject constructor(
                             latitude          = prefs.latitude.toString(),
                             longitude         = prefs.longitude.toString(),
                             calculationMethod = CalculationMethod.fromId(prefs.calculationMethodId),
+                            madhab            = prefs.madhab,
+                            highLatitudeRule  = prefs.highLatitudeRule,
+                            prayerTimeAdjustMinutes = prefs.prayerTimeAdjustMinutes,
                             use24HourFormat   = prefs.use24HourFormat,
                             language          = prefs.language,
                             themeMode         = prefs.themeMode,
@@ -107,6 +116,21 @@ class SettingsViewModel @Inject constructor(
     fun onCalculationMethodChanged(method: CalculationMethod) {
         _uiState.update { it.copy(calculationMethod = method, showCalculationMethodSheet = false) }
         writeAndReschedule { settingsRepository.setCalculationMethodId(method.id) }
+    }
+
+    fun onMadhabChanged(madhab: Madhab) {
+        _uiState.update { it.copy(madhab = madhab) }
+        writeAndReschedule { settingsRepository.setMadhab(madhab) }
+    }
+
+    fun onHighLatitudeRuleChanged(rule: HighLatitudeRule) {
+        _uiState.update { it.copy(highLatitudeRule = rule) }
+        writeAndReschedule { settingsRepository.setHighLatitudeRule(rule) }
+    }
+
+    fun onPrayerTimeAdjustChanged(type: PrayerType, minutes: Int) {
+        _uiState.update { it.copy(prayerTimeAdjustMinutes = it.prayerTimeAdjustMinutes + (type to minutes)) }
+        writeAndReschedule { settingsRepository.setPrayerTimeAdjustMinutes(type, minutes) }
     }
 
     // ── Display / appearance ──────────────────────────────────────────────────

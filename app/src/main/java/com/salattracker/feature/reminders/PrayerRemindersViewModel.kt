@@ -3,6 +3,7 @@ package com.salattracker.feature.reminders
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
+import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.repository.PrayerRepository
 import com.salattracker.domain.repository.SettingsRepository
@@ -34,6 +35,10 @@ data class PrayerRemindersUiState(
     val isLoading: Boolean = true,
     val reminders: List<ReminderSetting> = emptyList(),
     val expandedPrayer: PrayerType? = null,
+    val jumuahEnabled: Boolean = true,
+    /** 0 = no separate early reminder for Jumu'ah. */
+    val jumuahReminderLeadMinutes: Int = 0,
+    val madhab: Madhab = Madhab.STANDARD,
 )
 
 @HiltViewModel
@@ -52,10 +57,13 @@ class PrayerRemindersViewModel @Inject constructor(
     private fun loadReminders() {
         viewModelScope.launch {
             val prefs = settingsRepository.getCurrentPrefs()
-            val times = prayerRepository.getCachedPrayerTimes(LocalDate.now())
+            val times = prayerRepository.getPrayerTimes(LocalDate.now())
             _uiState.update {
                 it.copy(
                     isLoading = false,
+                    jumuahEnabled = prefs.jumuahEnabled,
+                    jumuahReminderLeadMinutes = prefs.jumuahReminderLeadMinutes,
+                    madhab = prefs.madhab,
                     reminders = PrayerType.values().map { type ->
                         ReminderSetting(
                             prayerType       = type,
@@ -118,6 +126,22 @@ class PrayerRemindersViewModel @Inject constructor(
         viewModelScope.launch {
             settingsRepository.setReminderSoundUri(type, uri)
             channels.recreate(type, uri, currentVibration(type))
+        }
+    }
+
+    fun onJumuahEnabledChanged(enabled: Boolean) {
+        _uiState.update { it.copy(jumuahEnabled = enabled) }
+        viewModelScope.launch {
+            settingsRepository.setJumuahEnabled(enabled)
+            PrayerReminderWorker.enqueueOneTime(workManager)
+        }
+    }
+
+    fun onJumuahReminderLeadChanged(minutes: Int) {
+        _uiState.update { it.copy(jumuahReminderLeadMinutes = minutes) }
+        viewModelScope.launch {
+            settingsRepository.setJumuahReminderLeadMinutes(minutes)
+            PrayerReminderWorker.enqueueOneTime(workManager)
         }
     }
 

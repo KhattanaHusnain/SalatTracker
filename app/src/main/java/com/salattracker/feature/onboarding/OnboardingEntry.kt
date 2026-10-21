@@ -32,6 +32,7 @@ fun OnboardingEntry(
         uiState                  = uiState,
         onLanguageSelected       = viewModel::onLanguageSelected,
         onThemeSelected          = viewModel::onThemeSelected,
+        onMadhabSelected         = viewModel::onMadhabSelected,
         onPrayerRemindersChanged = viewModel::onPrayerRemindersChanged,
         onNext                   = viewModel::onNext,
         onAllowLocation          = onAllowLocation,

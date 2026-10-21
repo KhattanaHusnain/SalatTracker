@@ -28,9 +28,16 @@
 
     <string name="prayer_fajr">فجر</string>
     <string name="prayer_dhuhr">ظہر</string>
+    <string name="prayer_jumuah">جمعہ</string>
+    <string name="jumuah_lead_notif_title">نمازِ جمعہ قریب ہے</string>
+    <string name="jumuah_lead_notif_body">نمازِ جمعہ کے لیے تیار ہو جائیں۔</string>
+    <string name="prayer_zuhrain">ظہرین</string>
     <string name="prayer_asr">عصر</string>
+    <string name="prayer_asr_zuhrain">عصر (ظہرین)</string>
     <string name="prayer_maghrib">مغرب</string>
     <string name="prayer_maghrib_short">مغرب</string>
+    <string name="prayer_maghribain">مغربین</string>
+    <string name="prayer_isha_maghribain">عشاء (مغربین)</string>
     <string name="prayer_isha">عشاء</string>
 
     <string name="status_congregation">باجماعت</string>
@@ -85,6 +92,17 @@
     <string name="theme_dark_desc">پُرسکون اور گہرا</string>
     <string name="theme_system">سسٹم</string>
     <string name="theme_system_desc">آلے کے ساتھ ہم آہنگ</string>
+    <string name="onboarding_school_title">آپ کا فقہی مسلک</string>
+    <string name="onboarding_school_subtitle">یہ طے کرتا ہے کہ عصر (اور جعفری مسلک میں عشاء بھی) کب شروع ہوتی ہے۔ آپ اسے کسی بھی وقت سیٹنگز میں تبدیل کر سکتے ہیں۔</string>
+    <string name="school_standard_title">شافعی، مالکی اور حنبلی</string>
+    <string name="school_standard_desc">عام وقتِ عصر</string>
+    <string name="school_hanafi_title">حنفی</string>
+    <string name="school_hanafi_desc">تاخیر سے وقتِ عصر</string>
+    <string name="school_jafari_title">جعفری</string>
+    <string name="school_jafari_desc">عصر ظہر کے ساتھ، عشاء مغرب کے ساتھ</string>
+    <string name="school_prompt_title">آپ کا فقہی مسلک</string>
+    <string name="school_prompt_body">یہ ایپ اب آپ کو عصر (اور جعفری مسلک میں عشاء) کے لیے اپنا فقہی مسلک منتخب کرنے دیتی ہے۔ \"عام\" وہی وقت برقرار رکھتا ہے جس کے آپ عادی ہیں۔</string>
+    <string name="school_prompt_save">محفوظ کریں</string>
     <string name="onboarding_location_title">درست اوقاتِ نماز</string>
     <string name="onboarding_location_desc">آپ کے موجودہ شہر کی بنیاد پر نماز کے درست اوقات کے حساب کے لیے ہمیں آپ کے مقام کی ضرورت ہے۔ اس سے آپ کی روزانہ نمازیں سورج کی پوزیشن کے ساتھ ہم آہنگ رہتی ہیں۔</string>
     <string name="onboarding_allow_location">مقام کی اجازت دیں</string>
@@ -163,6 +181,16 @@
     <string name="settings_longitude">طول بلد</string>
     <string name="settings_calc_method">حساب کا طریقہ</string>
     <string name="settings_calculation_method_sheet_title">حساب کا طریقہ</string>
+    <string name="settings_school">فقہی مسلک</string>
+    <string name="settings_high_latitude">ہائی لیٹیٹیوڈ اصول</string>
+    <string name="settings_high_latitude_desc">یہ بنیادی طور پر تقریباً 48° عرض بلد سے اوپر اہم ہے، جہاں سورج طریقہ کار کے مطلوبہ زاویے تک نہیں پہنچ سکتا۔</string>
+    <string name="high_latitude_automatic">خودکار</string>
+    <string name="high_latitude_middle">آدھی رات</string>
+    <string name="high_latitude_seventh">رات کا ساتواں حصہ</string>
+    <string name="high_latitude_twilight">زاویہ پر مبنی</string>
+    <string name="settings_adjust_prayer_times">اوقاتِ نماز ایڈجسٹ کریں</string>
+    <string name="settings_adjust_prayer_times_desc">ہر نماز کے وقت کو چند منٹ سے ایڈجسٹ کریں، مثلاً اپنی مقامی مسجد سے ملانے کے لیے۔</string>
+    <string name="settings_prayer_time_adjust_value">%1$d منٹ</string>
     <string name="settings_appearance">ظاہری شکل</string>
     <string name="settings_language">زبان</string>
     <string name="settings_theme">تھیم</string>
@@ -171,6 +199,10 @@
     <string name="reminders_snooze_length">التوا کی مدت</string>
     <string name="reminders_full_screen_alert">فل سکرین الرٹ</string>
     <string name="reminders_vibration">وائبریشن</string>
+    <string name="reminders_jumuah_title">جمعہ کے دن</string>
+    <string name="reminders_jumuah_desc">جمعہ کے دن ظہر کو پوری ایپ میں "جمعہ" کے نام سے ظاہر کریں۔</string>
+    <string name="reminders_jumuah_lead">پیشگی یاد دہانی</string>
+    <string name="reminders_jumuah_lead_off">بند</string>
     <string name="reminders_sound">آواز</string>
     <string name="reminders_sound_azan">اذان (ایپ کی طے شدہ)</string>
     <string name="reminders_sound_default">ڈیوائس کی طے شدہ</string>

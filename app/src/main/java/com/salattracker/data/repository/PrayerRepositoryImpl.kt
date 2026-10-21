@@ -3,13 +3,11 @@ package com.salattracker.data.repository
 import com.salattracker.data.local.dao.*
 import com.salattracker.data.local.entity.*
 import com.salattracker.data.local.preferences.DataStoreSettingsRepository
-import com.salattracker.data.remote.api.AlAdhanService
 import com.salattracker.domain.model.*
 import com.salattracker.domain.repository.*
 import kotlinx.coroutines.flow.*
 import java.time.LocalDate
 import java.time.LocalTime
-import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -20,8 +18,7 @@ const val LOCAL_USER_ID = "local"
 class PrayerRepositoryImpl @Inject constructor(
     private val prayerDao: PrayerDao,
     private val streakDao: StreakDao,
-    private val prayerTimesDao: PrayerTimesDao,
-    private val alAdhanService: AlAdhanService,
+    private val prayerTimeCalculator: PrayerTimeCalculator,
     private val settingsRepo: DataStoreSettingsRepository,
 ) : PrayerRepository {
 
@@ -80,30 +77,9 @@ class PrayerRepositoryImpl @Inject constructor(
 
     // ── Prayer times ──────────────────────────────────────────────────────────
 
-    override suspend fun getCachedPrayerTimes(date: LocalDate): Map<PrayerType, LocalTime>? {
-        val prefs  = settingsRepo.getCurrentPrefs()
-        val cached = prayerTimesDao.getCached(date, prefs.latitude, prefs.longitude, prefs.calculationMethodId)
-        if (cached != null) return cached.toTimesMap()
-
-        return try {
-            val response = alAdhanService.getTimings(date.toString(), prefs.latitude, prefs.longitude, prefs.calculationMethodId)
-            val timings  = response.data?.timings ?: return null
-            val entity   = PrayerTimeCacheEntity(
-                date      = date,
-                latitude  = prefs.latitude,
-                longitude = prefs.longitude,
-                method    = prefs.calculationMethodId,
-                fajr      = timings["Fajr"]    ?: "",
-                dhuhr     = timings["Dhuhr"]   ?: "",
-                asr       = timings["Asr"]     ?: "",
-                maghrib   = timings["Maghrib"] ?: "",
-                isha      = timings["Isha"]    ?: "",
-            )
-            prayerTimesDao.insertCache(entity)
-            entity.toTimesMap()
-        } catch (e: Exception) {
-            null
-        }
+    override suspend fun getPrayerTimes(date: LocalDate): Map<PrayerType, LocalTime>? {
+        val prefs = settingsRepo.getCurrentPrefs()
+        return prayerTimeCalculator.calculate(date, prefs.latitude, prefs.longitude, prefs)
     }
 
     // ── Streak ────────────────────────────────────────────────────────────────
@@ -246,15 +222,3 @@ private fun PrayerEntryEntity.toDomain() = PrayerEntry(
     id = id, userId = userId, date = date,
     prayerType = prayerType, status = status, updatedAt = updatedAt,
 )
-
-private fun PrayerTimeCacheEntity.toTimesMap(): Map<PrayerType, LocalTime> {
-    val fmt = DateTimeFormatter.ofPattern("HH:mm")
-    fun parse(s: String): LocalTime? = try { LocalTime.parse(s.take(5), fmt) } catch (e: Exception) { null }
-    return buildMap {
-        parse(fajr)?.let    { put(PrayerType.FAJR,    it) }
-        parse(dhuhr)?.let   { put(PrayerType.DHUHR,   it) }
-        parse(asr)?.let     { put(PrayerType.ASR,     it) }
-        parse(maghrib)?.let { put(PrayerType.MAGHRIB, it) }
-        parse(isha)?.let    { put(PrayerType.ISHA,    it) }
-    }
-}

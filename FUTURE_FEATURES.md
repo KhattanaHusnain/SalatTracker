@@ -1,6 +1,6 @@
 # Future Features — Salah Tracker
 
-_Researched and compiled: 2026-10-18_
+_Researched and compiled: 2026-10-18. Updated: 2026-10-20 — prayer-time accuracy (section 3A) shipped._
 
 Ideas for Salah Tracker's next features. The document covers:
 - how the app compares with other prayer and habit apps
@@ -25,7 +25,7 @@ This was checked against the code, not taken from memory.
 
 | Area | What exists | Gap found in the code |
 |---|---|---|
-| Prayer times | Fetched from the AlAdhan API (`v1/timings`) and cached in `PrayerTimeCacheEntity`. 23 calculation methods. | Only the `method` parameter is sent. There's no Asr school (Hanafi/Shafi'i), no high-latitude rule and no per-prayer minute offsets. Times need the network, and the user's coordinates go to a third-party server. |
+| Prayer times | Calculated on the phone with `adhan-kotlin` (`com.batoulapps.adhan:adhan2`) — the AlAdhan network call is gone. 23 calculation methods, a school-of-thought setting (Standard/Hanafi/**Ja'fari**), a high-latitude rule, per-prayer minute offsets, and Jumu'ah awareness (Friday Dhuhr is labelled and can be treated separately). | None of the coordinates leave the device anymore. Ja'fari (Shia) users get Zuhrain/Maghribain labelling and matching Asr/Isha times — this goes beyond what any competitor reviewed offers (see 2.2). |
 | Prayer logging | The 5 obligatory prayers, logged as `CONGREGATION`, `INDIVIDUAL`, `QAZA_PENDING`, `QAZA_COMPLETED`, `MENSTRUATION` or `NOT_RECORDED`. Bulk update for catching up on history. | There are no sunnah or voluntary prayers. There's no on-time vs. late distinction, because `updatedAt` changes on every edit. Jumu'ah has no special handling. |
 | Qaza | A backlog dashboard and per-prayer pending counts (`QazaBalanceEntity`). | There's no calculator for estimating years of missed prayers, and no make-up plan or projection. |
 | Goals | Categories `SALAT`, `QURAN`, `FASTING`, `CHARITY` and `DHIKR`. Goals are daily, weekly or monthly, with numeric check-ins. | These are generic counters. There's no dedicated tasbih counter, fasting log or khatam planner. |
@@ -67,6 +67,8 @@ This was checked against the code, not taken from memory.
 - **Qaza bulk update.** It catches up historical logs more thoroughly than most trackers do.
 - **Right-to-left support for both Arabic *and* Urdu**, alongside English and French.
 - **No ads, no subscription, no account.** The Donate and Contribute screens are open and direct. Most competitors rely on ads or paywalls.
+- **On-device prayer-time calculation.** No coordinates sent anywhere — this is the privacy opening from 2.3 and N7, and it's already shipped, not a plan.
+- **Ja'fari (Shia) school of thought.** Asr follows Dhuhr ("Zuhrain") and Isha follows Maghrib ("Maghribain"), with matching labels and times, while all 5 prayers stay independently tracked. No app reviewed in section 2.1 offers this — most of the market treats "Asr school" as a two-way Hanafi/Shafi'i choice and stops there.
 
 ### 2.3 What users complain about, and the opening for us
 
@@ -101,13 +103,17 @@ This was checked against the code, not taken from memory.
 
 ### A. Prayer-time accuracy and reliability
 
-| Feature | Effort | Fit | Notes |
-|---|---|---|---|
-| **Asr school (Hanafi/Shafi'i)** | S | Strong | AlAdhan supports a `school` parameter. **This matters most for our Urdu and Pakistani users**, where Hanafi is standard and Asr can be about an hour later. It needs a new column in the prayer-time cache table, so a Room database migration. |
-| **High-latitude adjustment** | S | Strong | AlAdhan's `latitudeAdjustmentMethod`. Matters for the UK, Scandinavia and Canada. |
-| **Per-prayer minute offsets** | S | Strong | Lets users match their mosque's timetable. Answers the "can't fix wrong times" complaint. |
-| **Prayer times calculated on the phone** | M | Medium | Using `adhan-kotlin`: MIT licence, no dependencies, artifact `com.batoulapps.adhan:adhan2`. Works offline and sends no coordinates to anyone. It needs API 26+, and our minimum is 27. Once it's in, the three settings above become purely local too. |
-| **Jumu'ah awareness** | S | Strong | On Fridays, label Dhuhr as Jumu'ah and add an earlier reminder. |
+All five of these shipped on 2026-10-20, together, by switching the whole prayer-time pipeline to on-device calculation.
+
+| Feature | Status | Notes |
+|---|---|---|
+| **Asr school (Hanafi/Shafi'i, plus Ja'fari)** | ✅ Done | Went further than planned: added a third option, Ja'fari (Shia), not just the planned Hanafi/Shafi'i toggle — see 2.2. |
+| **High-latitude adjustment** | ✅ Done | An `AUTOMATIC` default (seventh-of-the-night above 48°, otherwise middle-of-the-night) plus manual override, mirroring `adhan2`'s `HighLatitudeRule`. |
+| **Per-prayer minute offsets** | ✅ Done | Users can nudge any of the 5 prayer times to match their mosque's timetable. |
+| **Prayer times calculated on the phone** | ✅ Done | `adhan-kotlin` (`com.batoulapps.adhan:adhan2`, pinned at `0.0.6` — `0.0.7` needs Kotlin 2.4.0 and breaks this project's Hilt annotation processor on Kotlin 2.3.0). The AlAdhan network call and `PrayerTimeCacheEntity` are gone; no coordinates leave the device. |
+| **Jumu'ah awareness** | ✅ Done | Friday Dhuhr is labelled Jumu'ah wherever a single prayer is shown (Home, reminders), taking precedence over Ja'fari's Zuhrain label on that one day. No earlier Friday reminder yet — still open, see section E. |
+
+**Not yet built from this section:** an earlier Jumu'ah reminder specifically (the labelling is done, the extra reminder timing is not).
 
 ### B. Core worship tools
 
@@ -199,7 +205,7 @@ These build on what only Salah Tracker has, mainly Mosque Mode and its ringer an
   - shows options for combining prayers according to the user's school. The default Hanafi position is no combining.
 - **Why it's new:** this turned up only as a user feature request and in academic prototypes.
 - **Effort:** M.
-- **Needs:** a school-of-thought (madhhab) setting, and careful wording that offers guidance rather than rulings.
+- **Needs:** careful wording that offers guidance rather than rulings. The school-of-thought (`Madhab`) setting this originally called for is now in place (Standard/Hanafi/Ja'fari), so this can key combining rules off it directly.
 
 ### N6. Wear OS app
 - **What it does:**
@@ -212,12 +218,12 @@ These build on what only Salah Tracker has, mainly Mosque Mode and its ringer an
 
 ### N7. Privacy-first, and saying so
 - **What it is:**
-  - prayer times calculated on the phone
+  - prayer times calculated on the phone — ✅ done (2026-10-20)
   - no ads, no accounts, no analytics
   - data kept on the phone, backed up only to the user's own Google Drive
-- **How to show it:** a short "Your data" page in Settings, a clean Data safety section on Google Play, and privacy as a headline in the store description.
+- **How to show it:** a short "Your data" page in Settings, a clean Data safety section on Google Play, and privacy as a headline in the store description. **Still open** — on-device calculation is in, but nothing surfaces it to the user yet.
 - **Why it matters:** it answers the market's second-loudest complaint.
-- **Effort:** S, once on-device calculation is done.
+- **Effort:** S — the hard dependency (on-device calculation) is already done.
 
 ### N8. Notification health check
 - **What it does:** a Settings screen that checks what silently breaks adhans on Android. Each item gets a "Fix" button that opens the right system screen.
@@ -248,12 +254,13 @@ These build on what only Salah Tracker has, mainly Mosque Mode and its ringer an
 
 ### Phase 1: quick wins
 Small effort and high impact. Most of it reuses existing code.
-1. Asr school, high-latitude rule and per-prayer offsets
+1. ~~Asr school, high-latitude rule and per-prayer offsets~~ — ✅ done 2026-10-20, together with on-device calculation (originally Phase 3)
 2. Qibla compass
 3. Tasbih counter that checks in to `DHIKR` goals
 4. Qaza estimator that fills `QazaBalanceEntity`
 5. Sunnah fasting and Friday reminders, based on Hijri dates
 6. Notification health check (N8)
+7. Privacy page surfacing the on-device calculation switch (N7) — now cheap since the switch itself is done
 
 ### Phase 2: features that set us apart
 1. Mosque check-in that logs congregation (N1)
@@ -264,11 +271,11 @@ Small effort and high impact. Most of it reuses existing code.
 6. Yearly heatmap and streak grace days
 
 ### Phase 3: bigger investments
-1. Prayer times calculated on the phone, plus the privacy page (N7)
+1. ~~Prayer times calculated on the phone~~ — ✅ done 2026-10-20; the privacy page itself (N7) moved to Phase 1
 2. Sunnah and voluntary prayer tracking
 3. On-time vs. late logging
 4. Ramadan mode
-5. Travel mode (N5)
+5. Travel mode (N5) — now has a real madhhab setting to key off (`Madhab`), which this item originally called out as a prerequisite
 6. Badges
 
 ### Phase 4: evaluate before committing
@@ -290,7 +297,7 @@ Small effort and high impact. Most of it reuses existing code.
   - hadith-api is free to reuse (Unlicense).
   - No licence was found for Hisnul Muslim data.
   - Azan recordings need the rights-holder's permission.
-- **Differences between schools of thought (madhhabs).** They differ on Asr time, combining prayers, how qaza is counted and whether Witr is included. Offer settings, use neutral wording, cite sources, and never present results as rulings.
+- **Differences between schools of thought (madhhabs).** They differ on Asr time, combining prayers, how qaza is counted and whether Witr is included. Offer settings, use neutral wording, cite sources, and never present results as rulings. Asr timing and prayer-combining (Ja'fari's Zuhrain/Maghribain) are handled this way already, via the `Madhab` setting; qaza counting and Witr inclusion are still open, and matter most for N3 and the fasting/Ramadan work in Phase 3.
 - **Exact alarms.** Android 12+ restricts them. The notification health check should cover this permission.
 
 ---

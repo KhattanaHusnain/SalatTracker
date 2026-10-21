@@ -144,6 +144,14 @@ private data class SettingsDto(
     @SerializedName("use24HourFormat") val use24HourFormat: Boolean?,
     @SerializedName("language") val language: String?,
     @SerializedName("themeMode") val themeMode: String?,
+    // Added after format v1; absent in older backups. madhab == null is also how a restore
+    // knows the backed-up device hadn't chosen one yet, so it decodes to madhabChosen = false
+    // and the one-time prompt still shows after restoring an old backup.
+    @SerializedName("madhab") val madhab: String?,
+    @SerializedName("highLatitudeRule") val highLatitudeRule: String?,
+    @SerializedName("prayerTimeAdjustMinutes") val prayerTimeAdjustMinutes: Map<String, Int>?,
+    @SerializedName("jumuahEnabled") val jumuahEnabled: Boolean?,
+    @SerializedName("jumuahReminderLeadMinutes") val jumuahReminderLeadMinutes: Int?,
 )
 
 private data class PayloadDto(
@@ -307,15 +315,22 @@ object BackupCodec {
             StreakDto(prayerType = type.name, highestStreak = highestStreaks[type] ?: 0)
         },
         settingsDto = SettingsDto(
-            useDeviceLocation     = settings.useDeviceLocation,
-            latitude               = settings.latitude,
-            longitude              = settings.longitude,
-            calculationMethodId    = settings.calculationMethodId,
-            reminderEnabled        = PrayerType.values().associate { it.name to (settings.reminderEnabled[it] ?: true) },
-            reminderOffsetMinutes  = PrayerType.values().associate { it.name to (settings.reminderOffsetMinutes[it] ?: 0) },
-            use24HourFormat        = settings.use24HourFormat,
-            language               = settings.language.name,
+            useDeviceLocation       = settings.useDeviceLocation,
+            latitude                = settings.latitude,
+            longitude               = settings.longitude,
+            calculationMethodId     = settings.calculationMethodId,
+            reminderEnabled         = PrayerType.values().associate { it.name to (settings.reminderEnabled[it] ?: true) },
+            reminderOffsetMinutes   = PrayerType.values().associate { it.name to (settings.reminderOffsetMinutes[it] ?: 0) },
+            use24HourFormat         = settings.use24HourFormat,
+            language                = settings.language.name,
             themeMode               = settings.themeMode.name,
+            // null when the source device hasn't chosen a madhab yet, so a restore on any
+            // device knows to still show the one-time prompt (see SettingsDto/toDomain).
+            madhab                  = if (settings.madhabChosen) settings.madhab.name else null,
+            highLatitudeRule        = settings.highLatitudeRule.name,
+            prayerTimeAdjustMinutes = PrayerType.values().associate { it.name to (settings.prayerTimeAdjustMinutes[it] ?: 0) },
+            jumuahEnabled           = settings.jumuahEnabled,
+            jumuahReminderLeadMinutes = settings.jumuahReminderLeadMinutes,
         ),
         mosques = mosques.map {
             MosqueDto(id = it.id, name = it.name, latitude = it.latitude, longitude = it.longitude, radiusMeters = it.radiusMeters)
@@ -392,17 +407,28 @@ object BackupCodec {
             }
 
         return UserPrefs(
-            useDeviceLocation     = useDeviceLocation ?: true,
-            latitude               = latitude ?: 0.0,
-            longitude              = longitude ?: 0.0,
-            calculationMethodId    = calculationMethodId ?: 3,
-            reminderEnabled        = prayerBoolMapOf(reminderEnabled, true),
-            reminderOffsetMinutes  = prayerMapOf(reminderOffsetMinutes, 0),
-            use24HourFormat        = use24HourFormat ?: false,
+            useDeviceLocation       = useDeviceLocation ?: true,
+            latitude                = latitude ?: 0.0,
+            longitude               = longitude ?: 0.0,
+            calculationMethodId     = calculationMethodId ?: 3,
+            reminderEnabled         = prayerBoolMapOf(reminderEnabled, true),
+            reminderOffsetMinutes   = prayerMapOf(reminderOffsetMinutes, 0),
+            use24HourFormat         = use24HourFormat ?: false,
             language = language?.let { runCatching { com.salattracker.domain.model.AppLanguage.valueOf(it) }.getOrNull() }
                 ?: com.salattracker.domain.model.AppLanguage.ENGLISH,
             themeMode = themeMode?.let { runCatching { com.salattracker.domain.model.ThemeMode.valueOf(it) }.getOrNull() }
                 ?: com.salattracker.domain.model.ThemeMode.SYSTEM,
+            // A null madhab means the backed-up device hadn't chosen one, which is also true
+            // of every backup taken before this field existed — both cases should still show
+            // the one-time prompt after restoring, so madhabChosen tracks nullness directly.
+            madhab = madhab?.let { runCatching { com.salattracker.domain.model.Madhab.valueOf(it) }.getOrNull() }
+                ?: com.salattracker.domain.model.Madhab.STANDARD,
+            madhabChosen = madhab != null,
+            highLatitudeRule = highLatitudeRule?.let { runCatching { com.salattracker.domain.model.HighLatitudeRule.valueOf(it) }.getOrNull() }
+                ?: com.salattracker.domain.model.HighLatitudeRule.AUTOMATIC,
+            prayerTimeAdjustMinutes = prayerMapOf(prayerTimeAdjustMinutes, 0),
+            jumuahEnabled = jumuahEnabled ?: true,
+            jumuahReminderLeadMinutes = jumuahReminderLeadMinutes ?: 0,
         )
     }
 

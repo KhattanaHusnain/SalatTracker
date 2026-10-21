@@ -33,8 +33,8 @@ class PrayerReminderWorker @AssistedInject constructor(
         return try {
             val prefs = settingsRepository.getCurrentPrefs()
             val today = LocalDate.now()
-            val todayTimes = prayerRepository.getCachedPrayerTimes(today).orEmpty()
-            val tomorrowTimes = prayerRepository.getCachedPrayerTimes(today.plusDays(1)).orEmpty()
+            val todayTimes = prayerRepository.getPrayerTimes(today).orEmpty()
+            val tomorrowTimes = prayerRepository.getPrayerTimes(today.plusDays(1)).orEmpty()
 
             AlarmScheduler(applicationContext).schedule(prefs, todayTimes, tomorrowTimes)
             Result.success()

@@ -3,6 +3,8 @@ package com.salattracker.data.local.preferences
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import com.salattracker.domain.model.AppLanguage
+import com.salattracker.domain.model.HighLatitudeRule
+import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.ThemeMode
 import com.salattracker.domain.repository.SettingsRepository
@@ -32,14 +34,24 @@ class DataStoreSettingsRepository @Inject constructor(
         val LANGUAGE              = stringPreferencesKey("language")
         val THEME_MODE            = stringPreferencesKey("theme_mode")
         val ONBOARDING_COMPLETED  = booleanPreferencesKey("onboarding_completed")
+        val MADHAB                = stringPreferencesKey("madhab")
+        val HIGH_LATITUDE_RULE    = stringPreferencesKey("high_latitude_rule")
+        val MADHAB_CHOSEN         = booleanPreferencesKey("madhab_chosen")
+        val JUMUAH_ENABLED        = booleanPreferencesKey("jumuah_enabled")
+        val JUMUAH_REMINDER_LEAD  = intPreferencesKey("jumuah_reminder_lead_minutes")
 
         // Per-prayer reminder toggle: "reminder_enabled_FAJR" etc.
         fun reminderEnabled(type: PrayerType) =
             booleanPreferencesKey("reminder_enabled_${type.name}")
 
-        // Per-prayer offset: "reminder_offset_FAJR" etc.
+        // Per-prayer offset: "reminder_offset_FAJR" etc. (notification lead/lag — see
+        // UserPrefs.reminderOffsetMinutes vs prayerTimeAdjustMinutes).
         fun reminderOffset(type: PrayerType) =
             intPreferencesKey("reminder_offset_${type.name}")
+
+        // Per-prayer correction to the calculated time itself: "prayer_time_adjust_FAJR" etc.
+        fun prayerTimeAdjust(type: PrayerType) =
+            intPreferencesKey("prayer_time_adjust_${type.name}")
 
         fun reminderSnooze(type: PrayerType) =
             intPreferencesKey("reminder_snooze_${type.name}")
@@ -96,6 +108,16 @@ class DataStoreSettingsRepository @Inject constructor(
         themeMode            = this[Keys.THEME_MODE]?.let { runCatching { ThemeMode.valueOf(it) }.getOrNull() }
             ?: ThemeMode.SYSTEM,
         onboardingCompleted  = this[Keys.ONBOARDING_COMPLETED]   ?: false,
+        madhab               = this[Keys.MADHAB]?.let { runCatching { Madhab.valueOf(it) }.getOrNull() }
+            ?: Madhab.STANDARD,
+        highLatitudeRule     = this[Keys.HIGH_LATITUDE_RULE]?.let { runCatching { HighLatitudeRule.valueOf(it) }.getOrNull() }
+            ?: HighLatitudeRule.AUTOMATIC,
+        prayerTimeAdjustMinutes = PrayerType.values().associateWith { type ->
+            this[Keys.prayerTimeAdjust(type)] ?: 0
+        },
+        madhabChosen         = this[Keys.MADHAB_CHOSEN]          ?: false,
+        jumuahEnabled        = this[Keys.JUMUAH_ENABLED]         ?: true,
+        jumuahReminderLeadMinutes = this[Keys.JUMUAH_REMINDER_LEAD] ?: 0,
     )
 
     // ── Write ─────────────────────────────────────────────────────────────────
@@ -110,6 +132,12 @@ class DataStoreSettingsRepository @Inject constructor(
         use24HourFormat: Boolean,
         language: AppLanguage,
         themeMode: ThemeMode,
+        madhab: Madhab,
+        highLatitudeRule: HighLatitudeRule,
+        prayerTimeAdjustMinutes: Map<PrayerType, Int>,
+        madhabChosen: Boolean,
+        jumuahEnabled: Boolean,
+        jumuahReminderLeadMinutes: Int,
     ) {
         dataStore.edit { prefs ->
             prefs[Keys.USE_DEVICE_LOCATION]   = useDeviceLocation
@@ -119,9 +147,15 @@ class DataStoreSettingsRepository @Inject constructor(
             prefs[Keys.USE_24_HOUR]           = use24HourFormat
             prefs[Keys.LANGUAGE]              = language.name
             prefs[Keys.THEME_MODE]            = themeMode.name
+            prefs[Keys.MADHAB]                = madhab.name
+            prefs[Keys.HIGH_LATITUDE_RULE]    = highLatitudeRule.name
+            prefs[Keys.MADHAB_CHOSEN]         = madhabChosen
+            prefs[Keys.JUMUAH_ENABLED]        = jumuahEnabled
+            prefs[Keys.JUMUAH_REMINDER_LEAD]  = jumuahReminderLeadMinutes
             PrayerType.values().forEach { type ->
-                prefs[Keys.reminderEnabled(type)] = reminderEnabled[type] ?: true
-                prefs[Keys.reminderOffset(type)]  = reminderOffsetMinutes[type] ?: 0
+                prefs[Keys.reminderEnabled(type)]  = reminderEnabled[type] ?: true
+                prefs[Keys.reminderOffset(type)]   = reminderOffsetMinutes[type] ?: 0
+                prefs[Keys.prayerTimeAdjust(type)] = prayerTimeAdjustMinutes[type] ?: 0
             }
         }
     }
@@ -187,5 +221,28 @@ class DataStoreSettingsRepository @Inject constructor(
         dataStore.edit { prefs ->
             if (uri == null) prefs.remove(Keys.reminderSound(type)) else prefs[Keys.reminderSound(type)] = uri
         }
+    }
+
+    override suspend fun setMadhab(madhab: Madhab) {
+        dataStore.edit { prefs ->
+            prefs[Keys.MADHAB] = madhab.name
+            prefs[Keys.MADHAB_CHOSEN] = true
+        }
+    }
+
+    override suspend fun setHighLatitudeRule(rule: HighLatitudeRule) {
+        dataStore.edit { it[Keys.HIGH_LATITUDE_RULE] = rule.name }
+    }
+
+    override suspend fun setPrayerTimeAdjustMinutes(type: PrayerType, minutes: Int) {
+        dataStore.edit { it[Keys.prayerTimeAdjust(type)] = minutes }
+    }
+
+    override suspend fun setJumuahEnabled(enabled: Boolean) {
+        dataStore.edit { it[Keys.JUMUAH_ENABLED] = enabled }
+    }
+
+    override suspend fun setJumuahReminderLeadMinutes(minutes: Int) {
+        dataStore.edit { it[Keys.JUMUAH_REMINDER_LEAD] = minutes }
     }
 }

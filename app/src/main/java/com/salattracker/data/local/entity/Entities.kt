@@ -73,24 +73,6 @@ data class QazaBalanceEntity(
     @ColumnInfo(name = "pending_count")val pendingCount: Int = 0,
 )
 
-// ── Prayer times cache entity ─────────────────────────────────────────────────
-
-@Entity(
-    tableName   = "prayer_times_cache",
-    primaryKeys = ["date", "latitude", "longitude", "method"],
-)
-data class PrayerTimeCacheEntity(
-    @ColumnInfo(name = "date")       val date: LocalDate,
-    @ColumnInfo(name = "latitude")   val latitude: Double,
-    @ColumnInfo(name = "longitude")  val longitude: Double,
-    @ColumnInfo(name = "method")     val method: Int,
-    @ColumnInfo(name = "fajr")       val fajr: String,
-    @ColumnInfo(name = "dhuhr")      val dhuhr: String,
-    @ColumnInfo(name = "asr")        val asr: String,
-    @ColumnInfo(name = "maghrib")    val maghrib: String,
-    @ColumnInfo(name = "isha")       val isha: String,
-    @ColumnInfo(name = "cached_at")  val cachedAt: Long = System.currentTimeMillis(),
-)
 
 // ── Verse cache entity ────────────────────────────────────────────────────────
 // Curated prayer-related verses fetched from the Quran.com API and cached so
