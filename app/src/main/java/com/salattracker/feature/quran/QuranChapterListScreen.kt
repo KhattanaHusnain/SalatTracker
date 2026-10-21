@@ -243,7 +243,7 @@ private fun JuzRow(juz: QuranJuzUi, onClick: () -> Unit) {
             modifier = Modifier.size(36.dp).clip(CircleShape).background(SalatPrimaryContainer),
             contentAlignment = Alignment.Center,
         ) {
-            Text(juz.juzNumber.toString(), color = SalatPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
+            Text(juz.juzNumber.toString(), color = SalatOnPrimaryContainer, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
         }
         Column(modifier = Modifier.weight(1f)) {
             Text(
@@ -304,7 +304,7 @@ private fun ChapterRow(chapter: Chapter, onClick: () -> Unit) {
             modifier = Modifier.size(36.dp).clip(CircleShape).background(SalatPrimaryContainer),
             contentAlignment = Alignment.Center,
         ) {
-            Text(chapter.number.toString(), color = SalatPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
+            Text(chapter.number.toString(), color = SalatOnPrimaryContainer, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, fontFamily = InterFamily)
         }
         Column(modifier = Modifier.weight(1f)) {
             Text(chapter.nameTransliteration, color = SalatOnSurface, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily)
