@@ -65,6 +65,9 @@
     <string name="quran_credits_nastaliq_body">نوٹو نستعلیق اردو از Google Fonts — SIL Open Font License کے تحت۔</string>
     <string name="quran_credits_visit_source">ماخذ دیکھیں</string>
     <string name="topbar_quran_credits">قرآن کے ماخذ</string>
+    <string name="quran_search_title">قرآن میں تلاش کریں</string>
+    <string name="quran_search_hint">سورہ یا پارے کا عنوان</string>
+    <string name="quran_search_no_results">کوئی سورہ یا پارے کا عنوان نہیں ملا</string>
     <string name="quran_jump_title">جائیں</string>
     <string name="quran_jump_page">صفحہ</string>
     <string name="quran_jump_hizb">حزب</string>

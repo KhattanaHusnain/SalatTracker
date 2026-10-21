@@ -25,15 +25,8 @@ fun QuranChapterListEntry(
 
     LaunchedEffect(searchRequest) {
         if (searchRequest > 0) {
-            viewModel.onJumpDialogOpen()
+            viewModel.onSearchDialogOpen()
             onSearchRequestConsumed()
-        }
-    }
-
-    LaunchedEffect(uiState.navigateToChapter) {
-        uiState.navigateToChapter?.let { chapterNumber ->
-            onChapterClick(chapterNumber)
-            viewModel.onNavigationConsumed()
         }
     }
 
@@ -43,8 +36,6 @@ fun QuranChapterListEntry(
         onContinueReadingClick = onContinueReadingClick,
         onJuzClick = onJuzClick,
         onTabSelected = viewModel::onTabSelected,
-        onJumpDialogDismiss = viewModel::onJumpDialogDismiss,
-        onJumpTypeSelected = viewModel::onJumpTypeSelected,
-        onJumpConfirm = viewModel::onJumpConfirm,
+        onSearchDialogDismiss = viewModel::onSearchDialogDismiss,
     )
 }

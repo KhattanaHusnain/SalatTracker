@@ -17,9 +17,6 @@ import javax.inject.Inject
 
 enum class QuranBrowseTab { SURAH, JUZ }
 
-/** What a page/hizb jump number is being resolved against. */
-enum class QuranJumpType { PAGE, HIZB }
-
 /** A juz's first printed page and its compact structural summary. */
 data class QuranJuzUi(
     val juzNumber: Int,
@@ -35,12 +32,7 @@ data class QuranChapterListUiState(
     val continueReading: QuranReadHistoryEntry? = null,
     val selectedTab: QuranBrowseTab = QuranBrowseTab.JUZ,
     val juzEntries: List<QuranJuzUi> = emptyList(),
-    val showJumpDialog: Boolean = false,
-    val jumpType: QuranJumpType = QuranJumpType.PAGE,
-    val jumpError: Boolean = false,
-    /** Set once a jump resolves to a chapter; the screen navigates on it and calls
-     * [QuranChapterListViewModel.onNavigationConsumed] to reset it. */
-    val navigateToChapter: Int? = null,
+    val showSearchDialog: Boolean = false,
 )
 
 @HiltViewModel
@@ -87,39 +79,12 @@ class QuranChapterListViewModel @Inject constructor(
         _uiState.update { it.copy(selectedTab = tab) }
     }
 
-    fun onJumpDialogOpen() {
-        _uiState.update { it.copy(showJumpDialog = true, jumpError = false) }
+    fun onSearchDialogOpen() {
+        _uiState.update { it.copy(showSearchDialog = true) }
     }
 
-    fun onJumpDialogDismiss() {
-        _uiState.update { it.copy(showJumpDialog = false, jumpError = false) }
-    }
-
-    fun onJumpTypeSelected(type: QuranJumpType) {
-        _uiState.update { it.copy(jumpType = type, jumpError = false) }
-    }
-
-    fun onJumpConfirm(input: String) {
-        val number = input.toIntOrNull()
-        if (number == null) {
-            _uiState.update { it.copy(jumpError = true) }
-            return
-        }
-        viewModelScope.launch {
-            val location = when (_uiState.value.jumpType) {
-                QuranJumpType.PAGE -> contentRepository.firstVerseOfPage(number)
-                QuranJumpType.HIZB -> contentRepository.firstVerseOfHizb(number)
-            }
-            if (location != null) {
-                _uiState.update { it.copy(showJumpDialog = false, jumpError = false, navigateToChapter = location.chapterNumber) }
-            } else {
-                _uiState.update { it.copy(jumpError = true) }
-            }
-        }
-    }
-
-    fun onNavigationConsumed() {
-        _uiState.update { it.copy(navigateToChapter = null) }
+    fun onSearchDialogDismiss() {
+        _uiState.update { it.copy(showSearchDialog = false) }
     }
 
     private companion object {

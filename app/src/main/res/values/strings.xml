@@ -68,6 +68,9 @@
     <string name="quran_credits_nastaliq_body">Noto Nastaliq Urdu by Google Fonts — SIL Open Font License.</string>
     <string name="quran_credits_visit_source">Visit source</string>
     <string name="topbar_quran_credits">Quran Sources</string>
+    <string name="quran_search_title">Search Quran</string>
+    <string name="quran_search_hint">Surah or Juz title</string>
+    <string name="quran_search_no_results">No Surah or Juz title found</string>
     <string name="quran_jump_title">Jump to</string>
     <string name="quran_jump_page">Page</string>
     <string name="quran_jump_hizb">Hizb</string>

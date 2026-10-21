@@ -65,6 +65,9 @@
     <string name="quran_credits_nastaliq_body">خط Noto Nastaliq Urdu من Google Fonts — رخصة SIL Open Font License.</string>
     <string name="quran_credits_visit_source">زيارة المصدر</string>
     <string name="topbar_quran_credits">مصادر القرآن</string>
+    <string name="quran_search_title">البحث في القرآن</string>
+    <string name="quran_search_hint">اسم السورة أو الجزء</string>
+    <string name="quran_search_no_results">لم يتم العثور على سورة أو جزء</string>
     <string name="quran_jump_title">الانتقال إلى</string>
     <string name="quran_jump_page">صفحة</string>
     <string name="quran_jump_hizb">حزب</string>
