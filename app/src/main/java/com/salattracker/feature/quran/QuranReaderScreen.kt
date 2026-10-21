@@ -17,10 +17,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,6 +32,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -39,6 +45,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salattracker.core.theme.*
+import com.salattracker.R
 import com.salattracker.domain.model.Chapter
 import com.salattracker.domain.model.RevelationPlace
 import com.salattracker.domain.model.Verse
@@ -76,6 +83,8 @@ private const val VERSES_LABEL_ARABIC = "آية"
 fun QuranReaderScreen(
     uiState: QuranReaderUiState,
     onChapterInfoClick: (Int) -> Unit,
+    onPreviousPage: () -> Unit,
+    onNextPage: () -> Unit,
 ) {
     if (uiState.isLoading) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -85,45 +94,95 @@ fun QuranReaderScreen(
     }
 
     val chapter = uiState.chapter ?: return
+    val readerPage = uiState.pages.getOrNull(uiState.currentPageIndex)
+    val listState = rememberLazyListState()
 
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
-    ) {
-        item {
-            SurahHeaderFrame(
-                chapter = chapter,
-                pageNumber = uiState.verses.firstOrNull()?.pageNumber,
-                juzNumber = uiState.verses.firstOrNull()?.juzNumber,
-                onClick = { onChapterInfoClick(chapter.number) },
+    LaunchedEffect(readerPage?.pageNumber) {
+        if (readerPage != null) listState.scrollToItem(0)
+    }
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        if (uiState.pages.size > 1 && readerPage != null) {
+            ReaderPager(
+                pageNumber = readerPage.pageNumber,
+                hasPreviousPage = uiState.currentPageIndex > 0,
+                hasNextPage = uiState.currentPageIndex < uiState.pages.lastIndex,
+                onPreviousPage = onPreviousPage,
+                onNextPage = onNextPage,
             )
-            Spacer(Modifier.height(14.dp))
-            if (chapter.number != 1 && chapter.number != SURAH_WITHOUT_BISMILLAH) {
-                BismillahLine()
-                Spacer(Modifier.height(14.dp))
+        }
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.weight(1f),
+            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
+        ) {
+            if (uiState.currentPageIndex == 0) {
+                item {
+                    SurahHeaderFrame(
+                        chapter = chapter,
+                        pageNumber = readerPage?.pageNumber ?: uiState.verses.firstOrNull()?.pageNumber,
+                        juzNumber = uiState.verses.firstOrNull { it.pageNumber == readerPage?.pageNumber }?.juzNumber
+                            ?: uiState.verses.firstOrNull()?.juzNumber,
+                        onClick = { onChapterInfoClick(chapter.number) },
+                    )
+                    Spacer(Modifier.height(14.dp))
+                    if (chapter.number != 1 && chapter.number != SURAH_WITHOUT_BISMILLAH) {
+                        BismillahLine()
+                    }
+                    Spacer(Modifier.height(14.dp))
+                }
+            }
+            if (readerPage != null) {
+                itemsIndexed(readerPage.lines) { index, line ->
+                    ReaderLineBlock(
+                        line = line,
+                        isFirstLine = uiState.currentPageIndex == 0 && index == 0,
+                    )
+                    Spacer(Modifier.height(18.dp))
+                }
+            } else {
+                // Robustness fallback only — shouldn't trigger in practice, since Mushaf data is
+                // bundled for every verse.
+                items(uiState.verses, key = { it.verseNumber }) { verse ->
+                    Text(
+                        text = verse.textUthmani,
+                        color = SalatOnSurface, fontSize = 22.sp, fontFamily = InterFamily,
+                        textAlign = TextAlign.End, lineHeight = 36.sp,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    uiState.translations[verse.verseNumber]?.let { translation ->
+                        Spacer(Modifier.height(8.dp))
+                        UrduTranslation(verseTranslationWithNumber(translation, verse.verseNumber))
+                    }
+                    Spacer(Modifier.height(18.dp))
+                }
             }
         }
-        if (uiState.lines.isNotEmpty()) {
-            itemsIndexed(uiState.lines) { index, line ->
-                ReaderLineBlock(line = line, isFirstLine = index == 0)
-                Spacer(Modifier.height(18.dp))
-            }
-        } else {
-            // Robustness fallback only — shouldn't trigger in practice, since Mushaf data is
-            // bundled for every verse.
-            items(uiState.verses, key = { it.verseNumber }) { verse ->
-                Text(
-                    text = verse.textUthmani,
-                    color = SalatOnSurface, fontSize = 22.sp, fontFamily = InterFamily,
-                    textAlign = TextAlign.End, lineHeight = 36.sp,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                uiState.translations[verse.verseNumber]?.let { translation ->
-                    Spacer(Modifier.height(8.dp))
-                    UrduTranslation(verseTranslationWithNumber(translation, verse.verseNumber))
-                }
-                Spacer(Modifier.height(18.dp))
-            }
+    }
+}
+
+@Composable
+private fun ReaderPager(
+    pageNumber: Int,
+    hasPreviousPage: Boolean,
+    hasNextPage: Boolean,
+    onPreviousPage: () -> Unit,
+    onNextPage: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        IconButton(onClick = onNextPage, enabled = hasNextPage) {
+            Icon(painterResource(R.drawable.ic_chevron_left), stringResource(R.string.quran_mushaf_next_page))
+        }
+        Text(
+            text = stringResource(R.string.quran_mushaf_page_label, pageNumber),
+            color = SalatOnSurface, fontSize = 13.sp, fontFamily = InterFamily,
+        )
+        IconButton(onClick = onPreviousPage, enabled = hasPreviousPage) {
+            Icon(painterResource(R.drawable.ic_chevron_right), stringResource(R.string.quran_mushaf_previous_page))
         }
     }
 }
@@ -291,5 +350,7 @@ private fun QuranReaderScreenPreview() {
             ),
         ),
         onChapterInfoClick = {},
+        onPreviousPage = {},
+        onNextPage = {},
     )
 }

@@ -38,6 +38,12 @@ data class ReaderLine(
     val translationChunks: List<ReaderTranslationChunk>,
 )
 
+/** The portion of a surah that belongs to one printed Mushaf page. */
+data class ReaderPage(
+    val pageNumber: Int,
+    val lines: List<ReaderLine>,
+)
+
 data class QuranReaderUiState(
     val isLoading: Boolean = true,
     val chapter: Chapter? = null,
@@ -45,6 +51,9 @@ data class QuranReaderUiState(
     /** This chapter's Arabic, pre-split into real Mushaf lines — see [ReaderLine]. Empty until
      * the bundled Mushaf data loads. */
     val lines: List<ReaderLine> = emptyList(),
+    /** Reader lines grouped by their real printed page number. */
+    val pages: List<ReaderPage> = emptyList(),
+    val currentPageIndex: Int = 0,
     /** Urdu translation (Fateh Muhammad Jalandhry), keyed by verse number — used only by the
      * robustness fallback below (plain reflowing text, if [lines] is ever empty). The reader's
      * normal line-by-line display uses each line's own [ReaderLine.translationChunks] instead. */
@@ -87,11 +96,14 @@ class QuranReaderViewModel @Inject constructor(
                 .getTranslationText(DEFAULT_URDU_TRANSLATION_PACK_ID, chapterNumber)
                 .associate { it.verseNumber to it.text }
             val lines = mushafLines.toReaderLines(translations)
+            val readerPages = lines.groupBy { it.pageNumber }
+                .map { (pageNumber, pageLines) -> ReaderPage(pageNumber, pageLines) }
             val tafsirs = contentRepository.getTafsirEntries(DEFAULT_TAFSIR_PACK_ID, chapterNumber)
             _uiState.update {
                 it.copy(
                     isLoading = false, chapter = chapter, verses = verses,
-                    lines = lines, translations = translations, tafsirs = tafsirs,
+                    lines = lines, pages = readerPages, currentPageIndex = 0,
+                    translations = translations, tafsirs = tafsirs,
                 )
             }
             // A coarse "started reading this chapter" signal for now — per-verse scroll-position
@@ -126,6 +138,20 @@ class QuranReaderViewModel @Inject constructor(
                     QuranBookmark(chapterNumber = chapterNumber, fromVerse = verseNumber, toVerse = verseNumber)
                 )
             }
+        }
+    }
+
+    fun onNextPage() {
+        _uiState.update { state ->
+            if (state.currentPageIndex >= state.pages.lastIndex) state
+            else state.copy(currentPageIndex = state.currentPageIndex + 1)
+        }
+    }
+
+    fun onPreviousPage() {
+        _uiState.update { state ->
+            if (state.currentPageIndex <= 0) state
+            else state.copy(currentPageIndex = state.currentPageIndex - 1)
         }
     }
 }

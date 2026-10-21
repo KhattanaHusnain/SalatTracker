@@ -21,12 +21,16 @@ fun QuranReaderEntry(
     viewModel: QuranReaderViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    LaunchedEffect(uiState.verses) {
-        val firstPage = uiState.verses.firstOrNull()?.pageNumber ?: return@LaunchedEffect
-        onPageLoaded(firstPage)
+    LaunchedEffect(uiState.currentPageIndex, uiState.pages) {
+        val pageNumber = uiState.pages.getOrNull(uiState.currentPageIndex)?.pageNumber
+            ?: uiState.verses.firstOrNull()?.pageNumber
+            ?: return@LaunchedEffect
+        onPageLoaded(pageNumber)
     }
     QuranReaderScreen(
         uiState = uiState,
         onChapterInfoClick = onChapterInfoClick,
+        onPreviousPage = viewModel::onPreviousPage,
+        onNextPage = viewModel::onNextPage,
     )
 }
