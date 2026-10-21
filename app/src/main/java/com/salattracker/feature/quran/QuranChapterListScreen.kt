@@ -239,17 +239,21 @@ private fun JuzRow(juz: QuranJuzUi, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Column {
+        Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "الْجُزْءُ ${juz.juzNumber.toArabicNumeral()}",
-                color = SalatOnSurface, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = AmiriQuranFamily,
+                text = juz.title.transliteration,
+                color = SalatOnSurface, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, fontFamily = MontserratFamily,
             )
             Spacer(Modifier.height(2.dp))
             Text(
-                text = "${juz.pageCount} pages · ${juz.ayahCount} ayahs",
+                text = "الْجُزْءُ ${juz.juzNumber.toArabicNumeral()} · ${juz.pageCount} pages · ${juz.ayahCount} ayahs",
                 color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = InterFamily,
             )
         }
+        Text(
+            text = juz.title.arabic,
+            color = SalatOnSurface, fontSize = 20.sp, fontFamily = AmiriQuranFamily, textAlign = TextAlign.End,
+        )
     }
 }
 

@@ -26,6 +26,7 @@ data class QuranJuzUi(
     val pageNumber: Int,
     val pageCount: Int,
     val ayahCount: Int,
+    val title: JuzTitle,
 )
 
 data class QuranChapterListUiState(
@@ -75,6 +76,7 @@ class QuranChapterListViewModel @Inject constructor(
                     pageNumber = firstVerse.pageNumber,
                     pageCount = nextJuzFirstPage - firstVerse.pageNumber,
                     ayahCount = contentRepository.verseCountForJuz(juzNumber),
+                    title = checkNotNull(JUZ_TITLES[juzNumber]),
                 )
             }
             _uiState.update { it.copy(juzEntries = entries) }
