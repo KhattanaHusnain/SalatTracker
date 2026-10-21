@@ -79,6 +79,7 @@ class QuranReaderViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val chapterNumber: Int = checkNotNull(savedStateHandle["chapterNumber"])
+    private val resumeVerseNumber: Int = savedStateHandle["verseNumber"] ?: 1
 
     private val _uiState = MutableStateFlow(QuranReaderUiState())
     val uiState: StateFlow<QuranReaderUiState> = _uiState.asStateFlow()
@@ -98,18 +99,18 @@ class QuranReaderViewModel @Inject constructor(
             val lines = mushafLines.toReaderLines(translations)
             val readerPages = lines.groupBy { it.pageNumber }
                 .map { (pageNumber, pageLines) -> ReaderPage(pageNumber, pageLines) }
+            val initialPageIndex = readerPages.indexOfFirst { page ->
+                page.lines.any { line -> line.words.any { it.verseNumber == resumeVerseNumber } }
+            }.takeIf { it >= 0 } ?: 0
             val tafsirs = contentRepository.getTafsirEntries(DEFAULT_TAFSIR_PACK_ID, chapterNumber)
             _uiState.update {
                 it.copy(
                     isLoading = false, chapter = chapter, verses = verses,
-                    lines = lines, pages = readerPages, currentPageIndex = 0,
+                    lines = lines, pages = readerPages, currentPageIndex = initialPageIndex,
                     translations = translations, tafsirs = tafsirs,
                 )
             }
-            // A coarse "started reading this chapter" signal for now — per-verse scroll-position
-            // tracking (so "continue reading" resumes mid-chapter) is a later refinement, once the
-            // reader has real scroll-visibility tracking to drive it honestly.
-            userDataRepository.recordRead(chapterNumber, verseNumber = 1)
+            recordReadForPage(readerPages.getOrNull(initialPageIndex))
         }
         viewModelScope.launch {
             userDataRepository.observeBookmarks().collect { bookmarks ->
@@ -146,6 +147,7 @@ class QuranReaderViewModel @Inject constructor(
             if (state.currentPageIndex >= state.pages.lastIndex) state
             else state.copy(currentPageIndex = state.currentPageIndex + 1)
         }
+        recordReadForPage(_uiState.value.pages.getOrNull(_uiState.value.currentPageIndex))
     }
 
     fun onPreviousPage() {
@@ -153,6 +155,14 @@ class QuranReaderViewModel @Inject constructor(
             if (state.currentPageIndex <= 0) state
             else state.copy(currentPageIndex = state.currentPageIndex - 1)
         }
+        recordReadForPage(_uiState.value.pages.getOrNull(_uiState.value.currentPageIndex))
+    }
+
+    /** Saves the first ayah displayed on the current printed page, which also identifies the
+     * exact page to restore when the user selects Continue reading. */
+    private fun recordReadForPage(page: ReaderPage?) {
+        val verseNumber = page?.lines?.firstOrNull()?.words?.firstOrNull()?.verseNumber ?: return
+        viewModelScope.launch { userDataRepository.recordRead(chapterNumber, verseNumber) }
     }
 }
 

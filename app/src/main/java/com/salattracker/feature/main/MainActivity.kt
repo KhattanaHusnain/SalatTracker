@@ -338,11 +338,19 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                     )
                 }
                 composable(BottomNavRoute.Quran.route) {
-                    QuranChapterListEntry(onChapterClick = { number -> navController.push(Routes.quranReader(number)) })
+                    QuranChapterListEntry(
+                        onChapterClick = { number -> navController.push(Routes.quranReader(number)) },
+                        onContinueReadingClick = { chapterNumber, verseNumber ->
+                            navController.push(Routes.quranReader(chapterNumber, verseNumber))
+                        },
+                    )
                 }
                 composable(
                     Routes.QURAN_READER,
-                    arguments = listOf(navArgument("chapterNumber") { type = NavType.IntType }),
+                    arguments = listOf(
+                        navArgument("chapterNumber") { type = NavType.IntType },
+                        navArgument("verseNumber") { type = NavType.IntType; defaultValue = 1 },
+                    ),
                 ) {
                     QuranReaderEntry(
                         onChapterInfoClick = { number -> navController.push(Routes.quranChapterInfo(number)) },

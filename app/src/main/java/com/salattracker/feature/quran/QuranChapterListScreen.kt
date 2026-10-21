@@ -58,6 +58,7 @@ import com.salattracker.domain.model.RevelationPlace
 fun QuranChapterListScreen(
     uiState: QuranChapterListUiState,
     onChapterClick: (Int) -> Unit,
+    onContinueReadingClick: (chapterNumber: Int, verseNumber: Int) -> Unit,
     onTabSelected: (QuranBrowseTab) -> Unit,
     onJumpDialogOpen: () -> Unit,
     onJumpDialogDismiss: () -> Unit,
@@ -92,7 +93,7 @@ fun QuranChapterListScreen(
                         ContinueReadingCard(
                             chapter = chapter,
                             verseNumber = verseNumber,
-                            onClick = { onChapterClick(chapter.number) },
+                            onClick = { onContinueReadingClick(chapter.number, verseNumber) },
                         )
                         Spacer(Modifier.height(16.dp))
                     }
@@ -342,6 +343,7 @@ private fun QuranChapterListScreenPreview() {
             continueReading = QuranReadHistoryEntry(chapterNumber = 2, verseNumber = 14),
         ),
         onChapterClick = {},
+        onContinueReadingClick = { _, _ -> },
         onTabSelected = {},
         onJumpDialogOpen = {},
         onJumpDialogDismiss = {},

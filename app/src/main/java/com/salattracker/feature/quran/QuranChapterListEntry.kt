@@ -9,6 +9,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 @Composable
 fun QuranChapterListEntry(
     onChapterClick: (Int) -> Unit,
+    onContinueReadingClick: (chapterNumber: Int, verseNumber: Int) -> Unit,
     viewModel: QuranChapterListViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -23,6 +24,7 @@ fun QuranChapterListEntry(
     QuranChapterListScreen(
         uiState = uiState,
         onChapterClick = onChapterClick,
+        onContinueReadingClick = onContinueReadingClick,
         onTabSelected = viewModel::onTabSelected,
         onJumpDialogOpen = viewModel::onJumpDialogOpen,
         onJumpDialogDismiss = viewModel::onJumpDialogDismiss,
