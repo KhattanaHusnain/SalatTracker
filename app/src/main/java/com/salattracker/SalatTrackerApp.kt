@@ -12,7 +12,7 @@ import com.salattracker.notification.GoalReminderWorker
 import com.salattracker.notification.MosqueModeSyncWorker
 import com.salattracker.notification.PrayerReminderWorker
 import com.salattracker.notification.QazaAutoMarkWorker
-import com.salattracker.notification.VerseCacheWorker
+import com.salattracker.notification.QuranSeedWorker
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
@@ -36,13 +36,12 @@ class SalatTrackerApp : Application(), Configuration.Provider {
         PrayerReminderWorker.enqueueOneTime(workManager)
         PrayerReminderWorker.enqueuePeriodic(workManager)
         QazaAutoMarkWorker.enqueuePeriodic(workManager)
-        VerseCacheWorker.enqueueOneTime(workManager)
-        VerseCacheWorker.enqueuePeriodic(workManager)
         GoalReminderWorker.enqueueOneTime(workManager)
         GoalReminderWorker.enqueuePeriodic(workManager)
         BackupWorker.enqueuePeriodic(workManager)
         // Periodic only: geofence broadcasts cold-start the process, so a one-time sync here would run on every event.
         MosqueModeSyncWorker.enqueuePeriodic(workManager)
+        QuranSeedWorker.enqueueOneTime(workManager)
     }
 
     // Per-prayer channels (sound/vibration vary by prayer) are created lazily, right before

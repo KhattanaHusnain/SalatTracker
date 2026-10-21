@@ -64,6 +64,13 @@ import com.salattracker.core.ui.MadhabPromptDialog
 import com.salattracker.feature.onboarding.OnboardingEntry
 import com.salattracker.feature.qaza.MissedPrayersEntry
 import com.salattracker.feature.qaza.QazaEntry
+import com.salattracker.feature.quran.QuranBookmarksEntry
+import com.salattracker.feature.quran.QuranChapterInfoEntry
+import com.salattracker.feature.quran.QuranMushafEntry
+import com.salattracker.feature.quran.QuranChapterListEntry
+import com.salattracker.feature.quran.QuranCreditsEntry
+import com.salattracker.feature.quran.QuranReadHistoryEntry
+import com.salattracker.feature.quran.QuranReaderEntry
 import com.salattracker.feature.reminders.PrayerRemindersEntry
 import com.salattracker.feature.settings.SettingsEntry
 import com.salattracker.feature.stats.StatsEntry
@@ -236,6 +243,11 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
     val calendarViewModel: CalendarViewModel = hiltViewModel()
     val calendarUiState by calendarViewModel.uiState.collectAsState()
 
+    // Mirrors QuranReaderScreen's currently-loaded chapter's first page, so the top bar's Mushaf
+    // button (a route-level action, a sibling of the NavHost rather than a child of the reader
+    // screen) knows which page to jump to — see QuranReaderEntry's onPageLoaded.
+    var quranReaderPageNumber by remember { mutableStateOf(1) }
+
     // A notification's deep link, delivered after this scaffold (and its NavHost) already
     // exist — navigate once, then let the caller clear it so a config change or
     // recomposition doesn't navigate again.
@@ -267,6 +279,8 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                 onBackupClick          = { navController.push(Routes.BACKUP) },
                 onDonateClick          = { navController.push(Routes.DONATE) },
                 onDevelopersClick      = { navController.push(Routes.DEVELOPERS) },
+                onStatsClick           = { navController.push(Routes.STATS) },
+                onQuranCreditsClick    = { navController.push(Routes.QURAN_CREDITS) },
                 onSettingsClick        = { navController.push(Routes.SETTINGS) },
             )
         },
@@ -284,6 +298,11 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                     onAddGoalClick       = { navController.push(Routes.ADD_GOAL) },
                     showBulkUpdate       = currentDest?.route == BottomNavRoute.Calendar.route,
                     onBulkUpdateClick    = { navController.push(Routes.bulkUpdate()) },
+                    showQuranBookmarks   = currentDest?.route == BottomNavRoute.Quran.route,
+                    onQuranBookmarksClick = { navController.push(Routes.QURAN_BOOKMARKS) },
+                    onQuranReadHistoryClick = { navController.push(Routes.QURAN_READ_HISTORY) },
+                    showMushafButton     = currentDest?.route == Routes.QURAN_READER,
+                    onMushafButtonClick  = { navController.push(Routes.quranMushaf(quranReaderPageNumber)) },
                     calendarView             = calendarUiState.view,
                     onCalendarViewChanged    = calendarViewModel::onViewChanged,
                     calendarAwayFromToday    = calendarUiState.awayFromToday,
@@ -318,6 +337,36 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                         },
                     )
                 }
+                composable(BottomNavRoute.Quran.route) {
+                    QuranChapterListEntry(onChapterClick = { number -> navController.push(Routes.quranReader(number)) })
+                }
+                composable(
+                    Routes.QURAN_READER,
+                    arguments = listOf(navArgument("chapterNumber") { type = NavType.IntType }),
+                ) {
+                    QuranReaderEntry(
+                        onChapterInfoClick = { number -> navController.push(Routes.quranChapterInfo(number)) },
+                        onPageLoaded = { page -> quranReaderPageNumber = page },
+                    )
+                }
+                composable(
+                    Routes.QURAN_CHAPTER_INFO,
+                    arguments = listOf(navArgument("chapterNumber") { type = NavType.IntType }),
+                ) {
+                    QuranChapterInfoEntry(onReadClick = { number -> navController.push(Routes.quranReader(number)) })
+                }
+                composable(
+                    Routes.QURAN_MUSHAF,
+                    arguments = listOf(navArgument("pageNumber") { type = NavType.IntType }),
+                ) {
+                    QuranMushafEntry()
+                }
+                composable(Routes.QURAN_BOOKMARKS) {
+                    QuranBookmarksEntry(onBookmarkClick = { number -> navController.push(Routes.quranReader(number)) })
+                }
+                composable(Routes.QURAN_READ_HISTORY) {
+                    QuranReadHistoryEntry(onEntryClick = { number -> navController.push(Routes.quranReader(number)) })
+                }
                 composable(BottomNavRoute.Calendar.route) {
                     CalendarEntry(calendarViewModel)
                 }
@@ -338,9 +387,6 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                         onAddGoalClick = { navController.push(Routes.ADD_GOAL) },
                     )
                 }
-                composable(BottomNavRoute.Stats.route) {
-                    StatsEntry(onAddGoalClick = { navController.push(Routes.ADD_GOAL) })
-                }
                 composable(Routes.SETTINGS) {
                     SettingsEntry()
                 }
@@ -358,6 +404,12 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                 }
                 composable(Routes.DEVELOPERS) {
                     DevelopersEntry()
+                }
+                composable(Routes.QURAN_CREDITS) {
+                    QuranCreditsEntry()
+                }
+                composable(Routes.STATS) {
+                    StatsEntry(onAddGoalClick = { navController.push(Routes.ADD_GOAL) })
                 }
                 composable(
                     Routes.BULK_UPDATE,
@@ -414,6 +466,11 @@ private fun TopBar(
     onAddGoalClick: () -> Unit,
     showBulkUpdate: Boolean,
     onBulkUpdateClick: () -> Unit,
+    showQuranBookmarks: Boolean,
+    onQuranBookmarksClick: () -> Unit,
+    onQuranReadHistoryClick: () -> Unit,
+    showMushafButton: Boolean,
+    onMushafButtonClick: () -> Unit,
     calendarView: CalendarViewType,
     onCalendarViewChanged: (CalendarViewType) -> Unit,
     calendarAwayFromToday: Boolean,
@@ -461,6 +518,19 @@ private fun TopBar(
                 CalendarViewMenu(currentView = calendarView, onViewChanged = onCalendarViewChanged)
                 IconButton(onClick = onBulkUpdateClick) {
                     Icon(painterResource(R.drawable.ic_edit_square), stringResource(R.string.action_bulk_update), tint = SalatPrimary)
+                }
+            }
+            if (showQuranBookmarks) {
+                IconButton(onClick = onQuranReadHistoryClick) {
+                    Icon(painterResource(R.drawable.ic_history), stringResource(R.string.topbar_quran_read_history), tint = SalatPrimary)
+                }
+                IconButton(onClick = onQuranBookmarksClick) {
+                    Icon(painterResource(R.drawable.ic_bookmark), stringResource(R.string.topbar_quran_bookmarks), tint = SalatPrimary)
+                }
+            }
+            if (showMushafButton) {
+                IconButton(onClick = onMushafButtonClick) {
+                    Icon(painterResource(R.drawable.ic_nav_quran), stringResource(R.string.quran_mushaf_mode), tint = SalatPrimary)
                 }
             }
         },
@@ -564,7 +634,7 @@ private fun topBarTitle(route: String?): String = stringResource(
         BottomNavRoute.Calendar.route -> R.string.topbar_calendar
         BottomNavRoute.Qaza.route     -> R.string.topbar_qaza
         BottomNavRoute.Goals.route    -> R.string.topbar_goals
-        BottomNavRoute.Stats.route    -> R.string.topbar_stats
+        BottomNavRoute.Quran.route    -> R.string.topbar_quran
         Routes.SETTINGS               -> R.string.topbar_settings
         Routes.BACKUP                 -> R.string.topbar_backup
         Routes.BULK_UPDATE            -> R.string.topbar_bulk_update
@@ -572,8 +642,15 @@ private fun topBarTitle(route: String?): String = stringResource(
         Routes.MOSQUE_MODE            -> R.string.topbar_mosque_mode
         Routes.DONATE                 -> R.string.topbar_donate
         Routes.DEVELOPERS             -> R.string.topbar_developers
+        Routes.STATS                  -> R.string.topbar_stats
         Routes.ADD_GOAL               -> R.string.topbar_new_goal
         Routes.MISSED_PRAYERS         -> R.string.topbar_missed_prayers
+        Routes.QURAN_READER           -> R.string.topbar_quran
+        Routes.QURAN_CHAPTER_INFO     -> R.string.topbar_quran
+        Routes.QURAN_MUSHAF           -> R.string.topbar_quran
+        Routes.QURAN_BOOKMARKS        -> R.string.topbar_quran_bookmarks
+        Routes.QURAN_READ_HISTORY     -> R.string.topbar_quran_read_history
+        Routes.QURAN_CREDITS          -> R.string.topbar_quran_credits
         else -> when {
             route?.startsWith("edit_goal") == true    -> R.string.topbar_edit_goal
             route?.startsWith("goal_details") == true -> R.string.topbar_goal_details

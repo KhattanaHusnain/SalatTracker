@@ -21,17 +21,3 @@ interface StreakDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertSnapshot(snapshot: StreakSnapshotEntity)
 }
-
-// ── Verse cache DAO ───────────────────────────────────────────────────────────
-
-@Dao
-interface VerseDao {
-    @Query("SELECT * FROM verse_cache")
-    suspend fun getAll(): List<VerseCacheEntity>
-
-    @Query("SELECT verse_key FROM verse_cache")
-    suspend fun getCachedKeys(): List<String>
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun upsert(entity: VerseCacheEntity)
-}

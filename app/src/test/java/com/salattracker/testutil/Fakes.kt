@@ -183,7 +183,6 @@ class FakePrayerRepository : PrayerRepository {
 
 class FakeVerseRepository(private val verse: VerseInfo = VerseInfo("test verse", "Test 1:1")) : VerseRepository {
     override suspend fun getRandomVerse(): VerseInfo = verse
-    override suspend fun refreshCache() = throw NotImplementedError("not used by this test")
 }
 
 /** In-memory [GoalRepository] exercising only what the Stats/Goals ViewModels actually call. */

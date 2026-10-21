@@ -11,20 +11,26 @@ import com.salattracker.data.local.entity.*
         PrayerEntryEntity::class,
         StreakSnapshotEntity::class,
         QazaBalanceEntity::class,
-        VerseCacheEntity::class,
         SpiritualGoalEntity::class,
         GoalCheckInEntity::class,
         MosqueEntity::class,
+        QuranBookmarkEntity::class,
+        QuranReadHistoryEntity::class,
+        QuranSearchHistoryEntity::class,
+        QuranContentPackEntity::class,
     ],
-    version  = 8,
+    version  = 10,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
 abstract class SalatDatabase : RoomDatabase() {
     abstract fun prayerDao(): PrayerDao
     abstract fun streakDao(): StreakDao
-    abstract fun verseDao(): VerseDao
     abstract fun goalDao(): GoalDao
     abstract fun backupDao(): BackupDao
     abstract fun mosqueDao(): MosqueDao
+    abstract fun quranBookmarkDao(): QuranBookmarkDao
+    abstract fun quranReadHistoryDao(): QuranReadHistoryDao
+    abstract fun quranSearchHistoryDao(): QuranSearchHistoryDao
+    abstract fun quranContentPackDao(): QuranContentPackDao
 }

@@ -45,6 +45,12 @@ android {
         compose = true
     }
 
+    // Mushaf page fonts (app/src/main/assets/quran/mushaf_fonts/) are read via
+    // androidx.compose.ui.text.font.Font(path, AssetManager) at runtime, which wants the asset
+    // stored uncompressed in the APK (mmap'd directly) rather than re-inflated on every open.
+    androidResources {
+        noCompress += "ttf"
+    }
 }
 android.buildFeatures.buildConfig = true
 dependencies {

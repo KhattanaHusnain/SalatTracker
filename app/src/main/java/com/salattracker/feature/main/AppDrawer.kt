@@ -27,8 +27,9 @@ import com.salattracker.core.theme.SalatPrimary
 import com.salattracker.core.theme.SalatSurface
 
 /** Stateless drawer content: Bulk Update, Prayer Reminders, Mosque Mode, Backup & Restore (with an
- * attention line when [backupNeedsAttention]), Settings. Fixed-width so the dimmed scrim area
- * next to it stays tappable (to close the drawer) even on small phones. */
+ * attention line when [backupNeedsAttention]), Stats, Quran Sources, Donate, Developers, Settings.
+ * Fixed-width so the dimmed scrim area next to it stays tappable (to close the drawer) even on
+ * small phones. */
 @Composable
 fun AppDrawer(
     backupNeedsAttention: Boolean,
@@ -38,6 +39,8 @@ fun AppDrawer(
     onBackupClick: () -> Unit,
     onDonateClick: () -> Unit,
     onDevelopersClick: () -> Unit,
+    onStatsClick: () -> Unit,
+    onQuranCreditsClick: () -> Unit,
     onSettingsClick: () -> Unit,
 ) {
     ModalDrawerSheet(
@@ -77,6 +80,11 @@ fun AppDrawer(
             onClick = onBackupClick,
         )
         DrawerItem(
+            iconRes = R.drawable.ic_nav_stats,
+            label = stringResource(R.string.nav_stats),
+            onClick = onStatsClick,
+        )
+        DrawerItem(
             iconRes = R.drawable.ic_heart,
             label = stringResource(R.string.action_donate),
             onClick = onDonateClick,
@@ -85,6 +93,11 @@ fun AppDrawer(
             iconRes = R.drawable.ic_code,
             label = stringResource(R.string.action_developers),
             onClick = onDevelopersClick,
+        )
+        DrawerItem(
+            iconRes = R.drawable.ic_info_circle,
+            label = stringResource(R.string.topbar_quran_credits),
+            onClick = onQuranCreditsClick,
         )
         DrawerItem(
             iconRes = R.drawable.ic_nav_settings,
@@ -128,6 +141,8 @@ fun AppDrawerPreview() {
         onBackupClick = {},
         onDonateClick = {},
         onDevelopersClick = {},
+        onStatsClick = {},
+        onQuranCreditsClick = {},
         onSettingsClick = {},
     )
 }

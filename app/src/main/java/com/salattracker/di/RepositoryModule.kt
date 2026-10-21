@@ -7,9 +7,12 @@ import com.salattracker.data.mosque.MosqueGeofencerImpl
 import com.salattracker.data.mosque.MosqueModeStoreImpl
 import com.salattracker.data.mosque.RingerControllerImpl
 import com.salattracker.data.repository.MosqueRepositoryImpl
+import com.salattracker.data.repository.MushafRepositoryImpl
 import com.salattracker.data.repository.BackupRepositoryImpl
 import com.salattracker.data.repository.GoalRepositoryImpl
 import com.salattracker.data.repository.PrayerRepositoryImpl
+import com.salattracker.data.repository.QuranContentRepositoryImpl
+import com.salattracker.data.repository.QuranUserDataRepositoryImpl
 import com.salattracker.data.repository.SettingsRepositoryImpl
 import com.salattracker.data.repository.VerseRepositoryImpl
 import com.salattracker.domain.repository.BackupRepository
@@ -22,6 +25,7 @@ import com.salattracker.domain.repository.MosqueModeNotifier
 import com.salattracker.domain.repository.MosqueModeStore
 import com.salattracker.domain.repository.MosqueModeSyncScheduler
 import com.salattracker.domain.repository.MosqueRepository
+import com.salattracker.domain.repository.MushafRepository
 import com.salattracker.domain.repository.PrayerReminderRescheduler
 import com.salattracker.domain.repository.PrayerTimeCalculator
 import com.salattracker.domain.repository.RingerController
@@ -30,6 +34,8 @@ import com.salattracker.notification.MosqueModeSyncSchedulerImpl
 import com.salattracker.notification.GoalReminderSchedulerImpl
 import com.salattracker.notification.PrayerReminderReschedulerImpl
 import com.salattracker.domain.repository.PrayerRepository
+import com.salattracker.domain.repository.QuranContentRepository
+import com.salattracker.domain.repository.QuranUserDataRepository
 import com.salattracker.domain.repository.SettingsRepository
 import com.salattracker.domain.repository.VerseRepository
 import dagger.Binds
@@ -105,4 +111,16 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindMosqueModeSyncScheduler(impl: MosqueModeSyncSchedulerImpl): MosqueModeSyncScheduler
+
+    @Binds
+    @Singleton
+    abstract fun bindQuranUserDataRepository(impl: QuranUserDataRepositoryImpl): QuranUserDataRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindQuranContentRepository(impl: QuranContentRepositoryImpl): QuranContentRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindMushafRepository(impl: MushafRepositoryImpl): MushafRepository
 }

@@ -6,9 +6,9 @@ import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 
 /**
- * Nav entry-point for the Stats tab.
+ * Nav entry-point for Stats, reached from the app drawer.
  * In MainActivity NavHost:
- *   composable(BottomNavRoute.Stats.route) { StatsEntry(onAddGoalClick = { ... }) }
+ *   composable(Routes.STATS) { StatsEntry(onAddGoalClick = { ... }) }
  */
 @Composable
 fun StatsEntry(

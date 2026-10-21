@@ -13,14 +13,14 @@ sealed class BottomNavRoute(
     val iconRes: Int,
 ) {
     object Home     : BottomNavRoute("home",     R.string.nav_home,     R.drawable.ic_nav_home)
+    object Quran    : BottomNavRoute("quran",    R.string.nav_quran,    R.drawable.ic_nav_quran)
     object Calendar : BottomNavRoute("calendar", R.string.nav_calendar, R.drawable.ic_nav_calendar)
     object Qaza     : BottomNavRoute("qaza",     R.string.nav_qaza,     R.drawable.ic_nav_qaza)
     object Goals    : BottomNavRoute("goals",    R.string.nav_goals,    R.drawable.ic_nav_goals)
-    object Stats    : BottomNavRoute("stats",    R.string.nav_stats,    R.drawable.ic_nav_stats)
 
     companion object {
         val all: List<BottomNavRoute> by lazy {
-            listOf(Home, Calendar, Qaza, Goals, Stats)
+            listOf(Home, Quran, Calendar, Qaza, Goals)
         }
     }
 }
@@ -34,13 +34,23 @@ object Routes {
     const val MOSQUE_MODE      = "mosque_mode"
     const val DONATE           = "donate"
     const val DEVELOPERS       = "developers"
+    const val STATS            = "stats"
     const val ADD_GOAL         = "add_goal"
     const val EDIT_GOAL        = "edit_goal/{goalId}"
     const val GOAL_DETAILS     = "goal_details/{goalId}"
     const val MISSED_PRAYERS   = "missed_prayers?prayer={prayer}"
+    const val QURAN_READER     = "quran_reader/{chapterNumber}"
+    const val QURAN_CHAPTER_INFO = "quran_chapter_info/{chapterNumber}"
+    const val QURAN_MUSHAF     = "quran_mushaf/{pageNumber}"
+    const val QURAN_BOOKMARKS  = "quran_bookmarks"
+    const val QURAN_READ_HISTORY = "quran_read_history"
+    const val QURAN_CREDITS    = "quran_credits"
 
     fun editGoal(goalId: Long) = "edit_goal/$goalId"
     fun goalDetails(goalId: Long) = "goal_details/$goalId"
+    fun quranReader(chapterNumber: Int) = "quran_reader/$chapterNumber"
+    fun quranChapterInfo(chapterNumber: Int) = "quran_chapter_info/$chapterNumber"
+    fun quranMushaf(pageNumber: Int) = "quran_mushaf/$pageNumber"
 
     /** Opens the full Qaza backlog, optionally pre-filtered to one prayer (e.g. tapping a prayer
      * tile on the Qaza dashboard). Omit [prayer] for the unfiltered list ("View all"). */

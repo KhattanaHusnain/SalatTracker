@@ -4,6 +4,7 @@
 
     <!-- Bottom nav labels -->
     <string name="nav_home">Home</string>
+    <string name="nav_quran">Quran</string>
     <string name="nav_calendar">Calendar</string>
     <string name="nav_qaza">Qaza</string>
     <string name="nav_goals">Goals</string>
@@ -12,6 +13,7 @@
 
     <!-- Top bar titles -->
     <string name="topbar_today">Today</string>
+    <string name="topbar_quran">Quran</string>
     <string name="topbar_calendar">Calendar</string>
     <string name="topbar_qaza">Qaza Tracker</string>
     <string name="topbar_stats">Stats &amp; Progress</string>
@@ -27,6 +29,65 @@
     <string name="cd_back">Back</string>
     <string name="action_add_goal">Add Goal</string>
     <string name="action_bulk_update">Bulk Update</string>
+
+    <!-- Quran -->
+    <string name="quran_continue_reading">Continue reading</string>
+    <string name="quran_continue_reading_subtitle">%1$s, verse %2$d</string>
+    <string name="quran_verses_suffix">verses</string>
+    <string name="quran_revelation_meccan">Meccan · %1$d verses</string>
+    <string name="quran_revelation_medinan">Medinan · %1$d verses</string>
+    <string name="quran_add_bookmark">Bookmark this verse</string>
+    <string name="quran_remove_bookmark">Remove bookmark</string>
+    <string name="quran_no_bookmarks">No bookmarks yet. Tap the bookmark icon on any verse to save it here.</string>
+    <string name="quran_bookmark_verse_label">Verse %1$d</string>
+    <string name="topbar_quran_bookmarks">Bookmarks</string>
+    <string name="quran_no_read_history">No reading history yet. Chapters you open will show up here.</string>
+    <string name="quran_clear_history">Clear history</string>
+    <string name="topbar_quran_read_history">Reading History</string>
+    <string name="quran_tab_surah">Surah</string>
+    <string name="quran_tab_juz">Juz</string>
+    <string name="quran_juz_label">Juz %1$d</string>
+    <string name="quran_juz_starts_at">Starts at %1$s, verse %2$d</string>
+    <string name="quran_toggle_tafsir">Show tafsir</string>
+    <string name="quran_tafsir_label">Tafsir — At-Tafsir Al-Muyassar</string>
+    <string name="quran_toggle_word_by_word">Show word-by-word</string>
+    <string name="quran_credits_intro">Everything below is used under its own source\'s terms — tap a source to visit it and read the full conditions.</string>
+    <string name="quran_credits_arabic_title">Arabic Text</string>
+    <string name="quran_credits_arabic_body">Uthmani script, from the Tanzil Project, served via alquran.cloud.</string>
+    <string name="quran_credits_translation_title">Translation</string>
+    <string name="quran_credits_translation_body">Saheeh International, via alquran.cloud.</string>
+    <string name="quran_credits_tafsir_title">Tafsir</string>
+    <string name="quran_credits_tafsir_body">At-Tafsir Al-Muyassar, King Fahd Complex (Madinah), via QuranEnc.com.</string>
+    <string name="quran_credits_wordbyword_title">Word by Word</string>
+    <string name="quran_credits_wordbyword_body">Compiled by Dr. Shehnaz Shaikh and Kausar Khatri, via alquran.cloud.</string>
+    <string name="quran_credits_mushaf_title">Mushaf Page Layout</string>
+    <string name="quran_credits_mushaf_body">King Fahd Glorious Quran Printing Complex (Madinah), via Quran Foundation.</string>
+    <string name="quran_credits_amiri_title">Arabic Display Type</string>
+    <string name="quran_credits_amiri_body">Amiri Quran by Khaled Hosny — SIL Open Font License.</string>
+    <string name="quran_credits_nastaliq_title">Urdu Display Type</string>
+    <string name="quran_credits_nastaliq_body">Noto Nastaliq Urdu by Google Fonts — SIL Open Font License.</string>
+    <string name="quran_credits_visit_source">Visit source</string>
+    <string name="topbar_quran_credits">Quran Sources</string>
+    <string name="quran_jump_title">Jump to</string>
+    <string name="quran_jump_page">Page</string>
+    <string name="quran_jump_hizb">Hizb</string>
+    <string name="quran_jump_page_label">Page number (1–604)</string>
+    <string name="quran_jump_hizb_label">Hizb number (1–60)</string>
+    <string name="quran_jump_error">Enter a valid number in range</string>
+    <string name="quran_jump_go">Go</string>
+    <string name="quran_info_revelation_place">Revelation Place</string>
+    <string name="quran_revelation_place_meccan">Meccan</string>
+    <string name="quran_revelation_place_medinan">Medinan</string>
+    <string name="quran_info_revelation_order">Revelation Order</string>
+    <string name="quran_info_revelation_order_value">%1$d</string>
+    <string name="quran_info_verse_count">Verses</string>
+    <string name="quran_info_juz">Juz</string>
+    <string name="quran_info_page">Page</string>
+    <string name="quran_info_start_reading">Start Reading</string>
+    <string name="quran_mushaf_mode">View as Mushaf page</string>
+    <string name="quran_mushaf_page_label">Page %1$d</string>
+    <string name="quran_mushaf_next_page">Next page</string>
+    <string name="quran_mushaf_previous_page">Previous page</string>
 
     <!-- Prayer names -->
     <string name="prayer_fajr">Fajr</string>

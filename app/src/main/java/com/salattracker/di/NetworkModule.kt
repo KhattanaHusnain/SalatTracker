@@ -5,7 +5,6 @@ import com.google.gson.GsonBuilder
 import com.salattracker.BuildConfig
 import com.salattracker.data.remote.api.DriveApiService
 import com.salattracker.data.remote.api.OverpassService
-import com.salattracker.data.remote.api.QuranApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -20,10 +19,6 @@ import javax.inject.Singleton
 
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
-annotation class QuranRetrofit
-
-@Qualifier
-@Retention(AnnotationRetention.BINARY)
 annotation class DriveRetrofit
 
 @Qualifier
@@ -34,44 +29,12 @@ annotation class OverpassRetrofit
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val QURAN_API_BASE_URL = "https://api.quran.com/api/v4/"
     private const val DRIVE_BASE_URL = "https://www.googleapis.com/"
     private const val OVERPASS_BASE_URL = "https://overpass-api.de/"
 
     @Provides
     @Singleton
     fun provideGson(): Gson = GsonBuilder().create()
-
-    @Provides
-    @Singleton
-    fun provideOkHttpClient(): OkHttpClient {
-        val logging = HttpLoggingInterceptor().apply {
-            level = if (BuildConfig.ENABLE_LOGGING)
-                HttpLoggingInterceptor.Level.BODY
-            else
-                HttpLoggingInterceptor.Level.NONE
-        }
-        return OkHttpClient.Builder()
-            .addInterceptor(logging)
-            .connectTimeout(15, TimeUnit.SECONDS)
-            .readTimeout(15, TimeUnit.SECONDS)
-            .build()
-    }
-
-    @Provides
-    @Singleton
-    @QuranRetrofit
-    fun provideQuranRetrofit(okHttpClient: OkHttpClient, gson: Gson): Retrofit =
-        Retrofit.Builder()
-            .baseUrl(QURAN_API_BASE_URL)
-            .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create(gson))
-            .build()
-
-    @Provides
-    @Singleton
-    fun provideQuranApiService(@QuranRetrofit retrofit: Retrofit): QuranApiService =
-        retrofit.create(QuranApiService::class.java)
 
     // The shared OkHttpClient logs full request/response bodies whenever ENABLE_LOGGING
     // is on (true for every build type today) — never acceptable for a client carrying

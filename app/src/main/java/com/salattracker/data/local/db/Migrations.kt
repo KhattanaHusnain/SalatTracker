@@ -16,7 +16,7 @@ val MIGRATION_5_6 = object : Migration(5, 6) {
     }
 }
 
-/** v6 -> v7: the Mosque Mode table. Purely additive � no existing data is touched. */
+/** v6 -> v7: the Mosque Mode table. Purely additive — no existing data is touched. */
 val MIGRATION_6_7 = object : Migration(6, 7) {
     override fun migrate(db: SupportSQLiteDatabase) {
         db.execSQL(
@@ -34,5 +34,44 @@ val MIGRATION_6_7 = object : Migration(6, 7) {
 val MIGRATION_7_8 = object : Migration(7, 8) {
     override fun migrate(db: SupportSQLiteDatabase) {
         db.execSQL("DROP TABLE IF EXISTS `prayer_times_cache`")
+    }
+}
+
+/** v8 -> v9: the Quran feature's per-device user-data tables — bookmarks, read history (whose
+ * most recent row also serves as "continue reading"), search history, and the registry of which
+ * downloadable content packs (translations/tafsirs/word-by-word/recitations) are on this device.
+ * Purely additive. The Quran text itself and the content those packs unlock live in their own
+ * separate database(s), not here — see data/local/quran/, added alongside the reading UI. */
+val MIGRATION_8_9 = object : Migration(8, 9) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `quran_bookmarks` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`chapter_number` INTEGER NOT NULL, `from_verse` INTEGER NOT NULL, `to_verse` INTEGER NOT NULL, " +
+                "`note` TEXT, `created_at` INTEGER NOT NULL)"
+        )
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `quran_read_history` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`chapter_number` INTEGER NOT NULL, `verse_number` INTEGER NOT NULL, `read_at` INTEGER NOT NULL)"
+        )
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `quran_search_history` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`query` TEXT NOT NULL, `searched_at` INTEGER NOT NULL)"
+        )
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `quran_content_packs` (`pack_id` TEXT NOT NULL PRIMARY KEY, " +
+                "`type` TEXT NOT NULL, `language` TEXT NOT NULL, `title` TEXT NOT NULL, `author` TEXT, " +
+                "`size_bytes` INTEGER NOT NULL, `source_url` TEXT NOT NULL, `version` INTEGER NOT NULL, " +
+                "`is_downloaded` INTEGER NOT NULL DEFAULT 0, `local_path` TEXT, `downloaded_at` INTEGER)"
+        )
+    }
+}
+
+/** v9 -> v10: drops `verse_cache` — the verse-of-the-day feature now reads straight from the
+ * locally-seeded Quran data (QuranCoreDatabase + the default translation pack) instead of
+ * fetching from the Quran.com API and caching the result here. It only ever held re-fetchable
+ * derived data (nothing the user entered), so there's nothing to migrate out of it. */
+val MIGRATION_9_10 = object : Migration(9, 10) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("DROP TABLE IF EXISTS `verse_cache`")
     }
 }

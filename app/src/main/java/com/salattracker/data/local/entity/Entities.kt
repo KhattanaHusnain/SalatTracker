@@ -5,6 +5,7 @@ import com.salattracker.domain.model.GoalCategory
 import com.salattracker.domain.model.GoalFrequency
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
+import com.salattracker.domain.model.QuranContentPackType
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -28,6 +29,9 @@ class Converters {
 
     @TypeConverter fun fromGoalFrequency(f: GoalFrequency): String = f.name
     @TypeConverter fun toGoalFrequency(s: String): GoalFrequency   = GoalFrequency.valueOf(s)
+
+    @TypeConverter fun fromQuranContentPackType(t: QuranContentPackType): String = t.name
+    @TypeConverter fun toQuranContentPackType(s: String): QuranContentPackType   = QuranContentPackType.valueOf(s)
 }
 
 // ── PrayerEntry entity ────────────────────────────────────────────────────────
@@ -71,20 +75,6 @@ data class QazaBalanceEntity(
     @ColumnInfo(name = "user_id")      val userId: String,
     @ColumnInfo(name = "prayer_type")  val prayerType: PrayerType,
     @ColumnInfo(name = "pending_count")val pendingCount: Int = 0,
-)
-
-
-// ── Verse cache entity ────────────────────────────────────────────────────────
-// Curated prayer-related verses fetched from the Quran.com API and cached so
-// they're available offline once fetched at least once.
-
-@Entity(tableName = "verse_cache")
-data class VerseCacheEntity(
-    @PrimaryKey
-    @ColumnInfo(name = "verse_key")  val verseKey: String,     // e.g. "2:238"
-    @ColumnInfo(name = "text")       val text: String,
-    @ColumnInfo(name = "citation")   val citation: String,     // e.g. "Al-Baqarah 2:238"
-    @ColumnInfo(name = "cached_at")  val cachedAt: Long = System.currentTimeMillis(),
 )
 
 // ── Spiritual goal entity ─────────────────────────────────────────────────────
@@ -133,4 +123,53 @@ data class MosqueEntity(
     @ColumnInfo(name = "latitude")      val latitude: Double,
     @ColumnInfo(name = "longitude")     val longitude: Double,
     @ColumnInfo(name = "radius_meters") val radiusMeters: Int,
+)
+
+// ── Quran user-data entities ──────────────────────────────────────────────────
+// Per-device state only (bookmarks, history, download registry). The Quran text itself and the
+// content those downloaded packs unlock live in their own separate database(s) — see
+// data/local/quran/, added alongside the reading UI in a later phase.
+
+@Entity(tableName = "quran_bookmarks")
+data class QuranBookmarkEntity(
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id")             val id: Long = 0,
+    @ColumnInfo(name = "chapter_number") val chapterNumber: Int,
+    @ColumnInfo(name = "from_verse")     val fromVerse: Int,
+    @ColumnInfo(name = "to_verse")       val toVerse: Int,
+    @ColumnInfo(name = "note")           val note: String? = null,
+    @ColumnInfo(name = "created_at")     val createdAt: Long = System.currentTimeMillis(),
+)
+
+@Entity(tableName = "quran_read_history")
+data class QuranReadHistoryEntity(
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id")             val id: Long = 0,
+    @ColumnInfo(name = "chapter_number") val chapterNumber: Int,
+    @ColumnInfo(name = "verse_number")   val verseNumber: Int,
+    @ColumnInfo(name = "read_at")        val readAt: Long = System.currentTimeMillis(),
+)
+
+@Entity(tableName = "quran_search_history")
+data class QuranSearchHistoryEntity(
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id")           val id: Long = 0,
+    @ColumnInfo(name = "query")        val query: String,
+    @ColumnInfo(name = "searched_at")  val searchedAt: Long = System.currentTimeMillis(),
+)
+
+@Entity(tableName = "quran_content_packs")
+data class QuranContentPackEntity(
+    @PrimaryKey
+    @ColumnInfo(name = "pack_id")       val packId: String,
+    @ColumnInfo(name = "type")          val type: QuranContentPackType,
+    @ColumnInfo(name = "language")      val language: String,
+    @ColumnInfo(name = "title")         val title: String,
+    @ColumnInfo(name = "author")        val author: String? = null,
+    @ColumnInfo(name = "size_bytes")    val sizeBytes: Long,
+    @ColumnInfo(name = "source_url")    val sourceUrl: String,
+    @ColumnInfo(name = "version")       val version: Int,
+    @ColumnInfo(name = "is_downloaded") val isDownloaded: Boolean = false,
+    @ColumnInfo(name = "local_path")    val localPath: String? = null,
+    @ColumnInfo(name = "downloaded_at") val downloadedAt: Long? = null,
 )
