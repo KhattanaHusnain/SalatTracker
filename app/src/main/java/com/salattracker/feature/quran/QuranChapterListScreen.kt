@@ -56,7 +56,7 @@ fun QuranChapterListScreen(
     uiState: QuranChapterListUiState,
     onChapterClick: (Int) -> Unit,
     onContinueReadingClick: (chapterNumber: Int, verseNumber: Int) -> Unit,
-    onJuzClick: (chapterNumber: Int, verseNumber: Int) -> Unit,
+    onJuzClick: (juzNumber: Int, pageNumber: Int) -> Unit,
     onTabSelected: (QuranBrowseTab) -> Unit,
     onJumpDialogDismiss: () -> Unit,
     onJumpTypeSelected: (QuranJumpType) -> Unit,
@@ -101,7 +101,7 @@ fun QuranChapterListScreen(
                 }
             } else {
                 items(uiState.juzEntries, key = { "juz-${it.juzNumber}" }) { juz ->
-                    JuzRow(juz = juz, onClick = { onJuzClick(juz.chapterNumber, juz.verseNumber) })
+                    JuzRow(juz = juz, onClick = { onJuzClick(juz.juzNumber, juz.pageNumber) })
                     Spacer(Modifier.height(8.dp))
                 }
             }

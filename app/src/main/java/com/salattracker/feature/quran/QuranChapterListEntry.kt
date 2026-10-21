@@ -10,7 +10,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 fun QuranChapterListEntry(
     onChapterClick: (Int) -> Unit,
     onContinueReadingClick: (chapterNumber: Int, verseNumber: Int) -> Unit,
-    onJuzClick: (chapterNumber: Int, verseNumber: Int) -> Unit,
+    onJuzClick: (juzNumber: Int, pageNumber: Int) -> Unit,
     searchRequest: Int,
     onSearchRequestConsumed: () -> Unit,
     viewModel: QuranChapterListViewModel = hiltViewModel(),

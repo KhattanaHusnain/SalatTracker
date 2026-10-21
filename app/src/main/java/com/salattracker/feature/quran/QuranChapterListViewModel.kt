@@ -22,8 +22,8 @@ enum class QuranJumpType { PAGE, HIZB }
 /** A juz's actual starting point and every surah it spans. */
 data class QuranJuzUi(
     val juzNumber: Int,
-    val chapterNumber: Int,
     val verseNumber: Int,
+    val pageNumber: Int,
     val chapterNames: List<String>,
 )
 
@@ -64,9 +64,11 @@ class QuranChapterListViewModel @Inject constructor(
         viewModelScope.launch {
             val entries = (1..QURAN_JUZ_COUNT).mapNotNull { juzNumber ->
                 val location = contentRepository.firstVerseOfJuz(juzNumber) ?: return@mapNotNull null
+                val firstVerse = contentRepository.getVerse(location.chapterNumber, location.verseNumber)
+                    ?: return@mapNotNull null
                 val chapterNames = contentRepository.chapterNumbersForJuz(juzNumber)
                     .mapNotNull { contentRepository.getChapter(it)?.nameTransliteration }
-                QuranJuzUi(juzNumber, location.chapterNumber, location.verseNumber, chapterNames)
+                QuranJuzUi(juzNumber, location.verseNumber, firstVerse.pageNumber, chapterNames)
             }
             _uiState.update { it.copy(juzEntries = entries) }
         }

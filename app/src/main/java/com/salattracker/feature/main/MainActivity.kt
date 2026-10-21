@@ -350,8 +350,8 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                         onContinueReadingClick = { chapterNumber, verseNumber ->
                             navController.push(Routes.quranReader(chapterNumber, verseNumber))
                         },
-                        onJuzClick = { chapterNumber, verseNumber ->
-                            navController.push(Routes.quranReader(chapterNumber, verseNumber))
+                        onJuzClick = { juzNumber, pageNumber ->
+                            navController.push(Routes.quranMushaf(pageNumber, juzNumber))
                         },
                         searchRequest = quranSearchRequest,
                         onSearchRequestConsumed = { quranSearchRequest = 0 },
@@ -378,7 +378,10 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                 }
                 composable(
                     Routes.QURAN_MUSHAF,
-                    arguments = listOf(navArgument("pageNumber") { type = NavType.IntType }),
+                    arguments = listOf(
+                        navArgument("pageNumber") { type = NavType.IntType },
+                        navArgument("juzNumber") { type = NavType.IntType; defaultValue = 0 },
+                    ),
                 ) {
                     QuranMushafEntry(onPageControlsChanged = { controls -> quranPageControls = controls })
                 }

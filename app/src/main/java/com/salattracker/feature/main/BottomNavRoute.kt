@@ -41,7 +41,7 @@ object Routes {
     const val MISSED_PRAYERS   = "missed_prayers?prayer={prayer}"
     const val QURAN_READER     = "quran_reader/{chapterNumber}?verseNumber={verseNumber}"
     const val QURAN_CHAPTER_INFO = "quran_chapter_info/{chapterNumber}"
-    const val QURAN_MUSHAF     = "quran_mushaf/{pageNumber}"
+    const val QURAN_MUSHAF     = "quran_mushaf/{pageNumber}?juzNumber={juzNumber}"
     const val QURAN_BOOKMARKS  = "quran_bookmarks"
     const val QURAN_READ_HISTORY = "quran_read_history"
     const val QURAN_CREDITS    = "quran_credits"
@@ -51,7 +51,8 @@ object Routes {
     fun quranReader(chapterNumber: Int, verseNumber: Int? = null) =
         "quran_reader/$chapterNumber" + verseNumber?.let { "?verseNumber=$it" }.orEmpty()
     fun quranChapterInfo(chapterNumber: Int) = "quran_chapter_info/$chapterNumber"
-    fun quranMushaf(pageNumber: Int) = "quran_mushaf/$pageNumber"
+    fun quranMushaf(pageNumber: Int, juzNumber: Int? = null) =
+        "quran_mushaf/$pageNumber" + juzNumber?.let { "?juzNumber=$it" }.orEmpty()
 
     /** Opens the full Qaza backlog, optionally pre-filtered to one prayer (e.g. tapping a prayer
      * tile on the Qaza dashboard). Omit [prayer] for the unfiltered list ("View all"). */
