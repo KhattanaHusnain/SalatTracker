@@ -201,9 +201,9 @@ private fun ReaderLineBlock(line: ReaderLine, isFirstLine: Boolean) {
         } else {
             MushafLineArabic(line, textColor = SalatOnSurface)
         }
-        line.translationChunks.forEach { translation ->
+        if (line.translationChunks.isNotEmpty()) {
             Spacer(Modifier.height(8.dp))
-            UrduTranslation(translation.text)
+            UrduTranslation(line.translationChunks.joinToString(" ") { it.text })
         }
     }
 }
