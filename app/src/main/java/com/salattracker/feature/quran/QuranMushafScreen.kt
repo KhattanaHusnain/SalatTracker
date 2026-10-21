@@ -68,21 +68,25 @@ fun QuranMushafScreen(
 
 @Composable
 private fun MushafPager(pageNumber: Int, onPreviousPage: () -> Unit, onNextPage: () -> Unit) {
-    Row(
+    Box(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
     ) {
-        // The Mushaf itself reads right-to-left, so "next page" moves left, "previous" moves right.
-        IconButton(onClick = onNextPage) {
-            Icon(painterResource(R.drawable.ic_chevron_left), contentDescription = stringResource(R.string.quran_mushaf_next_page))
+        IconButton(
+            onClick = onPreviousPage,
+            modifier = Modifier.align(Alignment.CenterStart),
+        ) {
+            Icon(painterResource(R.drawable.ic_chevron_left), contentDescription = stringResource(R.string.quran_mushaf_previous_page))
         }
         Text(
             text = stringResource(R.string.quran_mushaf_page_label, pageNumber),
             color = SalatOnSurface, fontSize = 13.sp, fontFamily = InterFamily,
+            modifier = Modifier.align(Alignment.Center),
         )
-        IconButton(onClick = onPreviousPage) {
-            Icon(painterResource(R.drawable.ic_chevron_right), contentDescription = stringResource(R.string.quran_mushaf_previous_page))
+        IconButton(
+            onClick = onNextPage,
+            modifier = Modifier.align(Alignment.CenterEnd),
+        ) {
+            Icon(painterResource(R.drawable.ic_chevron_right), contentDescription = stringResource(R.string.quran_mushaf_next_page))
         }
     }
 }

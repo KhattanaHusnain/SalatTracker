@@ -168,20 +168,27 @@ private fun ReaderPager(
     onPreviousPage: () -> Unit,
     onNextPage: () -> Unit,
 ) {
-    Row(
+    Box(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
     ) {
-        IconButton(onClick = onNextPage, enabled = hasNextPage) {
-            Icon(painterResource(R.drawable.ic_chevron_left), stringResource(R.string.quran_mushaf_next_page))
+        IconButton(
+            onClick = onPreviousPage,
+            enabled = hasPreviousPage,
+            modifier = Modifier.align(Alignment.CenterStart),
+        ) {
+            Icon(painterResource(R.drawable.ic_chevron_left), stringResource(R.string.quran_mushaf_previous_page))
         }
         Text(
             text = stringResource(R.string.quran_mushaf_page_label, pageNumber),
             color = SalatOnSurface, fontSize = 13.sp, fontFamily = InterFamily,
+            modifier = Modifier.align(Alignment.Center),
         )
-        IconButton(onClick = onPreviousPage, enabled = hasPreviousPage) {
-            Icon(painterResource(R.drawable.ic_chevron_right), stringResource(R.string.quran_mushaf_previous_page))
+        IconButton(
+            onClick = onNextPage,
+            enabled = hasNextPage,
+            modifier = Modifier.align(Alignment.CenterEnd),
+        ) {
+            Icon(painterResource(R.drawable.ic_chevron_right), stringResource(R.string.quran_mushaf_next_page))
         }
     }
 }
