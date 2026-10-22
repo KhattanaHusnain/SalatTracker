@@ -2,6 +2,7 @@ package com.salattracker.data.repository
 
 import com.salattracker.data.local.preferences.DataStoreSettingsRepository
 import com.salattracker.domain.model.AppLanguage
+import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.HighLatitudeRule
 import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerType
@@ -44,6 +45,7 @@ class SettingsRepositoryImpl @Inject constructor(
         madhabChosen: Boolean,
         jumuahEnabled: Boolean,
         jumuahReminderLeadMinutes: Int,
+        gender: Gender?,
     ) = dataStore.saveSettings(
         useDeviceLocation         = useDeviceLocation,
         latitude                  = latitude,
@@ -60,6 +62,7 @@ class SettingsRepositoryImpl @Inject constructor(
         madhabChosen              = madhabChosen,
         jumuahEnabled             = jumuahEnabled,
         jumuahReminderLeadMinutes = jumuahReminderLeadMinutes,
+        gender                    = gender,
     )
 
     override suspend fun setUseDeviceLocation(enabled: Boolean) = dataStore.setUseDeviceLocation(enabled)
@@ -107,4 +110,6 @@ class SettingsRepositoryImpl @Inject constructor(
 
     override suspend fun setJumuahReminderLeadMinutes(minutes: Int) =
         dataStore.setJumuahReminderLeadMinutes(minutes)
+
+    override suspend fun setGender(gender: Gender) = dataStore.setGender(gender)
 }

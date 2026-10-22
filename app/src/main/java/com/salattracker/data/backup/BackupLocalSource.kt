@@ -156,6 +156,7 @@ class RoomBackupLocalSource @Inject constructor(
             madhabChosen              = s.madhabChosen,
             jumuahEnabled             = s.jumuahEnabled,
             jumuahReminderLeadMinutes = s.jumuahReminderLeadMinutes,
+            gender                    = s.gender,
         )
         settingsRepository.setOnboardingCompleted(true)
 

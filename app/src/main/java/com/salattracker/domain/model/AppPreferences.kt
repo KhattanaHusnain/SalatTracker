@@ -76,3 +76,12 @@ enum class HighLatitudeRule {
     SEVENTH_OF_THE_NIGHT,
     TWILIGHT_ANGLE,
 }
+
+/**
+ * Collected at onboarding's "About you" step. Purely a stored preference today — it does not
+ * gate anything (e.g. [com.salattracker.domain.model.PrayerStatus.MENSTRUATION] stays available
+ * to everyone in the status pickers, since hiding it for an existing install with gender still
+ * null/absent would risk hiding a status some users already rely on). Null means "not asked yet"
+ * (every install that existed before this preference, and any install that skips the step).
+ */
+enum class Gender { MALE, FEMALE }

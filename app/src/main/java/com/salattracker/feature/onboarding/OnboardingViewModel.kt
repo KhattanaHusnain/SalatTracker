@@ -5,65 +5,254 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.salattracker.core.locale.LocaleManager
 import com.salattracker.domain.model.AppLanguage
+import com.salattracker.domain.model.CalculationMethod
+import com.salattracker.domain.model.CityResult
+import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.Madhab
+import com.salattracker.domain.model.PrayerStatus
+import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.ThemeMode
+import com.salattracker.domain.repository.GeocodingRepository
+import com.salattracker.domain.repository.PrayerRepository
 import com.salattracker.domain.repository.SettingsRepository
 import com.salattracker.notification.PrayerReminderWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import javax.inject.Inject
 
-/** The first-run onboarding steps, in order. */
-enum class OnboardingStep { LANGUAGE, THEME, SCHOOL, LOCATION, NOTIFICATIONS }
+/** The first-run onboarding steps, in order a user moving straight forward sees them. [CITY_SEARCH]
+ * and [CATCH_UP_ADD] are branches off [LOCATION_INTRO]/[LOCATION_CONFIRM] and [CATCH_UP] rather
+ * than always-visited steps — see [OnboardingViewModel]'s back-stack for how "back" still returns
+ * to wherever a screen was actually reached from. */
+enum class OnboardingStep {
+    WELCOME, ABOUT_YOU, SCHOOL, LOCATION_INTRO, CITY_SEARCH, LOCATION_CONFIRM, REMINDERS, CATCH_UP, CATCH_UP_ADD, DONE
+}
+
+/** How far back the Catch Up step looks for missed prayers. Kept separate from
+ * feature/bulkupdate's own DurationOption — that one drives a full date-stepping/custom-calendar
+ * UI this single onboarding screen doesn't need. */
+enum class CatchUpDuration(val days: Int) {
+    WEEK(7), MONTH(30), HALF_YEAR(183), CUSTOM(-1),
+}
 
 data class OnboardingUiState(
-    val step: OnboardingStep = OnboardingStep.LANGUAGE,
+    val step: OnboardingStep = OnboardingStep.WELCOME,
+
+    // Welcome
     val language: AppLanguage = AppLanguage.ENGLISH,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
+
+    // About you — null until chosen; the step's Continue button stays disabled until then.
+    val gender: Gender? = null,
+
+    // School of thought
     val madhab: Madhab = Madhab.STANDARD,
+
+    // Location
+    val confirmedCity: CityResult? = null,
+    val isFromDeviceLocation: Boolean = true,
+    val calculationMethod: CalculationMethod = CalculationMethod.DEFAULT,
+    val showCalculationMethodSheet: Boolean = false,
+
+    // City search
+    val cityQuery: String = "",
+    val cityResults: List<CityResult> = emptyList(),
+    val isSearchingCity: Boolean = false,
+
+    // Reminders
     val prayerRemindersEnabled: Boolean = true,
+    val fullScreenAlertEnabled: Boolean = true,
+
+    // Catch up
+    val catchUpDuration: CatchUpDuration = CatchUpDuration.MONTH,
+    val catchUpCustomDays: Int = 30,
+    val isApplyingCatchUp: Boolean = false,
+    val catchUpAppliedCount: Int? = null,
+
     val isFinishing: Boolean = false,
     /** True while the "Restore from Google Drive" flow (feature/backup's BackupEntry) is shown
      * in place of the normal onboarding steps. A successful restore sets onboarding_completed
      * itself (see BackupLocalSource.applySnapshot), so MainActivity's reactive gate swaps to the
      * main app on its own — no extra signal needed here. */
     val showRestore: Boolean = false,
-)
+) {
+    /** Days actually used for the Catch Up write — [CatchUpDuration.CUSTOM] uses the picked count. */
+    val catchUpDays: Int get() = if (catchUpDuration == CatchUpDuration.CUSTOM) catchUpCustomDays else catchUpDuration.days
+
+    /** 5 prayers/day, matching the mockup's own "N days -> 5N prayers" estimate. */
+    val catchUpPrayerCount: Int get() = catchUpDays * PrayerType.values().size
+}
 
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
+    private val geocodingRepository: GeocodingRepository,
+    private val prayerRepository: PrayerRepository,
     private val workManager: WorkManager,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(OnboardingUiState())
     val uiState: StateFlow<OnboardingUiState> = _uiState.asStateFlow()
 
-    fun onLanguageSelected(language: AppLanguage) = _uiState.update { it.copy(language = language) }
-    fun onThemeSelected(themeMode: ThemeMode) = _uiState.update { it.copy(themeMode = themeMode) }
-    fun onMadhabSelected(madhab: Madhab) = _uiState.update { it.copy(madhab = madhab) }
-    fun onPrayerRemindersChanged(enabled: Boolean) = _uiState.update { it.copy(prayerRemindersEnabled = enabled) }
+    /** Steps visited, in order, so [onBack] always returns to wherever the current step was
+     * actually reached from — e.g. Location Confirm back-targets Location or City Search
+     * depending on which one led here, rather than a fixed previous-enum-value. */
+    private val backStack = mutableListOf<OnboardingStep>()
 
-    fun onNext() {
-        val next = OnboardingStep.values().getOrNull(_uiState.value.step.ordinal + 1) ?: return
-        _uiState.update { it.copy(step = next) }
+    private var citySearchJob: Job? = null
+
+    init { observeDeviceLocation() }
+
+    /** The device-location permission flow (launched by the Activity via [onAllowLocationClick]'s
+     * caller) writes straight to [SettingsRepository] once a fix lands — see MainActivity's
+     * locationPermissionLauncher. Watching for that write here is how Location Intro learns a fix
+     * arrived, without this ViewModel owning any permission/location-client code itself. */
+    private fun observeDeviceLocation() {
+        viewModelScope.launch {
+            settingsRepository.observeSettings().collect { prefs ->
+                if (_uiState.value.step != OnboardingStep.LOCATION_INTRO) return@collect
+                if (prefs.latitude == 0.0 && prefs.longitude == 0.0) return@collect
+                val city = runCatching { geocodingRepository.reverseGeocode(prefs.latitude, prefs.longitude) }
+                    .getOrNull()
+                    ?: CityResult(name = "", region = null, country = null, latitude = prefs.latitude, longitude = prefs.longitude)
+                _uiState.update { it.copy(confirmedCity = city, isFromDeviceLocation = true) }
+                goTo(OnboardingStep.LOCATION_CONFIRM)
+            }
+        }
+    }
+
+    private fun goTo(step: OnboardingStep) {
+        backStack.add(_uiState.value.step)
+        _uiState.update { it.copy(step = step) }
     }
 
     fun onBack() {
-        val prev = OnboardingStep.values().getOrNull(_uiState.value.step.ordinal - 1) ?: return
-        _uiState.update { it.copy(step = prev) }
+        val previous = backStack.removeLastOrNull() ?: return
+        _uiState.update { it.copy(step = previous) }
     }
 
     fun onRestoreClick() = _uiState.update { it.copy(showRestore = true) }
     fun onRestoreDismiss() = _uiState.update { it.copy(showRestore = false) }
 
+    // ── Welcome ───────────────────────────────────────────────────────────────
+
+    fun onLanguageSelected(language: AppLanguage) = _uiState.update { it.copy(language = language) }
+    fun onThemeSelected(themeMode: ThemeMode) = _uiState.update { it.copy(themeMode = themeMode) }
+    fun onWelcomeNext() = goTo(OnboardingStep.ABOUT_YOU)
+
+    // ── About you ─────────────────────────────────────────────────────────────
+
+    fun onGenderSelected(gender: Gender) = _uiState.update { it.copy(gender = gender) }
+    fun onAboutYouNext() = goTo(OnboardingStep.SCHOOL)
+
+    // ── School of thought ─────────────────────────────────────────────────────
+
+    fun onMadhabSelected(madhab: Madhab) = _uiState.update { it.copy(madhab = madhab) }
+    fun onSchoolNext() = goTo(OnboardingStep.LOCATION_INTRO)
+
+    // ── Location ──────────────────────────────────────────────────────────────
+
+    /** Just invokes the Activity-supplied permission launcher — [observeDeviceLocation] advances
+     * the step once (and if) a fix actually lands, so there is nothing else to do here. */
+    fun onEnterCityInstead() = goTo(OnboardingStep.CITY_SEARCH)
+
+    fun onConfirmLocation() {
+        val state = _uiState.value
+        val city = state.confirmedCity ?: return
+        viewModelScope.launch {
+            settingsRepository.setUseDeviceLocation(state.isFromDeviceLocation)
+            if (!state.isFromDeviceLocation) {
+                settingsRepository.setLocation(city.latitude, city.longitude)
+            }
+            settingsRepository.setCalculationMethodId(state.calculationMethod.id)
+        }
+        goTo(OnboardingStep.REMINDERS)
+    }
+
+    fun onChangeLocationClick() = goTo(OnboardingStep.CITY_SEARCH)
+
+    fun onCalculationMethodSheetOpen() = _uiState.update { it.copy(showCalculationMethodSheet = true) }
+    fun onCalculationMethodSheetDismiss() = _uiState.update { it.copy(showCalculationMethodSheet = false) }
+    fun onCalculationMethodSelected(method: CalculationMethod) =
+        _uiState.update { it.copy(calculationMethod = method, showCalculationMethodSheet = false) }
+
+    // ── City search ───────────────────────────────────────────────────────────
+
+    fun onCityQueryChanged(query: String) {
+        _uiState.update { it.copy(cityQuery = query) }
+        citySearchJob?.cancel()
+        if (query.isBlank()) {
+            _uiState.update { it.copy(cityResults = emptyList(), isSearchingCity = false) }
+            return
+        }
+        citySearchJob = viewModelScope.launch {
+            _uiState.update { it.copy(isSearchingCity = true) }
+            delay(CITY_SEARCH_DEBOUNCE_MILLIS)
+            val results = runCatching { geocodingRepository.searchCities(query) }.getOrDefault(emptyList())
+            _uiState.update { it.copy(cityResults = results, isSearchingCity = false) }
+        }
+    }
+
+    fun onCitySelected(city: CityResult) = _uiState.update { it.copy(confirmedCity = city, isFromDeviceLocation = false) }
+
+    /** Used by "Use my location instead" — a method switch, not a back-navigation (see the
+     * onboarding nav map), so it goes straight to Location Intro without touching the back stack
+     * the way [goTo] would (that stack already has Location Intro in it from getting here). */
+    fun onUseMyLocationInstead() = _uiState.update { it.copy(step = OnboardingStep.LOCATION_INTRO) }
+
+    fun onCitySearchContinue() {
+        if (_uiState.value.confirmedCity == null) return
+        goTo(OnboardingStep.LOCATION_CONFIRM)
+    }
+
+    // ── Reminders ─────────────────────────────────────────────────────────────
+
+    fun onPrayerRemindersChanged(enabled: Boolean) = _uiState.update { it.copy(prayerRemindersEnabled = enabled) }
+    fun onFullScreenAlertChanged(enabled: Boolean) = _uiState.update { it.copy(fullScreenAlertEnabled = enabled) }
+    fun onRemindersNext() = goTo(OnboardingStep.CATCH_UP)
+
+    // ── Catch up ──────────────────────────────────────────────────────────────
+
+    fun onCatchUpAddClick() = goTo(OnboardingStep.CATCH_UP_ADD)
+    fun onCatchUpSkip() = goTo(OnboardingStep.DONE)
+    fun onCatchUpDurationChanged(duration: CatchUpDuration) = _uiState.update { it.copy(catchUpDuration = duration) }
+    fun onCatchUpCustomDaysChanged(days: Int) = _uiState.update { it.copy(catchUpCustomDays = days.coerceIn(1, 3650)) }
+
+    fun onApplyCatchUp() {
+        val state = _uiState.value
+        val days = state.catchUpDays
+        if (days <= 0) {
+            goTo(OnboardingStep.DONE)
+            return
+        }
+        _uiState.update { it.copy(isApplyingCatchUp = true) }
+        viewModelScope.launch {
+            val today = LocalDate.now()
+            val entries = (0 until days).flatMap { offset ->
+                val date = today.minusDays(offset.toLong())
+                PrayerType.values().map { date to it }
+            }
+            runCatching { prayerRepository.bulkUpsertPrayerStatus(entries, PrayerStatus.QAZA_PENDING) }
+            _uiState.update { it.copy(isApplyingCatchUp = false, catchUpAppliedCount = entries.size) }
+            goTo(OnboardingStep.DONE)
+        }
+    }
+
+    // ── Done ──────────────────────────────────────────────────────────────────
+
     /**
-     * Persists every onboarding choice and marks onboarding complete. Setting
-     * onboardingCompleted last flips the reactive app-start gate over to the main app.
+     * Persists every onboarding choice and marks onboarding complete. Location (if a device fix
+     * landed) and the calculation method were already written when Location Confirm was accepted
+     * — everything else is written here in one go, matching the one-shot write style the previous
+     * (5-step) onboarding used. Setting onboardingCompleted last flips the reactive app-start gate
+     * over to the main app.
      */
     fun onFinish() {
         val state = _uiState.value
@@ -71,15 +260,23 @@ class OnboardingViewModel @Inject constructor(
         viewModelScope.launch {
             settingsRepository.setLanguage(state.language)
             settingsRepository.setThemeMode(state.themeMode)
+            state.gender?.let { settingsRepository.setGender(it) }
             // Also marks madhabChosen = true, so a fresh install never sees the one-time
             // existing-user prompt (MainActivity's MadhabPromptDialog) afterward.
             settingsRepository.setMadhab(state.madhab)
             settingsRepository.setAllRemindersEnabled(state.prayerRemindersEnabled)
+            PrayerType.values().forEach { type ->
+                settingsRepository.setReminderFullScreenAlert(type, state.fullScreenAlertEnabled)
+            }
             // Reschedule prayer reminders to honour the master toggle chosen here.
             PrayerReminderWorker.enqueueOneTime(workManager)
             settingsRepository.setOnboardingCompleted(true)
             // Apply the chosen language app-wide (recreates the UI into that locale).
             LocaleManager.apply(state.language)
         }
+    }
+
+    companion object {
+        private const val CITY_SEARCH_DEBOUNCE_MILLIS = 350L
     }
 }

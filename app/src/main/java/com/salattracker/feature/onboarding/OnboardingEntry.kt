@@ -9,8 +9,10 @@ import com.salattracker.feature.backup.BackupEntry
 
 /**
  * Nav entry-point for the first-run onboarding flow.
- * [onAllowLocation] is supplied by MainActivity so the Location step can trigger the
- * system permission request (the Activity owns the permission launcher).
+ * [onAllowLocation] is supplied by MainActivity so the Location step can trigger the system
+ * permission request (the Activity owns the permission launcher) — the ViewModel itself just
+ * watches for the location fix that flow writes to SettingsRepository once granted.
+ * [onRequestNotifications] is fired when leaving the Reminders step with reminders turned on.
  */
 @Composable
 fun OnboardingEntry(
@@ -28,18 +30,41 @@ fun OnboardingEntry(
         return
     }
 
+    BackHandler(enabled = uiState.step != OnboardingStep.WELCOME, onBack = viewModel::onBack)
+
     OnboardingScreen(
-        uiState                  = uiState,
-        onLanguageSelected       = viewModel::onLanguageSelected,
-        onThemeSelected          = viewModel::onThemeSelected,
-        onMadhabSelected         = viewModel::onMadhabSelected,
-        onPrayerRemindersChanged = viewModel::onPrayerRemindersChanged,
-        onNext                   = viewModel::onNext,
-        onAllowLocation          = onAllowLocation,
-        onFinish                 = {
+        uiState                   = uiState,
+        onLanguageSelected        = viewModel::onLanguageSelected,
+        onThemeSelected           = viewModel::onThemeSelected,
+        onWelcomeNext             = viewModel::onWelcomeNext,
+        onRestoreFromBackup       = viewModel::onRestoreClick,
+        onGenderSelected          = viewModel::onGenderSelected,
+        onAboutYouNext            = viewModel::onAboutYouNext,
+        onMadhabSelected          = viewModel::onMadhabSelected,
+        onSchoolNext              = viewModel::onSchoolNext,
+        onAllowLocationClick      = onAllowLocation,
+        onEnterCityInstead        = viewModel::onEnterCityInstead,
+        onCityQueryChanged        = viewModel::onCityQueryChanged,
+        onCitySelected            = viewModel::onCitySelected,
+        onCitySearchContinue      = viewModel::onCitySearchContinue,
+        onUseMyLocationInstead    = viewModel::onUseMyLocationInstead,
+        onConfirmLocation         = viewModel::onConfirmLocation,
+        onChangeLocationClick     = viewModel::onChangeLocationClick,
+        onCalculationMethodSheetOpen    = viewModel::onCalculationMethodSheetOpen,
+        onCalculationMethodSheetDismiss = viewModel::onCalculationMethodSheetDismiss,
+        onCalculationMethodSelected     = viewModel::onCalculationMethodSelected,
+        onPrayerRemindersChanged  = viewModel::onPrayerRemindersChanged,
+        onFullScreenAlertChanged  = viewModel::onFullScreenAlertChanged,
+        onRemindersSkip           = viewModel::onRemindersNext,
+        onRemindersNext           = {
             onRequestNotifications()
-            viewModel.onFinish()
+            viewModel.onRemindersNext()
         },
-        onRestoreFromBackup      = viewModel::onRestoreClick,
+        onCatchUpAddClick         = viewModel::onCatchUpAddClick,
+        onCatchUpSkip             = viewModel::onCatchUpSkip,
+        onCatchUpDurationChanged  = viewModel::onCatchUpDurationChanged,
+        onCatchUpCustomDaysChanged = viewModel::onCatchUpCustomDaysChanged,
+        onApplyCatchUp            = viewModel::onApplyCatchUp,
+        onFinish                  = viewModel::onFinish,
     )
 }

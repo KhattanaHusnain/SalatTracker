@@ -1,6 +1,7 @@
 package com.salattracker.domain.repository
 
 import com.salattracker.domain.model.AppLanguage
+import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.HighLatitudeRule
 import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerType
@@ -47,6 +48,7 @@ interface SettingsRepository {
         madhabChosen: Boolean,
         jumuahEnabled: Boolean,
         jumuahReminderLeadMinutes: Int,
+        gender: Gender?,
     )
 
     /** One-shot read, used when prayer times need refreshing. */
@@ -91,6 +93,9 @@ interface SettingsRepository {
 
     /** Marks first-run onboarding as finished so it never shows again. */
     suspend fun setOnboardingCompleted(completed: Boolean)
+
+    /** Onboarding's "About you" step. See [Gender] for why this is stored but not a gate. */
+    suspend fun setGender(gender: Gender)
 
     // ── Prayer Reminders screen — granular, live-apply writes ──────────────────
 
@@ -149,4 +154,6 @@ data class UserPrefs(
     val madhabChosen: Boolean = false,
     val jumuahEnabled: Boolean = true,
     val jumuahReminderLeadMinutes: Int = 0,
+    /** Null = not asked yet (pre-existing installs, or a skipped onboarding step). */
+    val gender: Gender? = null,
 )

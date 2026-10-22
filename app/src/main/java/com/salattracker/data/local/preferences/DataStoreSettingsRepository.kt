@@ -3,6 +3,7 @@ package com.salattracker.data.local.preferences
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import com.salattracker.domain.model.AppLanguage
+import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.HighLatitudeRule
 import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerType
@@ -39,6 +40,7 @@ class DataStoreSettingsRepository @Inject constructor(
         val MADHAB_CHOSEN         = booleanPreferencesKey("madhab_chosen")
         val JUMUAH_ENABLED        = booleanPreferencesKey("jumuah_enabled")
         val JUMUAH_REMINDER_LEAD  = intPreferencesKey("jumuah_reminder_lead_minutes")
+        val GENDER                = stringPreferencesKey("gender")
 
         // Per-prayer reminder toggle: "reminder_enabled_FAJR" etc.
         fun reminderEnabled(type: PrayerType) =
@@ -118,6 +120,7 @@ class DataStoreSettingsRepository @Inject constructor(
         madhabChosen         = this[Keys.MADHAB_CHOSEN]          ?: false,
         jumuahEnabled        = this[Keys.JUMUAH_ENABLED]         ?: true,
         jumuahReminderLeadMinutes = this[Keys.JUMUAH_REMINDER_LEAD] ?: 0,
+        gender               = this[Keys.GENDER]?.let { runCatching { Gender.valueOf(it) }.getOrNull() },
     )
 
     // ── Write ─────────────────────────────────────────────────────────────────
@@ -138,6 +141,7 @@ class DataStoreSettingsRepository @Inject constructor(
         madhabChosen: Boolean,
         jumuahEnabled: Boolean,
         jumuahReminderLeadMinutes: Int,
+        gender: Gender?,
     ) {
         dataStore.edit { prefs ->
             prefs[Keys.USE_DEVICE_LOCATION]   = useDeviceLocation
@@ -152,6 +156,7 @@ class DataStoreSettingsRepository @Inject constructor(
             prefs[Keys.MADHAB_CHOSEN]         = madhabChosen
             prefs[Keys.JUMUAH_ENABLED]        = jumuahEnabled
             prefs[Keys.JUMUAH_REMINDER_LEAD]  = jumuahReminderLeadMinutes
+            if (gender == null) prefs.remove(Keys.GENDER) else prefs[Keys.GENDER] = gender.name
             PrayerType.values().forEach { type ->
                 prefs[Keys.reminderEnabled(type)]  = reminderEnabled[type] ?: true
                 prefs[Keys.reminderOffset(type)]   = reminderOffsetMinutes[type] ?: 0
@@ -244,5 +249,9 @@ class DataStoreSettingsRepository @Inject constructor(
 
     override suspend fun setJumuahReminderLeadMinutes(minutes: Int) {
         dataStore.edit { it[Keys.JUMUAH_REMINDER_LEAD] = minutes }
+    }
+
+    override suspend fun setGender(gender: Gender) {
+        dataStore.edit { it[Keys.GENDER] = gender.name }
     }
 }

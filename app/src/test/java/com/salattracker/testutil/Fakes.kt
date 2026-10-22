@@ -310,6 +310,7 @@ class FakeSettingsRepository(initial: UserPrefs = UserPrefs()) : SettingsReposit
         use24HourFormat: Boolean, language: AppLanguage, themeMode: ThemeMode,
         madhab: Madhab, highLatitudeRule: HighLatitudeRule, prayerTimeAdjustMinutes: Map<PrayerType, Int>,
         madhabChosen: Boolean, jumuahEnabled: Boolean, jumuahReminderLeadMinutes: Int,
+        gender: com.salattracker.domain.model.Gender?,
     ) = notUsed()
 
     override suspend fun setUseDeviceLocation(enabled: Boolean) {
@@ -344,6 +345,9 @@ class FakeSettingsRepository(initial: UserPrefs = UserPrefs()) : SettingsReposit
 
     override suspend fun setAllRemindersEnabled(enabled: Boolean) = notUsed()
     override suspend fun setOnboardingCompleted(completed: Boolean) = notUsed()
+    override suspend fun setGender(gender: com.salattracker.domain.model.Gender) {
+        prefs.update { it.copy(gender = gender) }
+    }
     override suspend fun setReminderEnabled(type: PrayerType, enabled: Boolean) = notUsed()
     override suspend fun setReminderOffsetMinutes(type: PrayerType, minutes: Int) = notUsed()
     override suspend fun setReminderSnoozeMinutes(type: PrayerType, minutes: Int) = notUsed()
