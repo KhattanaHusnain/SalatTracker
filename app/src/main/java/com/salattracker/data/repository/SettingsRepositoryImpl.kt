@@ -112,4 +112,6 @@ class SettingsRepositoryImpl @Inject constructor(
         dataStore.setJumuahReminderLeadMinutes(minutes)
 
     override suspend fun setGender(gender: Gender) = dataStore.setGender(gender)
+
+    override suspend fun setLocationLabel(label: String?) = dataStore.setLocationLabel(label)
 }

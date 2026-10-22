@@ -41,6 +41,7 @@ class DataStoreSettingsRepository @Inject constructor(
         val JUMUAH_ENABLED        = booleanPreferencesKey("jumuah_enabled")
         val JUMUAH_REMINDER_LEAD  = intPreferencesKey("jumuah_reminder_lead_minutes")
         val GENDER                = stringPreferencesKey("gender")
+        val LOCATION_LABEL        = stringPreferencesKey("location_label")
 
         // Per-prayer reminder toggle: "reminder_enabled_FAJR" etc.
         fun reminderEnabled(type: PrayerType) =
@@ -121,6 +122,7 @@ class DataStoreSettingsRepository @Inject constructor(
         jumuahEnabled        = this[Keys.JUMUAH_ENABLED]         ?: true,
         jumuahReminderLeadMinutes = this[Keys.JUMUAH_REMINDER_LEAD] ?: 0,
         gender               = this[Keys.GENDER]?.let { runCatching { Gender.valueOf(it) }.getOrNull() },
+        locationLabel        = this[Keys.LOCATION_LABEL],
     )
 
     // ── Write ─────────────────────────────────────────────────────────────────
@@ -253,5 +255,11 @@ class DataStoreSettingsRepository @Inject constructor(
 
     override suspend fun setGender(gender: Gender) {
         dataStore.edit { it[Keys.GENDER] = gender.name }
+    }
+
+    override suspend fun setLocationLabel(label: String?) {
+        dataStore.edit { prefs ->
+            if (label == null) prefs.remove(Keys.LOCATION_LABEL) else prefs[Keys.LOCATION_LABEL] = label
+        }
     }
 }

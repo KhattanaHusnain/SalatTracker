@@ -10,4 +10,8 @@ data class CityResult(
 ) {
     /** "Karachi, Sindh, Pakistan" — drops any part that's blank or missing. */
     val displayLine: String get() = listOfNotNull(region, country).joinToString(", ")
+
+    /** "Karachi, Sindh, Pakistan" including [name] — the single-string form persisted as
+     * [com.salattracker.domain.repository.UserPrefs.locationLabel]. */
+    val fullLabel: String get() = listOfNotNull(name.takeIf { it.isNotBlank() }, displayLine.takeIf { it.isNotBlank() }).joinToString(", ")
 }

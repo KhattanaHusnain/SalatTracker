@@ -17,6 +17,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
  */
 @Composable
 fun SettingsEntry(
+    onEditLocationClick: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -42,9 +43,7 @@ fun SettingsEntry(
                 }
             }
         },
-        onLatitudeChanged               = viewModel::onLatitudeChanged,
-        onLongitudeChanged              = viewModel::onLongitudeChanged,
-        onLocationCommit                = viewModel::onLocationCommit,
+        onEditLocationClick              = onEditLocationClick,
         onCalculationMethodSheetOpen    = viewModel::onCalculationMethodSheetOpen,
         onCalculationMethodSheetDismiss = viewModel::onCalculationMethodSheetDismiss,
         onCalculationMethodChanged      = viewModel::onCalculationMethodChanged,

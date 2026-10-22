@@ -28,6 +28,7 @@ sealed class BottomNavRoute(
 /** Non-tab destinations, reached by pushing onto the back stack rather than switching tabs. */
 object Routes {
     const val SETTINGS         = "settings"
+    const val EDIT_COORDINATES = "edit_coordinates"
     const val BACKUP           = "backup"
     const val BULK_UPDATE      = "bulk_update?status={status}"
     const val PRAYER_REMINDERS = "prayer_reminders"

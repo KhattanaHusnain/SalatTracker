@@ -63,7 +63,7 @@ fun OnboardingEntry(
         onCatchUpAddClick         = viewModel::onCatchUpAddClick,
         onCatchUpSkip             = viewModel::onCatchUpSkip,
         onCatchUpDurationChanged  = viewModel::onCatchUpDurationChanged,
-        onCatchUpCustomDaysChanged = viewModel::onCatchUpCustomDaysChanged,
+        onCatchUpCustomRangeChanged = viewModel::onCatchUpCustomRangeChanged,
         onApplyCatchUp            = viewModel::onApplyCatchUp,
         onFinish                  = viewModel::onFinish,
     )

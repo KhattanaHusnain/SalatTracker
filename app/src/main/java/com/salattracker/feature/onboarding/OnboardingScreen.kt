@@ -1,23 +1,29 @@
 package com.salattracker.feature.onboarding
 
+import android.media.AudioAttributes
+import android.media.AudioManager
+import android.media.MediaPlayer
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -31,6 +37,9 @@ import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.ThemeMode
 import com.salattracker.domain.usecase.toHijriOrNull
+import com.salattracker.core.ui.CitySearchField
+import com.salattracker.core.ui.CitySearchResults
+import com.salattracker.core.ui.DatePickerModal
 import com.salattracker.feature.settings.CalculationMethodSheet
 import java.time.LocalDate
 
@@ -63,7 +72,7 @@ fun OnboardingScreen(
     onCatchUpAddClick: () -> Unit,
     onCatchUpSkip: () -> Unit,
     onCatchUpDurationChanged: (CatchUpDuration) -> Unit,
-    onCatchUpCustomDaysChanged: (Int) -> Unit,
+    onCatchUpCustomRangeChanged: (LocalDate, LocalDate) -> Unit,
     onApplyCatchUp: () -> Unit,
     onFinish: () -> Unit,
 ) {
@@ -99,7 +108,9 @@ fun OnboardingScreen(
             OnboardingStep.CATCH_UP -> CatchUpStep(onAddMissedClick = onCatchUpAddClick, onSkip = onCatchUpSkip)
             OnboardingStep.CATCH_UP_ADD -> CatchUpAddStep(
                 duration = uiState.catchUpDuration, prayerCount = uiState.catchUpPrayerCount,
-                onDurationChanged = onCatchUpDurationChanged, onApply = onApplyCatchUp,
+                customFrom = uiState.catchUpCustomFrom, customTo = uiState.catchUpCustomTo,
+                onDurationChanged = onCatchUpDurationChanged, onCustomRangeChanged = onCatchUpCustomRangeChanged,
+                onApply = onApplyCatchUp,
             )
             OnboardingStep.DONE -> DoneStep(uiState, onFinish)
         }
@@ -273,68 +284,17 @@ private fun CitySearchStep(
         StepHeader(stepIndex = OnboardingStep.LOCATION_CONFIRM.ordinal, title = stringResource(R.string.onboarding_city_search_title), subtitle = null)
         Spacer(Modifier.height(20.dp))
 
-        OutlinedTextField(
-            value = query,
-            onValueChange = onQueryChanged,
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text(stringResource(R.string.onboarding_city_search_placeholder), fontFamily = AppUiFontFamily) },
-            leadingIcon = { Icon(painterResource(R.drawable.ic_search), null, tint = SalatOnSurfaceVariant) },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-            textStyle = LocalTextStyle.current.copy(fontFamily = AppUiFontFamily, fontSize = 15.sp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = SalatPrimary, unfocusedBorderColor = SalatOutlineVariant,
-                focusedContainerColor = SalatSurfaceContainerLow, unfocusedContainerColor = SalatSurfaceContainerLow,
-            ),
-            shape = RoundedCornerShape(14.dp),
-        )
+        CitySearchField(query = query, onQueryChanged = onQueryChanged)
 
         Spacer(Modifier.height(16.dp))
 
-        when {
-            isSearching -> Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, color = SalatPrimary)
-                Text(stringResource(R.string.onboarding_city_search_searching), color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = AppUiFontFamily)
-            }
-            query.isNotBlank() && results.isEmpty() -> Text(
-                stringResource(R.string.onboarding_city_search_no_results, query),
-                color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = AppUiFontFamily, lineHeight = 18.sp,
-            )
-            else -> Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                results.forEach { city ->
-                    CityResultRow(city = city, isSelected = city == selected, onClick = { onSelect(city) })
-                }
-            }
-        }
+        CitySearchResults(query = query, results = results, isSearching = isSearching, selected = selected, onSelect = onSelect)
 
         Spacer(Modifier.weight(1f))
         PrimaryButton(text = stringResource(R.string.action_continue), enabled = selected != null, onClick = onContinue)
         Spacer(Modifier.height(8.dp))
         SecondaryLink(text = stringResource(R.string.onboarding_location_use_my_location), onClick = onUseMyLocationInstead)
         Spacer(Modifier.height(24.dp))
-    }
-}
-
-@Composable
-private fun CityResultRow(city: CityResult, isSelected: Boolean, onClick: () -> Unit) {
-    Surface(
-        onClick = onClick, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp),
-        color = if (isSelected) SalatPrimaryContainer.copy(alpha = 0.4f) else SalatBackground,
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp, horizontal = 4.dp),
-            horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column {
-                Text(city.name, color = SalatOnSurface, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
-                if (city.displayLine.isNotBlank()) {
-                    Text(city.displayLine, color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
-                }
-            }
-            if (isSelected) {
-                Icon(painterResource(R.drawable.ic_check_circle_filled), null, tint = SalatPrimary, modifier = Modifier.size(20.dp))
-            }
-        }
     }
 }
 
@@ -451,12 +411,64 @@ private fun RemindersStep(
         ToggleRow(icon = R.drawable.ic_schedule, label = stringResource(R.string.prayer_reminders), checked = prayerRemindersEnabled, onCheckedChange = onPrayerRemindersChanged)
         Spacer(Modifier.height(10.dp))
         ToggleRow(icon = R.drawable.ic_notifications, label = stringResource(R.string.onboarding_reminders_fullscreen_title), checked = fullScreenAlertEnabled, onCheckedChange = onFullScreenAlertChanged)
+        Spacer(Modifier.height(10.dp))
+        AzanPreviewRow()
 
         Spacer(Modifier.height(32.dp))
         PrimaryButton(text = stringResource(R.string.onboarding_reminders_turn_on), icon = R.drawable.ic_arrow_forward, onClick = onNext)
         Spacer(Modifier.height(8.dp))
         SecondaryLink(text = stringResource(R.string.action_skip_for_now), onClick = onSkip)
         Spacer(Modifier.height(24.dp))
+    }
+}
+
+/** Previews the app's default reminder sound (Azan) — the one sound onboarding offers; picking a
+ * different per-prayer sound stays a Prayer Reminders / Settings thing, done after onboarding.
+ * Uses the same explicit notification-usage [AudioAttributes] as
+ * feature/reminders's SoundChooserDialog, so the preview matches what the real reminder sounds
+ * like (and still respects ringer mode) rather than defaulting to the media/music stream. */
+@Composable
+private fun AzanPreviewRow() {
+    val context = LocalContext.current
+    var activePlayer by remember { mutableStateOf<MediaPlayer?>(null) }
+
+    fun stopPreview() {
+        runCatching { activePlayer?.stop() }
+        runCatching { activePlayer?.release() }
+        activePlayer = null
+    }
+
+    DisposableEffect(Unit) { onDispose { stopPreview() } }
+
+    Surface(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp), color = SalatSurfaceContainerLow) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(
+                    modifier = Modifier.size(40.dp).clip(CircleShape).background(SalatSecondaryContainer),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(painterResource(R.drawable.ic_notifications), null, tint = SalatOnSecondaryContainer, modifier = Modifier.size(20.dp))
+                }
+                Text(stringResource(R.string.reminders_sound_azan), color = SalatOnSurface, fontSize = 15.sp, fontWeight = FontWeight.Medium, fontFamily = AppUiFontFamily)
+            }
+            TextButton(onClick = {
+                stopPreview()
+                val attributes = AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build()
+                val player = MediaPlayer.create(context, R.raw.azan, attributes, AudioManager.AUDIO_SESSION_ID_GENERATE)
+                player?.setOnCompletionListener { mp -> runCatching { mp.release() } }
+                activePlayer = player
+                player?.start()
+            }) {
+                Text(stringResource(R.string.reminders_sound_preview), color = SalatPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
+            }
+        }
     }
 }
 
@@ -486,10 +498,13 @@ private fun CatchUpStep(onAddMissedClick: () -> Unit, onSkip: () -> Unit) {
 private fun CatchUpAddStep(
     duration: CatchUpDuration,
     prayerCount: Int,
+    customFrom: LocalDate,
+    customTo: LocalDate,
     onDurationChanged: (CatchUpDuration) -> Unit,
+    onCustomRangeChanged: (LocalDate, LocalDate) -> Unit,
     onApply: () -> Unit,
 ) {
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         StepHeader(stepIndex = OnboardingStep.CATCH_UP.ordinal, title = stringResource(R.string.onboarding_catch_up_add_title), subtitle = stringResource(R.string.onboarding_catch_up_add_subtitle))
         Spacer(Modifier.height(28.dp))
 
@@ -497,9 +512,14 @@ private fun CatchUpAddStep(
             CatchUpDurationOption(CatchUpDuration.WEEK, duration, onDurationChanged)
             CatchUpDurationOption(CatchUpDuration.MONTH, duration, onDurationChanged)
             CatchUpDurationOption(CatchUpDuration.HALF_YEAR, duration, onDurationChanged)
+            CatchUpDurationOption(CatchUpDuration.CUSTOM, duration, onDurationChanged)
+
+            if (duration == CatchUpDuration.CUSTOM) {
+                CustomRangePickers(from = customFrom, to = customTo, onChanged = onCustomRangeChanged)
+            }
         }
 
-        Spacer(Modifier.weight(1f))
+        Spacer(Modifier.height(28.dp))
         PrimaryButton(text = stringResource(R.string.onboarding_catch_up_add_action, prayerCount), onClick = onApply)
         Spacer(Modifier.height(24.dp))
     }
@@ -513,13 +533,44 @@ private fun CatchUpDurationOption(option: CatchUpDuration, selected: CatchUpDura
         CatchUpDuration.HALF_YEAR -> R.string.onboarding_catch_up_duration_half_year
         CatchUpDuration.CUSTOM -> R.string.bulk_dur_custom
     }
+    val subtitle = if (option == CatchUpDuration.CUSTOM) {
+        null
+    } else {
+        stringResource(R.string.onboarding_catch_up_prayer_count, option.days * 5)
+    }
     TitledOption(
         icon = R.drawable.ic_pending_actions,
         title = stringResource(titleRes),
-        subtitle = stringResource(R.string.onboarding_catch_up_prayer_count, option.days * 5),
+        subtitle = subtitle,
         isSelected = option == selected,
         onClick = { onSelect(option) },
     )
+}
+
+@Composable
+private fun CustomRangePickers(from: LocalDate, to: LocalDate, onChanged: (LocalDate, LocalDate) -> Unit) {
+    var showFromPicker by remember { mutableStateOf(false) }
+    var showToPicker by remember { mutableStateOf(false) }
+
+    Row(modifier = Modifier.fillMaxWidth().padding(start = 16.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        OutlinedButton(onClick = { showFromPicker = true }, modifier = Modifier.weight(1f)) {
+            Icon(painterResource(R.drawable.ic_calendar_today), null, tint = SalatPrimary, modifier = Modifier.size(16.dp))
+            Spacer(Modifier.width(6.dp))
+            Text(stringResource(R.string.bulk_start, from.toString()), fontFamily = AppUiFontFamily, fontSize = 12.sp, color = SalatOnSurface)
+        }
+        OutlinedButton(onClick = { showToPicker = true }, modifier = Modifier.weight(1f)) {
+            Icon(painterResource(R.drawable.ic_calendar_today), null, tint = SalatPrimary, modifier = Modifier.size(16.dp))
+            Spacer(Modifier.width(6.dp))
+            Text(stringResource(R.string.bulk_end, to.toString()), fontFamily = AppUiFontFamily, fontSize = 12.sp, color = SalatOnSurface)
+        }
+    }
+
+    if (showFromPicker) {
+        DatePickerModal(initialDate = from, onDatePicked = { picked -> showFromPicker = false; onChanged(picked, to) }, onDismiss = { showFromPicker = false })
+    }
+    if (showToPicker) {
+        DatePickerModal(initialDate = to, onDatePicked = { picked -> showToPicker = false; onChanged(from, picked) }, onDismiss = { showToPicker = false })
+    }
 }
 
 // ── Done ─────────────────────────────────────────────────────────────────────
@@ -591,7 +642,7 @@ private fun StepHeader(stepIndex: Int, title: String, subtitle: String?) {
 }
 
 @Composable
-private fun TitledOption(icon: Int, title: String, subtitle: String, isSelected: Boolean, onClick: () -> Unit) {
+private fun TitledOption(icon: Int, title: String, subtitle: String?, isSelected: Boolean, onClick: () -> Unit) {
     Surface(
         onClick  = onClick,
         modifier = Modifier.fillMaxWidth(),
@@ -612,7 +663,9 @@ private fun TitledOption(icon: Int, title: String, subtitle: String, isSelected:
             }
             Column(modifier = Modifier.weight(1f)) {
                 Text(title, color = SalatOnSurface, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily)
-                Text(subtitle, color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
+                if (subtitle != null) {
+                    Text(subtitle, color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
+                }
             }
             SelectionIndicator(isSelected)
         }
@@ -752,7 +805,7 @@ fun OnboardingWelcomePreview() {
         onCitySearchContinue = {}, onUseMyLocationInstead = {}, onConfirmLocation = {}, onChangeLocationClick = {},
         onCalculationMethodSheetOpen = {}, onCalculationMethodSheetDismiss = {}, onCalculationMethodSelected = {},
         onPrayerRemindersChanged = {}, onFullScreenAlertChanged = {}, onRemindersSkip = {}, onRemindersNext = {},
-        onCatchUpAddClick = {}, onCatchUpSkip = {}, onCatchUpDurationChanged = {}, onCatchUpCustomDaysChanged = {},
+        onCatchUpAddClick = {}, onCatchUpSkip = {}, onCatchUpDurationChanged = {}, onCatchUpCustomRangeChanged = { _, _ -> },
         onApplyCatchUp = {}, onFinish = {},
     )
 }
@@ -768,7 +821,7 @@ fun OnboardingDonePreview() {
         onCitySearchContinue = {}, onUseMyLocationInstead = {}, onConfirmLocation = {}, onChangeLocationClick = {},
         onCalculationMethodSheetOpen = {}, onCalculationMethodSheetDismiss = {}, onCalculationMethodSelected = {},
         onPrayerRemindersChanged = {}, onFullScreenAlertChanged = {}, onRemindersSkip = {}, onRemindersNext = {},
-        onCatchUpAddClick = {}, onCatchUpSkip = {}, onCatchUpDurationChanged = {}, onCatchUpCustomDaysChanged = {},
+        onCatchUpAddClick = {}, onCatchUpSkip = {}, onCatchUpDurationChanged = {}, onCatchUpCustomRangeChanged = { _, _ -> },
         onApplyCatchUp = {}, onFinish = {},
     )
 }

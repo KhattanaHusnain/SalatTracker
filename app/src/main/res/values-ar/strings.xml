@@ -16,6 +16,7 @@
     <string name="topbar_qaza">متتبّع القضاء</string>
     <string name="topbar_stats">الإحصائيات والتقدّم</string>
     <string name="topbar_settings">الإعدادات</string>
+    <string name="topbar_edit_location">الموقع</string>
     <string name="topbar_bulk_update">تحديث جماعي</string>
     <string name="topbar_goals">الأهداف الروحية</string>
     <string name="topbar_new_goal">هدف جديد</string>
@@ -294,6 +295,12 @@
     <string name="settings_device_location">موقع الجهاز</string>
     <string name="settings_latitude">خط العرض</string>
     <string name="settings_longitude">خط الطول</string>
+    <string name="settings_coordinates_value">%1$.4f, %2$.4f</string>
+    <string name="settings_edit_location_coordinates_label">الإحداثيات</string>
+    <string name="settings_edit_location_save">حفظ</string>
+    <string name="settings_edit_location_use_my_location">استخدام موقعي</string>
+    <string name="settings_edit_location_search_city">ابحث عن مدينة بدلاً من ذلك</string>
+    <string name="settings_edit_location_no_fix">تعذّر تحديد موقعك. تحقّق من تفعيل خدمات الموقع.</string>
     <string name="settings_calc_method">طريقة الحساب</string>
     <string name="settings_calculation_method_sheet_title">طريقة الحساب</string>
     <string name="settings_school">المذهب الفقهي</string>

@@ -61,6 +61,15 @@ interface SettingsRepository {
     /** Used by both the manual lat/lon fields and a successful device-location fix. */
     suspend fun setLocation(latitude: Double, longitude: Double)
 
+    /** A human-readable name for the current coordinates (e.g. "Karachi, Sindh, Pakistan"),
+     * shown in Settings/onboarding instead of raw numbers when known. Set independently of
+     * [setLocation] — callers that know a name (onboarding's confirm step, Edit Location's city
+     * search / "Use my location") set both; callers that only have numbers (manual coordinate
+     * entry, the routine background GPS resync on every launch) leave whatever label was already
+     * there rather than wiping it on every call. Null clears it (e.g. a manual coordinate edit
+     * that no longer matches the previous name). */
+    suspend fun setLocationLabel(label: String?)
+
     suspend fun setCalculationMethodId(id: Int)
 
     suspend fun setUse24HourFormat(enabled: Boolean)
@@ -156,4 +165,6 @@ data class UserPrefs(
     val jumuahReminderLeadMinutes: Int = 0,
     /** Null = not asked yet (pre-existing installs, or a skipped onboarding step). */
     val gender: Gender? = null,
+    /** See [SettingsRepository.setLocationLabel]. */
+    val locationLabel: String? = null,
 )

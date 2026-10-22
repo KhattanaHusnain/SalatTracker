@@ -305,6 +305,13 @@
     <string name="settings_device_location">Device Location</string>
     <string name="settings_latitude">Latitude</string>
     <string name="settings_longitude">Longitude</string>
+    <string name="settings_coordinates_value">%1$.4f, %2$.4f</string>
+    <string name="settings_edit_location_coordinates_label">Coordinates</string>
+    <string name="settings_edit_location_save">Save</string>
+    <string name="settings_edit_location_use_my_location">Use my location</string>
+    <string name="settings_edit_location_search_city">Search city instead</string>
+    <string name="settings_edit_location_no_fix">Couldn\'t get your location. Check that location services are on.</string>
+    <string name="topbar_edit_location">Location</string>
     <string name="settings_calc_method">Calculation Method</string>
     <string name="settings_calculation_method_sheet_title">Calculation Method</string>
     <string name="settings_school">School of Thought</string>

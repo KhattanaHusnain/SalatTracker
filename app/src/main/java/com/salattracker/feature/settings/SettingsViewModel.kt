@@ -20,8 +20,12 @@ import javax.inject.Inject
 data class SettingsUiState(
     val isLoading: Boolean = true,
     val useDeviceLocation: Boolean = true,
-    val latitude: String = "",
-    val longitude: String = "",
+    val latitude: Double = 0.0,
+    val longitude: Double = 0.0,
+    /** A human-readable name for [latitude]/[longitude] (e.g. "Karachi, Sindh, Pakistan"), when
+     * known — see [com.salattracker.domain.repository.SettingsRepository.setLocationLabel]. Null
+     * falls back to showing the raw coordinates. */
+    val locationLabel: String? = null,
     val calculationMethod: CalculationMethod = CalculationMethod.DEFAULT,
     val madhab: Madhab = Madhab.STANDARD,
     val highLatitudeRule: HighLatitudeRule = HighLatitudeRule.AUTOMATIC,
@@ -63,8 +67,9 @@ class SettingsViewModel @Inject constructor(
                         it.copy(
                             isLoading         = false,
                             useDeviceLocation = prefs.useDeviceLocation,
-                            latitude          = prefs.latitude.toString(),
-                            longitude         = prefs.longitude.toString(),
+                            latitude          = prefs.latitude,
+                            longitude         = prefs.longitude,
+                            locationLabel     = prefs.locationLabel,
                             calculationMethod = CalculationMethod.fromId(prefs.calculationMethodId),
                             madhab            = prefs.madhab,
                             highLatitudeRule  = prefs.highLatitudeRule,
@@ -86,26 +91,15 @@ class SettingsViewModel @Inject constructor(
     }
 
     /** Called once ACCESS_FINE_LOCATION is confirmed granted (the device-location toggle just
-     * turned on) — fills the fields and persists the fix in one step. */
+     * turned on) — persists the fix; [loadSettings]'s reactive collector then updates the
+     * displayed lat/lon on its own once the write lands. Manual coordinate entry and city search
+     * now live in their own screen (feature/settings's EditCoordinatesViewModel), pushed by
+     * MainActivity when the Settings screen's "Location" row is tapped. */
     fun fetchDeviceLocation() {
         viewModelScope.launch {
             val (lat, lon) = locationProvider.getCurrentLocation() ?: return@launch
-            _uiState.update { it.copy(latitude = lat.toString(), longitude = lon.toString()) }
             writeAndReschedule { settingsRepository.setLocation(lat, lon) }
         }
-    }
-
-    fun onLatitudeChanged(value: String) = _uiState.update { it.copy(latitude = value) }
-    fun onLongitudeChanged(value: String) = _uiState.update { it.copy(longitude = value) }
-
-    /** Commits the manual lat/lon fields — wired to the field's IME "Done" and focus-loss.
-     * Silently a no-op if either hasn't parsed to a valid number yet, rather than writing
-     * garbage mid-type. */
-    fun onLocationCommit() {
-        val state = _uiState.value
-        val lat = state.latitude.toDoubleOrNull() ?: return
-        val lon = state.longitude.toDoubleOrNull() ?: return
-        writeAndReschedule { settingsRepository.setLocation(lat, lon) }
     }
 
     // ── Calculation method ────────────────────────────────────────────────────

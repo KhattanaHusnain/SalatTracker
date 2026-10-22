@@ -16,6 +16,7 @@
     <string name="topbar_qaza">قضا ٹریکر</string>
     <string name="topbar_stats">شماریات و پیش رفت</string>
     <string name="topbar_settings">ترتیبات</string>
+    <string name="topbar_edit_location">لوکیشن</string>
     <string name="topbar_bulk_update">اجتماعی اپ ڈیٹ</string>
     <string name="topbar_goals">روحانی اہداف</string>
     <string name="topbar_new_goal">نیا ہدف</string>
@@ -294,6 +295,12 @@
     <string name="settings_device_location">آلے کا مقام</string>
     <string name="settings_latitude">عرض بلد</string>
     <string name="settings_longitude">طول بلد</string>
+    <string name="settings_coordinates_value">%1$.4f, %2$.4f</string>
+    <string name="settings_edit_location_coordinates_label">کوآرڈینیٹس</string>
+    <string name="settings_edit_location_save">محفوظ کریں</string>
+    <string name="settings_edit_location_use_my_location">میری لوکیشن استعمال کریں</string>
+    <string name="settings_edit_location_search_city">اس کے بجائے شہر تلاش کریں</string>
+    <string name="settings_edit_location_no_fix">آپ کی لوکیشن معلوم نہیں ہو سکی۔ چیک کریں کہ لوکیشن سروسز آن ہیں۔</string>
     <string name="settings_calc_method">حساب کا طریقہ</string>
     <string name="settings_calculation_method_sheet_title">حساب کا طریقہ</string>
     <string name="settings_school">فقہی مسلک</string>

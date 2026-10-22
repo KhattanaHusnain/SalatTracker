@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
 /** The first-run onboarding steps, in order a user moving straight forward sees them. [CITY_SEARCH]
@@ -72,7 +73,8 @@ data class OnboardingUiState(
 
     // Catch up
     val catchUpDuration: CatchUpDuration = CatchUpDuration.MONTH,
-    val catchUpCustomDays: Int = 30,
+    val catchUpCustomFrom: LocalDate = LocalDate.now().minusDays(29),
+    val catchUpCustomTo: LocalDate = LocalDate.now(),
     val isApplyingCatchUp: Boolean = false,
     val catchUpAppliedCount: Int? = null,
 
@@ -83,8 +85,17 @@ data class OnboardingUiState(
      * main app on its own — no extra signal needed here. */
     val showRestore: Boolean = false,
 ) {
-    /** Days actually used for the Catch Up write — [CatchUpDuration.CUSTOM] uses the picked count. */
-    val catchUpDays: Int get() = if (catchUpDuration == CatchUpDuration.CUSTOM) catchUpCustomDays else catchUpDuration.days
+    /** The actual date range the Catch Up write covers — [CatchUpDuration.CUSTOM] uses the picked
+     * from/to dates (inclusive); every other duration is that many days ending today. */
+    val catchUpRange: Pair<LocalDate, LocalDate>
+        get() = if (catchUpDuration == CatchUpDuration.CUSTOM) {
+            catchUpCustomFrom to catchUpCustomTo
+        } else {
+            val today = LocalDate.now()
+            today.minusDays((catchUpDuration.days - 1).toLong()) to today
+        }
+
+    val catchUpDays: Int get() = ChronoUnit.DAYS.between(catchUpRange.first, catchUpRange.second).toInt() + 1
 
     /** 5 prayers/day, matching the mockup's own "N days -> 5N prayers" estimate. */
     val catchUpPrayerCount: Int get() = catchUpDays * PrayerType.values().size
@@ -171,6 +182,7 @@ class OnboardingViewModel @Inject constructor(
             if (!state.isFromDeviceLocation) {
                 settingsRepository.setLocation(city.latitude, city.longitude)
             }
+            if (city.name.isNotBlank()) settingsRepository.setLocationLabel(city.fullLabel)
             settingsRepository.setCalculationMethodId(state.calculationMethod.id)
         }
         goTo(OnboardingStep.REMINDERS)
@@ -223,22 +235,26 @@ class OnboardingViewModel @Inject constructor(
     fun onCatchUpAddClick() = goTo(OnboardingStep.CATCH_UP_ADD)
     fun onCatchUpSkip() = goTo(OnboardingStep.DONE)
     fun onCatchUpDurationChanged(duration: CatchUpDuration) = _uiState.update { it.copy(catchUpDuration = duration) }
-    fun onCatchUpCustomDaysChanged(days: Int) = _uiState.update { it.copy(catchUpCustomDays = days.coerceIn(1, 3650)) }
+
+    /** Mirrors feature/bulkupdate's own custom-range handling: swap if reversed, and never let
+     * either end land after today (there's nothing to mark Qaza in the future). */
+    fun onCatchUpCustomRangeChanged(from: LocalDate, to: LocalDate) {
+        val today = LocalDate.now()
+        val (lo, hi) = if (from.isAfter(to)) to to from else from to to
+        _uiState.update { it.copy(catchUpCustomFrom = minOf(lo, today), catchUpCustomTo = minOf(hi, today)) }
+    }
 
     fun onApplyCatchUp() {
         val state = _uiState.value
-        val days = state.catchUpDays
-        if (days <= 0) {
+        val (from, to) = state.catchUpRange
+        if (from.isAfter(to)) {
             goTo(OnboardingStep.DONE)
             return
         }
         _uiState.update { it.copy(isApplyingCatchUp = true) }
         viewModelScope.launch {
-            val today = LocalDate.now()
-            val entries = (0 until days).flatMap { offset ->
-                val date = today.minusDays(offset.toLong())
-                PrayerType.values().map { date to it }
-            }
+            val dates = generateSequence(from) { it.plusDays(1) }.takeWhile { !it.isAfter(to) }.toList()
+            val entries = dates.flatMap { date -> PrayerType.values().map { date to it } }
             runCatching { prayerRepository.bulkUpsertPrayerStatus(entries, PrayerStatus.QAZA_PENDING) }
             _uiState.update { it.copy(isApplyingCatchUp = false, catchUpAppliedCount = entries.size) }
             goTo(OnboardingStep.DONE)

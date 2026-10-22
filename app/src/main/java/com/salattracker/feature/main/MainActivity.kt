@@ -63,6 +63,7 @@ import com.salattracker.feature.home.HomeEntry
 import com.salattracker.feature.mosque.MosqueModeEntry
 import com.salattracker.core.ui.MadhabPromptDialog
 import com.salattracker.feature.onboarding.OnboardingEntry
+import com.salattracker.feature.settings.EditCoordinatesEntry
 import com.salattracker.feature.qaza.MissedPrayersEntry
 import com.salattracker.feature.qaza.QazaEntry
 import com.salattracker.feature.quran.QuranBookmarksEntry
@@ -358,9 +359,6 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                 composable(BottomNavRoute.Quran.route) {
                     QuranChapterListEntry(
                         onChapterClick = { number -> navController.push(Routes.quranReader(number)) },
-                        onContinueReadingClick = { chapterNumber, verseNumber ->
-                            navController.push(Routes.quranReader(chapterNumber, verseNumber))
-                        },
                         onJuzClick = { juzNumber, pageNumber ->
                             navController.push(Routes.quranMushaf(pageNumber, juzNumber))
                         },
@@ -424,7 +422,10 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                     )
                 }
                 composable(Routes.SETTINGS) {
-                    SettingsEntry()
+                    SettingsEntry(onEditLocationClick = { navController.push(Routes.EDIT_COORDINATES) })
+                }
+                composable(Routes.EDIT_COORDINATES) {
+                    EditCoordinatesEntry(onDone = { navController.popBackStack() })
                 }
                 composable(Routes.PRAYER_REMINDERS) {
                     PrayerRemindersEntry()
@@ -691,6 +692,7 @@ private fun topBarTitle(route: String?): String = stringResource(
         BottomNavRoute.Goals.route    -> R.string.topbar_goals
         BottomNavRoute.Quran.route    -> R.string.topbar_quran
         Routes.SETTINGS               -> R.string.topbar_settings
+        Routes.EDIT_COORDINATES       -> R.string.topbar_edit_location
         Routes.BACKUP                 -> R.string.topbar_backup
         Routes.BULK_UPDATE            -> R.string.topbar_bulk_update
         Routes.PRAYER_REMINDERS       -> R.string.prayer_reminders

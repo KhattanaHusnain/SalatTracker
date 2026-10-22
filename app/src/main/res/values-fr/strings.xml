@@ -16,6 +16,7 @@
     <string name="topbar_qaza">Suivi Qaza</string>
     <string name="topbar_stats">Stats et progrès</string>
     <string name="topbar_settings">Réglages</string>
+    <string name="topbar_edit_location">Position</string>
     <string name="topbar_bulk_update">Mise à jour groupée</string>
     <string name="topbar_goals">Objectifs spirituels</string>
     <string name="topbar_new_goal">Nouvel objectif</string>
@@ -294,6 +295,12 @@
     <string name="settings_device_location">Localisation de l\'appareil</string>
     <string name="settings_latitude">Latitude</string>
     <string name="settings_longitude">Longitude</string>
+    <string name="settings_coordinates_value">%1$.4f, %2$.4f</string>
+    <string name="settings_edit_location_coordinates_label">Coordonnées</string>
+    <string name="settings_edit_location_save">Enregistrer</string>
+    <string name="settings_edit_location_use_my_location">Utiliser ma position</string>
+    <string name="settings_edit_location_search_city">Rechercher une ville à la place</string>
+    <string name="settings_edit_location_no_fix">Impossible d\'obtenir votre position. Vérifiez que les services de localisation sont activés.</string>
     <string name="settings_calc_method">Méthode de calcul</string>
     <string name="settings_calculation_method_sheet_title">Méthode de calcul</string>
     <string name="settings_school">École juridique</string>
