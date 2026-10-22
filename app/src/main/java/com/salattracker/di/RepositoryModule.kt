@@ -1,6 +1,7 @@
 package com.salattracker.di
 
 import com.salattracker.core.locale.LocaleApplierImpl
+import com.salattracker.data.location.GeocodingRepositoryImpl
 import com.salattracker.data.location.LocationProviderImpl
 import com.salattracker.data.prayertimes.AdhanPrayerTimeCalculator
 import com.salattracker.data.mosque.MosqueGeofencerImpl
@@ -16,6 +17,7 @@ import com.salattracker.data.repository.QuranUserDataRepositoryImpl
 import com.salattracker.data.repository.SettingsRepositoryImpl
 import com.salattracker.data.repository.VerseRepositoryImpl
 import com.salattracker.domain.repository.BackupRepository
+import com.salattracker.domain.repository.GeocodingRepository
 import com.salattracker.domain.repository.GoalReminderScheduler
 import com.salattracker.domain.repository.GoalRepository
 import com.salattracker.domain.repository.LocaleApplier
@@ -75,6 +77,10 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindLocationProvider(impl: LocationProviderImpl): LocationProvider
+
+    @Binds
+    @Singleton
+    abstract fun bindGeocodingRepository(impl: GeocodingRepositoryImpl): GeocodingRepository
 
     @Binds
     @Singleton

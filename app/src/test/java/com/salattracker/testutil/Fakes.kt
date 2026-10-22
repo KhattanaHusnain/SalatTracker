@@ -283,6 +283,25 @@ class FakeLocaleApplier : LocaleApplier {
     override fun apply(language: AppLanguage) { applied += language }
 }
 
+/** In-memory [GeocodingRepository] — tests set [nextSearchResults]/[nextReverseResult] before
+ * calling the code under test. */
+class FakeGeocodingRepository : com.salattracker.domain.repository.GeocodingRepository {
+    var nextSearchResults: List<com.salattracker.domain.model.CityResult> = emptyList()
+    var nextReverseResult: com.salattracker.domain.model.CityResult? = null
+    val searchQueries = mutableListOf<String>()
+    val reverseGeocodeCalls = mutableListOf<Pair<Double, Double>>()
+
+    override suspend fun searchCities(query: String): List<com.salattracker.domain.model.CityResult> {
+        searchQueries += query
+        return nextSearchResults
+    }
+
+    override suspend fun reverseGeocode(latitude: Double, longitude: Double): com.salattracker.domain.model.CityResult? {
+        reverseGeocodeCalls += latitude to longitude
+        return nextReverseResult
+    }
+}
+
 /** In-memory [SettingsRepository] exercising only what SettingsViewModel actually calls. */
 class FakeSettingsRepository(initial: UserPrefs = UserPrefs()) : SettingsRepository {
 
@@ -310,6 +329,7 @@ class FakeSettingsRepository(initial: UserPrefs = UserPrefs()) : SettingsReposit
         use24HourFormat: Boolean, language: AppLanguage, themeMode: ThemeMode,
         madhab: Madhab, highLatitudeRule: HighLatitudeRule, prayerTimeAdjustMinutes: Map<PrayerType, Int>,
         madhabChosen: Boolean, jumuahEnabled: Boolean, jumuahReminderLeadMinutes: Int,
+        gender: com.salattracker.domain.model.Gender?,
     ) = notUsed()
 
     override suspend fun setUseDeviceLocation(enabled: Boolean) {
@@ -344,6 +364,16 @@ class FakeSettingsRepository(initial: UserPrefs = UserPrefs()) : SettingsReposit
 
     override suspend fun setAllRemindersEnabled(enabled: Boolean) = notUsed()
     override suspend fun setOnboardingCompleted(completed: Boolean) = notUsed()
+    override suspend fun setGender(gender: com.salattracker.domain.model.Gender) {
+        prefs.update { it.copy(gender = gender) }
+    }
+
+    val locationLabelCalls = mutableListOf<String?>()
+
+    override suspend fun setLocationLabel(label: String?) {
+        locationLabelCalls += label
+        prefs.update { it.copy(locationLabel = label) }
+    }
     override suspend fun setReminderEnabled(type: PrayerType, enabled: Boolean) = notUsed()
     override suspend fun setReminderOffsetMinutes(type: PrayerType, minutes: Int) = notUsed()
     override suspend fun setReminderSnoozeMinutes(type: PrayerType, minutes: Int) = notUsed()

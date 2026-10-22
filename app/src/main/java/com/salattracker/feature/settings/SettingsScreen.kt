@@ -4,20 +4,15 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -41,9 +36,7 @@ import com.salattracker.domain.model.ThemeMode
 fun SettingsScreen(
     uiState: SettingsUiState,
     onUseDeviceLocationChanged: (Boolean) -> Unit,
-    onLatitudeChanged: (String) -> Unit,
-    onLongitudeChanged: (String) -> Unit,
-    onLocationCommit: () -> Unit,
+    onEditLocationClick: () -> Unit,
     onCalculationMethodSheetOpen: () -> Unit,
     onCalculationMethodSheetDismiss: () -> Unit,
     onCalculationMethodChanged: (CalculationMethod) -> Unit,
@@ -77,13 +70,12 @@ fun SettingsScreen(
                 useDeviceLocation = uiState.useDeviceLocation,
                 latitude          = uiState.latitude,
                 longitude         = uiState.longitude,
+                locationLabel     = uiState.locationLabel,
                 calculationMethod = uiState.calculationMethod,
                 madhab            = uiState.madhab,
                 highLatitudeRule  = uiState.highLatitudeRule,
                 onToggleDevice    = onUseDeviceLocationChanged,
-                onLatChanged      = onLatitudeChanged,
-                onLonChanged      = onLongitudeChanged,
-                onLocationCommit  = onLocationCommit,
+                onEditLocationClick = onEditLocationClick,
                 onCalculationMethodClick = onCalculationMethodSheetOpen,
                 onMadhabChanged   = onMadhabChanged,
                 onHighLatitudeRuleChanged = onHighLatitudeRuleChanged,
@@ -133,15 +125,14 @@ fun SettingsScreen(
 @Composable
 private fun LocationAndPrayerTimesCard(
     useDeviceLocation: Boolean,
-    latitude: String,
-    longitude: String,
+    latitude: Double,
+    longitude: Double,
+    locationLabel: String?,
     calculationMethod: CalculationMethod,
     madhab: Madhab,
     highLatitudeRule: HighLatitudeRule,
     onToggleDevice: (Boolean) -> Unit,
-    onLatChanged: (String) -> Unit,
-    onLonChanged: (String) -> Unit,
-    onLocationCommit: () -> Unit,
+    onEditLocationClick: () -> Unit,
     onCalculationMethodClick: () -> Unit,
     onMadhabChanged: (Madhab) -> Unit,
     onHighLatitudeRuleChanged: (HighLatitudeRule) -> Unit,
@@ -168,29 +159,25 @@ private fun LocationAndPrayerTimesCard(
             )
         }
 
-        // Manual lat/lon (only editable when device location is off)
-        Spacer(modifier = Modifier.height(12.dp))
-        Row(
-            modifier              = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            CoordField(
-                label     = stringResource(R.string.settings_latitude),
-                value     = latitude,
-                onChanged = onLatChanged,
-                onCommit  = onLocationCommit,
-                enabled   = !useDeviceLocation,
-                modifier  = Modifier.weight(1f),
-            )
-            CoordField(
-                label     = stringResource(R.string.settings_longitude),
-                value     = longitude,
-                onChanged = onLonChanged,
-                onCommit  = onLocationCommit,
-                enabled   = !useDeviceLocation,
-                modifier  = Modifier.weight(1f),
-            )
-        }
+        Spacer(modifier = Modifier.height(16.dp))
+        HorizontalDivider(color = SalatOutlineVariant.copy(alpha = 0.4f))
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Location — a single tappable row; editing coordinates/searching a city is its own
+        // screen (Routes.EDIT_COORDINATES) rather than inline fields here.
+        SettingsNavRow(
+            icon    = R.drawable.ic_my_location,
+            label   = stringResource(R.string.onboarding_location_label),
+            onClick = onEditLocationClick,
+        )
+        Text(
+            text     = locationLabel ?: stringResource(R.string.settings_coordinates_value, latitude, longitude),
+            modifier = Modifier.padding(start = 36.dp, top = 2.dp),
+            color    = SalatOnSurfaceVariant,
+            fontSize = 12.sp,
+            fontFamily = AppUiFontFamily,
+            maxLines = 1,
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
         HorizontalDivider(color = SalatOutlineVariant.copy(alpha = 0.4f))
@@ -356,44 +343,6 @@ private fun AdjustPrayerTimesCard(
     }
 }
 
-@Composable
-private fun CoordField(
-    label: String,
-    value: String,
-    onChanged: (String) -> Unit,
-    onCommit: () -> Unit,
-    enabled: Boolean,
-    modifier: Modifier = Modifier,
-) {
-    val focusManager = LocalFocusManager.current
-
-    Column(modifier = modifier) {
-        Text(label, color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily)
-        Spacer(Modifier.height(4.dp))
-        OutlinedTextField(
-            value         = value,
-            onValueChange = onChanged,
-            enabled       = enabled,
-            modifier      = Modifier.fillMaxWidth().onFocusChanged { if (!it.isFocused) onCommit() },
-            singleLine    = true,
-            textStyle     = LocalTextStyle.current.copy(
-                fontFamily = AppUiFontFamily, fontSize = 14.sp, color = SalatOnSurface,
-            ),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus(); onCommit() }),
-            colors          = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor   = SalatPrimary,
-                unfocusedBorderColor = SalatOutlineVariant,
-                disabledBorderColor  = SalatOutlineVariant.copy(alpha = 0.5f),
-                focusedContainerColor   = SalatSurfaceContainerLow,
-                unfocusedContainerColor = SalatSurfaceContainerLow,
-                disabledContainerColor  = SalatSurfaceContainerLow.copy(alpha = 0.5f),
-            ),
-            shape = RoundedCornerShape(8.dp),
-        )
-    }
-}
-
 // ── Appearance card (theme, language, 24-hour) ────────────────────────────────
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -520,15 +469,13 @@ fun SettingsScreenPreview() {
         uiState = SettingsUiState(
             isLoading    = false,
             useDeviceLocation = true,
-            latitude     = "24.4672",
-            longitude    = "39.6111",
+            latitude     = 24.4672,
+            longitude    = 39.6111,
             calculationMethod = CalculationMethod.MWL,
             use24HourFormat = false,
         ),
         onUseDeviceLocationChanged = {},
-        onLatitudeChanged          = {},
-        onLongitudeChanged         = {},
-        onLocationCommit           = {},
+        onEditLocationClick        = {},
         onCalculationMethodSheetOpen    = {},
         onCalculationMethodSheetDismiss = {},
         onCalculationMethodChanged = {},

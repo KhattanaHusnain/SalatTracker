@@ -16,6 +16,7 @@
     <string name="topbar_qaza">Suivi Qaza</string>
     <string name="topbar_stats">Stats et progrès</string>
     <string name="topbar_settings">Réglages</string>
+    <string name="topbar_edit_location">Position</string>
     <string name="topbar_bulk_update">Mise à jour groupée</string>
     <string name="topbar_goals">Objectifs spirituels</string>
     <string name="topbar_new_goal">Nouvel objectif</string>
@@ -143,6 +144,7 @@
     <string name="action_get_started">Commencer</string>
     <string name="action_view_all">Voir tout</string>
     <string name="action_mark_done">Marquer fait</string>
+    <string name="action_skip_for_now">Ignorer pour l\'instant</string>
 
     <string name="onboarding_welcome_title">Bienvenue sur Salah Tracker</string>
     <string name="onboarding_welcome_subtitle">Veuillez sélectionner votre langue préférée pour commencer votre parcours.</string>
@@ -173,6 +175,57 @@
     <string name="onboarding_notifications_title">Restez connecté</string>
     <string name="onboarding_notifications_subtitle">Activez les rappels pour ne jamais manquer une prière ou une étape spirituelle.</string>
     <string name="prayer_reminders">Rappels de prière</string>
+    <string name="onboarding_reminders_turn_on">Activer les rappels</string>
+    <string name="onboarding_reminders_fullscreen_title">Alerte plein écran</string>
+    <string name="onboarding_reminders_fullscreen_desc">Allume l\'écran au moment de la prière</string>
+
+    <!-- Onboarding: About you -->
+    <string name="onboarding_about_you_title">Parlez-nous de vous</string>
+    <string name="onboarding_about_you_subtitle">Cela adapte le suivi de vos prières. Ces données ne quittent jamais votre appareil.</string>
+    <string name="onboarding_gender_male">Homme</string>
+    <string name="onboarding_gender_male_desc">Suivi standard</string>
+    <string name="onboarding_gender_female">Femme</string>
+    <string name="onboarding_gender_female_desc">Ajoute un statut \"excusée\" pour les jours de menstruation</string>
+
+    <!-- Onboarding: Location -->
+    <string name="onboarding_location_enter_city">Saisir une ville à la place</string>
+    <string name="onboarding_location_use_my_location">Utiliser ma position à la place</string>
+    <string name="onboarding_location_confirm_title">Est-ce correct ?</string>
+    <string name="onboarding_location_confirm_subtitle">Confirmez votre position, ou modifiez-la.</string>
+    <string name="onboarding_location_confirm_action">Confirmer la position</string>
+    <string name="onboarding_location_change">Modifier</string>
+    <string name="onboarding_location_label">Position</string>
+    <string name="onboarding_hijri_date_label">Date hégirienne aujourd\'hui</string>
+
+    <!-- Onboarding: City search -->
+    <string name="onboarding_city_search_title">Saisissez votre ville</string>
+    <string name="onboarding_city_search_placeholder">Rechercher une ville</string>
+    <string name="onboarding_city_search_searching">Recherche…</string>
+    <string name="onboarding_city_search_no_results">Aucun résultat pour “%1$s”. Vérifiez l\'orthographe ou essayez une grande ville proche.</string>
+
+    <!-- Onboarding: Catch up -->
+    <string name="onboarding_catch_up_title">Des prières manquées à rattraper ?</string>
+    <string name="onboarding_catch_up_subtitle">Ajoutez les jours manqués et nous remplirons votre suivi Qaza.</string>
+    <string name="onboarding_catch_up_add_title">Jusqu\'où remonter ?</string>
+    <string name="onboarding_catch_up_add_subtitle">Choisissez une période. Ces prières seront marquées comme Qaza.</string>
+    <string name="onboarding_catch_up_duration_week">7 derniers jours</string>
+    <string name="onboarding_catch_up_duration_month">30 derniers jours</string>
+    <string name="onboarding_catch_up_duration_half_year">6 derniers mois</string>
+    <string name="onboarding_catch_up_prayer_count">%1$d prières</string>
+    <string name="onboarding_catch_up_add_action">Ajouter %1$d prières</string>
+
+    <!-- Onboarding: Done -->
+    <string name="onboarding_done_title">Tout est prêt</string>
+    <string name="onboarding_done_subtitle">Vos heures de prière et rappels sont prêts.</string>
+    <string name="onboarding_done_action">Commencer le suivi</string>
+    <string name="onboarding_done_summary_language">Langue</string>
+    <string name="onboarding_done_summary_location">Position</string>
+    <string name="onboarding_done_summary_reminders">Rappels</string>
+    <string name="onboarding_done_summary_qaza">Qaza</string>
+    <string name="onboarding_done_reminders_on">Activés</string>
+    <string name="onboarding_done_reminders_off">Désactivés</string>
+    <string name="onboarding_done_qaza_added">Ajoutées</string>
+    <string name="onboarding_done_qaza_set_up_later">À configurer plus tard</string>
 
     <string name="home_daily_stack">Les prières du jour</string>
     <string name="home_best_streak">Max %1$d</string>
@@ -242,6 +295,12 @@
     <string name="settings_device_location">Localisation de l\'appareil</string>
     <string name="settings_latitude">Latitude</string>
     <string name="settings_longitude">Longitude</string>
+    <string name="settings_coordinates_value">%1$.4f, %2$.4f</string>
+    <string name="settings_edit_location_coordinates_label">Coordonnées</string>
+    <string name="settings_edit_location_save">Enregistrer</string>
+    <string name="settings_edit_location_use_my_location">Utiliser ma position</string>
+    <string name="settings_edit_location_search_city">Rechercher une ville à la place</string>
+    <string name="settings_edit_location_no_fix">Impossible d\'obtenir votre position. Vérifiez que les services de localisation sont activés.</string>
     <string name="settings_calc_method">Méthode de calcul</string>
     <string name="settings_calculation_method_sheet_title">Méthode de calcul</string>
     <string name="settings_school">École juridique</string>

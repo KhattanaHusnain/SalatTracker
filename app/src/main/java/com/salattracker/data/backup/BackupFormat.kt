@@ -152,6 +152,8 @@ private data class SettingsDto(
     @SerializedName("prayerTimeAdjustMinutes") val prayerTimeAdjustMinutes: Map<String, Int>?,
     @SerializedName("jumuahEnabled") val jumuahEnabled: Boolean?,
     @SerializedName("jumuahReminderLeadMinutes") val jumuahReminderLeadMinutes: Int?,
+    // Added after format v1; absent in older backups, which then restore with gender unset (null).
+    @SerializedName("gender") val gender: String?,
 )
 
 private data class PayloadDto(
@@ -331,6 +333,7 @@ object BackupCodec {
             prayerTimeAdjustMinutes = PrayerType.values().associate { it.name to (settings.prayerTimeAdjustMinutes[it] ?: 0) },
             jumuahEnabled           = settings.jumuahEnabled,
             jumuahReminderLeadMinutes = settings.jumuahReminderLeadMinutes,
+            gender                  = settings.gender?.name,
         ),
         mosques = mosques.map {
             MosqueDto(id = it.id, name = it.name, latitude = it.latitude, longitude = it.longitude, radiusMeters = it.radiusMeters)
@@ -429,6 +432,7 @@ object BackupCodec {
             prayerTimeAdjustMinutes = prayerMapOf(prayerTimeAdjustMinutes, 0),
             jumuahEnabled = jumuahEnabled ?: true,
             jumuahReminderLeadMinutes = jumuahReminderLeadMinutes ?: 0,
+            gender = gender?.let { runCatching { com.salattracker.domain.model.Gender.valueOf(it) }.getOrNull() },
         )
     }
 

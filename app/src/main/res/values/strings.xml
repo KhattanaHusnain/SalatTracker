@@ -152,6 +152,7 @@
     <string name="action_get_started">Get Started</string>
     <string name="action_view_all">View All</string>
     <string name="action_mark_done">Mark Done</string>
+    <string name="action_skip_for_now">Skip for now</string>
 
     <!-- Onboarding -->
     <string name="onboarding_welcome_title">Welcome to Salah Tracker</string>
@@ -183,6 +184,57 @@
     <string name="onboarding_notifications_title">Stay Connected</string>
     <string name="onboarding_notifications_subtitle">Enable reminders so you never miss a prayer or a spiritual milestone.</string>
     <string name="prayer_reminders">Prayer Reminders</string>
+    <string name="onboarding_reminders_turn_on">Turn on reminders</string>
+    <string name="onboarding_reminders_fullscreen_title">Full-screen alert</string>
+    <string name="onboarding_reminders_fullscreen_desc">Wakes the screen for the prayer</string>
+
+    <!-- Onboarding: About you -->
+    <string name="onboarding_about_you_title">Tell us about you</string>
+    <string name="onboarding_about_you_subtitle">This tailors your prayer tracking. It never leaves your device.</string>
+    <string name="onboarding_gender_male">Male</string>
+    <string name="onboarding_gender_male_desc">Standard tracking</string>
+    <string name="onboarding_gender_female">Female</string>
+    <string name="onboarding_gender_female_desc">Adds an excused-prayer status for menstruation days</string>
+
+    <!-- Onboarding: Location -->
+    <string name="onboarding_location_enter_city">Enter city instead</string>
+    <string name="onboarding_location_use_my_location">Use my location instead</string>
+    <string name="onboarding_location_confirm_title">Is this right?</string>
+    <string name="onboarding_location_confirm_subtitle">Confirm your location, or change it.</string>
+    <string name="onboarding_location_confirm_action">Confirm location</string>
+    <string name="onboarding_location_change">Change</string>
+    <string name="onboarding_location_label">Location</string>
+    <string name="onboarding_hijri_date_label">Hijri date today</string>
+
+    <!-- Onboarding: City search -->
+    <string name="onboarding_city_search_title">Enter your city</string>
+    <string name="onboarding_city_search_placeholder">Search city</string>
+    <string name="onboarding_city_search_searching">Searching…</string>
+    <string name="onboarding_city_search_no_results">No results for “%1$s”. Check the spelling or try a nearby larger city.</string>
+
+    <!-- Onboarding: Catch up -->
+    <string name="onboarding_catch_up_title">Missed prayers to make up?</string>
+    <string name="onboarding_catch_up_subtitle">Add the days you missed and we\'ll fill your Qaza tracker.</string>
+    <string name="onboarding_catch_up_add_title">How far back?</string>
+    <string name="onboarding_catch_up_add_subtitle">Pick a period. We\'ll mark those prayers as Qaza.</string>
+    <string name="onboarding_catch_up_duration_week">Last 7 days</string>
+    <string name="onboarding_catch_up_duration_month">Last 30 days</string>
+    <string name="onboarding_catch_up_duration_half_year">Last 6 months</string>
+    <string name="onboarding_catch_up_prayer_count">%1$d prayers</string>
+    <string name="onboarding_catch_up_add_action">Add %1$d prayers</string>
+
+    <!-- Onboarding: Done -->
+    <string name="onboarding_done_title">You\'re all set</string>
+    <string name="onboarding_done_subtitle">Your prayer times and reminders are ready.</string>
+    <string name="onboarding_done_action">Start tracking</string>
+    <string name="onboarding_done_summary_language">Language</string>
+    <string name="onboarding_done_summary_location">Location</string>
+    <string name="onboarding_done_summary_reminders">Reminders</string>
+    <string name="onboarding_done_summary_qaza">Qaza</string>
+    <string name="onboarding_done_reminders_on">On</string>
+    <string name="onboarding_done_reminders_off">Off</string>
+    <string name="onboarding_done_qaza_added">Added</string>
+    <string name="onboarding_done_qaza_set_up_later">Set up later</string>
 
     <!-- Home -->
     <string name="home_daily_stack">Today\'s Prayers</string>
@@ -253,6 +305,13 @@
     <string name="settings_device_location">Device Location</string>
     <string name="settings_latitude">Latitude</string>
     <string name="settings_longitude">Longitude</string>
+    <string name="settings_coordinates_value">%1$.4f, %2$.4f</string>
+    <string name="settings_edit_location_coordinates_label">Coordinates</string>
+    <string name="settings_edit_location_save">Save</string>
+    <string name="settings_edit_location_use_my_location">Use my location</string>
+    <string name="settings_edit_location_search_city">Search city instead</string>
+    <string name="settings_edit_location_no_fix">Couldn\'t get your location. Check that location services are on.</string>
+    <string name="topbar_edit_location">Location</string>
     <string name="settings_calc_method">Calculation Method</string>
     <string name="settings_calculation_method_sheet_title">Calculation Method</string>
     <string name="settings_school">School of Thought</string>

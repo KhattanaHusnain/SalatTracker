@@ -1,6 +1,7 @@
 package com.salattracker.domain.repository
 
 import com.salattracker.domain.model.AppLanguage
+import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.HighLatitudeRule
 import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerType
@@ -47,6 +48,7 @@ interface SettingsRepository {
         madhabChosen: Boolean,
         jumuahEnabled: Boolean,
         jumuahReminderLeadMinutes: Int,
+        gender: Gender?,
     )
 
     /** One-shot read, used when prayer times need refreshing. */
@@ -58,6 +60,15 @@ interface SettingsRepository {
 
     /** Used by both the manual lat/lon fields and a successful device-location fix. */
     suspend fun setLocation(latitude: Double, longitude: Double)
+
+    /** A human-readable name for the current coordinates (e.g. "Karachi, Sindh, Pakistan"),
+     * shown in Settings/onboarding instead of raw numbers when known. Set independently of
+     * [setLocation] — callers that know a name (onboarding's confirm step, Edit Location's city
+     * search / "Use my location") set both; callers that only have numbers (manual coordinate
+     * entry, the routine background GPS resync on every launch) leave whatever label was already
+     * there rather than wiping it on every call. Null clears it (e.g. a manual coordinate edit
+     * that no longer matches the previous name). */
+    suspend fun setLocationLabel(label: String?)
 
     suspend fun setCalculationMethodId(id: Int)
 
@@ -91,6 +102,9 @@ interface SettingsRepository {
 
     /** Marks first-run onboarding as finished so it never shows again. */
     suspend fun setOnboardingCompleted(completed: Boolean)
+
+    /** Onboarding's "About you" step. See [Gender] for why this is stored but not a gate. */
+    suspend fun setGender(gender: Gender)
 
     // ── Prayer Reminders screen — granular, live-apply writes ──────────────────
 
@@ -149,4 +163,8 @@ data class UserPrefs(
     val madhabChosen: Boolean = false,
     val jumuahEnabled: Boolean = true,
     val jumuahReminderLeadMinutes: Int = 0,
+    /** Null = not asked yet (pre-existing installs, or a skipped onboarding step). */
+    val gender: Gender? = null,
+    /** See [SettingsRepository.setLocationLabel]. */
+    val locationLabel: String? = null,
 )

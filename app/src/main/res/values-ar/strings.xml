@@ -16,6 +16,7 @@
     <string name="topbar_qaza">متتبّع القضاء</string>
     <string name="topbar_stats">الإحصائيات والتقدّم</string>
     <string name="topbar_settings">الإعدادات</string>
+    <string name="topbar_edit_location">الموقع</string>
     <string name="topbar_bulk_update">تحديث جماعي</string>
     <string name="topbar_goals">الأهداف الروحية</string>
     <string name="topbar_new_goal">هدف جديد</string>
@@ -143,6 +144,7 @@
     <string name="action_get_started">ابدأ الآن</string>
     <string name="action_view_all">عرض الكل</string>
     <string name="action_mark_done">تحديد كمُنجز</string>
+    <string name="action_skip_for_now">تخطّ الآن</string>
 
     <string name="onboarding_welcome_title">مرحبًا بك في Salah Tracker</string>
     <string name="onboarding_welcome_subtitle">يرجى اختيار لغتك المفضّلة لبدء رحلتك.</string>
@@ -173,6 +175,57 @@
     <string name="onboarding_notifications_title">ابقَ على تواصل</string>
     <string name="onboarding_notifications_subtitle">فعّل التذكيرات حتى لا تفوتك صلاة أو محطة روحية.</string>
     <string name="prayer_reminders">تذكيرات الصلاة</string>
+    <string name="onboarding_reminders_turn_on">تفعيل التذكيرات</string>
+    <string name="onboarding_reminders_fullscreen_title">تنبيه على الشاشة كاملة</string>
+    <string name="onboarding_reminders_fullscreen_desc">يُضيء الشاشة عند دخول وقت الصلاة</string>
+
+    <!-- Onboarding: About you -->
+    <string name="onboarding_about_you_title">أخبرنا عن نفسك</string>
+    <string name="onboarding_about_you_subtitle">هذا يخصّص تتبع صلواتك. لا تُغادر هذه البيانات جهازك مطلقًا.</string>
+    <string name="onboarding_gender_male">ذكر</string>
+    <string name="onboarding_gender_male_desc">تتبع عادي</string>
+    <string name="onboarding_gender_female">أنثى</string>
+    <string name="onboarding_gender_female_desc">يضيف حالة \"معذورة\" لأيام الحيض</string>
+
+    <!-- Onboarding: Location -->
+    <string name="onboarding_location_enter_city">إدخال المدينة بدلاً من ذلك</string>
+    <string name="onboarding_location_use_my_location">استخدام موقعي بدلاً من ذلك</string>
+    <string name="onboarding_location_confirm_title">هل هذا صحيح؟</string>
+    <string name="onboarding_location_confirm_subtitle">أكّد موقعك، أو قم بتغييره.</string>
+    <string name="onboarding_location_confirm_action">تأكيد الموقع</string>
+    <string name="onboarding_location_change">تغيير</string>
+    <string name="onboarding_location_label">الموقع</string>
+    <string name="onboarding_hijri_date_label">التاريخ الهجري اليوم</string>
+
+    <!-- Onboarding: City search -->
+    <string name="onboarding_city_search_title">أدخل مدينتك</string>
+    <string name="onboarding_city_search_placeholder">ابحث عن مدينة</string>
+    <string name="onboarding_city_search_searching">جارٍ البحث…</string>
+    <string name="onboarding_city_search_no_results">لا توجد نتائج لـ “%1$s”. تحقّق من التهجئة أو جرّب مدينة أكبر قريبة.</string>
+
+    <!-- Onboarding: Catch up -->
+    <string name="onboarding_catch_up_title">هل لديك صلوات فائتة؟</string>
+    <string name="onboarding_catch_up_subtitle">أضف الأيام التي فوّتتها وسنملأ متتبع القضاء لك.</string>
+    <string name="onboarding_catch_up_add_title">إلى أي مدى؟</string>
+    <string name="onboarding_catch_up_add_subtitle">اختر فترة، وسنُعلّم تلك الصلوات كقضاء.</string>
+    <string name="onboarding_catch_up_duration_week">آخر 7 أيام</string>
+    <string name="onboarding_catch_up_duration_month">آخر 30 يومًا</string>
+    <string name="onboarding_catch_up_duration_half_year">آخر 6 أشهر</string>
+    <string name="onboarding_catch_up_prayer_count">%1$d صلاة</string>
+    <string name="onboarding_catch_up_add_action">إضافة %1$d صلاة</string>
+
+    <!-- Onboarding: Done -->
+    <string name="onboarding_done_title">كل شيء جاهز</string>
+    <string name="onboarding_done_subtitle">أوقات صلاتك وتذكيراتك جاهزة الآن.</string>
+    <string name="onboarding_done_action">بدء التتبع</string>
+    <string name="onboarding_done_summary_language">اللغة</string>
+    <string name="onboarding_done_summary_location">الموقع</string>
+    <string name="onboarding_done_summary_reminders">التذكيرات</string>
+    <string name="onboarding_done_summary_qaza">القضاء</string>
+    <string name="onboarding_done_reminders_on">مفعّلة</string>
+    <string name="onboarding_done_reminders_off">معطّلة</string>
+    <string name="onboarding_done_qaza_added">تمت الإضافة</string>
+    <string name="onboarding_done_qaza_set_up_later">سيتم لاحقًا</string>
 
     <string name="home_daily_stack">صلوات اليوم</string>
     <string name="home_best_streak">الأفضل %1$d</string>
@@ -242,6 +295,12 @@
     <string name="settings_device_location">موقع الجهاز</string>
     <string name="settings_latitude">خط العرض</string>
     <string name="settings_longitude">خط الطول</string>
+    <string name="settings_coordinates_value">%1$.4f, %2$.4f</string>
+    <string name="settings_edit_location_coordinates_label">الإحداثيات</string>
+    <string name="settings_edit_location_save">حفظ</string>
+    <string name="settings_edit_location_use_my_location">استخدام موقعي</string>
+    <string name="settings_edit_location_search_city">ابحث عن مدينة بدلاً من ذلك</string>
+    <string name="settings_edit_location_no_fix">تعذّر تحديد موقعك. تحقّق من تفعيل خدمات الموقع.</string>
     <string name="settings_calc_method">طريقة الحساب</string>
     <string name="settings_calculation_method_sheet_title">طريقة الحساب</string>
     <string name="settings_school">المذهب الفقهي</string>

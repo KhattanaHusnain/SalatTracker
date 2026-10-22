@@ -37,8 +37,8 @@ class SettingsViewModelTest {
 
         val state = viewModel.uiState.value
         assertFalse(state.isLoading)
-        assertEquals("24.4672", state.latitude)
-        assertEquals("39.6111", state.longitude)
+        assertEquals(24.4672, state.latitude, 0.0001)
+        assertEquals(39.6111, state.longitude, 0.0001)
         assertEquals(CalculationMethod.MWL, state.calculationMethod)
     }
 
@@ -54,14 +54,12 @@ class SettingsViewModelTest {
     }
 
     @Test
-    fun `fetchDeviceLocation fills the fields and persists the fix`() {
+    fun `fetchDeviceLocation persists the fix and reschedules`() {
         locationProvider.nextLocation = 1.5 to 2.5
         val viewModel = createViewModel()
 
         viewModel.fetchDeviceLocation()
 
-        assertEquals("1.5", viewModel.uiState.value.latitude)
-        assertEquals("2.5", viewModel.uiState.value.longitude)
         assertEquals(listOf(1.5 to 2.5), repository.locationCalls)
         assertEquals(1, rescheduler.rescheduleCount)
     }
@@ -75,22 +73,6 @@ class SettingsViewModelTest {
 
         assertTrue(repository.locationCalls.isEmpty())
         assertEquals(0, rescheduler.rescheduleCount)
-    }
-
-    @Test
-    fun `onLocationCommit writes only once both fields parse as valid doubles`() {
-        val viewModel = createViewModel()
-        viewModel.onLatitudeChanged("12.3")
-        viewModel.onLongitudeChanged("")
-
-        viewModel.onLocationCommit()
-        assertTrue(repository.locationCalls.isEmpty())
-
-        viewModel.onLongitudeChanged("45.6")
-        viewModel.onLocationCommit()
-
-        assertEquals(listOf(12.3 to 45.6), repository.locationCalls)
-        assertEquals(1, rescheduler.rescheduleCount)
     }
 
     @Test
