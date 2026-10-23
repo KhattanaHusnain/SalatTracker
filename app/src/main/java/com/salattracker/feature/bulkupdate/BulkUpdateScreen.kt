@@ -28,6 +28,7 @@ import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.core.ui.DatePickerModal
 import com.salattracker.core.ui.isOfferedFor
+import com.salattracker.core.ui.iconRes
 import com.salattracker.core.ui.label
 import com.salattracker.core.ui.labelRes
 import com.salattracker.core.ui.nameRes
@@ -455,13 +456,9 @@ private fun PrayerCheckRow(type: PrayerType, checked: Boolean, onToggle: () -> U
 
 private data class StatusChipItem(val status: PrayerStatus, val iconRes: Int)
 
-private val STATUS_CHIPS = listOf(
-    StatusChipItem(PrayerStatus.CONGREGATION,   R.drawable.ic_groups),
-    StatusChipItem(PrayerStatus.INDIVIDUAL,     R.drawable.ic_person),
-    StatusChipItem(PrayerStatus.QAZA_PENDING,   R.drawable.ic_pending_actions),
-    StatusChipItem(PrayerStatus.QAZA_COMPLETED, R.drawable.ic_history_edu),
-    StatusChipItem(PrayerStatus.MENSTRUATION,   R.drawable.ic_female),
-)
+private val STATUS_CHIPS = PrayerStatus.values()
+    .filterNot { it == PrayerStatus.NOT_RECORDED }
+    .map { StatusChipItem(it, it.iconRes) }
 
 @Composable
 private fun StatusChipRow(selected: PrayerStatus, gender: Gender?, onSelected: (PrayerStatus) -> Unit) {

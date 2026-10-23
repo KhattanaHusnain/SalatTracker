@@ -14,6 +14,7 @@ import com.salattracker.core.theme.SalatStatusIndividual
 import com.salattracker.core.theme.SalatStatusNotRecorded
 import com.salattracker.core.theme.SalatStatusQazaCompleted
 import com.salattracker.core.theme.SalatStatusQazaPending
+import com.salattracker.R
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
 
@@ -66,4 +67,14 @@ internal fun statusRingColor(status: PrayerStatus?, emptyColor: Color = SalatSta
     PrayerStatus.QAZA_COMPLETED -> SalatStatusQazaCompleted
     PrayerStatus.MENSTRUATION -> SalatStatusExcused
     PrayerStatus.NOT_RECORDED, null -> emptyColor
+}
+
+/** Canonical status icon, shared by pickers, calendar cells, and history chips. */
+val PrayerStatus.iconRes: Int get() = when (this) {
+    PrayerStatus.CONGREGATION -> R.drawable.ic_groups
+    PrayerStatus.INDIVIDUAL -> R.drawable.ic_person
+    PrayerStatus.QAZA_PENDING -> R.drawable.ic_pending_actions
+    PrayerStatus.QAZA_COMPLETED -> R.drawable.ic_check_circle_filled
+    PrayerStatus.MENSTRUATION -> R.drawable.ic_female
+    PrayerStatus.NOT_RECORDED -> R.drawable.ic_radio_unchecked
 }

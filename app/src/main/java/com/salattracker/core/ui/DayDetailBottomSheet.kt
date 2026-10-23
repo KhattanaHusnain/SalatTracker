@@ -193,11 +193,11 @@ internal fun PrayerStatusChip(status: PrayerStatus, isUpcoming: Boolean = false)
         )
         PrayerStatus.QAZA_PENDING   -> StatusChipStyle(
             Color(0xFFFFDCC3), Color(0xFF6E3900),
-            R.drawable.ic_history_edu, stringResource(R.string.status_qaza)
+            PrayerStatus.QAZA_PENDING.iconRes, stringResource(R.string.status_qaza)
         )
         PrayerStatus.QAZA_COMPLETED -> StatusChipStyle(
             Color(0xFFFFDCC3), Color(0xFF6E3900),
-            R.drawable.ic_check_circle_filled, stringResource(R.string.status_qaza_done)
+            PrayerStatus.QAZA_COMPLETED.iconRes, stringResource(R.string.status_qaza_done)
         )
         PrayerStatus.MENSTRUATION   -> StatusChipStyle(
             SalatErrorContainer, SalatOnErrorContainer,

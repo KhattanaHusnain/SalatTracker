@@ -237,11 +237,11 @@ private data class PrayerStatusItem(
  * class-load time (outside any composition) the way it used to be. */
 @Composable
 private fun prayerStatusItems(): List<PrayerStatusItem> = listOf(
-    PrayerStatusItem(PrayerStatus.CONGREGATION,   R.drawable.ic_groups,          SalatPrimary),
-    PrayerStatusItem(PrayerStatus.INDIVIDUAL,     R.drawable.ic_person,          SalatPrimary),
-    PrayerStatusItem(PrayerStatus.QAZA_PENDING,   R.drawable.ic_pending_actions, SalatTertiary),
-    PrayerStatusItem(PrayerStatus.QAZA_COMPLETED, R.drawable.ic_history_edu,     Color(0xFFFF9939)),
-    PrayerStatusItem(PrayerStatus.MENSTRUATION,   R.drawable.ic_female,          SalatError),
+    PrayerStatusItem(PrayerStatus.CONGREGATION,   PrayerStatus.CONGREGATION.iconRes,   SalatPrimary),
+    PrayerStatusItem(PrayerStatus.INDIVIDUAL,     PrayerStatus.INDIVIDUAL.iconRes,     SalatPrimary),
+    PrayerStatusItem(PrayerStatus.QAZA_PENDING,   PrayerStatus.QAZA_PENDING.iconRes,   SalatTertiary),
+    PrayerStatusItem(PrayerStatus.QAZA_COMPLETED, PrayerStatus.QAZA_COMPLETED.iconRes, SalatStatusQazaCompleted),
+    PrayerStatusItem(PrayerStatus.MENSTRUATION,   PrayerStatus.MENSTRUATION.iconRes,   SalatError),
 )
 
 // ── Preview ───────────────────────────────────────────────────────────────────

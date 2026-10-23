@@ -551,14 +551,7 @@ private fun DayCellSkeleton(modifier: Modifier = Modifier) {
     Box(modifier = modifier.clip(RoundedCornerShape(10.dp)).background(SalatSurfaceContainerHigh.copy(alpha = alpha)))
 }
 
-private fun statusSquareIconRes(status: PrayerStatus): Int = when (status) {
-    PrayerStatus.CONGREGATION   -> R.drawable.ic_groups
-    PrayerStatus.INDIVIDUAL     -> R.drawable.ic_person
-    PrayerStatus.QAZA_PENDING   -> R.drawable.ic_schedule
-    PrayerStatus.QAZA_COMPLETED -> R.drawable.ic_check_circle_filled
-    PrayerStatus.MENSTRUATION   -> R.drawable.ic_female
-    PrayerStatus.NOT_RECORDED   -> R.drawable.ic_radio_unchecked
-}
+private fun statusSquareIconRes(status: PrayerStatus): Int = status.iconRes
 
 /** White reads fine on every status colour except Individual's light amber. */
 private fun statusSquareIconTint(status: PrayerStatus): Color =
