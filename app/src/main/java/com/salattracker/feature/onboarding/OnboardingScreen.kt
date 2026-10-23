@@ -76,8 +76,10 @@ fun OnboardingScreen(
     onCatchUpDurationChanged: (CatchUpDuration) -> Unit,
     onCatchUpCustomRangeChanged: (LocalDate, LocalDate) -> Unit,
     onApplyCatchUp: () -> Unit,
+    onUndoCatchUp: () -> Unit,
     onFinish: () -> Unit,
 ) {
+    var showConfirmation by remember { mutableStateOf(false) }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -114,7 +116,7 @@ fun OnboardingScreen(
                 onDurationChanged = onCatchUpDurationChanged, onCustomRangeChanged = onCatchUpCustomRangeChanged,
                 onApply = onApplyCatchUp,
             )
-            OnboardingStep.DONE -> DoneStep(uiState, onFinish)
+            OnboardingStep.DONE -> DoneStep(uiState, onUndoCatchUp, onFinish)
         }
     }
 }
@@ -514,8 +516,21 @@ private fun CatchUpAddStep(
         }
 
         Spacer(Modifier.height(28.dp))
-        PrimaryButton(text = stringResource(R.string.onboarding_catch_up_add_action, prayerCount), onClick = onApply)
+        PrimaryButton(text = stringResource(R.string.onboarding_catch_up_add_action, prayerCount), onClick = { showConfirmation = true })
         Spacer(Modifier.height(24.dp))
+    }
+    if (showConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showConfirmation = false },
+            title = { Text(stringResource(R.string.onboarding_catch_up_confirm_title), fontFamily = AppTitleFontFamily) },
+            text = { Text(stringResource(R.string.onboarding_catch_up_confirm_message, prayerCount), fontFamily = AppUiFontFamily) },
+            confirmButton = {
+                TextButton(onClick = { showConfirmation = false; onApply() }) {
+                    Text(stringResource(R.string.action_continue), color = SalatPrimary)
+                }
+            },
+            dismissButton = { TextButton(onClick = { showConfirmation = false }) { Text(stringResource(R.string.action_cancel)) } },
+        )
     }
 }
 
@@ -571,7 +586,7 @@ private fun CustomRangePickers(from: LocalDate, to: LocalDate, onChanged: (Local
 // ── Done ─────────────────────────────────────────────────────────────────────
 
 @Composable
-private fun DoneStep(uiState: OnboardingUiState, onFinish: () -> Unit) {
+private fun DoneStep(uiState: OnboardingUiState, onUndoCatchUp: () -> Unit, onFinish: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Spacer(Modifier.height(48.dp))
         Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -599,6 +614,9 @@ private fun DoneStep(uiState: OnboardingUiState, onFinish: () -> Unit) {
                             ?: stringResource(R.string.settings_coordinates_value, city.latitude, city.longitude)
                     }.orEmpty(),
                 )
+                if (uiState.catchUpUndoAvailable) {
+                    TextButton(onClick = onUndoCatchUp) { Text(stringResource(R.string.action_undo), color = SalatPrimary) }
+                }
                 DoneSummaryLine(
                     stringResource(R.string.onboarding_done_summary_reminders),
                     stringResource(if (uiState.prayerRemindersEnabled) R.string.onboarding_done_reminders_on else R.string.onboarding_done_reminders_off),
@@ -796,7 +814,7 @@ fun OnboardingWelcomePreview() {
         onCalculationMethodSheetOpen = {}, onCalculationMethodSheetDismiss = {}, onCalculationMethodSelected = {},
         onPrayerRemindersChanged = {}, onFullScreenAlertChanged = {}, onRemindersSkip = {}, onRemindersNext = {},
         onCatchUpAddClick = {}, onCatchUpSkip = {}, onCatchUpDurationChanged = {}, onCatchUpCustomRangeChanged = { _, _ -> },
-        onApplyCatchUp = {}, onFinish = {},
+        onApplyCatchUp = {}, onUndoCatchUp = {}, onFinish = {},
     )
 }
 
@@ -812,6 +830,6 @@ fun OnboardingDonePreview() {
         onCalculationMethodSheetOpen = {}, onCalculationMethodSheetDismiss = {}, onCalculationMethodSelected = {},
         onPrayerRemindersChanged = {}, onFullScreenAlertChanged = {}, onRemindersSkip = {}, onRemindersNext = {},
         onCatchUpAddClick = {}, onCatchUpSkip = {}, onCatchUpDurationChanged = {}, onCatchUpCustomRangeChanged = { _, _ -> },
-        onApplyCatchUp = {}, onFinish = {},
+        onApplyCatchUp = {}, onUndoCatchUp = {}, onFinish = {},
     )
 }

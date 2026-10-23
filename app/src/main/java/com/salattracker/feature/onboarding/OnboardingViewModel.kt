@@ -79,6 +79,7 @@ data class OnboardingUiState(
     val catchUpCustomTo: LocalDate = LocalDate.now(),
     val isApplyingCatchUp: Boolean = false,
     val catchUpAppliedCount: Int? = null,
+    val catchUpUndoAvailable: Boolean = false,
 
     val isFinishing: Boolean = false,
     /** True while the "Restore from Google Drive" flow (feature/backup's BackupEntry) is shown
@@ -110,6 +111,8 @@ class OnboardingViewModel @Inject constructor(
     private val prayerRepository: PrayerRepository,
     private val workManager: WorkManager,
 ) : ViewModel() {
+
+    private var catchUpUndoEntries: List<Pair<LocalDate, PrayerType>>? = null
 
     private val _uiState = MutableStateFlow(OnboardingUiState())
     val uiState: StateFlow<OnboardingUiState> = _uiState.asStateFlow()
@@ -260,14 +263,22 @@ class OnboardingViewModel @Inject constructor(
                     .flatMap { date -> PrayerType.values().map { date to it } }
                     .filter { (date, type) -> isPrayerMarkable(date, todayTimes?.get(type), today) }
                 prayerRepository.bulkUpsertPrayerStatus(entries, PrayerStatus.QAZA_PENDING)
-                entries.size
+                entries.size to entries
             }.onSuccess { count ->
-                _uiState.update { it.copy(isApplyingCatchUp = false, catchUpAppliedCount = count) }
+                catchUpUndoEntries = count.second
+                _uiState.update { it.copy(isApplyingCatchUp = false, catchUpAppliedCount = count.first, catchUpUndoAvailable = true) }
                 goTo(OnboardingStep.DONE)
             }.onFailure {
                 _uiState.update { it.copy(isApplyingCatchUp = false) }
             }
         }
+    }
+
+    fun onUndoCatchUp() {
+        val entries = catchUpUndoEntries ?: return
+        catchUpUndoEntries = null
+        _uiState.update { it.copy(catchUpUndoAvailable = false, catchUpAppliedCount = null) }
+        viewModelScope.launch { runCatching { prayerRepository.bulkUpsertPrayerStatus(entries, PrayerStatus.NOT_RECORDED) } }
     }
 
     // ── Done ──────────────────────────────────────────────────────────────────
