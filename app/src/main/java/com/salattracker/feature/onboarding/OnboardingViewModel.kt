@@ -15,6 +15,7 @@ import com.salattracker.domain.model.ThemeMode
 import com.salattracker.domain.repository.GeocodingRepository
 import com.salattracker.domain.repository.PrayerRepository
 import com.salattracker.domain.repository.SettingsRepository
+import com.salattracker.domain.usecase.isPrayerMarkable
 import com.salattracker.notification.PrayerReminderWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -253,11 +254,21 @@ class OnboardingViewModel @Inject constructor(
         }
         _uiState.update { it.copy(isApplyingCatchUp = true) }
         viewModelScope.launch {
-            val dates = generateSequence(from) { it.plusDays(1) }.takeWhile { !it.isAfter(to) }.toList()
-            val entries = dates.flatMap { date -> PrayerType.values().map { date to it } }
-            runCatching { prayerRepository.bulkUpsertPrayerStatus(entries, PrayerStatus.QAZA_PENDING) }
-            _uiState.update { it.copy(isApplyingCatchUp = false, catchUpAppliedCount = entries.size) }
-            goTo(OnboardingStep.DONE)
+            runCatching {
+                val today = LocalDate.now()
+                val todayTimes = prayerRepository.getPrayerTimes(today)
+                val dates = generateSequence(from) { it.plusDays(1) }.takeWhile { !it.isAfter(to) }.toList()
+                val entries = dates
+                    .flatMap { date -> PrayerType.values().map { date to it } }
+                    .filter { (date, type) -> isPrayerMarkable(date, todayTimes?.get(type), today) }
+                prayerRepository.bulkUpsertPrayerStatus(entries, PrayerStatus.QAZA_PENDING)
+                entries.size
+            }.onSuccess { count ->
+                _uiState.update { it.copy(isApplyingCatchUp = false, catchUpAppliedCount = count) }
+                goTo(OnboardingStep.DONE)
+            }.onFailure {
+                _uiState.update { it.copy(isApplyingCatchUp = false) }
+            }
         }
     }
 
