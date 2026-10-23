@@ -319,6 +319,8 @@
     <string name="settings_adjust_prayer_times">اوقاتِ نماز ایڈجسٹ کریں</string>
     <string name="settings_adjust_prayer_times_desc">ہر نماز کے وقت کو چند منٹ سے ایڈجسٹ کریں، مثلاً اپنی مقامی مسجد سے ملانے کے لیے۔</string>
     <string name="settings_prayer_time_adjust_value">%1$d منٹ</string>
+    <string name="settings_decrease_prayer_adjustment">%1$s کی ایڈجسٹمنٹ کم کریں</string>
+    <string name="settings_increase_prayer_adjustment">%1$s کی ایڈجسٹمنٹ بڑھائیں</string>
     <string name="settings_appearance">ظاہری شکل</string>
     <string name="settings_language">زبان</string>
     <string name="settings_theme">تھیم</string>

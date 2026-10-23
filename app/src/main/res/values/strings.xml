@@ -328,6 +328,8 @@
     <string name="settings_adjust_prayer_times">Adjust Prayer Times</string>
     <string name="settings_adjust_prayer_times_desc">Fine-tune each prayer time by a few minutes, for example to match your local mosque.</string>
     <string name="settings_prayer_time_adjust_value">%1$d min</string>
+    <string name="settings_decrease_prayer_adjustment">Decrease %1$s adjustment</string>
+    <string name="settings_increase_prayer_adjustment">Increase %1$s adjustment</string>
     <string name="settings_appearance">Appearance</string>
     <string name="settings_language">Language</string>
     <string name="settings_theme">Theme</string>

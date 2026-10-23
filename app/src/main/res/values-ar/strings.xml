@@ -319,6 +319,8 @@
     <string name="settings_adjust_prayer_times">تعديل أوقات الصلاة</string>
     <string name="settings_adjust_prayer_times_desc">اضبط كل وقت صلاة بدقائق قليلة، مثلاً لمطابقة مسجدك المحلي.</string>
     <string name="settings_prayer_time_adjust_value">%1$d دقيقة</string>
+    <string name="settings_decrease_prayer_adjustment">تقليل تعديل %1$s</string>
+    <string name="settings_increase_prayer_adjustment">زيادة تعديل %1$s</string>
     <string name="settings_appearance">المظهر</string>
     <string name="settings_language">اللغة</string>
     <string name="settings_theme">المظهر</string>

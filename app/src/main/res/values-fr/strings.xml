@@ -319,6 +319,8 @@
     <string name="settings_adjust_prayer_times">Ajuster les horaires de prière</string>
     <string name="settings_adjust_prayer_times_desc">Ajustez chaque horaire de prière de quelques minutes, par exemple pour correspondre à votre mosquée locale.</string>
     <string name="settings_prayer_time_adjust_value">%1$d min</string>
+    <string name="settings_decrease_prayer_adjustment">Diminuer l’ajustement de %1$s</string>
+    <string name="settings_increase_prayer_adjustment">Augmenter l’ajustement de %1$s</string>
     <string name="settings_appearance">Apparence</string>
     <string name="settings_language">Langue</string>
     <string name="settings_theme">Thème</string>

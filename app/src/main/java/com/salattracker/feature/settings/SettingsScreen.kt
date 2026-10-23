@@ -346,6 +346,7 @@ private fun AdjustPrayerTimesCard(
             ) {
                 Text(type.label(), color = SalatOnSurface, fontSize = 15.sp, fontFamily = AppUiFontFamily)
                 MinuteStepper(
+                    prayerLabel = type.label(),
                     minutes = adjustMinutes[type] ?: 0,
                     onMinutesChanged = { onChanged(type, it) },
                 )
