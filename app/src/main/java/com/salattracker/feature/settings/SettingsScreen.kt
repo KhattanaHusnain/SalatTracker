@@ -53,6 +53,13 @@ fun SettingsScreen(
 ) {
     val focusManager = LocalFocusManager.current
 
+    if (uiState.isLoading) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(color = SalatPrimary)
+        }
+        return
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier

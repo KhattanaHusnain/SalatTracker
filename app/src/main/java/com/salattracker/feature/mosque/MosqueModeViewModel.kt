@@ -46,6 +46,7 @@ data class NearbyUiState(
 )
 
 data class MosqueModeUiState(
+    val isLoading: Boolean = true,
     val enabled: Boolean = false,
     val canVibrate: Boolean = true,
     val mosques: List<Mosque> = emptyList(),
@@ -79,6 +80,7 @@ class MosqueModeViewModel @Inject constructor(
             combine(mosqueRepository.observeMosques(), store.observeState()) { mosques, state ->
                 _uiState.update {
                     it.copy(
+                        isLoading = false,
                         enabled = state.enabled,
                         mosques = mosques,
                         vibrateActiveAt = state.activeMosqueName.takeIf { _ -> state.restoreTo != null },

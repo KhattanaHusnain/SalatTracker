@@ -57,6 +57,13 @@ fun PrayerRemindersScreen(
     onJumuahEnabledChanged: (Boolean) -> Unit,
     onJumuahReminderLeadChanged: (Int) -> Unit,
 ) {
+    if (uiState.isLoading) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(color = SalatPrimary)
+        }
+        return
+    }
+
     val context = LocalContext.current
     val exactAlarmsUnavailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
         !context.getSystemService(android.app.AlarmManager::class.java).canScheduleExactAlarms()

@@ -78,6 +78,13 @@ fun MosqueModeScreen(
     onDisclosureDismiss: () -> Unit,
     onMessageDismiss: () -> Unit,
 ) {
+    if (uiState.isLoading) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(color = SalatPrimary)
+        }
+        return
+    }
+
     Box(Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -248,6 +255,7 @@ private val MosqueMessage.textRes: Int
 fun MosqueModeScreenPreview() {
     MosqueModeScreen(
         uiState = MosqueModeUiState(
+            isLoading = false,
             enabled = true,
             mosques = listOf(
                 Mosque(1, "Masjid Al-Noor", 24.4672, 39.6111, 100),
