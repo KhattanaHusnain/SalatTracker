@@ -31,11 +31,9 @@ object DatabaseModule {
             "salat_tracker.db",
         )
             .addMigrations(MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12)
-            // Applies only when NO registered migration covers the device's current version —
-            // i.e. a schema older than the oldest migration above, not "any missing path".
-            // Every version bump from here on needs its own Migration, or upgrading users lose
-            // all their prayer history (there are real Play Store installs on v7 already).
-            .fallbackToDestructiveMigration()
+            // Historical installs below v5 predate the supported migration chain. From v5 on,
+            // missing migrations must fail loudly rather than silently deleting prayer history.
+            .fallbackToDestructiveMigrationFrom(1, 2, 3, 4)
             .build()
 
     @Provides fun providePrayerDao(db: SalatDatabase): PrayerDao          = db.prayerDao()
