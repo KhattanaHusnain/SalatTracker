@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import com.salattracker.R
+import com.salattracker.core.ui.nameRes
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.repository.DEVICE_DEFAULT_SOUND_URI
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -59,19 +60,10 @@ class PrayerReminderChannels @Inject constructor(
         return channel
     }
 
-    private fun channelName(type: PrayerType): String = "${type.channelLabel} Reminders"
+    private fun channelName(type: PrayerType): String = context.getString(type.nameRes)
 
     private fun azanUri(): Uri = Uri.parse("android.resource://${context.packageName}/${R.raw.azan}")
 
     private fun manager() = context.getSystemService(NotificationManager::class.java)
 }
 
-// Mirrors the existing hardcoded, not-yet-localized labels already used for notification text
-// in PrayerReminderReceiver.kt — channel names are a separate, system-settings-only surface.
-private val PrayerType.channelLabel: String get() = when (this) {
-    PrayerType.FAJR    -> "Fajr"
-    PrayerType.DHUHR   -> "Dhuhr"
-    PrayerType.ASR     -> "Asr"
-    PrayerType.MAGHRIB -> "Maghrib"
-    PrayerType.ISHA    -> "Isha"
-}

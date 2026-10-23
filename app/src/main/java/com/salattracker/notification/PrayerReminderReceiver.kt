@@ -9,6 +9,7 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.salattracker.R
+import com.salattracker.core.ui.labelRes
 import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerStatus
@@ -87,7 +88,7 @@ class PrayerReminderReceiver : BroadcastReceiver() {
                 // Women aren't obliged to attend Jumu'ah or pray in congregation — both suppressed
                 // regardless of a possibly-stale stored toggle, matching AlarmScheduler/the UI.
                 val isFemale = prefs.gender == Gender.FEMALE
-                val label = type.label(date, prefs.jumuahEnabled && !isFemale, prefs.madhab)
+                val label = context.getString(type.labelRes(date, prefs.jumuahEnabled && !isFemale, prefs.madhab))
 
                 channels.ensure(type, soundUri, vibrationEnabled)
                 val fullScreenPendingIntent = fullScreenPendingIntent(context, type, date)
@@ -101,12 +102,12 @@ class PrayerReminderReceiver : BroadcastReceiver() {
                     .setAutoCancel(true)
                     .setContentIntent(fullScreenPendingIntent)
                 if (!isFemale) {
-                    builder.addAction(action(context, type, date, ACTION_MARK_CONGREGATION, R.drawable.ic_groups, "Congregation"))
+                    builder.addAction(action(context, type, date, ACTION_MARK_CONGREGATION, R.drawable.ic_groups, context.getString(R.string.status_congregation)))
                 }
                 builder
-                    .addAction(action(context, type, date, ACTION_MARK_INDIVIDUAL, R.drawable.ic_person, "Individual"))
-                    .addAction(action(context, type, date, ACTION_MARK_QAZA_PENDING, R.drawable.ic_pending_actions, "Qaza"))
-                    .addAction(action(context, type, date, ACTION_SNOOZE, R.drawable.ic_schedule, "Snooze ${snoozeMinutes}m", snoozeMinutes))
+                    .addAction(action(context, type, date, ACTION_MARK_INDIVIDUAL, R.drawable.ic_person, context.getString(R.string.status_individual)))
+                    .addAction(action(context, type, date, ACTION_MARK_QAZA_PENDING, R.drawable.ic_pending_actions, context.getString(R.string.status_qaza_pending)))
+                    .addAction(action(context, type, date, ACTION_SNOOZE, R.drawable.ic_schedule, context.getString(R.string.reminder_snooze, snoozeMinutes), snoozeMinutes))
                 // Android 14+ lets the user (or Play policy) revoke this capability. Requesting
                 // it anyway is a no-op, so fall back to the normal high-priority notification.
                 if (fullScreenAlert && canUseFullScreenIntent(context)) {
@@ -244,21 +245,3 @@ internal fun canUseFullScreenIntent(context: Context): Boolean =
     Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE ||
         context.getSystemService(android.app.NotificationManager::class.java).canUseFullScreenIntent()
 
-/** Not localized, matching every other label in this file's notification text (pre-existing;
- * out of scope to change here). Mirrors [com.salattracker.core.ui.label]'s Jumu'ah and Ja'fari
- * (Zuhrain/Maghribain) rules, but can't reuse it directly since that's a `@Composable`
- * `stringResource` helper and this runs from a `BroadcastReceiver`. */
-private fun PrayerType.label(date: LocalDate, jumuahEnabled: Boolean, madhab: Madhab): String = when {
-    this == PrayerType.DHUHR && jumuahEnabled && date.dayOfWeek == java.time.DayOfWeek.FRIDAY -> "Jumu'ah"
-    madhab == Madhab.JAFARI && this == PrayerType.DHUHR   -> "Zuhrain"
-    madhab == Madhab.JAFARI && this == PrayerType.ASR     -> "Asr (Zuhrain)"
-    madhab == Madhab.JAFARI && this == PrayerType.MAGHRIB -> "Maghribain"
-    madhab == Madhab.JAFARI && this == PrayerType.ISHA    -> "Isha (Maghribain)"
-    else -> when (this) {
-        PrayerType.FAJR    -> "Fajr"
-        PrayerType.DHUHR   -> "Dhuhr"
-        PrayerType.ASR     -> "Asr"
-        PrayerType.MAGHRIB -> "Maghrib"
-        PrayerType.ISHA    -> "Isha"
-    }
-}

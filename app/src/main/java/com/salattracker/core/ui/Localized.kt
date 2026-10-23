@@ -116,6 +116,17 @@ fun PrayerType.label(date: LocalDate, jumuahEnabled: Boolean, madhab: Madhab): S
     madhab == Madhab.JAFARI && this == PrayerType.ISHA    -> stringResource(R.string.prayer_isha_maghribain)
     else -> stringResource(nameRes)
 }
+
+/** Non-composable equivalent of the date- and school-aware prayer label. */
+@StringRes
+fun PrayerType.labelRes(date: LocalDate, jumuahEnabled: Boolean, madhab: Madhab): Int = when {
+    this == PrayerType.DHUHR && jumuahEnabled && date.dayOfWeek == DayOfWeek.FRIDAY -> R.string.prayer_jumuah
+    madhab == Madhab.JAFARI && this == PrayerType.DHUHR   -> R.string.prayer_zuhrain
+    madhab == Madhab.JAFARI && this == PrayerType.ASR     -> R.string.prayer_asr_zuhrain
+    madhab == Madhab.JAFARI && this == PrayerType.MAGHRIB -> R.string.prayer_maghribain
+    madhab == Madhab.JAFARI && this == PrayerType.ISHA    -> R.string.prayer_isha_maghribain
+    else -> nameRes
+}
 @Composable fun PrayerStatus.label(): String = stringResource(labelRes)
 @Composable fun GoalCategory.label(): String = stringResource(labelRes)
 @Composable fun GoalFrequency.label(): String = stringResource(labelRes)
