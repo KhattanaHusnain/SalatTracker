@@ -150,13 +150,13 @@ private fun HeroCard(
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(20.dp))
-            .background(Brush.linearGradient(listOf(SalatPrimaryContainer, SalatPrimary)))
+            .background(Brush.linearGradient(listOf(SalatHeroGradientStart, SalatHeroGradientEnd)))
             .padding(20.dp),
     ) {
         Column {
             Text(
                 text = if (hijriText != null) "${todayDate.format(dateFormatter)} · $hijriText" else todayDate.format(dateFormatter),
-                color = Color.White.copy(alpha = 0.85f),
+                color = SalatOnHero.copy(alpha = 0.85f),
                 fontSize = 13.sp,
                 fontFamily = AppUiFontFamily,
             )
@@ -169,21 +169,21 @@ private fun HeroCard(
                     PrayerStatusRing(
                         statuses       = prayers.associate { it.type to it.status },
                         modifier       = Modifier.fillMaxSize(),
-                        emptyColor     = Color.White.copy(alpha = 0.22f),
+                        emptyColor     = SalatOnHero.copy(alpha = 0.22f),
                         strokeFraction = 0.14f,
                         sweepFraction  = sweep.value,
                     )
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
                             text = stringResource(R.string.home_ring_count, completed),
-                            color = Color.White,
+                            color = SalatOnHero,
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             fontFamily = AppTitleFontFamily,
                         )
                         Text(
                             text = stringResource(R.string.home_ring_caption),
-                            color = Color.White.copy(alpha = 0.75f),
+                            color = SalatOnHero.copy(alpha = 0.75f),
                             fontSize = 9.sp,
                             fontFamily = AppUiFontFamily,
                         )
@@ -193,7 +193,7 @@ private fun HeroCard(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = stringResource(R.string.home_next_prayer).uppercase(),
-                        color = Color.White.copy(alpha = 0.7f),
+                            color = SalatOnHero.copy(alpha = 0.7f),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.SemiBold,
                         fontFamily = AppUiFontFamily,
@@ -203,7 +203,7 @@ private fun HeroCard(
                         val nextPrayerDate = if (nextPrayer.isTomorrow) todayDate.plusDays(1) else todayDate
                         Text(
                             text = nextPrayer.type.label(nextPrayerDate, jumuahEnabled, madhab),
-                            color = Color.White,
+                            color = SalatOnHero,
                             fontSize = 22.sp,
                             fontWeight = FontWeight.Bold,
                             fontFamily = AppTitleFontFamily,
@@ -213,7 +213,7 @@ private fun HeroCard(
                                 "${stringResource(R.string.home_tomorrow)} ${nextPrayer.time.formatAppTime(use24HourFormat)}"
                             else
                                 nextPrayer.time.formatAppTime(use24HourFormat),
-                            color = Color.White.copy(alpha = 0.85f),
+                            color = SalatOnHero.copy(alpha = 0.85f),
                             fontSize = 13.sp,
                             fontFamily = AppUiFontFamily,
                         )
@@ -223,7 +223,7 @@ private fun HeroCard(
                                 stringResource(R.string.home_next_in_hours_minutes, (minutesUntilNext / 60).toInt(), (minutesUntilNext % 60).toInt())
                             else
                                 stringResource(R.string.home_next_in_minutes, minutesUntilNext.toInt()),
-                            color = Color.White,
+                            color = SalatOnHero,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.SemiBold,
                             fontFamily = AppUiFontFamily,
@@ -231,7 +231,7 @@ private fun HeroCard(
                     } else {
                         Text(
                             text = stringResource(R.string.home_day_complete),
-                            color = Color.White,
+                            color = SalatOnHero,
                             fontSize = 15.sp,
                             fontWeight = FontWeight.SemiBold,
                             fontFamily = AppTitleFontFamily,
@@ -239,7 +239,7 @@ private fun HeroCard(
                     }
                     if (qazaPendingTotal > 0) {
                         Spacer(modifier = Modifier.height(10.dp))
-                        Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color.White.copy(alpha = 0.25f)))
+                        Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(SalatOnHero.copy(alpha = 0.25f)))
                         Spacer(modifier = Modifier.height(10.dp))
                         Row(
                             modifier = Modifier
@@ -248,11 +248,11 @@ private fun HeroCard(
                                 .padding(vertical = 2.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Icon(painterResource(R.drawable.ic_history_edu), null, tint = Color.White, modifier = Modifier.size(14.dp))
+                            Icon(painterResource(R.drawable.ic_history_edu), null, tint = SalatOnHero, modifier = Modifier.size(14.dp))
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = stringResource(R.string.home_qaza_count_pending, qazaPendingTotal),
-                                color = Color.White,
+                                color = SalatOnHero,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 fontFamily = AppUiFontFamily,
@@ -261,7 +261,7 @@ private fun HeroCard(
                             Icon(
                                 painter = painterResource(R.drawable.ic_chevron_right),
                                 contentDescription = null,
-                                tint = Color.White.copy(alpha = 0.8f),
+                                tint = SalatOnHero.copy(alpha = 0.8f),
                                 modifier = Modifier.size(14.dp),
                             )
                         }
@@ -274,13 +274,13 @@ private fun HeroCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(10.dp))
-                        .background(Color.White.copy(alpha = 0.18f))
+                        .background(SalatOnHero.copy(alpha = 0.18f))
                         .padding(horizontal = 12.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    Icon(painterResource(R.drawable.ic_mosque), null, tint = Color.White, modifier = Modifier.size(16.dp))
-                    Text(islamicEvent.label(), color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
+                    Icon(painterResource(R.drawable.ic_mosque), null, tint = SalatOnHero, modifier = Modifier.size(16.dp))
+                    Text(islamicEvent.label(), color = SalatOnHero, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
                 }
             }
         }
@@ -544,7 +544,7 @@ private fun InspirationBanner(verse: VerseInfo, modifier: Modifier = Modifier) {
             .clip(RoundedCornerShape(16.dp))
             .background(
                 Brush.linearGradient(
-                    listOf(SalatPrimaryContainer, SalatPrimary)
+                    listOf(SalatHeroGradientStart, SalatHeroGradientEnd)
                 )
             )
             .padding(24.dp),
@@ -553,7 +553,7 @@ private fun InspirationBanner(verse: VerseInfo, modifier: Modifier = Modifier) {
         Column {
             Text(
                 text = "“${verse.text}”",
-                color = Color.White,
+                color = SalatOnHero,
                 fontSize = 16.sp,
                 fontStyle = FontStyle.Italic,
                 fontFamily = AppUiFontFamily,
@@ -563,7 +563,7 @@ private fun InspirationBanner(verse: VerseInfo, modifier: Modifier = Modifier) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = verse.citation,
-                    color = Color.White.copy(alpha = 0.7f),
+                color = SalatOnHero.copy(alpha = 0.7f),
                     fontSize = 12.sp,
                     fontFamily = AppUiFontFamily,
                 )

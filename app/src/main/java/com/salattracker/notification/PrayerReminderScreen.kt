@@ -31,6 +31,9 @@ import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.AppUiFontFamily
 import com.salattracker.core.theme.AppTitleFontFamily
+import com.salattracker.core.theme.SalatHeroGradientEnd
+import com.salattracker.core.theme.SalatHeroGradientStart
+import com.salattracker.core.theme.SalatOnHero
 import com.salattracker.core.theme.SalatPrimary
 import com.salattracker.core.theme.SalatPrimaryContainer
 import com.salattracker.core.theme.SalatPrimaryFixed
@@ -73,7 +76,7 @@ fun PrayerReminderScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(
-                Brush.verticalGradient(listOf(SalatPrimaryContainer, SalatPrimary, Color.Black))
+                Brush.verticalGradient(listOf(SalatHeroGradientStart, SalatHeroGradientEnd, Color.Black))
             ),
     ) {
         Column(
@@ -95,7 +98,7 @@ fun PrayerReminderScreen(
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text          = stringResource(R.string.reminder_prayer_title, prayerType.label(date, jumuahEnabled, madhab)).uppercase(),
-                color         = Color.White,
+                color         = SalatOnHero,
                 fontSize      = 20.sp,
                 fontWeight    = FontWeight.SemiBold,
                 fontFamily    = AppTitleFontFamily,
@@ -132,7 +135,7 @@ fun PrayerReminderScreen(
                 Icon(
                     painter  = painterResource(R.drawable.ic_mosque),
                     contentDescription = null,
-                    tint     = Color.White,
+                    tint     = SalatOnHero,
                     modifier = Modifier.size(88.dp),
                 )
             }
@@ -141,7 +144,7 @@ fun PrayerReminderScreen(
                 Spacer(modifier = Modifier.height(32.dp))
                 Text(
                     text       = "“${verse.text}”",
-                    color      = Color.White.copy(alpha = 0.9f),
+                    color      = SalatOnHero.copy(alpha = 0.9f),
                     fontSize   = 16.sp,
                     fontFamily = AppUiFontFamily,
                     textAlign  = TextAlign.Center,
@@ -208,13 +211,13 @@ fun PrayerReminderScreen(
                 Icon(
                     painter  = painterResource(R.drawable.ic_close),
                     contentDescription = null,
-                    tint     = Color.White.copy(alpha = 0.6f),
+                    tint     = SalatOnHero.copy(alpha = 0.6f),
                     modifier = Modifier.size(16.dp),
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text          = stringResource(R.string.reminder_dismiss),
-                    color         = Color.White.copy(alpha = 0.6f),
+                    color         = SalatOnHero.copy(alpha = 0.6f),
                     fontSize      = 12.sp,
                     fontFamily    = AppUiFontFamily,
                     letterSpacing = 2.sp,
@@ -253,7 +256,7 @@ private fun ReminderActionTile(
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text       = label,
-                color      = Color.White,
+                color      = SalatOnHero,
                 fontSize   = 12.sp,
                 fontWeight = FontWeight.SemiBold,
                 fontFamily = AppUiFontFamily,

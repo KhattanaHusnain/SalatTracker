@@ -21,6 +21,10 @@ data class SalatColors(
     val primaryFixedDim: Color,
     val inversePrimary: Color,
 
+    val heroGradientStart: Color,
+    val heroGradientEnd: Color,
+    val onHero: Color,
+
     val secondary: Color,
     val onSecondary: Color,
     val secondaryContainer: Color,
@@ -87,6 +91,9 @@ val LightSalatColors = SalatColors(
     primaryFixed         = Color(0xFFB0F0D6),
     primaryFixedDim      = Color(0xFF95D3BA),
     inversePrimary       = Color(0xFF95D3BA),
+    heroGradientStart    = Color(0xFF064E3B),
+    heroGradientEnd      = Color(0xFF003527),
+    onHero               = Color(0xFFFFFFFF),
 
     secondary            = Color(0xFF52625C),
     onSecondary          = Color(0xFFFFFFFF),
@@ -153,6 +160,9 @@ val DarkSalatColors = SalatColors(
     primaryFixed         = Color(0xFFB0F0D6),
     primaryFixedDim      = Color(0xFF95D3BA),
     inversePrimary       = Color(0xFF003527),
+    heroGradientStart    = Color(0xFF0B513D),
+    heroGradientEnd      = Color(0xFF06382A),
+    onHero               = Color(0xFFFFFFFF),
 
     secondary            = Color(0xFFBBCBC4),
     onSecondary          = Color(0xFF263430),
@@ -216,6 +226,9 @@ val SalatOnPrimaryContainer: Color @Composable get() = LocalSalatColors.current.
 val SalatPrimaryFixed: Color @Composable get() = LocalSalatColors.current.primaryFixed
 val SalatPrimaryFixedDim: Color @Composable get() = LocalSalatColors.current.primaryFixedDim
 val SalatInversePrimary: Color @Composable get() = LocalSalatColors.current.inversePrimary
+val SalatHeroGradientStart: Color @Composable get() = LocalSalatColors.current.heroGradientStart
+val SalatHeroGradientEnd: Color @Composable get() = LocalSalatColors.current.heroGradientEnd
+val SalatOnHero: Color @Composable get() = LocalSalatColors.current.onHero
 
 val SalatSecondary: Color @Composable get() = LocalSalatColors.current.secondary
 val SalatOnSecondary: Color @Composable get() = LocalSalatColors.current.onSecondary
