@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.core.ui.shortLabel
+import com.salattracker.core.ui.formatAppTime
 import com.salattracker.domain.model.GoalCategory
 import com.salattracker.domain.model.GoalFrequency
 import java.time.DayOfWeek
@@ -108,7 +109,7 @@ private val SUNDAY_FIRST = listOf(
 
 /** The form body shared by Add and Edit. Templates show only when [GoalFormActions.onTemplateSelected] is set. */
 @Composable
-fun GoalFormFields(form: GoalFormState, actions: GoalFormActions) {
+fun GoalFormFields(form: GoalFormState, actions: GoalFormActions, use24HourFormat: Boolean) {
     var showTimePicker by remember { mutableStateOf(false) }
 
     actions.onTemplateSelected?.let { onTemplate ->
@@ -243,7 +244,7 @@ fun GoalFormFields(form: GoalFormState, actions: GoalFormActions) {
                 Text(stringResource(R.string.addgoal_notify_at), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
                 Surface(onClick = { showTimePicker = true }, shape = RoundedCornerShape(8.dp), color = SalatSurfaceContainerLow) {
                     Text(
-                        text = form.reminderTime.format(timeFormatter),
+                        text = form.reminderTime.formatAppTime(use24HourFormat),
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                         color = SalatPrimaryContainer, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily,
                     )
@@ -287,6 +288,7 @@ fun GoalFormFields(form: GoalFormState, actions: GoalFormActions) {
     if (showTimePicker) {
         TimePickerModal(
             initialTime = form.reminderTime,
+            use24HourFormat = use24HourFormat,
             onTimePicked = { picked ->
                 actions.onReminderTimeChanged(picked)
                 showTimePicker = false

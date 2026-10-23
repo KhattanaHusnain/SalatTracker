@@ -141,7 +141,7 @@ private fun HeroCard(
     val islamicEvent = hijri?.islamicEventOrNull()
     val hijriText = hijri?.fullLabel()
     val dateFormatter = remember { DateTimeFormatter.ofPattern("EEE, d MMM") }
-    val timeFormatter = remember { DateTimeFormatter.ofPattern("hh:mm a") }
+    val use24HourFormat = LocalUse24HourFormat.current
     val completed = remember(prayers) { completedCount(prayers.map { it.status }) }
 
     val sweep = remember { Animatable(0f) }
@@ -210,9 +210,9 @@ private fun HeroCard(
                         )
                         Text(
                             text = if (nextPrayer.isTomorrow)
-                                "${stringResource(R.string.home_tomorrow)} ${nextPrayer.time.format(timeFormatter)}"
+                                "${stringResource(R.string.home_tomorrow)} ${nextPrayer.time.formatAppTime(use24HourFormat)}"
                             else
-                                nextPrayer.time.format(timeFormatter),
+                                nextPrayer.time.formatAppTime(use24HourFormat),
                             color = Color.White.copy(alpha = 0.85f),
                             fontSize = 13.sp,
                             fontFamily = AppUiFontFamily,
@@ -327,7 +327,7 @@ private fun TimelineRow(
     needsMarking: Boolean,
     onClick: () -> Unit,
 ) {
-    val timeFormatter = remember { DateTimeFormatter.ofPattern("hh:mm a") }
+    val use24HourFormat = LocalUse24HourFormat.current
 
     Surface(
         onClick  = onClick,
@@ -374,11 +374,11 @@ private fun TimelineRow(
                     }
                 }
                 if (entry.time != null) {
-                    Text(entry.time.format(timeFormatter), color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = AppUiFontFamily)
+                    Text(entry.time.formatAppTime(use24HourFormat), color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = AppUiFontFamily)
                 }
                 if (entry.reminderTime != null) {
                     Text(
-                        text = stringResource(R.string.home_reminder_at, entry.reminderTime.format(timeFormatter)),
+                        text = stringResource(R.string.home_reminder_at, entry.reminderTime.formatAppTime(use24HourFormat)),
                         color = SalatPrimary,
                         fontSize = 11.sp,
                         fontFamily = AppUiFontFamily,

@@ -28,6 +28,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salattracker.R
+import com.salattracker.core.ui.LocalUse24HourFormat
+import com.salattracker.core.ui.formatAppTime
 import com.salattracker.core.theme.*
 import com.salattracker.domain.model.QuranReadHistoryEntry
 import java.time.Instant
@@ -65,7 +67,7 @@ fun QuranReadHistoryScreen(
             contentPadding = PaddingValues(horizontal = 20.dp, vertical = 4.dp),
         ) {
             items(uiState.entries, key = { it.entry.id }) { item ->
-                ReadHistoryRow(item = item, onClick = { onEntryClick(item.entry.chapterNumber) })
+                ReadHistoryRow(item = item, use24HourFormat = LocalUse24HourFormat.current, onClick = { onEntryClick(item.entry.chapterNumber) })
                 Spacer(Modifier.height(8.dp))
             }
         }
@@ -73,7 +75,7 @@ fun QuranReadHistoryScreen(
 }
 
 @Composable
-private fun ReadHistoryRow(item: QuranReadHistoryUi, onClick: () -> Unit) {
+private fun ReadHistoryRow(item: QuranReadHistoryUi, use24HourFormat: Boolean, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -92,14 +94,14 @@ private fun ReadHistoryRow(item: QuranReadHistoryUi, onClick: () -> Unit) {
                 color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily,
             )
         }
-        Text(formatReadAt(item.entry.readAt), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily)
+        Text(formatReadAt(item.entry.readAt, use24HourFormat), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily)
     }
 }
 
-private val readAtFormatter = DateTimeFormatter.ofPattern("d MMM, h:mm a")
-
-private fun formatReadAt(epochMillis: Long): String =
-    Instant.ofEpochMilli(epochMillis).atZone(ZoneId.systemDefault()).format(readAtFormatter)
+private fun formatReadAt(epochMillis: Long, use24HourFormat: Boolean): String =
+    Instant.ofEpochMilli(epochMillis).atZone(ZoneId.systemDefault()).let {
+        "${it.toLocalDate().format(DateTimeFormatter.ofPattern(\"d MMM\"))}, ${it.toLocalTime().formatAppTime(use24HourFormat)}"
+    }
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable

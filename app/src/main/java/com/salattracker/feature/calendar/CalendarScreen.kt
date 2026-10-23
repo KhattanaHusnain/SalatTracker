@@ -219,12 +219,12 @@ private fun buildDayDetailRows(
     statuses: Map<PrayerType, PrayerStatus>,
     times: Map<PrayerType, LocalTime>?,
 ): List<DayDetailPrayerRow> {
-    val timeFormatter = remember { DateTimeFormatter.ofPattern("hh:mm a") }
+    val use24HourFormat = LocalUse24HourFormat.current
     return PrayerType.values().map { type ->
         val time = times?.get(type)
         DayDetailPrayerRow(
             type       = type,
-            timeLabel  = time?.format(timeFormatter) ?: "--:--",
+            timeLabel  = time?.formatAppTime(use24HourFormat) ?: "--:--",
             status     = statuses[type] ?: PrayerStatus.NOT_RECORDED,
             isMarkable = isPrayerMarkable(date, time, today),
         )

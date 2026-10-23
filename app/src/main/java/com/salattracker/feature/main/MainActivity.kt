@@ -45,6 +45,7 @@ import androidx.navigation.navArgument
 import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.core.ui.label
+import com.salattracker.core.ui.LocalUse24HourFormat
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.QuranReadHistoryEntry as QuranReadingPosition
 import com.salattracker.domain.model.isDark
@@ -114,6 +115,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         setContent {
+            val prefs by settingsRepository.observeSettings().collectAsState(
+                initial = com.salattracker.domain.repository.UserPrefs(),
+            )
             val notificationPermissionLauncher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.RequestPermission()
             ) { }
@@ -154,6 +158,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             SalatTrackerTheme(darkTheme = appStart.themeMode.isDark(isSystemInDarkTheme())) {
+                CompositionLocalProvider(LocalUse24HourFormat provides prefs.use24HourFormat) {
                 when (onboardingCompleted) {
                     // null = DataStore not read yet — plain background avoids a flash of the wrong screen.
                     null  -> Box(modifier = Modifier.fillMaxSize().background(SalatBackground))
@@ -178,6 +183,7 @@ class MainActivity : AppCompatActivity() {
                             MadhabPromptDialog(onSave = appStartViewModel::onMadhabChosen)
                         }
                     }
+                }
                 }
             }
         }

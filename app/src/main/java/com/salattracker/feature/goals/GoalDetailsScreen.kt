@@ -29,6 +29,8 @@ import com.salattracker.core.ui.goalUnitLabel
 import com.salattracker.core.ui.iconRes
 import com.salattracker.core.ui.label
 import com.salattracker.core.ui.shortLabel
+import com.salattracker.core.ui.LocalUse24HourFormat
+import com.salattracker.core.ui.formatAppTime
 import com.salattracker.domain.model.GoalCategory
 import com.salattracker.domain.model.GoalFrequency
 import com.salattracker.domain.model.SpiritualGoal
@@ -161,7 +163,7 @@ private fun HeaderCard(goal: SpiritualGoal, status: GoalStatus, dayIndex: Int?) 
         DetailLine(stringResource(R.string.addgoal_amount), "${goal.targetAmount} ${goalUnitLabel(goal.unit)}")
         DetailLine(
             stringResource(R.string.addgoal_reminder),
-            goal.reminderTime?.takeIf { goal.reminderEnabled }?.format(timeFormatter) ?: stringResource(R.string.goal_no_reminder),
+            goal.reminderTime?.takeIf { goal.reminderEnabled }?.formatAppTime(LocalUse24HourFormat.current) ?: stringResource(R.string.goal_no_reminder),
         )
         val end = goal.endDate
         val span = when {

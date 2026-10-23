@@ -14,6 +14,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salattracker.R
+import com.salattracker.core.ui.LocalUse24HourFormat
 import com.salattracker.core.theme.*
 
 // ── Edit Goal Screen ──────────────────────────────────────────────────────────
@@ -44,7 +45,7 @@ fun EditGoalScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Spacer(modifier = Modifier.height(4.dp))
-            GoalFormFields(form = uiState.form, actions = actions)
+            GoalFormFields(form = uiState.form, actions = actions, use24HourFormat = LocalUse24HourFormat.current)
         }
 
         // ── Save button (fixed at bottom) ───────────────────────────────────────

@@ -41,11 +41,8 @@ import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.repository.DEVICE_DEFAULT_SOUND_URI
 import java.time.LocalDate
 import java.time.LocalTime
-import java.time.format.DateTimeFormatter
 
 private val SNOOZE_OPTIONS = listOf(5, 10, 15, 30)
-private val timeFormatter = DateTimeFormatter.ofPattern("hh:mm a")
-
 @Composable
 fun PrayerRemindersScreen(
     uiState: PrayerRemindersUiState,
@@ -165,7 +162,7 @@ private fun ReminderCard(
                             fontFamily = AppUiFontFamily,
                         )
                         Text(
-                            text       = setting.prayerTime?.format(timeFormatter) ?: "--:--",
+                            text       = setting.prayerTime?.formatAppTime(LocalUse24HourFormat.current) ?: "--:--",
                             color      = SalatOnSurfaceVariant,
                             fontSize   = 12.sp,
                             fontFamily = AppUiFontFamily,

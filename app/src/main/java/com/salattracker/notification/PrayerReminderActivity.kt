@@ -56,6 +56,7 @@ class PrayerReminderActivity : AppCompatActivity() {
             var jumuahEnabled by remember { mutableStateOf(true) }
             var madhab by remember { mutableStateOf(Madhab.STANDARD) }
             var gender by remember { mutableStateOf<Gender?>(null) }
+            var use24HourFormat by remember { mutableStateOf(false) }
 
             LaunchedEffect(type) {
                 scheduledTime = prayerRepository.getPrayerTimes(date)?.get(type)
@@ -65,6 +66,7 @@ class PrayerReminderActivity : AppCompatActivity() {
                 jumuahEnabled = prefs.jumuahEnabled
                 madhab = prefs.madhab
                 gender = prefs.gender
+                use24HourFormat = prefs.use24HourFormat
             }
 
             SalatTrackerTheme {
@@ -77,6 +79,7 @@ class PrayerReminderActivity : AppCompatActivity() {
                     scheduledTime = scheduledTime,
                     verse         = verse,
                     snoozeMinutes = snoozeMinutes,
+                    use24HourFormat = use24HourFormat,
                     onMark        = { status -> markAndFinish(type, date, status) },
                     onSnooze      = { snoozeAndFinish(type, date, snoozeMinutes) },
                     onDismiss     = { finish() },

@@ -36,6 +36,7 @@ import com.salattracker.core.theme.SalatPrimaryContainer
 import com.salattracker.core.theme.SalatPrimaryFixed
 import com.salattracker.core.theme.SalatPrimaryFixedDim
 import com.salattracker.core.ui.label
+import com.salattracker.core.ui.formatAppTime
 import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerStatus
@@ -44,7 +45,6 @@ import com.salattracker.domain.model.VerseInfo
 import kotlinx.coroutines.delay
 import java.time.LocalDate
 import java.time.LocalTime
-import java.time.format.DateTimeFormatter
 
 @Composable
 fun PrayerReminderScreen(
@@ -56,11 +56,11 @@ fun PrayerReminderScreen(
     scheduledTime: LocalTime?,
     verse: VerseInfo?,
     snoozeMinutes: Int,
+    use24HourFormat: Boolean,
     onMark: (PrayerStatus) -> Unit,
     onSnooze: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val timeFormatter = remember { DateTimeFormatter.ofPattern("HH:mm") }
     var now by remember { mutableStateOf(LocalTime.now()) }
     LaunchedEffect(Unit) {
         while (true) {
@@ -86,7 +86,7 @@ fun PrayerReminderScreen(
 
             // ── Clock + prayer info ──────────────────────────────────────────
             Text(
-                text       = now.format(timeFormatter),
+                text       = now.formatAppTime(use24HourFormat),
                 color      = SalatPrimaryFixed,
                 fontSize   = 64.sp,
                 fontWeight = FontWeight.Bold,
@@ -103,7 +103,7 @@ fun PrayerReminderScreen(
             )
             if (scheduledTime != null) {
                 Text(
-                    text     = stringResource(R.string.reminder_scheduled_for, scheduledTime.format(timeFormatter)),
+                    text     = stringResource(R.string.reminder_scheduled_for, scheduledTime.formatAppTime(use24HourFormat)),
                     color    = SalatPrimaryFixedDim.copy(alpha = 0.8f),
                     fontSize = 14.sp,
                     fontFamily = AppUiFontFamily,
@@ -279,6 +279,7 @@ fun PrayerReminderScreenPreview() {
             citation = "Al-Baqarah 2:238",
         ),
         snoozeMinutes = 10,
+        use24HourFormat = false,
         onMark   = {},
         onSnooze = {},
         onDismiss = {},

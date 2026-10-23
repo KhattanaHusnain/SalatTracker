@@ -21,6 +21,8 @@ import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.core.ui.SettingsCard
+import com.salattracker.core.ui.LocalUse24HourFormat
+import com.salattracker.core.ui.formatAppTime
 import com.salattracker.domain.model.BackupAttention
 import com.salattracker.domain.model.RemoteBackupInfo
 import java.time.Instant
@@ -161,7 +163,7 @@ private fun ConnectedCard(
         Spacer(Modifier.height(10.dp))
         LabeledRow(
             stringResource(R.string.backup_last_backup),
-            formatLastBackup(uiState.lastBackupAt, uiState.lastBackupBytes, stringResource(R.string.backup_last_backup_never)),
+            formatLastBackup(uiState.lastBackupAt, uiState.lastBackupBytes, stringResource(R.string.backup_last_backup_never), LocalUse24HourFormat.current),
         )
 
         Spacer(Modifier.height(16.dp))
@@ -298,15 +300,15 @@ private fun DisconnectConfirmDialog(onConfirm: () -> Unit, onDismiss: () -> Unit
 
 // ── Formatting ─────────────────────────────────────────────────────────────────
 
-private val lastBackupFormatter = DateTimeFormatter.ofPattern("d MMM yyyy, h:mm a")
-
-private fun formatEpoch(epochMillis: Long): String =
+private fun formatEpoch(epochMillis: Long, use24HourFormat: Boolean): String =
     if (epochMillis <= 0L) "—" else
-        Instant.ofEpochMilli(epochMillis).atZone(ZoneId.systemDefault()).format(lastBackupFormatter)
+        Instant.ofEpochMilli(epochMillis).atZone(ZoneId.systemDefault()).let {
+            "${it.toLocalDate().format(DateTimeFormatter.ofPattern(\"d MMM yyyy\"))}, ${it.toLocalTime().formatAppTime(use24HourFormat)}"
+        }
 
-private fun formatLastBackup(epochMillis: Long?, bytes: Long?, neverLabel: String): String {
+private fun formatLastBackup(epochMillis: Long?, bytes: Long?, neverLabel: String, use24HourFormat: Boolean): String {
     if (epochMillis == null) return neverLabel
-    val whenText = formatEpoch(epochMillis)
+    val whenText = formatEpoch(epochMillis, use24HourFormat)
     val size = bytes?.let { " (${formatBytes(it)})" } ?: ""
     return "$whenText$size"
 }

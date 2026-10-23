@@ -25,10 +25,10 @@ import com.salattracker.core.theme.*
 import com.salattracker.core.ui.goalUnitLabel
 import com.salattracker.core.ui.iconRes
 import com.salattracker.core.ui.label
+import com.salattracker.core.ui.LocalUse24HourFormat
 import com.salattracker.domain.model.GoalCategory
 import com.salattracker.domain.model.GoalFrequency
 import java.time.LocalTime
-import java.time.format.DateTimeFormatter
 
 // ── Add Goal Screen ───────────────────────────────────────────────────────────
 
@@ -50,7 +50,7 @@ fun AddGoalScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Spacer(modifier = Modifier.height(4.dp))
-            GoalFormFields(form = uiState.form, actions = actions)
+            GoalFormFields(form = uiState.form, actions = actions, use24HourFormat = LocalUse24HourFormat.current)
         }
 
         // ── Create button (fixed at bottom) ────────────────────────────────────
@@ -209,16 +209,15 @@ internal fun UnitDropdown(selected: String, onSelected: (String) -> Unit) {
 
 // ── Time picker modal ─────────────────────────────────────────────────────────
 
-internal val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun TimePickerModal(
     initialTime: LocalTime,
+    use24HourFormat: Boolean,
     onTimePicked: (LocalTime) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val state = rememberTimePickerState(initialHour = initialTime.hour, initialMinute = initialTime.minute, is24Hour = true)
+    val state = rememberTimePickerState(initialHour = initialTime.hour, initialMinute = initialTime.minute, is24Hour = use24HourFormat)
     Dialog(onDismissRequest = onDismiss) {
         Surface(shape = RoundedCornerShape(24.dp), color = SalatSurfaceContainerLowest) {
             Column(modifier = Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
