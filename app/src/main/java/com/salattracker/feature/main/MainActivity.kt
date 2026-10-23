@@ -59,6 +59,7 @@ import com.salattracker.feature.goals.AddGoalEntry
 import com.salattracker.feature.goals.EditGoalEntry
 import com.salattracker.feature.goals.GoalDetailsEntry
 import com.salattracker.feature.goals.GoalsEntry
+import com.salattracker.feature.tasbih.TasbihEntry
 import com.salattracker.feature.home.HomeEntry
 import com.salattracker.feature.mosque.MosqueModeEntry
 import com.salattracker.core.ui.MadhabPromptDialog
@@ -287,6 +288,7 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                 onDonateClick          = { navController.push(Routes.DONATE) },
                 onDevelopersClick      = { navController.push(Routes.DEVELOPERS) },
                 onStatsClick           = { navController.push(Routes.STATS) },
+                onTasbihClick          = { navController.push(Routes.tasbih()) },
                 onQuranCreditsClick    = { navController.push(Routes.QURAN_CREDITS) },
                 onSettingsClick        = { navController.push(Routes.SETTINGS) },
             )
@@ -419,6 +421,7 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                     GoalsEntry(
                         onGoalClick    = { goalId -> navController.push(Routes.goalDetails(goalId)) },
                         onAddGoalClick = { navController.push(Routes.ADD_GOAL) },
+                        onTasbihClick = { goalId -> navController.push(Routes.tasbih(goalId)) },
                     )
                 }
                 composable(Routes.SETTINGS) {
@@ -447,6 +450,12 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                 }
                 composable(Routes.STATS) {
                     StatsEntry(onAddGoalClick = { navController.push(Routes.ADD_GOAL) })
+                }
+                composable(
+                    Routes.TASBIH,
+                    arguments = listOf(navArgument("goalId") { type = NavType.LongType; defaultValue = -1L }),
+                ) {
+                    TasbihEntry()
                 }
                 composable(
                     Routes.BULK_UPDATE,
@@ -700,6 +709,7 @@ private fun topBarTitle(route: String?): String = stringResource(
         Routes.DONATE                 -> R.string.topbar_donate
         Routes.DEVELOPERS             -> R.string.topbar_developers
         Routes.STATS                  -> R.string.topbar_stats
+        Routes.TASBIH                 -> R.string.tasbih_title
         Routes.ADD_GOAL               -> R.string.topbar_new_goal
         Routes.MISSED_PRAYERS         -> R.string.topbar_missed_prayers
         Routes.QURAN_READER           -> R.string.topbar_quran

@@ -79,6 +79,29 @@ class AdhanPrayerTimeCalculator @Inject constructor(
         }
     }
 
+    override fun calculateSunrise(
+        date: LocalDate,
+        latitude: Double,
+        longitude: Double,
+        prefs: UserPrefs,
+        zone: ZoneId,
+    ): LocalTime? {
+        if (latitude == 0.0 && longitude == 0.0) return null
+
+        val coordinates = Coordinates(latitude, longitude)
+        val dateComponents = DateComponents(date.year, date.monthValue, date.dayOfMonth)
+        val parameters = parametersFactory.create(
+            method = CalculationMethod.fromId(prefs.calculationMethodId),
+            madhab = prefs.madhab,
+            highLatitudeRule = prefs.highLatitudeRule,
+            date = date,
+        ).parameters.let {
+            if (it.highLatitudeRule != null) it
+            else it.copy(highLatitudeRule = AdhanHighLatitudeRule.recommendedFor(coordinates))
+        }
+        return PrayerTimes(coordinates, dateComponents, parameters).sunrise.toLocalTime(zone)
+    }
+
     /** Tehran/Shia Ithna-Ashari define Maghrib as [angle] degrees of solar depression below the
      * horizon, which `adhan2` has no direct field for. A second run with `ishaAngle = angle`
      * gives exactly that moment as its own Isha — see [CalculationSetup.maghribAngle]. Only the

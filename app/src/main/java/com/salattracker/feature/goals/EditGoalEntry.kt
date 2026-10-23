@@ -32,6 +32,7 @@ fun EditGoalEntry(
             onReminderTimeChanged    = viewModel::onReminderTimeChanged,
             onEndsAfterChanged       = viewModel::onEndsAfterChanged,
             onDurationDaysChanged    = viewModel::onDurationDaysChanged,
+            onUsesTasbihCounterChanged = viewModel::onUsesTasbihCounterChanged,
         )
     }
 

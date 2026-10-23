@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import com.salattracker.R
+import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.GoalCategory
 import com.salattracker.domain.model.GoalFrequency
 import com.salattracker.domain.model.Madhab
@@ -48,6 +49,20 @@ val PrayerStatus.labelRes: Int get() = when (this) {
     PrayerStatus.QAZA_COMPLETED -> R.string.status_qaza_completed
     PrayerStatus.MENSTRUATION   -> R.string.status_menstruation
     PrayerStatus.NOT_RECORDED   -> R.string.status_not_recorded
+}
+
+/**
+ * Whether [gender] should see this status as a choice in a status picker (PrayerStatusBottomSheet,
+ * Bulk Update's chip row): [Gender.FEMALE] never sees [PrayerStatus.CONGREGATION], [Gender.MALE]
+ * never sees [PrayerStatus.MENSTRUATION]. Every other status, and `null` (not asked yet / predates
+ * the preference), is always offered — this only ever narrows a *new* choice, never hides a status
+ * a day was already recorded with (display-only mappings like [com.salattracker.core.ui.
+ * PrayerStatusChip] don't call this).
+ */
+fun PrayerStatus.isOfferedFor(gender: Gender?): Boolean = when (this) {
+    PrayerStatus.CONGREGATION -> gender != Gender.FEMALE
+    PrayerStatus.MENSTRUATION -> gender != Gender.MALE
+    else -> true
 }
 
 @get:StringRes

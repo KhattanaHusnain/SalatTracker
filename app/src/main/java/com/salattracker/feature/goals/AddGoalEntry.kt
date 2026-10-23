@@ -28,6 +28,7 @@ fun AddGoalEntry(onSaved: () -> Unit, viewModel: AddGoalViewModel = hiltViewMode
             onReminderTimeChanged    = viewModel::onReminderTimeChanged,
             onEndsAfterChanged       = viewModel::onEndsAfterChanged,
             onDurationDaysChanged    = viewModel::onDurationDaysChanged,
+            onUsesTasbihCounterChanged = viewModel::onUsesTasbihCounterChanged,
             onTemplateSelected       = viewModel::onTemplateSelected,
         )
     }

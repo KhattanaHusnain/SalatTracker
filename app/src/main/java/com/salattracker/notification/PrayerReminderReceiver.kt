@@ -5,9 +5,11 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.salattracker.R
+import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
@@ -45,21 +47,22 @@ class PrayerReminderReceiver : BroadcastReceiver() {
         } catch (e: IllegalArgumentException) {
             return
         }
+        val date = intent.prayerDateOrToday()
 
         when (intent.action) {
-            ACTION_MARK_CONGREGATION -> markAndDismiss(context, type, PrayerStatus.CONGREGATION)
-            ACTION_MARK_INDIVIDUAL   -> markAndDismiss(context, type, PrayerStatus.INDIVIDUAL)
-            ACTION_MARK_QAZA_PENDING -> markAndDismiss(context, type, PrayerStatus.QAZA_PENDING)
-            ACTION_SNOOZE            -> snooze(context, type, intent.getIntExtra(EXTRA_SNOOZE_MINUTES, DEFAULT_SNOOZE_MINUTES))
-            else                     -> showNotification(context, type)
+            ACTION_MARK_CONGREGATION -> markAndDismiss(context, type, date, PrayerStatus.CONGREGATION)
+            ACTION_MARK_INDIVIDUAL   -> markAndDismiss(context, type, date, PrayerStatus.INDIVIDUAL)
+            ACTION_MARK_QAZA_PENDING -> markAndDismiss(context, type, date, PrayerStatus.QAZA_PENDING)
+            ACTION_SNOOZE            -> snooze(context, type, date, intent.getIntExtra(EXTRA_SNOOZE_MINUTES, DEFAULT_SNOOZE_MINUTES))
+            else                     -> showNotification(context, type, date)
         }
     }
 
-    private fun markAndDismiss(context: Context, type: PrayerType, status: PrayerStatus) {
+    private fun markAndDismiss(context: Context, type: PrayerType, date: LocalDate, status: PrayerStatus) {
         val pendingResult = goAsync()
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             try {
-                prayerRepository.upsertPrayerStatus(LocalDate.now(), type, status)
+                prayerRepository.upsertPrayerStatus(date, type, status)
             } finally {
                 NotificationManagerCompat.from(context).cancel(type.ordinal)
                 pendingResult.finish()
@@ -67,12 +70,12 @@ class PrayerReminderReceiver : BroadcastReceiver() {
         }
     }
 
-    private fun snooze(context: Context, type: PrayerType, snoozeMinutes: Int) {
+    private fun snooze(context: Context, type: PrayerType, date: LocalDate, snoozeMinutes: Int) {
         NotificationManagerCompat.from(context).cancel(type.ordinal)
-        scheduleSnooze(context, type, snoozeMinutes)
+        scheduleSnooze(context, type, date, snoozeMinutes)
     }
 
-    private fun showNotification(context: Context, type: PrayerType) {
+    private fun showNotification(context: Context, type: PrayerType, date: LocalDate) {
         val pendingResult = goAsync()
         CoroutineScope(SupervisorJob() + Dispatchers.Default).launch {
             try {
@@ -81,10 +84,13 @@ class PrayerReminderReceiver : BroadcastReceiver() {
                 val vibrationEnabled = prefs.reminderVibrationEnabled[type] ?: true
                 val fullScreenAlert = prefs.reminderFullScreenAlert[type] ?: true
                 val snoozeMinutes = prefs.reminderSnoozeMinutes[type] ?: DEFAULT_SNOOZE_MINUTES
-                val label = type.label(LocalDate.now(), prefs.jumuahEnabled, prefs.madhab)
+                // Women aren't obliged to attend Jumu'ah or pray in congregation — both suppressed
+                // regardless of a possibly-stale stored toggle, matching AlarmScheduler/the UI.
+                val isFemale = prefs.gender == Gender.FEMALE
+                val label = type.label(date, prefs.jumuahEnabled && !isFemale, prefs.madhab)
 
                 channels.ensure(type, soundUri, vibrationEnabled)
-                val fullScreenPendingIntent = fullScreenPendingIntent(context, type)
+                val fullScreenPendingIntent = fullScreenPendingIntent(context, type, date)
 
                 val builder = NotificationCompat.Builder(context, channels.channelId(type))
                     .setSmallIcon(R.drawable.ic_mosque)
@@ -94,11 +100,16 @@ class PrayerReminderReceiver : BroadcastReceiver() {
                     .setCategory(NotificationCompat.CATEGORY_ALARM)
                     .setAutoCancel(true)
                     .setContentIntent(fullScreenPendingIntent)
-                    .addAction(action(context, type, ACTION_MARK_CONGREGATION, R.drawable.ic_groups, "Congregation"))
-                    .addAction(action(context, type, ACTION_MARK_INDIVIDUAL, R.drawable.ic_person, "Individual"))
-                    .addAction(action(context, type, ACTION_MARK_QAZA_PENDING, R.drawable.ic_pending_actions, "Qaza"))
-                    .addAction(action(context, type, ACTION_SNOOZE, R.drawable.ic_schedule, "Snooze ${snoozeMinutes}m", snoozeMinutes))
-                if (fullScreenAlert) {
+                if (!isFemale) {
+                    builder.addAction(action(context, type, date, ACTION_MARK_CONGREGATION, R.drawable.ic_groups, "Congregation"))
+                }
+                builder
+                    .addAction(action(context, type, date, ACTION_MARK_INDIVIDUAL, R.drawable.ic_person, "Individual"))
+                    .addAction(action(context, type, date, ACTION_MARK_QAZA_PENDING, R.drawable.ic_pending_actions, "Qaza"))
+                    .addAction(action(context, type, date, ACTION_SNOOZE, R.drawable.ic_schedule, "Snooze ${snoozeMinutes}m", snoozeMinutes))
+                // Android 14+ lets the user (or Play policy) revoke this capability. Requesting
+                // it anyway is a no-op, so fall back to the normal high-priority notification.
+                if (fullScreenAlert && canUseFullScreenIntent(context)) {
                     builder.setFullScreenIntent(fullScreenPendingIntent, true)
                 }
 
@@ -137,9 +148,10 @@ class PrayerReminderReceiver : BroadcastReceiver() {
         }
     }
 
-    private fun fullScreenPendingIntent(context: Context, type: PrayerType): PendingIntent {
+    private fun fullScreenPendingIntent(context: Context, type: PrayerType, date: LocalDate): PendingIntent {
         val intent = Intent(context, PrayerReminderActivity::class.java).apply {
             putExtra(AlarmScheduler.EXTRA_PRAYER_TYPE, type.name)
+            putExtra(AlarmScheduler.EXTRA_PRAYER_DATE, date.toString())
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
         return PendingIntent.getActivity(
@@ -153,6 +165,7 @@ class PrayerReminderReceiver : BroadcastReceiver() {
     private fun action(
         context: Context,
         type: PrayerType,
+        date: LocalDate,
         actionName: String,
         iconRes: Int,
         label: String,
@@ -161,6 +174,7 @@ class PrayerReminderReceiver : BroadcastReceiver() {
         val intent = Intent(context, PrayerReminderReceiver::class.java).apply {
             action = actionName
             putExtra(AlarmScheduler.EXTRA_PRAYER_TYPE, type.name)
+            putExtra(AlarmScheduler.EXTRA_PRAYER_DATE, date.toString())
             if (snoozeMinutes != null) putExtra(EXTRA_SNOOZE_MINUTES, snoozeMinutes)
         }
         val pendingIntent = PendingIntent.getBroadcast(
@@ -185,11 +199,12 @@ class PrayerReminderReceiver : BroadcastReceiver() {
         private const val JUMUAH_LEAD_NOTIFICATION_ID = 3000
 
         /** Shared by the notification's Snooze action and the full-screen reminder Activity. */
-        fun scheduleSnooze(context: Context, type: PrayerType, snoozeMinutes: Int) {
+        fun scheduleSnooze(context: Context, type: PrayerType, date: LocalDate, snoozeMinutes: Int) {
             val alarmManager = context.getSystemService(AlarmManager::class.java)
             val triggerAt = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(snoozeMinutes.toLong())
             val intent = Intent(context, PrayerReminderReceiver::class.java).apply {
                 putExtra(AlarmScheduler.EXTRA_PRAYER_TYPE, type.name)
+                putExtra(AlarmScheduler.EXTRA_PRAYER_DATE, date.toString())
             }
             val pendingIntent = PendingIntent.getBroadcast(
                 context,
@@ -205,6 +220,16 @@ class PrayerReminderReceiver : BroadcastReceiver() {
         }
     }
 }
+
+internal fun Intent.prayerDateOrToday(): LocalDate =
+    parsePrayerDate(getStringExtra(AlarmScheduler.EXTRA_PRAYER_DATE), LocalDate.now())
+
+internal fun parsePrayerDate(value: String?, fallback: LocalDate): LocalDate =
+    value?.let { runCatching { LocalDate.parse(it) }.getOrNull() } ?: fallback
+
+internal fun canUseFullScreenIntent(context: Context): Boolean =
+    Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE ||
+        context.getSystemService(android.app.NotificationManager::class.java).canUseFullScreenIntent()
 
 /** Not localized, matching every other label in this file's notification text (pre-existing;
  * out of scope to change here). Mirrors [com.salattracker.core.ui.label]'s Jumu'ah and Ja'fari

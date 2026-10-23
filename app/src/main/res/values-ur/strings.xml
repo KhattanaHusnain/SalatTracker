@@ -301,6 +301,7 @@
     <string name="settings_edit_location_use_my_location">میری لوکیشن استعمال کریں</string>
     <string name="settings_edit_location_search_city">اس کے بجائے شہر تلاش کریں</string>
     <string name="settings_edit_location_no_fix">آپ کی لوکیشن معلوم نہیں ہو سکی۔ چیک کریں کہ لوکیشن سروسز آن ہیں۔</string>
+    <string name="settings_about_you_section">آپ کے بارے میں</string>
     <string name="settings_calc_method">حساب کا طریقہ</string>
     <string name="settings_calculation_method_sheet_title">حساب کا طریقہ</string>
     <string name="settings_school">فقہی مسلک</string>
@@ -644,4 +645,34 @@
     <string name="developer_contribute_button">رابطہ کریں</string>
     <string name="developer_contribute_email_subject">تعاون — Salah Tracker</string>
     <string name="developer_contribute_email_body">السلام علیکم، میں Salah Tracker میں تعاون کرنا چاہتا ہوں۔ یہاں تھوڑا سا بتا رہا ہوں کہ میں کس چیز میں مدد کرنا چاہوں گا:</string>
+    <!-- Tasbih -->
+    <string name="tasbih_title">تسبیح</string>
+    <string name="template_tasbih">تسبیح</string>
+    <string name="tasbih_goal_switch">تسبیح کاؤنٹر استعمال کریں</string>
+    <string name="tasbih_goal_switch_desc">33 یا 100 مکمل ہونے پر اس ہدف میں ایک چیک اِن شامل ہو جائے گا۔</string>
+    <string name="tasbih_count_dhikr">ذکر گنیں</string>
+    <string name="tasbih_counting_for">%1$s کے لیے گنتی</string>
+    <string name="tasbih_free_count">آزاد گنتی</string>
+    <string name="tasbih_open_target">کوئی ہدف نہیں</string>
+    <string name="tasbih_of_target">%1$d میں سے</string>
+    <string name="tasbih_tap_to_count">گننے کے لیے دبائیں</string>
+    <string name="tasbih_round_complete">راؤنڈ مکمل</string>
+    <string name="tasbih_completed">آپ کا تسبیح راؤنڈ مکمل ہو گیا ہے۔</string>
+    <string name="tasbih_goal_credited">راؤنڈ مکمل ہو گیا اور اس ہدف میں ایک چیک اِن شامل کر دیا گیا ہے۔</string>
+    <string name="tasbih_goal_not_credited">راؤنڈ مکمل ہو گیا، مگر ہدف آج فعال یا مقرر نہیں، اس لیے چیک اِن شامل نہیں ہوا۔</string>
+    <string name="tasbih_new_round">نیا راؤنڈ</string>
+    <string name="tasbih_undo">واپس کریں</string>
+    <string name="tasbih_reset">دوبارہ شروع</string>
+    <string name="tasbih_phrase">ذکر</string>
+    <string name="tasbih_target">راؤنڈ کا ہدف</string>
+    <string name="tasbih_choose_phrase">ذکر منتخب کریں</string>
+    <string name="tasbih_change_title">نیا راؤنڈ شروع کریں؟</string>
+    <string name="tasbih_change_desc">ذکر یا ہدف تبدیل کرنے سے اس راؤنڈ کی گنتی مٹ جائے گی۔</string>
+    <string name="tasbih_reset_title">یہ راؤنڈ دوبارہ شروع کریں؟</string>
+    <string name="tasbih_reset_desc">اس سے موجودہ گنتی مٹ جائے گی۔ مکمل راؤنڈ درج رہے گا۔</string>
+    <string name="tasbih_phrase_subhanallah">سبحان اللہ</string>
+    <string name="tasbih_phrase_alhamdulillah">الحمد للہ</string>
+    <string name="tasbih_phrase_allahu_akbar">اللہ اکبر</string>
+    <string name="tasbih_phrase_tahlil">لا الٰہ الا اللہ</string>
+    <string name="tasbih_phrase_astaghfirullah">استغفر اللہ</string>
 </resources>

@@ -52,15 +52,10 @@ import java.util.Locale
 fun QuranChapterListScreen(
     uiState: QuranChapterListUiState,
     onChapterClick: (Int) -> Unit,
-    onContinueReadingClick: (chapterNumber: Int, verseNumber: Int) -> Unit,
     onJuzClick: (juzNumber: Int, pageNumber: Int) -> Unit,
     onTabSelected: (QuranBrowseTab) -> Unit,
     onSearchDialogDismiss: () -> Unit,
 ) {
-    val continueReading = uiState.continueReading?.takeIf { it.juzNumber == null }?.let { last ->
-        uiState.chapters.find { it.number == last.chapterNumber }?.let { it to last.verseNumber }
-    }
-
     if (uiState.showSearchDialog) {
         QuranNameSearchDialog(
             chapters = uiState.chapters,
@@ -79,17 +74,6 @@ fun QuranChapterListScreen(
             contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
         ) {
             if (uiState.selectedTab == QuranBrowseTab.SURAH) {
-                if (continueReading != null) {
-                    val (chapter, verseNumber) = continueReading
-                    item {
-                        ContinueReadingCard(
-                            chapter = chapter,
-                            verseNumber = verseNumber,
-                            onClick = { onContinueReadingClick(chapter.number, verseNumber) },
-                        )
-                        Spacer(Modifier.height(16.dp))
-                    }
-                }
                 items(uiState.chapters, key = { "surah-${it.number}" }) { chapter ->
                     ChapterRow(chapter = chapter, onClick = { onChapterClick(chapter.number) })
                     Spacer(Modifier.height(8.dp))
@@ -326,30 +310,6 @@ private fun JuzRow(juz: QuranJuzUi, onClick: () -> Unit) {
 
 
 @Composable
-private fun ContinueReadingCard(chapter: Chapter, verseNumber: Int, onClick: () -> Unit) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(SalatPrimaryContainer)
-            .clickable(onClick = onClick)
-            .padding(16.dp),
-    ) {
-        Column {
-            Text(
-                text = stringResource(R.string.quran_continue_reading),
-                color = SalatPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily,
-            )
-            Spacer(Modifier.height(4.dp))
-            Text(
-                text = stringResource(R.string.quran_continue_reading_subtitle, chapter.nameTransliteration, verseNumber),
-                color = SalatOnSurface, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily,
-            )
-        }
-    }
-}
-
-@Composable
 private fun ChapterRow(chapter: Chapter, onClick: () -> Unit) {
     Row(
         modifier = Modifier
@@ -399,7 +359,6 @@ private fun QuranChapterListScreenPreview() {
             continueReading = QuranReadHistoryEntry(chapterNumber = 2, verseNumber = 14),
         ),
         onChapterClick = {},
-        onContinueReadingClick = { _, _ -> },
         onJuzClick = { _, _ -> },
         onTabSelected = {},
         onSearchDialogDismiss = {},

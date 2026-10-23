@@ -3,6 +3,7 @@ package com.salattracker.feature.reminders
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
+import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.repository.PrayerRepository
@@ -39,6 +40,9 @@ data class PrayerRemindersUiState(
     /** 0 = no separate early reminder for Jumu'ah. */
     val jumuahReminderLeadMinutes: Int = 0,
     val madhab: Madhab = Madhab.STANDARD,
+    /** Women aren't obliged to attend Jumu'ah — the Jumu'ah card is hidden entirely for
+     * [Gender.FEMALE] rather than just left togglable. */
+    val gender: Gender? = null,
 )
 
 @HiltViewModel
@@ -64,6 +68,7 @@ class PrayerRemindersViewModel @Inject constructor(
                     jumuahEnabled = prefs.jumuahEnabled,
                     jumuahReminderLeadMinutes = prefs.jumuahReminderLeadMinutes,
                     madhab = prefs.madhab,
+                    gender = prefs.gender,
                     reminders = PrayerType.values().map { type ->
                         ReminderSetting(
                             prayerType       = type,

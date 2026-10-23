@@ -13,6 +13,7 @@ import androidx.compose.runtime.setValue
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.lifecycleScope
 import com.salattracker.core.theme.SalatTrackerTheme
+import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
@@ -42,6 +43,7 @@ class PrayerReminderActivity : AppCompatActivity() {
         getSystemService(KeyguardManager::class.java)?.requestDismissKeyguard(this, null)
 
         val type = intent.prayerTypeOrNull()
+        val date = intent.prayerDateOrToday()
         if (type == null) {
             finish()
             return
@@ -53,27 +55,30 @@ class PrayerReminderActivity : AppCompatActivity() {
             var snoozeMinutes by remember { mutableStateOf(PrayerReminderReceiver.DEFAULT_SNOOZE_MINUTES) }
             var jumuahEnabled by remember { mutableStateOf(true) }
             var madhab by remember { mutableStateOf(Madhab.STANDARD) }
+            var gender by remember { mutableStateOf<Gender?>(null) }
 
             LaunchedEffect(type) {
-                scheduledTime = prayerRepository.getPrayerTimes(LocalDate.now())?.get(type)
+                scheduledTime = prayerRepository.getPrayerTimes(date)?.get(type)
                 verse = verseRepository.getRandomVerse()
                 val prefs = settingsRepository.getCurrentPrefs()
                 snoozeMinutes = prefs.reminderSnoozeMinutes[type] ?: PrayerReminderReceiver.DEFAULT_SNOOZE_MINUTES
                 jumuahEnabled = prefs.jumuahEnabled
                 madhab = prefs.madhab
+                gender = prefs.gender
             }
 
             SalatTrackerTheme {
                 PrayerReminderScreen(
                     prayerType    = type,
-                    date          = LocalDate.now(),
+                    date          = date,
                     jumuahEnabled = jumuahEnabled,
                     madhab        = madhab,
+                    gender        = gender,
                     scheduledTime = scheduledTime,
                     verse         = verse,
                     snoozeMinutes = snoozeMinutes,
-                    onMark        = { status -> markAndFinish(type, status) },
-                    onSnooze      = { snoozeAndFinish(type, snoozeMinutes) },
+                    onMark        = { status -> markAndFinish(type, date, status) },
+                    onSnooze      = { snoozeAndFinish(type, date, snoozeMinutes) },
                     onDismiss     = { finish() },
                 )
             }
@@ -88,18 +93,18 @@ class PrayerReminderActivity : AppCompatActivity() {
         recreate()
     }
 
-    private fun markAndFinish(type: PrayerType, status: PrayerStatus) {
+    private fun markAndFinish(type: PrayerType, date: LocalDate, status: PrayerStatus) {
         lifecycleScope.launch {
-            runCatching { prayerRepository.upsertPrayerStatus(LocalDate.now(), type, status) }
+            runCatching { prayerRepository.upsertPrayerStatus(date, type, status) }
             NotificationManagerCompat.from(this@PrayerReminderActivity).cancel(type.ordinal)
             finish()
         }
     }
 
-    private fun snoozeAndFinish(type: PrayerType, snoozeMinutes: Int) {
+    private fun snoozeAndFinish(type: PrayerType, date: LocalDate, snoozeMinutes: Int) {
         lifecycleScope.launch {
             NotificationManagerCompat.from(this@PrayerReminderActivity).cancel(type.ordinal)
-            PrayerReminderReceiver.scheduleSnooze(this@PrayerReminderActivity, type, snoozeMinutes)
+            PrayerReminderReceiver.scheduleSnooze(this@PrayerReminderActivity, type, date, snoozeMinutes)
             finish()
         }
     }

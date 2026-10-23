@@ -36,6 +36,7 @@ import com.salattracker.core.theme.SalatPrimaryContainer
 import com.salattracker.core.theme.SalatPrimaryFixed
 import com.salattracker.core.theme.SalatPrimaryFixedDim
 import com.salattracker.core.ui.label
+import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
@@ -51,6 +52,7 @@ fun PrayerReminderScreen(
     date: LocalDate,
     jumuahEnabled: Boolean,
     madhab: Madhab,
+    gender: Gender?,
     scheduledTime: LocalTime?,
     verse: VerseInfo?,
     snoozeMinutes: Int,
@@ -160,16 +162,20 @@ fun PrayerReminderScreen(
             Spacer(modifier = Modifier.weight(1f))
 
             // ── Action grid ───────────────────────────────────────────────────
+            // Women aren't obliged to attend Jumu'ah/congregation, so that tile is dropped
+            // entirely rather than just left tappable — Individual takes the full row instead.
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                ReminderActionTile(
-                    iconRes  = R.drawable.ic_groups,
-                    label    = stringResource(R.string.status_congregation),
-                    modifier = Modifier.weight(1f),
-                    onClick  = { onMark(PrayerStatus.CONGREGATION) },
-                )
+                if (gender != Gender.FEMALE) {
+                    ReminderActionTile(
+                        iconRes  = R.drawable.ic_groups,
+                        label    = stringResource(R.string.status_congregation),
+                        modifier = Modifier.weight(1f),
+                        onClick  = { onMark(PrayerStatus.CONGREGATION) },
+                    )
+                }
                 ReminderActionTile(
                     iconRes  = R.drawable.ic_person,
                     label    = stringResource(R.string.status_individual),
@@ -266,6 +272,7 @@ fun PrayerReminderScreenPreview() {
         date          = LocalDate.now(),
         jumuahEnabled = true,
         madhab        = Madhab.STANDARD,
+        gender        = null,
         scheduledTime = LocalTime.of(15, 20),
         verse = VerseInfo(
             text = "Maintain with care the [obligatory] prayers and [in particular] the middle [i.e., ʿaṣr] prayer and stand before Allāh, devoutly obedient.",

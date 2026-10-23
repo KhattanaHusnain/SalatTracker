@@ -2,6 +2,7 @@ package com.salattracker.feature.settings
 
 import com.salattracker.domain.model.AppLanguage
 import com.salattracker.domain.model.CalculationMethod
+import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.HighLatitudeRule
 import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerType
@@ -153,6 +154,17 @@ class SettingsViewModelTest {
 
         assertEquals(ThemeMode.DARK, viewModel.uiState.value.themeMode)
         assertEquals(listOf(ThemeMode.DARK), repository.themeModeCalls)
+        assertEquals(0, rescheduler.rescheduleCount)
+    }
+
+    @Test
+    fun `onGenderChanged writes but does not reschedule`() {
+        val viewModel = createViewModel()
+
+        viewModel.onGenderChanged(Gender.FEMALE)
+
+        assertEquals(Gender.FEMALE, viewModel.uiState.value.gender)
+        assertEquals(listOf(Gender.FEMALE), repository.genderCalls)
         assertEquals(0, rescheduler.rescheduleCount)
     }
 

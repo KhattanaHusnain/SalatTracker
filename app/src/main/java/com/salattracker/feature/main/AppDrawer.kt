@@ -40,6 +40,7 @@ fun AppDrawer(
     onDonateClick: () -> Unit,
     onDevelopersClick: () -> Unit,
     onStatsClick: () -> Unit,
+    onTasbihClick: () -> Unit,
     onQuranCreditsClick: () -> Unit,
     onSettingsClick: () -> Unit,
 ) {
@@ -83,6 +84,11 @@ fun AppDrawer(
             iconRes = R.drawable.ic_nav_stats,
             label = stringResource(R.string.nav_stats),
             onClick = onStatsClick,
+        )
+        DrawerItem(
+            iconRes = R.drawable.ic_auto_awesome,
+            label = stringResource(R.string.tasbih_title),
+            onClick = onTasbihClick,
         )
         DrawerItem(
             iconRes = R.drawable.ic_heart,
@@ -142,6 +148,7 @@ fun AppDrawerPreview() {
         onDonateClick = {},
         onDevelopersClick = {},
         onStatsClick = {},
+        onTasbihClick = {},
         onQuranCreditsClick = {},
         onSettingsClick = {},
     )

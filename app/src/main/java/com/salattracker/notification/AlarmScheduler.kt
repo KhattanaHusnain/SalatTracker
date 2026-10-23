@@ -4,6 +4,8 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import com.salattracker.domain.model.Gender
+import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.repository.UserPrefs
 import java.time.DayOfWeek
@@ -27,6 +29,13 @@ class AlarmScheduler(private val context: Context) {
         tomorrowTimes: Map<PrayerType, LocalTime>,
     ) {
         PrayerType.values().forEach { type ->
+            // Ja'fari combines Dhuhr+Asr and Maghrib+Isha at the same calculated instant.
+            // Keep the first prayer of each pair as the single reminder; otherwise both alarms
+            // fire together and the second full-screen intent replaces the first.
+            if (prefs.madhab == Madhab.JAFARI && type in setOf(PrayerType.ASR, PrayerType.ISHA)) {
+                cancel(type)
+                return@forEach
+            }
             if (prefs.reminderEnabled[type] != true) {
                 cancel(type)
                 return@forEach
@@ -34,7 +43,9 @@ class AlarmScheduler(private val context: Context) {
             scheduleOne(type, todayTimes[type], tomorrowTimes[type], prefs.reminderOffsetMinutes[type] ?: 0)
         }
 
-        val leadMinutes = if (prefs.jumuahEnabled) prefs.jumuahReminderLeadMinutes else 0
+        // Women aren't obliged to attend Jumu'ah — suppressed regardless of the stored toggle,
+        // which may be stale from before gender was set (or simply never touched).
+        val leadMinutes = if (prefs.jumuahEnabled && prefs.gender != Gender.FEMALE) prefs.jumuahReminderLeadMinutes else 0
         scheduleJumuahLead(leadMinutes, todayTimes[PrayerType.DHUHR], tomorrowTimes[PrayerType.DHUHR])
     }
 
@@ -101,14 +112,16 @@ class AlarmScheduler(private val context: Context) {
         val now = System.currentTimeMillis()
 
         val todayTrigger = todayTime?.let { triggerMillis(it, offsetMinutes, LocalDate.now(), zoneId) }
-        val triggerAt = if (todayTrigger != null && todayTrigger > now) {
-            todayTrigger
+        val scheduledDate = if (todayTrigger != null && todayTrigger > now) {
+            LocalDate.now()
         } else {
-            tomorrowTime?.let { triggerMillis(it, offsetMinutes, LocalDate.now().plusDays(1), zoneId) }
-                ?: return
+            if (tomorrowTime == null) return
+            LocalDate.now().plusDays(1)
         }
 
-        val pendingIntent = pendingIntentFor(type)
+        val scheduledTime = if (scheduledDate == LocalDate.now()) todayTime else tomorrowTime
+        val triggerAt = triggerMillis(scheduledTime ?: return, offsetMinutes, scheduledDate, zoneId)
+        val pendingIntent = pendingIntentFor(type, scheduledDate)
         try {
             alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pendingIntent)
         } catch (_: SecurityException) {
@@ -134,9 +147,10 @@ class AlarmScheduler(private val context: Context) {
         alarmManager.cancel(pendingIntentFor(type))
     }
 
-    private fun pendingIntentFor(type: PrayerType): PendingIntent {
+    private fun pendingIntentFor(type: PrayerType, date: LocalDate = LocalDate.now()): PendingIntent {
         val intent = Intent(context, PrayerReminderReceiver::class.java).apply {
             putExtra(EXTRA_PRAYER_TYPE, type.name)
+            putExtra(EXTRA_PRAYER_DATE, date.toString())
         }
         return PendingIntent.getBroadcast(
             context,
@@ -148,6 +162,7 @@ class AlarmScheduler(private val context: Context) {
 
     companion object {
         const val EXTRA_PRAYER_TYPE = "prayer_type"
+        const val EXTRA_PRAYER_DATE = "prayer_date"
         const val EXTRA_JUMUAH_LEAD = "jumuah_lead"
         private const val JUMUAH_LEAD_REQUEST_CODE = 100
     }

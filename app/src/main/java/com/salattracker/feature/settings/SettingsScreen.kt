@@ -25,12 +25,13 @@ import com.salattracker.core.ui.label
 import com.salattracker.core.ui.salatSwitchColors
 import com.salattracker.domain.model.AppLanguage
 import com.salattracker.domain.model.CalculationMethod
+import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.HighLatitudeRule
 import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.ThemeMode
 
-// ── Settings Screen — a hub of 3 cards, every control live-applies ──────────────
+// ── Settings Screen — a hub of 4 cards, every control live-applies ──────────────
 
 @Composable
 fun SettingsScreen(
@@ -46,6 +47,7 @@ fun SettingsScreen(
     on24HourFormatChanged: (Boolean) -> Unit,
     onLanguageChanged: (AppLanguage) -> Unit,
     onThemeModeChanged: (ThemeMode) -> Unit,
+    onGenderChanged: (Gender) -> Unit,
     onErrorDismiss: () -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
@@ -98,6 +100,10 @@ fun SettingsScreen(
                 onThemeChanged    = onThemeModeChanged,
                 on24HourChanged   = on24HourFormatChanged,
             )
+
+            // ── About You ─────────────────────────────────────────────────────
+            SettingsSectionLabel(stringResource(R.string.settings_about_you_section))
+            AboutYouCard(gender = uiState.gender, onGenderChanged = onGenderChanged)
         }
 
         // ── Error snackbar ────────────────────────────────────────────────────
@@ -460,6 +466,28 @@ private val ThemeMode.themeLabelRes get() = when (this) {
     ThemeMode.SYSTEM -> R.string.theme_system
 }
 
+// ── About You card (onboarding's gender question, editable afterward) ─────────
+
+@Composable
+private fun AboutYouCard(gender: Gender?, onGenderChanged: (Gender) -> Unit) {
+    SettingsCard {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            ThemeModeChip(
+                label      = stringResource(R.string.onboarding_gender_male),
+                isSelected = gender == Gender.MALE,
+                onClick    = { onGenderChanged(Gender.MALE) },
+                modifier   = Modifier.weight(1f),
+            )
+            ThemeModeChip(
+                label      = stringResource(R.string.onboarding_gender_female),
+                isSelected = gender == Gender.FEMALE,
+                onClick    = { onGenderChanged(Gender.FEMALE) },
+                modifier   = Modifier.weight(1f),
+            )
+        }
+    }
+}
+
 // ── Preview ───────────────────────────────────────────────────────────────────
 
 @Preview(showBackground = true, showSystemUi = true)
@@ -485,6 +513,7 @@ fun SettingsScreenPreview() {
         on24HourFormatChanged      = {},
         onLanguageChanged          = {},
         onThemeModeChanged         = {},
+        onGenderChanged            = {},
         onErrorDismiss             = {},
     )
 }

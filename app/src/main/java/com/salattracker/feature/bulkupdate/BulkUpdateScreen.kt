@@ -27,9 +27,11 @@ import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.core.ui.DatePickerModal
+import com.salattracker.core.ui.isOfferedFor
 import com.salattracker.core.ui.label
 import com.salattracker.core.ui.labelRes
 import com.salattracker.core.ui.nameRes
+import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
 import java.time.LocalDate
@@ -116,7 +118,7 @@ fun BulkUpdateScreen(
 
             // ── Status selector ────────────────────────────────────────────────
             SectionLabel(stringResource(R.string.bulk_set_status))
-            StatusChipRow(selected = uiState.selectedStatus, onSelected = onStatusChanged)
+            StatusChipRow(selected = uiState.selectedStatus, gender = uiState.gender, onSelected = onStatusChanged)
 
             // ── Apply button ───────────────────────────────────────────────────
             Button(
@@ -462,12 +464,12 @@ private val STATUS_CHIPS = listOf(
 )
 
 @Composable
-private fun StatusChipRow(selected: PrayerStatus, onSelected: (PrayerStatus) -> Unit) {
+private fun StatusChipRow(selected: PrayerStatus, gender: Gender?, onSelected: (PrayerStatus) -> Unit) {
     Row(
         modifier = Modifier.horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        STATUS_CHIPS.forEach { chip ->
+        STATUS_CHIPS.filter { it.status.isOfferedFor(gender) }.forEach { chip ->
             val isSelected = chip.status == selected
             Surface(
                 onClick = { onSelected(chip.status) },

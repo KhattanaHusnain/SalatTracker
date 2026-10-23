@@ -6,6 +6,7 @@ import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.usecase.CALENDAR_MIN_DATE
 import com.salattracker.domain.usecase.CalendarViewType
 import com.salattracker.testutil.FakePrayerRepository
+import com.salattracker.testutil.FakeSettingsRepository
 import com.salattracker.testutil.FakeVerseRepository
 import com.salattracker.testutil.MainDispatcherRule
 import kotlinx.coroutines.test.runTest
@@ -30,7 +31,7 @@ class CalendarViewModelTest {
         prayerRepository = FakePrayerRepository()
     }
 
-    private fun createViewModel() = CalendarViewModel(prayerRepository, FakeVerseRepository())
+    private fun createViewModel() = CalendarViewModel(prayerRepository, FakeVerseRepository(), FakeSettingsRepository())
 
     @Test
     fun `initial state loads today's marks and the verse`() = runTest {

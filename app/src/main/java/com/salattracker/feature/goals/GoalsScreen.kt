@@ -49,6 +49,7 @@ fun GoalsScreen(
     onDayLongPress: (goalId: Long, date: LocalDate) -> Unit,
     onGoalClick: (Long) -> Unit,
     onAddGoalClick: () -> Unit,
+    onTasbihClick: (Long) -> Unit,
     onLogAmountChanged: (Int) -> Unit,
     onLogSkippedChanged: (Boolean) -> Unit,
     onLogMarkDone: () -> Unit,
@@ -89,6 +90,7 @@ fun GoalsScreen(
                                 onClick = { onGoalClick(card.goal.id) },
                                 onDayTap = { date -> onDayTap(card.goal.id, date) },
                                 onDayLongPress = { date -> onDayLongPress(card.goal.id, date) },
+                                onTasbihClick = { onTasbihClick(card.goal.id) },
                             )
                         }
                     }
@@ -221,6 +223,7 @@ private fun GoalCard(
     onClick: () -> Unit,
     onDayTap: (LocalDate) -> Unit,
     onDayLongPress: (LocalDate) -> Unit,
+    onTasbihClick: () -> Unit,
 ) {
     val goal = card.goal
     Surface(
@@ -252,6 +255,14 @@ private fun GoalCard(
                 onDayClick = onDayTap,
                 onDayLongClick = onDayLongPress,
             )
+            if (goal.usesTasbihCounter && goal.category == GoalCategory.DHIKR && goal.unit == "Time(s)") {
+                Spacer(modifier = Modifier.height(10.dp))
+                TextButton(onClick = onTasbihClick, modifier = Modifier.align(Alignment.End)) {
+                    Icon(painterResource(R.drawable.ic_auto_awesome), null, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text(stringResource(R.string.tasbih_count_dhikr), fontFamily = AppUiFontFamily)
+                }
+            }
         }
     }
 }
@@ -432,7 +443,7 @@ fun GoalsScreenPreview() {
             ),
             archived = listOf(ArchivedGoalUi(quran.copy(id = 3, name = "Ramadan Quran Khatm", isActive = false), GoalStatus.ARCHIVED)),
         ),
-        onDayTap = { _, _ -> }, onDayLongPress = { _, _ -> }, onGoalClick = {}, onAddGoalClick = {},
+        onDayTap = { _, _ -> }, onDayLongPress = { _, _ -> }, onGoalClick = {}, onAddGoalClick = {}, onTasbihClick = {},
         onLogAmountChanged = {}, onLogSkippedChanged = {}, onLogMarkDone = {}, onLogSave = {}, onLogClear = {},
         onLogDismiss = {}, onErrorDismiss = {},
     )
@@ -443,7 +454,7 @@ fun GoalsScreenPreview() {
 fun GoalsScreenEmptyPreview() {
     GoalsScreen(
         uiState = GoalsUiState(isLoading = false),
-        onDayTap = { _, _ -> }, onDayLongPress = { _, _ -> }, onGoalClick = {}, onAddGoalClick = {},
+        onDayTap = { _, _ -> }, onDayLongPress = { _, _ -> }, onGoalClick = {}, onAddGoalClick = {}, onTasbihClick = {},
         onLogAmountChanged = {}, onLogSkippedChanged = {}, onLogMarkDone = {}, onLogSave = {}, onLogClear = {},
         onLogDismiss = {}, onErrorDismiss = {},
     )

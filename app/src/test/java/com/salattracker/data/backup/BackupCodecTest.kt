@@ -78,6 +78,16 @@ class BackupCodecTest {
     }
 
     @Test
+    fun `round trip preserves Tasbih goal opt-in`() {
+        val base = sampleSnapshot()
+        val snapshot = base.copy(goals = listOf(base.goals.single().copy(usesTasbihCounter = true)))
+
+        val (_, decoded) = BackupCodec.decode(BackupCodec.encode(snapshot, sampleMeta(snapshot)))
+
+        assertTrue(decoded.goals.single().usesTasbihCounter)
+    }
+
+    @Test
     fun `a backup written before these fields existed decodes to every-day ongoing goals`() {
         val json = """{"meta":{"formatVersion":1,"revisionId":"r","createdAt":1,"appVersionCode":1,"deviceModel":"x",
             "prayerEntryCount":0},"payload":{"prayerEntries":[],"goals":[{"id":1,"name":"G","category":"QURAN",
@@ -92,6 +102,7 @@ class BackupCodecTest {
 
         assertEquals(0, decoded.goals.single().daysOfWeek)
         assertFalse(decoded.goals.single().endsAfterDuration)
+        assertFalse(decoded.goals.single().usesTasbihCounter)
         assertFalse(decoded.checkIns.single().isSkip)
     }
 

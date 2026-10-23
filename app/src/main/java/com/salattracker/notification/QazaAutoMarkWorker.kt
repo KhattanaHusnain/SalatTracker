@@ -19,8 +19,8 @@ import java.util.concurrent.TimeUnit
 /**
  * Every [CHECK_INTERVAL_MINUTES] (WorkManager's minimum periodic interval), scans
  * today's and yesterday's prayers and auto-marks any prayer still NOT_RECORDED as
- * QAZA_PENDING once [GRACE_PERIOD_MINUTES] have passed since its time — so a missed
- * prayer lands in the Qaza tracker on its own instead of staying silently blank.
+ * QAZA_PENDING after its valid prayer window has ended (plus a short logging buffer) — so a
+ * missed prayer lands in the Qaza tracker on its own without calling an on-time prayer missed.
  * Yesterday is included too, as a safety net for whatever the last tick before
  * midnight didn't get to (device asleep, Doze, etc).
  */
@@ -46,10 +46,13 @@ class QazaAutoMarkWorker @AssistedInject constructor(
         val times = prayerRepository.getPrayerTimes(date) ?: return
         val entries = prayerRepository.getPrayerEntriesForDate(date)
         val now = LocalDateTime.now()
+        val nextDayTimes = prayerRepository.getPrayerTimes(date.plusDays(1))
+        val sunrise = prayerRepository.getSunriseTime(date)
 
         PrayerType.values().forEach { type ->
-            val prayerTime = times[type] ?: return@forEach
-            val deadline = LocalDateTime.of(date, prayerTime).plusMinutes(GRACE_PERIOD_MINUTES)
+            val deadline = autoMarkDeadline(type, date, times, sunrise, nextDayTimes)
+                ?.plusMinutes(LOGGING_BUFFER_MINUTES)
+                ?: return@forEach
             if (now.isBefore(deadline)) return@forEach
 
             val status = entries.find { it.prayerType == type }?.status ?: PrayerStatus.NOT_RECORDED
@@ -60,7 +63,7 @@ class QazaAutoMarkWorker @AssistedInject constructor(
     }
 
     companion object {
-        private const val GRACE_PERIOD_MINUTES = 30L
+        private const val LOGGING_BUFFER_MINUTES = 15L
         private const val CHECK_INTERVAL_MINUTES = 15L
         private const val PERIODIC_WORK_NAME = "qaza_auto_mark_worker_periodic"
 
@@ -75,4 +78,27 @@ class QazaAutoMarkWorker @AssistedInject constructor(
             )
         }
     }
+}
+
+/** The first moment a prayer can be considered missed, before the small logging buffer. */
+internal fun autoMarkDeadline(
+    type: PrayerType,
+    date: LocalDate,
+    times: Map<PrayerType, java.time.LocalTime>,
+    sunrise: java.time.LocalTime?,
+    nextDayTimes: Map<PrayerType, java.time.LocalTime>?,
+): LocalDateTime? = when (type) {
+    PrayerType.FAJR -> sunrise?.let { LocalDateTime.of(date, it) }
+    PrayerType.DHUHR -> times[PrayerType.ASR]
+        ?.takeIf { it > (times[PrayerType.DHUHR] ?: it) }
+        ?.let { LocalDateTime.of(date, it) }
+        // Ja'fari combines Dhuhr and Asr at the same time; their shared window lasts to Maghrib.
+        ?: times[PrayerType.MAGHRIB]?.let { LocalDateTime.of(date, it) }
+    PrayerType.ASR -> times[PrayerType.MAGHRIB]?.let { LocalDateTime.of(date, it) }
+    PrayerType.MAGHRIB -> times[PrayerType.ISHA]
+        ?.takeIf { it > (times[PrayerType.MAGHRIB] ?: it) }
+        ?.let { LocalDateTime.of(date, it) }
+        // Ja'fari combines Maghrib and Isha; their shared window lasts to the next Fajr.
+        ?: nextDayTimes?.get(PrayerType.FAJR)?.let { LocalDateTime.of(date.plusDays(1), it) }
+    PrayerType.ISHA -> nextDayTimes?.get(PrayerType.FAJR)?.let { LocalDateTime.of(date.plusDays(1), it) }
 }

@@ -52,6 +52,7 @@ class FakePrayerRepository : PrayerRepository {
     private val entries = MutableStateFlow<Map<LocalDate, Map<PrayerType, PrayerStatus>>>(emptyMap())
     private val updatedAtMap = mutableMapOf<Pair<LocalDate, PrayerType>, Long>()
     private val cachedTimes = mutableMapOf<LocalDate, Map<PrayerType, LocalTime>>()
+    private val cachedSunrises = mutableMapOf<LocalDate, LocalTime>()
     private val streaksFlow = MutableStateFlow<Map<PrayerType, StreakInfo>>(emptyMap())
 
     /** Fake "now" used to stamp updatedAt on writes made through [markQazaCompleted] /
@@ -92,6 +93,10 @@ class FakePrayerRepository : PrayerRepository {
         cachedTimes[date] = times
     }
 
+    fun seedSunrise(date: LocalDate, sunrise: LocalTime) {
+        cachedSunrises[date] = sunrise
+    }
+
     fun seedStreaks(streaks: Map<PrayerType, StreakInfo>) {
         streaksFlow.value = streaks
     }
@@ -115,6 +120,8 @@ class FakePrayerRepository : PrayerRepository {
     }
 
     override suspend fun getPrayerTimes(date: LocalDate): Map<PrayerType, LocalTime>? = cachedTimes[date]
+
+    override suspend fun getSunriseTime(date: LocalDate): LocalTime? = cachedSunrises[date]
 
     override suspend fun upsertPrayerStatus(date: LocalDate, prayerType: PrayerType, status: PrayerStatus) {
         upserts += Triple(date, prayerType, status)
@@ -233,14 +240,14 @@ class FakeGoalRepository : GoalRepository {
     override suspend fun createGoal(
         name: String, category: com.salattracker.domain.model.GoalCategory, frequency: com.salattracker.domain.model.GoalFrequency,
         targetAmount: Int, unit: String, reminderEnabled: Boolean, reminderTime: LocalTime?, durationDays: Int,
-        daysOfWeek: Set<DayOfWeek>, endsAfterDuration: Boolean,
+        daysOfWeek: Set<DayOfWeek>, endsAfterDuration: Boolean, usesTasbihCounter: Boolean,
     ): Long = notUsed()
     override suspend fun getAllActiveGoals() = notUsed()
     override suspend fun getGoal(goalId: Long) = notUsed()
     override suspend fun updateGoal(
         goalId: Long, name: String, category: com.salattracker.domain.model.GoalCategory, frequency: com.salattracker.domain.model.GoalFrequency,
         targetAmount: Int, unit: String, reminderEnabled: Boolean, reminderTime: LocalTime?, durationDays: Int,
-        daysOfWeek: Set<DayOfWeek>, endsAfterDuration: Boolean,
+        daysOfWeek: Set<DayOfWeek>, endsAfterDuration: Boolean, usesTasbihCounter: Boolean,
     ) = notUsed()
 
     private fun notUsed(): Nothing = throw NotImplementedError("not used by this test")
@@ -364,7 +371,11 @@ class FakeSettingsRepository(initial: UserPrefs = UserPrefs()) : SettingsReposit
 
     override suspend fun setAllRemindersEnabled(enabled: Boolean) = notUsed()
     override suspend fun setOnboardingCompleted(completed: Boolean) = notUsed()
+
+    val genderCalls = mutableListOf<com.salattracker.domain.model.Gender>()
+
     override suspend fun setGender(gender: com.salattracker.domain.model.Gender) {
+        genderCalls += gender
         prefs.update { it.copy(gender = gender) }
     }
 

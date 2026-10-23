@@ -239,7 +239,7 @@ internal fun TimePickerModal(
 
 internal fun previewFormActions() = GoalFormActions(
     onNameChanged = {}, onCategoryChanged = {}, onFrequencyChanged = {}, onTargetAmountChanged = {},
-    onUnitChanged = {}, onDayToggled = {}, onEveryDaySelected = {}, onReminderEnabledChanged = {},
+    onUnitChanged = {}, onDayToggled = {}, onEveryDaySelected = {}, onReminderEnabledChanged = {}, onUsesTasbihCounterChanged = {},
     onReminderTimeChanged = {}, onEndsAfterChanged = {}, onDurationDaysChanged = {},
     onTemplateSelected = { _, _ -> },
 )

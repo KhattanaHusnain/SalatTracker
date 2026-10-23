@@ -83,3 +83,16 @@ val MIGRATION_10_11 = object : Migration(10, 11) {
         db.execSQL("ALTER TABLE quran_read_history ADD COLUMN page_number INTEGER")
     }
 }
+
+/** v11 -> v12: persistent Tasbih rounds and an explicit goal opt-in. */
+val MIGRATION_11_12 = object : Migration(11, 12) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE spiritual_goals ADD COLUMN uses_tasbih_counter INTEGER NOT NULL DEFAULT 0")
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS tasbih_sessions (" +
+                "session_id TEXT NOT NULL PRIMARY KEY, goal_id INTEGER, phrase_id TEXT NOT NULL, " +
+                "target INTEGER NOT NULL, count INTEGER NOT NULL, is_completed INTEGER NOT NULL DEFAULT 0, " +
+                "completed_on TEXT)"
+        )
+    }
+}

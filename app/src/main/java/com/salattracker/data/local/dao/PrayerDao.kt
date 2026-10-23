@@ -56,6 +56,14 @@ interface PrayerDao {
         to: LocalDate,
     ): List<PrayerEntryEntity>
 
+    /** Complete local history, oldest first. Used to rebuild derived streak caches. */
+    @Query("""
+        SELECT * FROM prayer_entries
+        WHERE user_id = :userId
+        ORDER BY date ASC, prayer_type ASC
+    """)
+    suspend fun getAllEntries(userId: String): List<PrayerEntryEntity>
+
     // ── Upsert ────────────────────────────────────────────────────────────────
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

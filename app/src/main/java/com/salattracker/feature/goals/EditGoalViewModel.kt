@@ -64,6 +64,7 @@ class EditGoalViewModel @Inject constructor(
                         daysOfWeek        = goal.daysOfWeek,
                         endsAfterDuration = goal.endsAfterDuration,
                         durationDays      = goal.durationDays.toString(),
+                        usesTasbihCounter = goal.usesTasbihCounter,
                     ),
                 )
             }
@@ -78,6 +79,7 @@ class EditGoalViewModel @Inject constructor(
     fun onFrequencyChanged(frequency: GoalFrequency) = updateForm { it.copy(frequency = frequency) }
     fun onTargetAmountChanged(value: String) = updateForm { it.withTargetAmount(value) }
     fun onUnitChanged(unit: String) = updateForm { it.copy(unit = unit) }
+    fun onUsesTasbihCounterChanged(enabled: Boolean) = updateForm { it.copy(usesTasbihCounter = enabled) }
     fun onDayToggled(day: DayOfWeek) = updateForm { it.withDayToggled(day) }
     fun onEveryDaySelected() = updateForm { it.copy(daysOfWeek = emptySet()) }
     fun onReminderEnabledChanged(enabled: Boolean) = updateForm { it.copy(reminderEnabled = enabled) }
@@ -112,6 +114,7 @@ class EditGoalViewModel @Inject constructor(
                     durationDays      = form.duration,
                     daysOfWeek        = form.effectiveDays,
                     endsAfterDuration = form.endsAfterDuration,
+                    usesTasbihCounter = form.usesTasbihCounter && form.category == GoalCategory.DHIKR && form.unit == "Time(s)",
                 )
             }.onSuccess {
                 // A changed reminder invalidates whatever the periodic worker last scheduled — reschedule now.

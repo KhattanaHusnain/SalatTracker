@@ -10,7 +10,6 @@ import com.salattracker.domain.model.QuranReadHistoryEntry
 @Composable
 fun QuranChapterListEntry(
     onChapterClick: (Int) -> Unit,
-    onContinueReadingClick: (chapterNumber: Int, verseNumber: Int) -> Unit,
     onJuzClick: (juzNumber: Int, pageNumber: Int) -> Unit,
     onLastReadChanged: (QuranReadHistoryEntry?) -> Unit,
     searchRequest: Int,
@@ -33,7 +32,6 @@ fun QuranChapterListEntry(
     QuranChapterListScreen(
         uiState = uiState,
         onChapterClick = onChapterClick,
-        onContinueReadingClick = onContinueReadingClick,
         onJuzClick = onJuzClick,
         onTabSelected = viewModel::onTabSelected,
         onSearchDialogDismiss = viewModel::onSearchDialogDismiss,

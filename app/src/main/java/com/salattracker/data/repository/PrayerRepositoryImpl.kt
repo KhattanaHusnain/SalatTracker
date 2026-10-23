@@ -82,6 +82,11 @@ class PrayerRepositoryImpl @Inject constructor(
         return prayerTimeCalculator.calculate(date, prefs.latitude, prefs.longitude, prefs)
     }
 
+    override suspend fun getSunriseTime(date: LocalDate): LocalTime? {
+        val prefs = settingsRepo.getCurrentPrefs()
+        return prayerTimeCalculator.calculateSunrise(date, prefs.latitude, prefs.longitude, prefs)
+    }
+
     // ── Streak ────────────────────────────────────────────────────────────────
 
     override suspend fun getStreakSnapshot(): Map<PrayerType, StreakInfo> {
@@ -149,22 +154,26 @@ class PrayerRepositoryImpl @Inject constructor(
 
     override suspend fun recalculateStreaks() = recalculateAndCacheStreak()
 
-    private class StreakTrack(var highest: Int) {
+    private class StreakTrack {
         var current: Int = 0
         var active: Boolean = true
     }
 
     private suspend fun recalculateAndCacheStreak() {
         val today = LocalDate.now()
-        val existing = streakDao.getAllSnapshots(userId).associateBy { it.prayerType }
-        val tracks = PrayerType.values().associateWith { type ->
-            StreakTrack(highest = existing[type]?.highestStreak ?: 0)
-        }
+        val tracks = PrayerType.values().associateWith { StreakTrack() }
+        // One ordered history read serves both current and best streaks. Previously this loop
+        // issued one SQL query for every day it walked backwards through the user's history.
+        val allEntries = prayerDao.getAllEntries(userId)
+        val entriesByDate = allEntries.groupBy { it.date }
+        // Never seed a best streak from its old cache. A corrected historic entry (or a
+        // restored backup) must be able to lower it as well as raise it.
+        val highestByType = calculateHighestStreaks(allEntries, today)
 
         var date = today
         var isToday = true
         while (tracks.values.any { it.active }) {
-            val entries = prayerDao.getEntriesForDate(userId, date)
+            val entries = entriesByDate[date].orEmpty()
 
             PrayerType.values().forEach { type ->
                 val track = tracks.getValue(type)
@@ -173,7 +182,6 @@ class PrayerRepositoryImpl @Inject constructor(
                 when (entries.find { it.prayerType == type }?.status ?: PrayerStatus.NOT_RECORDED) {
                     PrayerStatus.CONGREGATION, PrayerStatus.INDIVIDUAL -> {
                         track.current++
-                        if (track.current > track.highest) track.highest = track.current
                     }
                     PrayerStatus.MENSTRUATION -> { /* neutral: doesn't count, doesn't break */ }
                     PrayerStatus.QAZA_PENDING, PrayerStatus.QAZA_COMPLETED -> {
@@ -198,11 +206,46 @@ class PrayerRepositoryImpl @Inject constructor(
                     userId           = userId,
                     prayerType       = type,
                     currentStreak    = track.current,
-                    highestStreak    = track.highest,
+                    highestStreak    = highestByType.getValue(type),
                     lastCalculatedAt = System.currentTimeMillis(),
                 )
             )
         }
+    }
+}
+
+/**
+ * Calculates each prayer's longest contiguous prayed run from the persisted history.
+ * Menstruation is neutral, matching the current-streak rules: it neither extends nor breaks a
+ * run. Missing rows and Qaza statuses break it. Keeping this independent of the snapshot cache
+ * is what lets a correction reduce an inflated historical best.
+ */
+internal fun calculateHighestStreaks(
+    entries: List<PrayerEntryEntity>,
+    today: LocalDate,
+): Map<PrayerType, Int> {
+    val firstDate = entries.minOfOrNull { it.date }
+        ?: return PrayerType.values().associateWith { 0 }
+    val statusesByDate = entries.groupBy { it.date }.mapValues { (_, entriesForDate) ->
+        entriesForDate.associate { it.prayerType to it.status }
+    }
+
+    return PrayerType.values().associateWith { type ->
+        var current = 0
+        var highest = 0
+        var date = firstDate
+        while (!date.isAfter(today)) {
+            when (statusesByDate[date]?.get(type) ?: PrayerStatus.NOT_RECORDED) {
+                PrayerStatus.CONGREGATION, PrayerStatus.INDIVIDUAL -> {
+                    current++
+                    highest = maxOf(highest, current)
+                }
+                PrayerStatus.MENSTRUATION -> Unit
+                PrayerStatus.NOT_RECORDED, PrayerStatus.QAZA_PENDING, PrayerStatus.QAZA_COMPLETED -> current = 0
+            }
+            date = date.plusDays(1)
+        }
+        highest
     }
 }
 

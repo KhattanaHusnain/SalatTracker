@@ -18,6 +18,14 @@
           "client_type": 1,
           "android_info": {
             "package_name": "com.salattracker",
+            "certificate_hash": "c1c87500ae70c5b2b28e75dfad22a71c4bd582c8"
+          }
+        },
+        {
+          "client_id": "116240079706-9aihjnm4qj30pk0rm39jnj8fs4c4831f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.salattracker",
             "certificate_hash": "0ba5704dcdfd598fa7c7e04c4c3aaa305c714c84"
           }
         },

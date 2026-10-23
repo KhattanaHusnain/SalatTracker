@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.salattracker.domain.model.AppLanguage
 import com.salattracker.domain.model.CalculationMethod
+import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.HighLatitudeRule
 import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerType
@@ -33,6 +34,9 @@ data class SettingsUiState(
     val use24HourFormat: Boolean = false,
     val language: AppLanguage = AppLanguage.ENGLISH,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    /** Onboarding's "About you" answer — null for an install that skipped/predates it; the About
+     * You card shows no selection in that case rather than defaulting to one. */
+    val gender: Gender? = null,
     val showCalculationMethodSheet: Boolean = false,
     val error: String? = null,
 )
@@ -77,6 +81,7 @@ class SettingsViewModel @Inject constructor(
                             use24HourFormat   = prefs.use24HourFormat,
                             language          = prefs.language,
                             themeMode         = prefs.themeMode,
+                            gender            = prefs.gender,
                         )
                     }
                 }
@@ -146,6 +151,11 @@ class SettingsViewModel @Inject constructor(
     fun onThemeModeChanged(themeMode: ThemeMode) {
         _uiState.update { it.copy(themeMode = themeMode) }
         write { settingsRepository.setThemeMode(themeMode) }
+    }
+
+    fun onGenderChanged(gender: Gender) {
+        _uiState.update { it.copy(gender = gender) }
+        write { settingsRepository.setGender(gender) }
     }
 
     fun clearError() = _uiState.update { it.copy(error = null) }

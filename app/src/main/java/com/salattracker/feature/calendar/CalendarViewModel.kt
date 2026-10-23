@@ -3,10 +3,12 @@ package com.salattracker.feature.calendar
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.salattracker.core.ui.PrayerStatusSheetArgs
+import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.VerseInfo
 import com.salattracker.domain.repository.PrayerRepository
+import com.salattracker.domain.repository.SettingsRepository
 import com.salattracker.domain.repository.VerseRepository
 import com.salattracker.domain.usecase.CalendarViewType
 import com.salattracker.domain.usecase.coerceToCalendarRange
@@ -39,6 +41,7 @@ data class CalendarUiState(
     val isSaving: Boolean = false,
     val error: String? = null,
     val verse: VerseInfo? = null,
+    val gender: Gender? = null,
 ) {
     val awayFromToday: Boolean get() = isAwayFromToday(view, selectedDate, today)
     val selectedDayStatuses: Map<PrayerType, PrayerStatus> get() = marks[selectedDate].orEmpty()
@@ -49,6 +52,7 @@ data class CalendarUiState(
 class CalendarViewModel @Inject constructor(
     private val prayerRepository: PrayerRepository,
     private val verseRepository: VerseRepository,
+    private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CalendarUiState())
@@ -57,7 +61,17 @@ class CalendarViewModel @Inject constructor(
     init {
         observeMarks()
         observeSelectedTimes()
+        observeGender()
         loadVerse()
+    }
+
+    private fun observeGender() {
+        viewModelScope.launch {
+            settingsRepository.observeSettings()
+                .map { it.gender }
+                .distinctUntilChanged()
+                .collect { gender -> _uiState.update { it.copy(gender = gender) } }
+        }
     }
 
     private fun loadVerse() {

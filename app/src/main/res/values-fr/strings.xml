@@ -301,6 +301,7 @@
     <string name="settings_edit_location_use_my_location">Utiliser ma position</string>
     <string name="settings_edit_location_search_city">Rechercher une ville à la place</string>
     <string name="settings_edit_location_no_fix">Impossible d\'obtenir votre position. Vérifiez que les services de localisation sont activés.</string>
+    <string name="settings_about_you_section">À propos de vous</string>
     <string name="settings_calc_method">Méthode de calcul</string>
     <string name="settings_calculation_method_sheet_title">Méthode de calcul</string>
     <string name="settings_school">École juridique</string>
@@ -644,4 +645,34 @@
     <string name="developer_contribute_button">Nous contacter</string>
     <string name="developer_contribute_email_subject">Contribution — Salah Tracker</string>
     <string name="developer_contribute_email_body">Bonjour, j\'aimerais contribuer à Salah Tracker. Voici un aperçu de ce avec quoi j\'aimerais aider :</string>
+    <!-- Tasbih -->
+    <string name="tasbih_title">Tasbih</string>
+    <string name="template_tasbih">Tasbih</string>
+    <string name="tasbih_goal_switch">Utiliser le compteur de tasbih</string>
+    <string name="tasbih_goal_switch_desc">À 33 ou 100, une réalisation sera ajoutée à cet objectif.</string>
+    <string name="tasbih_count_dhikr">Compter le dhikr</string>
+    <string name="tasbih_counting_for">Compteur pour %1$s</string>
+    <string name="tasbih_free_count">Compteur libre</string>
+    <string name="tasbih_open_target">Sans objectif</string>
+    <string name="tasbih_of_target">sur %1$d</string>
+    <string name="tasbih_tap_to_count">Touchez pour compter</string>
+    <string name="tasbih_round_complete">Tour terminé</string>
+    <string name="tasbih_completed">Votre tour de tasbih est terminé.</string>
+    <string name="tasbih_goal_credited">Votre tour est terminé et une réalisation a été ajoutée à cet objectif.</string>
+    <string name="tasbih_goal_not_credited">Le tour est terminé, mais cet objectif n’est plus actif ou dû aujourd’hui ; aucune réalisation n’a été ajoutée.</string>
+    <string name="tasbih_new_round">Nouveau tour</string>
+    <string name="tasbih_undo">Annuler</string>
+    <string name="tasbih_reset">Réinitialiser</string>
+    <string name="tasbih_phrase">Phrase de dhikr</string>
+    <string name="tasbih_target">Objectif du tour</string>
+    <string name="tasbih_choose_phrase">Choisir un dhikr</string>
+    <string name="tasbih_change_title">Commencer un nouveau tour ?</string>
+    <string name="tasbih_change_desc">Changer la phrase ou l’objectif efface le décompte de ce tour.</string>
+    <string name="tasbih_reset_title">Réinitialiser ce tour ?</string>
+    <string name="tasbih_reset_desc">Cela efface le décompte actuel. Un tour terminé reste enregistré.</string>
+    <string name="tasbih_phrase_subhanallah">SubhanAllah</string>
+    <string name="tasbih_phrase_alhamdulillah">Alhamdulillah</string>
+    <string name="tasbih_phrase_allahu_akbar">Allahu Akbar</string>
+    <string name="tasbih_phrase_tahlil">La ilaha illa Allah</string>
+    <string name="tasbih_phrase_astaghfirullah">Astaghfirullah</string>
 </resources>

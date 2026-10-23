@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.salattracker.core.ui.PrayerStatusSheetArgs
+import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerEntry
 import com.salattracker.domain.model.PrayerStatus
@@ -44,6 +45,7 @@ data class HomeUiState(
     val qazaPendingTotal: Int = 0,
     val jumuahEnabled: Boolean = true,
     val madhab: Madhab = Madhab.STANDARD,
+    val gender: Gender? = null,
     val verse: VerseInfo? = null,
     val sheetArgs: PrayerStatusSheetArgs? = null,   // null = sheet hidden
     val isSaving: Boolean = false,
@@ -68,6 +70,7 @@ private data class TodaySnapshot(
     val currentPrayer: PrayerType?,
     val jumuahEnabled: Boolean,
     val madhab: Madhab,
+    val gender: Gender?,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class) // flatMapLatest below
@@ -130,6 +133,7 @@ class HomeViewModel @Inject constructor(
                             currentPrayer    = snapshot.currentPrayer,
                             jumuahEnabled    = snapshot.jumuahEnabled,
                             madhab           = snapshot.madhab,
+                            gender           = snapshot.gender,
                         )
                     }
                 }
@@ -166,8 +170,11 @@ class HomeViewModel @Inject constructor(
             nextPrayer       = nextPrayer,
             minutesUntilNext = nextPrayer?.let { minutesUntil(it, nowTime) } ?: 0,
             currentPrayer    = currentPrayerOf(times, nowTime),
-            jumuahEnabled    = prefs.jumuahEnabled,
+            // Women aren't obliged to attend Jumu'ah, so Friday Dhuhr never relabels to
+            // "Jumu'ah" for them, regardless of the (possibly stale) stored toggle.
+            jumuahEnabled    = prefs.jumuahEnabled && prefs.gender != Gender.FEMALE,
             madhab           = prefs.madhab,
+            gender           = prefs.gender,
         )
     }
 

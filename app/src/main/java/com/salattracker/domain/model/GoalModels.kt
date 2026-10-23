@@ -29,6 +29,8 @@ data class SpiritualGoal(
     val daysOfWeek: Set<DayOfWeek> = emptySet(),
     /** When false the goal is ongoing and [durationDays] is ignored. */
     val endsAfterDuration: Boolean = false,
+    /** Explicit opt-in: ordinary adhkar goals must not be completed by a Tasbih round. */
+    val usesTasbihCounter: Boolean = false,
 ) {
     /** Last day of the goal, or null when ongoing. */
     val endDate: LocalDate? get() =

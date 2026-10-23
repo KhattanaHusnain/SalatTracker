@@ -311,6 +311,7 @@
     <string name="settings_edit_location_use_my_location">Use my location</string>
     <string name="settings_edit_location_search_city">Search city instead</string>
     <string name="settings_edit_location_no_fix">Couldn\'t get your location. Check that location services are on.</string>
+    <string name="settings_about_you_section">About You</string>
     <string name="topbar_edit_location">Location</string>
     <string name="settings_calc_method">Calculation Method</string>
     <string name="settings_calculation_method_sheet_title">Calculation Method</string>
@@ -332,6 +333,10 @@
     <!-- Prayer Reminders -->
     <string name="reminders_snooze_length">Snooze Length</string>
     <string name="reminders_full_screen_alert">Full-Screen Alert</string>
+    <string name="reminders_full_screen_unavailable">Full-screen alerts are disabled in system settings.</string>
+    <string name="reminders_full_screen_fix">Allow full-screen alerts</string>
+    <string name="reminders_exact_alarm_unavailable">Exact alarms are disabled, so reminders may be late.</string>
+    <string name="reminders_exact_alarm_fix">Allow exact alarms</string>
     <string name="reminders_vibration">Vibration</string>
     <string name="reminders_jumuah_title">Jumu\'ah on Fridays</string>
     <string name="reminders_jumuah_desc">Label Friday Dhuhr as Jumu\'ah across the app.</string>
@@ -665,4 +670,34 @@
     <string name="developer_contribute_button">Get in touch</string>
     <string name="developer_contribute_email_subject">Contributing — Salah Tracker</string>
     <string name="developer_contribute_email_body">Hi, I\'d like to contribute to Salah Tracker. Here\'s a bit about what I\'d like to help with:</string>
+    <!-- Tasbih -->
+    <string name="tasbih_title">Tasbih</string>
+    <string name="template_tasbih">Tasbih</string>
+    <string name="tasbih_goal_switch">Use Tasbih counter</string>
+    <string name="tasbih_goal_switch_desc">A completed 33 or 100 count will log one check-in for this goal.</string>
+    <string name="tasbih_count_dhikr">Count dhikr</string>
+    <string name="tasbih_counting_for">Counting for %1$s</string>
+    <string name="tasbih_free_count">Free count</string>
+    <string name="tasbih_open_target">No target</string>
+    <string name="tasbih_of_target">of %1$d</string>
+    <string name="tasbih_tap_to_count">Tap to count</string>
+    <string name="tasbih_round_complete">Round complete</string>
+    <string name="tasbih_completed">Your Tasbih round is complete.</string>
+    <string name="tasbih_goal_credited">Your Tasbih round is complete and one check-in was added to this goal.</string>
+    <string name="tasbih_goal_not_credited">The round is complete, but this goal is no longer active or due today, so no check-in was added.</string>
+    <string name="tasbih_new_round">New round</string>
+    <string name="tasbih_undo">Undo</string>
+    <string name="tasbih_reset">Reset</string>
+    <string name="tasbih_phrase">Dhikr phrase</string>
+    <string name="tasbih_target">Round target</string>
+    <string name="tasbih_choose_phrase">Choose a dhikr</string>
+    <string name="tasbih_change_title">Start a new round?</string>
+    <string name="tasbih_change_desc">Changing the phrase or target clears this round\'s count.</string>
+    <string name="tasbih_reset_title">Reset this round?</string>
+    <string name="tasbih_reset_desc">This clears the current count. A completed round remains logged.</string>
+    <string name="tasbih_phrase_subhanallah">SubhanAllah</string>
+    <string name="tasbih_phrase_alhamdulillah">Alhamdulillah</string>
+    <string name="tasbih_phrase_allahu_akbar">Allahu Akbar</string>
+    <string name="tasbih_phrase_tahlil">La ilaha illa Allah</string>
+    <string name="tasbih_phrase_astaghfirullah">Astaghfirullah</string>
 </resources>

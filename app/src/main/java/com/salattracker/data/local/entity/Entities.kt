@@ -97,6 +97,8 @@ data class SpiritualGoalEntity(
     @ColumnInfo(name = "days_of_week", defaultValue = "0")         val daysOfWeek: Int = 0,
     // When false the goal is ongoing and duration_days is ignored.
     @ColumnInfo(name = "ends_after_duration", defaultValue = "0")  val endsAfterDuration: Boolean = false,
+    /** Explicit opt-in: ordinary adhkar goals must never be completed by a Tasbih round. */
+    @ColumnInfo(name = "uses_tasbih_counter", defaultValue = "0") val usesTasbihCounter: Boolean = false,
 )
 
 // ── Goal check-in entity ──────────────────────────────────────────────────────
@@ -112,6 +114,25 @@ data class GoalCheckInEntity(
     @ColumnInfo(name = "amount")  val amount: Int,
     // An excused day: neither counted as hit nor as missed, and never breaks a streak.
     @ColumnInfo(name = "is_skip", defaultValue = "0") val isSkip: Boolean = false,
+)
+
+// ── Tasbih session entity ───────────────────────────────────────────────────
+
+/**
+ * One resumable counter per free session and per linked goal. [sessionId] is either "free" or
+ * "goal:<id>". Keeping it in Room lets the last tap and a linked goal check-in be atomic.
+ */
+@Entity(tableName = "tasbih_sessions")
+data class TasbihSessionEntity(
+    @PrimaryKey
+    @ColumnInfo(name = "session_id") val sessionId: String,
+    @ColumnInfo(name = "goal_id") val goalId: Long? = null,
+    @ColumnInfo(name = "phrase_id") val phraseId: String = "subhanallah",
+    /** 0 means an open-ended free count. Linked rounds are always 33 or 100. */
+    @ColumnInfo(name = "target") val target: Int = 0,
+    @ColumnInfo(name = "count") val count: Int = 0,
+    @ColumnInfo(name = "is_completed", defaultValue = "0") val isCompleted: Boolean = false,
+    @ColumnInfo(name = "completed_on") val completedOn: LocalDate? = null,
 )
 // ── Mosque entity (Mosque Mode) ───────────────────────────────────────────────
 

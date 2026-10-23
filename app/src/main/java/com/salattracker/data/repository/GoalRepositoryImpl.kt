@@ -40,6 +40,7 @@ class GoalRepositoryImpl @Inject constructor(
         durationDays: Int,
         daysOfWeek: Set<DayOfWeek>,
         endsAfterDuration: Boolean,
+        usesTasbihCounter: Boolean,
     ): Long = goalDao.insertGoal(
         SpiritualGoalEntity(
             name            = name,
@@ -53,6 +54,7 @@ class GoalRepositoryImpl @Inject constructor(
             durationDays    = durationDays,
             daysOfWeek      = daysOfWeek.toDaysMask(),
             endsAfterDuration = endsAfterDuration,
+            usesTasbihCounter = usesTasbihCounter,
         )
     )
 
@@ -104,6 +106,7 @@ class GoalRepositoryImpl @Inject constructor(
         durationDays: Int,
         daysOfWeek: Set<DayOfWeek>,
         endsAfterDuration: Boolean,
+        usesTasbihCounter: Boolean,
     ) {
         val existing = goalDao.getGoal(goalId) ?: return
         goalDao.updateGoal(
@@ -118,6 +121,7 @@ class GoalRepositoryImpl @Inject constructor(
                 durationDays    = durationDays,
                 daysOfWeek      = daysOfWeek.toDaysMask(),
                 endsAfterDuration = endsAfterDuration,
+                usesTasbihCounter = usesTasbihCounter,
             )
         )
     }
@@ -158,6 +162,7 @@ private fun SpiritualGoalEntity.toDomain() = SpiritualGoal(
     isActive        = isActive,
     daysOfWeek      = daysOfWeekFromMask(daysOfWeek),
     endsAfterDuration = endsAfterDuration,
+    usesTasbihCounter = usesTasbihCounter,
 )
 
 private fun GoalCheckInEntity.toDomain() = GoalCheckIn(date = date, amount = amount, isSkip = isSkip)

@@ -68,6 +68,7 @@ class RoomBackupLocalSource @Inject constructor(
                 targetAmount = it.targetAmount, unit = it.unit, reminderEnabled = it.reminderEnabled,
                 reminderTime = it.reminderTime, startDate = it.startDate, durationDays = it.durationDays,
                 isActive = it.isActive, daysOfWeek = it.daysOfWeek, endsAfterDuration = it.endsAfterDuration,
+                usesTasbihCounter = it.usesTasbihCounter,
             )
         }
         val checkIns = backupDao.getAllCheckIns().map {
@@ -100,6 +101,7 @@ class RoomBackupLocalSource @Inject constructor(
             backupDao.clearPrayerEntries(userId)
             backupDao.clearGoals()
             backupDao.clearCheckIns()
+            backupDao.clearLinkedTasbihSessions()
             backupDao.clearStreaks(userId)
             backupDao.clearMosques()
 
@@ -115,6 +117,7 @@ class RoomBackupLocalSource @Inject constructor(
                         targetAmount = it.targetAmount, unit = it.unit, reminderEnabled = it.reminderEnabled,
                         reminderTime = it.reminderTime, startDate = it.startDate, durationDays = it.durationDays,
                         isActive = it.isActive, daysOfWeek = it.daysOfWeek, endsAfterDuration = it.endsAfterDuration,
+                        usesTasbihCounter = it.usesTasbihCounter,
                     )
                 }
             )

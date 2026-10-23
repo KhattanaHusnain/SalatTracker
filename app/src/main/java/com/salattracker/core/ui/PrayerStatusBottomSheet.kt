@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.*
+import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
 import java.time.LocalDate
@@ -59,6 +60,10 @@ fun PrayerStatusBottomSheet(
     onDismiss: () -> Unit,
     onSave: (PrayerStatus) -> Unit,
     isSaving: Boolean = false,
+    /** Narrows the offered statuses: [Gender.FEMALE] hides [PrayerStatus.CONGREGATION], [Gender.MALE]
+     * hides [PrayerStatus.MENSTRUATION]. Null (not asked / predates the preference) hides nothing —
+     * never narrow the choices for an install that hasn't said who they are. */
+    gender: Gender? = null,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var selected by remember(args) { mutableStateOf(args.currentStatus) }
@@ -110,7 +115,7 @@ fun PrayerStatusBottomSheet(
 
             // Status options
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                prayerStatusItems().forEach { item ->
+                prayerStatusItems().filter { it.status.isOfferedFor(gender) }.forEach { item ->
                     StatusOptionRow(
                         item = item,
                         isSelected = selected == item.status,

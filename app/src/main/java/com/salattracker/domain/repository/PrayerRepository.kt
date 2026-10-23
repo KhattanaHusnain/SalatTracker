@@ -42,6 +42,9 @@ interface PrayerRepository {
      * set yet (the (0.0, 0.0) default). */
     suspend fun getPrayerTimes(date: LocalDate): Map<PrayerType, LocalTime>?
 
+    /** Sunrise closes Fajr's valid prayer window; null while location is unavailable. */
+    suspend fun getSunriseTime(date: LocalDate): LocalTime?
+
     // ── Streak ────────────────────────────────────────────────────────────────
 
     /** Independent current/highest streak per prayer type — missing entries default to StreakInfo(0, 0). */

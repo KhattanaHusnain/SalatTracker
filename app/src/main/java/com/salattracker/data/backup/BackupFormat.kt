@@ -55,6 +55,8 @@ data class BackupGoal(
     /** Weekday bitmask for DAILY goals (bit = DayOfWeek.value - 1); 0 = every day. */
     val daysOfWeek: Int = 0,
     val endsAfterDuration: Boolean = false,
+    /** Explicitly allows this goal to receive one check-in for a completed Tasbih round. */
+    val usesTasbihCounter: Boolean = false,
 )
 
 data class BackupCheckIn(
@@ -112,6 +114,7 @@ private data class GoalDto(
     // Added after format v1 shipped; absent in older backups and then default to every-day / ongoing.
     @SerializedName("daysOfWeek") val daysOfWeek: Int?,
     @SerializedName("endsAfterDuration") val endsAfterDuration: Boolean?,
+    @SerializedName("usesTasbihCounter") val usesTasbihCounter: Boolean?,
 )
 
 private data class CheckInDto(
@@ -308,6 +311,7 @@ object BackupCodec {
                 isActive        = it.isActive,
                 daysOfWeek      = it.daysOfWeek,
                 endsAfterDuration = it.endsAfterDuration,
+                usesTasbihCounter = it.usesTasbihCounter,
             )
         },
         checkIns = checkIns.map {
@@ -382,6 +386,7 @@ object BackupCodec {
         isActive        = isActive ?: true,
         daysOfWeek      = daysOfWeek ?: 0,
         endsAfterDuration = endsAfterDuration ?: false,
+        usesTasbihCounter = usesTasbihCounter ?: false,
     )
 
     private fun MosqueDto.toDomain() = Mosque(

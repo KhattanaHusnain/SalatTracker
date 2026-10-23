@@ -15,6 +15,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 fun GoalsEntry(
     onGoalClick: (Long) -> Unit,
     onAddGoalClick: () -> Unit,
+    onTasbihClick: (Long) -> Unit,
     viewModel: GoalsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -28,6 +29,7 @@ fun GoalsEntry(
         onDayLongPress      = viewModel::onDayLongPress,
         onGoalClick         = onGoalClick,
         onAddGoalClick      = onAddGoalClick,
+        onTasbihClick        = onTasbihClick,
         onLogAmountChanged  = viewModel::onLogAmountChanged,
         onLogSkippedChanged = viewModel::onLogSkippedChanged,
         onLogMarkDone       = viewModel::onLogMarkDone,

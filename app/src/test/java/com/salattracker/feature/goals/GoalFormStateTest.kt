@@ -51,4 +51,13 @@ class GoalFormStateTest {
         assertEquals(false, form.reminderEnabled)
         assertEquals("7", form.durationDays)
     }
+
+    @Test
+    fun `Tasbih template explicitly enables its counter`() {
+        val form = GoalFormState().withTemplate(GoalTemplate.TASBIH, "Tasbih")
+
+        assertEquals(GoalCategory.DHIKR, form.category)
+        assertEquals("Time(s)", form.unit)
+        assertTrue(form.usesTasbihCounter)
+    }
 }

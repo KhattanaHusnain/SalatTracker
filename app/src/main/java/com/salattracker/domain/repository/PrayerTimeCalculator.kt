@@ -26,4 +26,13 @@ interface PrayerTimeCalculator {
         prefs: UserPrefs,
         zone: ZoneId = ZoneId.systemDefault(),
     ): Map<PrayerType, LocalTime>?
+
+    /** Sunrise is needed to close Fajr's valid prayer window. */
+    fun calculateSunrise(
+        date: LocalDate,
+        latitude: Double,
+        longitude: Double,
+        prefs: UserPrefs,
+        zone: ZoneId = ZoneId.systemDefault(),
+    ): LocalTime?
 }

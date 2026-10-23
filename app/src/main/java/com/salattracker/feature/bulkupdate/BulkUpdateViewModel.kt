@@ -4,14 +4,19 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.salattracker.R
+import com.salattracker.core.ui.isOfferedFor
+import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.repository.PrayerRepository
+import com.salattracker.domain.repository.SettingsRepository
 import com.salattracker.domain.usecase.isPrayerMarkable
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -41,6 +46,7 @@ data class BulkUpdateUiState(
     val rangeTo: LocalDate = weekStartOf(LocalDate.now()).plusDays(6),
     val selectedPrayers: Set<PrayerType> = PrayerType.values().toSet(),
     val selectedStatus: PrayerStatus = PrayerStatus.CONGREGATION,
+    val gender: Gender? = null,
     val showConfirmDialog: Boolean = false,
     val isApplying: Boolean = false,
     val applySuccess: Boolean = false,
@@ -66,6 +72,7 @@ data class BulkUpdateUiState(
 @HiltViewModel
 class BulkUpdateViewModel @Inject constructor(
     private val prayerRepository: PrayerRepository,
+    private val settingsRepository: SettingsRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -80,6 +87,25 @@ class BulkUpdateViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(BulkUpdateUiState(selectedStatus = initialStatus))
     val uiState: StateFlow<BulkUpdateUiState> = _uiState.asStateFlow()
+
+    init { observeGender() }
+
+    /** [PrayerStatus.isOfferedFor] narrows the chip row by gender — if the currently selected
+     * status (the default, or the Qaza shortcut's preselection) gets hidden by a newly-loaded
+     * gender, fall back to Individual rather than leaving a hidden status silently selected. */
+    private fun observeGender() {
+        viewModelScope.launch {
+            settingsRepository.observeSettings()
+                .map { it.gender }
+                .distinctUntilChanged()
+                .collect { gender ->
+                    _uiState.update { state ->
+                        val status = if (state.selectedStatus.isOfferedFor(gender)) state.selectedStatus else PrayerStatus.INDIVIDUAL
+                        state.copy(gender = gender, selectedStatus = status)
+                    }
+                }
+        }
+    }
 
     fun onDurationChanged(duration: DurationOption) {
         _uiState.update { state ->

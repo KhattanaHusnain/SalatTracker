@@ -203,6 +203,7 @@ fun CalendarScreen(
             isSaving  = uiState.isSaving,
             onDismiss = onStatusSheetDismiss,
             onSave    = onStatusSave,
+            gender    = uiState.gender,
         )
     }
 }

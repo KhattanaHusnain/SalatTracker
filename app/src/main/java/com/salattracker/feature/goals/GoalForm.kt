@@ -50,6 +50,7 @@ enum class GoalTemplate(
     AL_KAHF_FRIDAY(R.string.template_al_kahf, GoalCategory.QURAN, GoalFrequency.DAILY, 1, "Time(s)", setOf(DayOfWeek.FRIDAY)),
     TAHAJJUD(R.string.template_tahajjud, GoalCategory.SALAT, GoalFrequency.DAILY, 1, "Time(s)"),
     WEEKLY_SADAQAH(R.string.template_sadaqah, GoalCategory.CHARITY, GoalFrequency.WEEKLY, 1, "Time(s)"),
+    TASBIH(R.string.template_tasbih, GoalCategory.DHIKR, GoalFrequency.DAILY, 1, "Time(s)"),
 }
 
 data class GoalFormState(
@@ -64,6 +65,7 @@ data class GoalFormState(
     val daysOfWeek: Set<DayOfWeek> = emptySet(),
     val endsAfterDuration: Boolean = false,
     val durationDays: String = "30",
+    val usesTasbihCounter: Boolean = false,
 ) {
     val amount: Int get() = targetAmount.toIntOrNull()?.takeIf { it > 0 } ?: 1
     val duration: Int get() = durationDays.toIntOrNull()?.takeIf { it > 0 } ?: 30
@@ -78,6 +80,7 @@ data class GoalFormState(
     fun withTemplate(template: GoalTemplate, localizedName: String) = copy(
         name = localizedName, category = template.category, frequency = template.frequency,
         targetAmount = template.target.toString(), unit = template.unit, daysOfWeek = template.days,
+        usesTasbihCounter = template == GoalTemplate.TASBIH,
     )
 }
 
@@ -94,6 +97,7 @@ data class GoalFormActions(
     val onReminderTimeChanged: (LocalTime) -> Unit,
     val onEndsAfterChanged: (Boolean) -> Unit,
     val onDurationDaysChanged: (String) -> Unit,
+    val onUsesTasbihCounterChanged: (Boolean) -> Unit,
     val onTemplateSelected: ((GoalTemplate, String) -> Unit)? = null,
 )
 
@@ -192,6 +196,28 @@ fun GoalFormFields(form: GoalFormState, actions: GoalFormActions) {
                 onDayToggled = actions.onDayToggled,
                 onEveryDaySelected = actions.onEveryDaySelected,
             )
+        }
+    }
+
+    if (form.category == GoalCategory.DHIKR && form.unit == "Time(s)") {
+        FormCard {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text(stringResource(R.string.tasbih_goal_switch), color = SalatOnSurface, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
+                    Spacer(Modifier.height(3.dp))
+                    Text(stringResource(R.string.tasbih_goal_switch_desc), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
+                }
+                Spacer(Modifier.width(12.dp))
+                Switch(
+                    checked = form.usesTasbihCounter,
+                    onCheckedChange = actions.onUsesTasbihCounterChanged,
+                    colors = SwitchDefaults.colors(checkedThumbColor = SalatOnPrimary, checkedTrackColor = SalatPrimary),
+                )
+            }
         }
     }
 

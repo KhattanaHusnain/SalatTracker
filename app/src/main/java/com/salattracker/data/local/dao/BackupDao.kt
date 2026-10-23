@@ -56,6 +56,10 @@ interface BackupDao {
     @Query("DELETE FROM goal_check_ins")
     suspend fun clearCheckIns()
 
+    /** Counter sessions are intentionally device-local; restore only removes sessions linked to replaced goals. */
+    @Query("DELETE FROM tasbih_sessions WHERE goal_id IS NOT NULL")
+    suspend fun clearLinkedTasbihSessions()
+
     @Query("DELETE FROM streak_snapshots WHERE user_id = :userId")
     suspend fun clearStreaks(userId: String)
 

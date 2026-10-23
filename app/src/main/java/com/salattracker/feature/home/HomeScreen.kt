@@ -118,6 +118,7 @@ fun HomeScreen(
             isSaving  = uiState.isSaving,
             onDismiss = onSheetDismiss,
             onSave    = onStatusSave,
+            gender    = uiState.gender,
         )
     }
 }

@@ -23,6 +23,7 @@ interface GoalRepository {
         durationDays: Int,
         daysOfWeek: Set<DayOfWeek> = emptySet(),
         endsAfterDuration: Boolean = false,
+        usesTasbihCounter: Boolean = false,
     ): Long
 
     /** Adds a check-in of [amount] (default 1) to [goalId] on [date] (default today). */
@@ -55,6 +56,7 @@ interface GoalRepository {
         durationDays: Int,
         daysOfWeek: Set<DayOfWeek> = emptySet(),
         endsAfterDuration: Boolean = false,
+        usesTasbihCounter: Boolean = false,
     )
 
     /** Removes the goal and all of its check-in history. */

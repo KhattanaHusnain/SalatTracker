@@ -301,6 +301,7 @@
     <string name="settings_edit_location_use_my_location">استخدام موقعي</string>
     <string name="settings_edit_location_search_city">ابحث عن مدينة بدلاً من ذلك</string>
     <string name="settings_edit_location_no_fix">تعذّر تحديد موقعك. تحقّق من تفعيل خدمات الموقع.</string>
+    <string name="settings_about_you_section">عنك</string>
     <string name="settings_calc_method">طريقة الحساب</string>
     <string name="settings_calculation_method_sheet_title">طريقة الحساب</string>
     <string name="settings_school">المذهب الفقهي</string>
@@ -644,4 +645,34 @@
     <string name="developer_contribute_button">تواصل معنا</string>
     <string name="developer_contribute_email_subject">المساهمة — Salah Tracker</string>
     <string name="developer_contribute_email_body">مرحباً، أرغب في المساهمة في Salah Tracker. فيما يلي نبذة عما أرغب في المساعدة فيه:</string>
+    <!-- Tasbih -->
+    <string name="tasbih_title">تسبيح</string>
+    <string name="template_tasbih">تسبيح</string>
+    <string name="tasbih_goal_switch">استخدام عدّاد التسبيح</string>
+    <string name="tasbih_goal_switch_desc">عند إكمال 33 أو 100 تسبيحة، سيتم تسجيل إنجاز واحد لهذا الهدف.</string>
+    <string name="tasbih_count_dhikr">عدّ الذكر</string>
+    <string name="tasbih_counting_for">العدّ لـ %1$s</string>
+    <string name="tasbih_free_count">عدّ حر</string>
+    <string name="tasbih_open_target">بلا هدف</string>
+    <string name="tasbih_of_target">من %1$d</string>
+    <string name="tasbih_tap_to_count">اضغط للعدّ</string>
+    <string name="tasbih_round_complete">اكتملت الجولة</string>
+    <string name="tasbih_completed">اكتملت جولة التسبيح.</string>
+    <string name="tasbih_goal_credited">اكتملت جولة التسبيح وأُضيف تسجيل واحد إلى هذا الهدف.</string>
+    <string name="tasbih_goal_not_credited">اكتملت الجولة، لكن الهدف لم يعد نشطاً أو مستحقاً اليوم، لذلك لم يُضف تسجيل.</string>
+    <string name="tasbih_new_round">جولة جديدة</string>
+    <string name="tasbih_undo">تراجع</string>
+    <string name="tasbih_reset">إعادة تعيين</string>
+    <string name="tasbih_phrase">صيغة الذكر</string>
+    <string name="tasbih_target">هدف الجولة</string>
+    <string name="tasbih_choose_phrase">اختر ذكراً</string>
+    <string name="tasbih_change_title">بدء جولة جديدة؟</string>
+    <string name="tasbih_change_desc">تغيير الذكر أو الهدف يمسح عدّ هذه الجولة.</string>
+    <string name="tasbih_reset_title">إعادة تعيين الجولة؟</string>
+    <string name="tasbih_reset_desc">سيؤدي هذا إلى مسح العدّ الحالي. تبقى الجولة المكتملة مسجلة.</string>
+    <string name="tasbih_phrase_subhanallah">سبحان الله</string>
+    <string name="tasbih_phrase_alhamdulillah">الحمد لله</string>
+    <string name="tasbih_phrase_allahu_akbar">الله أكبر</string>
+    <string name="tasbih_phrase_tahlil">لا إله إلا الله</string>
+    <string name="tasbih_phrase_astaghfirullah">أستغفر الله</string>
 </resources>

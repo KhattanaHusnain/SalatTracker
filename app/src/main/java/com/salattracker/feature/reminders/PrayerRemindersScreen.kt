@@ -6,6 +6,7 @@ import android.media.MediaPlayer
 import android.media.Ringtone
 import android.media.RingtoneManager
 import android.net.Uri
+import android.os.Build
 import android.provider.Settings
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
@@ -34,6 +35,7 @@ import androidx.compose.ui.window.Dialog
 import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.core.ui.label
+import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.repository.DEVICE_DEFAULT_SOUND_URI
@@ -58,6 +60,9 @@ fun PrayerRemindersScreen(
     onJumuahEnabledChanged: (Boolean) -> Unit,
     onJumuahReminderLeadChanged: (Int) -> Unit,
 ) {
+    val context = LocalContext.current
+    val exactAlarmsUnavailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+        !context.getSystemService(android.app.AlarmManager::class.java).canScheduleExactAlarms()
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -66,6 +71,19 @@ fun PrayerRemindersScreen(
             .padding(top = 4.dp, bottom = 32.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        if (exactAlarmsUnavailable) {
+            Text(
+                text = stringResource(R.string.reminders_exact_alarm_unavailable),
+                color = SalatOnSurfaceVariant,
+                fontSize = 13.sp,
+                fontFamily = AppUiFontFamily,
+            )
+            TextButton(onClick = {
+                context.startActivity(android.content.Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM))
+            }) {
+                Text(stringResource(R.string.reminders_exact_alarm_fix))
+            }
+        }
         uiState.reminders.forEach { setting ->
             ReminderCard(
                 setting                  = setting,
@@ -82,7 +100,9 @@ fun PrayerRemindersScreen(
             )
         }
 
-        JumuahCard(
+        // Women aren't obliged to attend Jumu'ah, so the whole card is hidden rather than just
+        // togglable — matching how the status-picker screens hide Congregation/Menstruation.
+        if (uiState.gender != Gender.FEMALE) JumuahCard(
             enabled         = uiState.jumuahEnabled,
             leadMinutes     = uiState.jumuahReminderLeadMinutes,
             onEnabledChanged = onJumuahEnabledChanged,
@@ -105,6 +125,9 @@ private fun ReminderCard(
     onSoundSelected: (String?) -> Unit,
     onChooseFromDevice: () -> Unit,
 ) {
+    val context = LocalContext.current
+    val fullScreenUnavailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE &&
+        !context.getSystemService(android.app.NotificationManager::class.java).canUseFullScreenIntent()
     Surface(
         modifier        = Modifier.fillMaxWidth(),
         shape           = RoundedCornerShape(16.dp),
@@ -180,6 +203,19 @@ private fun ReminderCard(
                         checked = setting.fullScreenAlert,
                         onChanged = onFullScreenAlertChanged,
                     )
+                    if (setting.fullScreenAlert && fullScreenUnavailable) {
+                        Text(
+                            text = stringResource(R.string.reminders_full_screen_unavailable),
+                            color = SalatOnSurfaceVariant,
+                            fontSize = 12.sp,
+                            fontFamily = AppUiFontFamily,
+                        )
+                        TextButton(onClick = {
+                            context.startActivity(android.content.Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT))
+                        }) {
+                            Text(stringResource(R.string.reminders_full_screen_fix))
+                        }
+                    }
 
                     SwitchDetailRow(
                         label   = stringResource(R.string.reminders_vibration),
