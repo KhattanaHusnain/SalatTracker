@@ -60,6 +60,7 @@ fun PrayerRemindersScreen(
     val context = LocalContext.current
     val exactAlarmsUnavailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
         !context.getSystemService(android.app.AlarmManager::class.java).canScheduleExactAlarms()
+    val notificationsUnavailable = !androidx.core.app.NotificationManagerCompat.from(context).areNotificationsEnabled()
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -79,6 +80,21 @@ fun PrayerRemindersScreen(
                 context.startActivity(android.content.Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM))
             }) {
                 Text(stringResource(R.string.reminders_exact_alarm_fix))
+            }
+        }
+        if (notificationsUnavailable) {
+            Text(
+                text = stringResource(R.string.reminders_notifications_blocked),
+                color = SalatOnSurfaceVariant,
+                fontSize = 13.sp,
+                fontFamily = AppUiFontFamily,
+            )
+            TextButton(onClick = {
+                context.startActivity(android.content.Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                    putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                })
+            }) {
+                Text(stringResource(R.string.reminders_notifications_fix))
             }
         }
         uiState.reminders.forEach { setting ->

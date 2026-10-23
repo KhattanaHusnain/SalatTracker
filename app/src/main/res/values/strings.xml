@@ -339,6 +339,8 @@
     <string name="reminders_full_screen_fix">Allow full-screen alerts</string>
     <string name="reminders_exact_alarm_unavailable">Exact alarms are disabled, so reminders may be late.</string>
     <string name="reminders_exact_alarm_fix">Allow exact alarms</string>
+    <string name="reminders_notifications_blocked">Notifications are off, so prayer reminders will not appear.</string>
+    <string name="reminders_notifications_fix">Turn on notifications</string>
     <string name="reminders_vibration">Vibration</string>
     <string name="reminders_jumuah_title">Jumu\'ah on Fridays</string>
     <string name="reminders_jumuah_desc">Label Friday Dhuhr as Jumu\'ah across the app.</string>

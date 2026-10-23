@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="reminders_notifications_blocked">Les notifications sont désactivées : les rappels de prière n’apparaîtront pas.</string>
+    <string name="reminders_notifications_fix">Activer les notifications</string>
     <string name="error_load_generic">Impossible de charger les données. Réessayez.</string>
     <string name="error_save_generic">Impossible d’enregistrer vos modifications. Réessayez.</string>
     <string name="app_name">Salah Tracker</string>
