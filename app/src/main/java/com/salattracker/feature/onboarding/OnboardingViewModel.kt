@@ -18,8 +18,7 @@ import com.salattracker.domain.repository.SettingsRepository
 import com.salattracker.domain.usecase.isPrayerMarkable
 import com.salattracker.notification.PrayerReminderWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import com.salattracker.core.util.DebouncedCitySearch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -118,7 +117,12 @@ class OnboardingViewModel @Inject constructor(
      * depending on which one led here, rather than a fixed previous-enum-value. */
     private val backStack = mutableListOf<OnboardingStep>()
 
-    private var citySearchJob: Job? = null
+    private val citySearch = DebouncedCitySearch(
+        scope = viewModelScope,
+        repository = geocodingRepository,
+        onSearching = { searching -> _uiState.update { it.copy(isSearchingCity = searching) } },
+        onResults = { results -> _uiState.update { it.copy(cityResults = results) } },
+    )
 
     init { observeDeviceLocation() }
 
@@ -200,17 +204,7 @@ class OnboardingViewModel @Inject constructor(
 
     fun onCityQueryChanged(query: String) {
         _uiState.update { it.copy(cityQuery = query) }
-        citySearchJob?.cancel()
-        if (query.isBlank()) {
-            _uiState.update { it.copy(cityResults = emptyList(), isSearchingCity = false) }
-            return
-        }
-        citySearchJob = viewModelScope.launch {
-            _uiState.update { it.copy(isSearchingCity = true) }
-            delay(CITY_SEARCH_DEBOUNCE_MILLIS)
-            val results = runCatching { geocodingRepository.searchCities(query) }.getOrDefault(emptyList())
-            _uiState.update { it.copy(cityResults = results, isSearchingCity = false) }
-        }
+        citySearch.search(query)
     }
 
     fun onCitySelected(city: CityResult) = _uiState.update { it.copy(confirmedCity = city, isFromDeviceLocation = false) }
@@ -303,7 +297,4 @@ class OnboardingViewModel @Inject constructor(
         }
     }
 
-    companion object {
-        private const val CITY_SEARCH_DEBOUNCE_MILLIS = 350L
-    }
 }

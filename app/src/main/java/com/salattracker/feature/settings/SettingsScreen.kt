@@ -21,6 +21,7 @@ import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.core.ui.SettingsCard
 import com.salattracker.core.ui.SettingsSectionLabel
+import com.salattracker.core.ui.CalculationMethodSheet
 import com.salattracker.core.ui.label
 import com.salattracker.core.ui.salatSwitchColors
 import com.salattracker.domain.model.AppLanguage

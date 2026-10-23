@@ -8,8 +8,7 @@ import com.salattracker.domain.repository.LocationProvider
 import com.salattracker.domain.repository.PrayerReminderRescheduler
 import com.salattracker.domain.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import com.salattracker.core.util.DebouncedCitySearch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -53,7 +52,12 @@ class EditCoordinatesViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(EditCoordinatesUiState())
     val uiState: StateFlow<EditCoordinatesUiState> = _uiState.asStateFlow()
 
-    private var citySearchJob: Job? = null
+    private val citySearch = DebouncedCitySearch(
+        scope = viewModelScope,
+        repository = geocodingRepository,
+        onSearching = { searching -> _uiState.update { it.copy(isSearchingCity = searching) } },
+        onResults = { results -> _uiState.update { it.copy(cityResults = results) } },
+    )
 
     init {
         viewModelScope.launch {
@@ -102,17 +106,7 @@ class EditCoordinatesViewModel @Inject constructor(
 
     fun onCityQueryChanged(query: String) {
         _uiState.update { it.copy(cityQuery = query) }
-        citySearchJob?.cancel()
-        if (query.isBlank()) {
-            _uiState.update { it.copy(cityResults = emptyList(), isSearchingCity = false) }
-            return
-        }
-        citySearchJob = viewModelScope.launch {
-            _uiState.update { it.copy(isSearchingCity = true) }
-            delay(CITY_SEARCH_DEBOUNCE_MILLIS)
-            val results = runCatching { geocodingRepository.searchCities(query) }.getOrDefault(emptyList())
-            _uiState.update { it.copy(cityResults = results, isSearchingCity = false) }
-        }
+        citySearch.search(query)
     }
 
     fun onCitySelected(city: CityResult) {
@@ -127,7 +121,4 @@ class EditCoordinatesViewModel @Inject constructor(
 
     fun clearError() = _uiState.update { it.copy(errorRes = null) }
 
-    companion object {
-        private const val CITY_SEARCH_DEBOUNCE_MILLIS = 350L
-    }
 }

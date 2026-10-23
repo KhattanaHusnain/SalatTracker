@@ -1,8 +1,6 @@
 package com.salattracker.feature.reminders
 
-import android.media.AudioAttributes
 import android.media.AudioManager
-import android.media.MediaPlayer
 import android.media.Ringtone
 import android.media.RingtoneManager
 import android.net.Uri
@@ -36,6 +34,7 @@ import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.core.ui.label
 import com.salattracker.core.ui.salatSwitchColors
+import com.salattracker.core.ui.rememberAzanPreviewPlayer
 import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerType
@@ -531,7 +530,7 @@ private fun SoundChooserDialog(
 ) {
     val context = LocalContext.current
     var activeRingtone by remember { mutableStateOf<Ringtone?>(null) }
-    var activePlayer by remember { mutableStateOf<MediaPlayer?>(null) }
+    val azanPreviewPlayer = rememberAzanPreviewPlayer(R.raw.azan)
     // Informational only — the saved choice (e.g. Azan) is never overwritten by the device's
     // current ringer state. Checked once per dialog open rather than observed live; flipping
     // the ringer mode while this exact dialog instance is already open won't update it.
@@ -542,9 +541,7 @@ private fun SoundChooserDialog(
     fun stopPreviews() {
         runCatching { activeRingtone?.stop() }
         activeRingtone = null
-        runCatching { activePlayer?.stop() }
-        runCatching { activePlayer?.release() }
-        activePlayer = null
+        azanPreviewPlayer.stop()
     }
 
     // Device Default goes through RingtoneManager/Ringtone — the right abstraction for a
@@ -561,19 +558,7 @@ private fun SoundChooserDialog(
 
     fun previewAzan() {
         stopPreviews()
-        // Explicit notification-usage attributes, matching PrayerReminderChannels' own channel
-        // sound exactly — without this, MediaPlayer defaults to the media/music stream, which
-        // (by design, so music keeps playing when you silence your phone) ignores ringer mode
-        // entirely. The real notification sound already respects silent mode for free via the
-        // channel's own AudioAttributes; the preview button needs the same ones to match it.
-        val attributes = AudioAttributes.Builder()
-            .setUsage(AudioAttributes.USAGE_NOTIFICATION)
-            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-            .build()
-        val player = MediaPlayer.create(context, R.raw.azan, attributes, AudioManager.AUDIO_SESSION_ID_GENERATE) ?: return
-        player.setOnCompletionListener { mp -> runCatching { mp.release() } }
-        activePlayer = player
-        player.start()
+        azanPreviewPlayer.play()
     }
 
     // A preview must never keep playing after the dialog closes, by any route — a choice

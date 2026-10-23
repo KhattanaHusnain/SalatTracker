@@ -21,64 +21,6 @@ import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.domain.model.CalculationMethod
 
-// ── Calculation-method picker ──────────────────────────────────────────────────
-// A dropdown doesn't scale to 23 entries — a bottom sheet with a scrollable list does, and
-// matches the checkmark-on-selected convention already used by PrayerStatusBottomSheet.
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun CalculationMethodSheet(
-    selected: CalculationMethod,
-    onSelect: (CalculationMethod) -> Unit,
-    onDismiss: () -> Unit,
-) {
-    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = SalatSurfaceContainerLowest) {
-        Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(bottom = 12.dp)) {
-            Text(
-                stringResource(R.string.settings_calculation_method_sheet_title),
-                color = SalatPrimary, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily,
-            )
-            Spacer(Modifier.height(12.dp))
-            LazyColumn(
-                modifier = Modifier.heightIn(max = 420.dp),
-                verticalArrangement = Arrangement.spacedBy(2.dp),
-            ) {
-                items(CalculationMethod.values()) { method ->
-                    CalculationMethodRow(
-                        method = method,
-                        isSelected = method == selected,
-                        onClick = { onSelect(method) },
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun CalculationMethodRow(method: CalculationMethod, isSelected: Boolean, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = method.displayName,
-            modifier = Modifier.weight(1f),
-            color = if (isSelected) SalatPrimary else SalatOnSurface,
-            fontSize = 14.sp,
-            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-            fontFamily = AppUiFontFamily,
-        )
-        if (isSelected) {
-            Icon(painterResource(R.drawable.ic_check_circle_filled), null, tint = SalatPrimary, modifier = Modifier.size(20.dp))
-        }
-    }
-}
-
 // ── Navigation row (Prayer Reminders / Backup & Restore) ──────────────────────
 
 @Composable

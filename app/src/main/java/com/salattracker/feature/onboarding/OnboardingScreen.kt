@@ -1,8 +1,5 @@
 package com.salattracker.feature.onboarding
 
-import android.media.AudioAttributes
-import android.media.AudioManager
-import android.media.MediaPlayer
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -43,7 +40,8 @@ import com.salattracker.core.ui.DatePickerModal
 import com.salattracker.core.ui.fullLabel
 import com.salattracker.core.ui.salatSwitchColors
 import com.salattracker.core.ui.SalatPrimaryButton
-import com.salattracker.feature.settings.CalculationMethodSheet
+import com.salattracker.core.ui.rememberAzanPreviewPlayer
+import com.salattracker.core.ui.CalculationMethodSheet
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -433,16 +431,7 @@ private fun RemindersStep(
  * like (and still respects ringer mode) rather than defaulting to the media/music stream. */
 @Composable
 private fun AzanPreviewRow() {
-    val context = LocalContext.current
-    var activePlayer by remember { mutableStateOf<MediaPlayer?>(null) }
-
-    fun stopPreview() {
-        runCatching { activePlayer?.stop() }
-        runCatching { activePlayer?.release() }
-        activePlayer = null
-    }
-
-    DisposableEffect(Unit) { onDispose { stopPreview() } }
+    val previewPlayer = rememberAzanPreviewPlayer(R.raw.azan)
 
     Surface(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp), color = SalatSurfaceContainerLow) {
         Row(
@@ -460,15 +449,7 @@ private fun AzanPreviewRow() {
                 Text(stringResource(R.string.reminders_sound_azan), color = SalatOnSurface, fontSize = 15.sp, fontWeight = FontWeight.Medium, fontFamily = AppUiFontFamily)
             }
             TextButton(onClick = {
-                stopPreview()
-                val attributes = AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_NOTIFICATION)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                    .build()
-                val player = MediaPlayer.create(context, R.raw.azan, attributes, AudioManager.AUDIO_SESSION_ID_GENERATE)
-                player?.setOnCompletionListener { mp -> runCatching { mp.release() } }
-                activePlayer = player
-                player?.start()
+                previewPlayer.play()
             }) {
                 Text(stringResource(R.string.reminders_sound_preview), color = SalatPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
             }
