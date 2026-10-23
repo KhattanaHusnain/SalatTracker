@@ -47,6 +47,7 @@
     <string name="quran_clear_history">Clear history</string>
     <string name="topbar_quran_read_history">Reading History</string>
     <string name="quran_tab_surah">Surah</string>
+    <string name="quran_preparing">Preparing the Quran…</string>
     <string name="quran_tab_juz">Juz</string>
     <string name="quran_juz_label">Juz %1$d</string>
     <string name="quran_juz_starts_at">Starts at %1$s, verse %2$d</string>

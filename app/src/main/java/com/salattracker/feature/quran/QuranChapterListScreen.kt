@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
@@ -68,6 +69,17 @@ fun QuranChapterListScreen(
 
     Column(modifier = Modifier.fillMaxSize()) {
         BrowseTabRow(selected = uiState.selectedTab, onTabSelected = onTabSelected)
+
+        if (uiState.isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    CircularProgressIndicator(color = SalatPrimary)
+                    Spacer(Modifier.height(16.dp))
+                    Text(stringResource(R.string.quran_preparing), color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = AppUiFontFamily)
+                }
+            }
+            return@Column
+        }
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),

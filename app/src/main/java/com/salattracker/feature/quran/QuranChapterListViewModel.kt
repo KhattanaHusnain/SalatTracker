@@ -47,7 +47,7 @@ class QuranChapterListViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             contentRepository.observeChapters().collect { chapters ->
-                _uiState.update { it.copy(isLoading = false, chapters = chapters) }
+                _uiState.update { it.copy(isLoading = chapters.isEmpty(), chapters = chapters) }
             }
         }
         viewModelScope.launch {
