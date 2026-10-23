@@ -25,7 +25,7 @@ data class EditGoalUiState(
     val form: GoalFormState = GoalFormState(),
     val isSaving: Boolean = false,
     val saveSuccess: Boolean = false,
-    val error: String? = null,
+    val errorRes: Int? = null,
 )
 
 @HiltViewModel
@@ -121,12 +121,12 @@ class EditGoalViewModel @Inject constructor(
                 reminderScheduler.rescheduleAll()
                 // isSaving stays true (button stays disabled) until the success snackbar's OK closes the screen.
                 _uiState.update { it.copy(saveSuccess = true) }
-            }.onFailure { e ->
-                _uiState.update { it.copy(isSaving = false, error = e.message) }
+            }.onFailure {
+                _uiState.update { it.copy(isSaving = false, errorRes = R.string.error_save_generic) }
             }
         }
     }
 
-    fun clearError() = _uiState.update { it.copy(error = null) }
+    fun clearError() = _uiState.update { it.copy(errorRes = null) }
     fun clearSaveSuccess() = _uiState.update { it.copy(isSaving = false, saveSuccess = false) }
 }

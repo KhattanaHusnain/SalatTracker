@@ -74,13 +74,13 @@ fun AddGoalScreen(
             }
         }
 
-        uiState.error?.let { msg ->
+        uiState.errorRes?.let { errorRes ->
             Snackbar(
                 modifier       = Modifier.align(Alignment.BottomCenter).padding(bottom = 90.dp, start = 16.dp, end = 16.dp),
                 action         = { TextButton(onClick = onErrorDismiss) { Text(stringResource(R.string.action_ok), color = SalatPrimaryFixed) } },
                 containerColor = SalatInverseSurface,
                 contentColor   = SalatInverseOnSurface,
-            ) { Text(msg, fontFamily = AppUiFontFamily) }
+            ) { Text(stringResource(errorRes), fontFamily = AppUiFontFamily) }
         }
         if (uiState.saveSuccess) {
             Snackbar(

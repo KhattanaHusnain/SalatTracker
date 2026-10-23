@@ -2,6 +2,7 @@ package com.salattracker.feature.goals
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.salattracker.R
 import com.salattracker.domain.model.GoalFrequency
 import com.salattracker.domain.model.GoalHistory
 import com.salattracker.domain.model.SpiritualGoal
@@ -59,7 +60,7 @@ data class GoalsUiState(
     val active: List<GoalCardUi> = emptyList(),
     val archived: List<ArchivedGoalUi> = emptyList(),
     val logSheet: LogSheetUi? = null,
-    val error: String? = null,
+    val errorRes: Int? = null,
 ) {
     val hasAnyGoals: Boolean get() = active.isNotEmpty() || archived.isNotEmpty()
 }
@@ -135,7 +136,7 @@ class GoalsViewModel @Inject constructor(
     private fun observeGoals() {
         viewModelScope.launch {
             combine(goalRepository.observeGoalHistories(), refreshTrigger) { h, _ -> h to LocalDate.now() }
-                .catch { e -> _uiState.update { it.copy(isLoading = false, error = e.message) } }
+                .catch { _ -> _uiState.update { it.copy(isLoading = false, errorRes = R.string.error_load_generic) } }
                 .collect { (h, today) ->
                     histories = h
                     val (summary, active, archived) = buildGoalsContent(h, today)
@@ -164,7 +165,7 @@ class GoalsViewModel @Inject constructor(
                 } else {
                     viewModelScope.launch {
                         runCatching { goalRepository.checkIn(goalId, 1, date) }
-                            .onFailure { e -> _uiState.update { it.copy(error = e.message) } }
+                            .onFailure { _ -> _uiState.update { it.copy(errorRes = R.string.error_save_generic) } }
                     }
                 }
             }
@@ -213,9 +214,9 @@ class GoalsViewModel @Inject constructor(
     private fun save(goalId: Long, date: LocalDate, amount: Int, skipped: Boolean) {
         viewModelScope.launch {
             runCatching { goalRepository.setDayLog(goalId, date, amount, skipped) }
-                .onFailure { e -> _uiState.update { it.copy(error = e.message) } }
+                .onFailure { _ -> _uiState.update { it.copy(errorRes = R.string.error_save_generic) } }
         }
     }
 
-    fun clearError() = _uiState.update { it.copy(error = null) }
+    fun clearError() = _uiState.update { it.copy(errorRes = null) }
 }

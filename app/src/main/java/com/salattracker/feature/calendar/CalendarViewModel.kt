@@ -2,6 +2,7 @@ package com.salattracker.feature.calendar
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.salattracker.R
 import com.salattracker.core.ui.PrayerStatusSheetArgs
 import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.PrayerStatus
@@ -40,7 +41,7 @@ data class CalendarUiState(
      * leaving Calendar entirely; cleared by returning, or by any explicit view switch. */
     val cameFromYear: Int? = null,
     val isSaving: Boolean = false,
-    val error: String? = null,
+    val errorRes: Int? = null,
     val verse: VerseInfo? = null,
     val gender: Gender? = null,
 ) {
@@ -93,7 +94,7 @@ class CalendarViewModel @Inject constructor(
                 .distinctUntilChanged()
                 .flatMapLatest { (from, to) -> prayerRepository.observeMonthEntries(from, to) }
                 .onStart { _uiState.update { it.copy(isLoadingMarks = true) } }
-                .catch { e -> _uiState.update { it.copy(isLoadingMarks = false, error = e.message) } }
+                .catch { _ -> _uiState.update { it.copy(isLoadingMarks = false, errorRes = R.string.error_load_generic) } }
                 .collect { entriesByDate ->
                     val marks = entriesByDate.mapValues { (_, entries) ->
                         entries.associate { it.prayerType to it.status }
@@ -183,11 +184,11 @@ class CalendarViewModel @Inject constructor(
             }.onSuccess {
                 if (args.date == LocalDate.now()) reminderNotifications.dismiss(args.prayerType)
                 _uiState.update { it.copy(isSaving = false, statusSheet = null) }
-            }.onFailure { e ->
-                _uiState.update { it.copy(isSaving = false, error = e.message) }
+            }.onFailure {
+                _uiState.update { it.copy(isSaving = false, errorRes = R.string.error_save_generic) }
             }
         }
     }
 
-    fun clearError() = _uiState.update { it.copy(error = null) }
+    fun clearError() = _uiState.update { it.copy(errorRes = null) }
 }

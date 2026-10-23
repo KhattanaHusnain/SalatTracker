@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="error_load_generic">ڈیٹا لوڈ نہیں ہو سکا۔ دوبارہ کوشش کریں۔</string>
+    <string name="error_save_generic">تبدیلیاں محفوظ نہیں ہو سکیں۔ دوبارہ کوشش کریں۔</string>
     <string name="app_name">Salah Tracker</string>
 
     <string name="nav_home">ہوم</string>

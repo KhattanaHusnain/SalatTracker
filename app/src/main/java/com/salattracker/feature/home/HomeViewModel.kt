@@ -3,6 +3,7 @@ package com.salattracker.feature.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
+import com.salattracker.R
 import com.salattracker.core.ui.PrayerStatusSheetArgs
 import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.Madhab
@@ -50,7 +51,7 @@ data class HomeUiState(
     val verse: VerseInfo? = null,
     val sheetArgs: PrayerStatusSheetArgs? = null,   // null = sheet hidden
     val isSaving: Boolean = false,
-    val error: String? = null,
+    val errorRes: Int? = null,
 )
 
 data class PrayerEntryUi(
@@ -122,7 +123,7 @@ class HomeViewModel @Inject constructor(
                     ) { entries, prefs, now -> buildTodaySnapshot(date, entries, prefs, now) }
                 }
                 .onStart { _uiState.update { it.copy(isLoading = true) } }
-                .catch { e -> _uiState.update { it.copy(isLoading = false, error = e.message) } }
+                .catch { _ -> _uiState.update { it.copy(isLoading = false, errorRes = R.string.error_load_generic) } }
                 .collect { snapshot ->
                     _uiState.update {
                         it.copy(
@@ -241,11 +242,11 @@ class HomeViewModel @Inject constructor(
                 // Streak tiles refresh on their own — loadStreak()'s Flow collector
                 // re-emits automatically once upsertPrayerStatus's write commits.
                 _uiState.update { it.copy(isSaving = false, sheetArgs = null) }
-            }.onFailure { e ->
-                _uiState.update { it.copy(isSaving = false, error = e.message) }
+            }.onFailure {
+                _uiState.update { it.copy(isSaving = false, errorRes = R.string.error_save_generic) }
             }
         }
     }
 
-    fun clearError() = _uiState.update { it.copy(error = null) }
+    fun clearError() = _uiState.update { it.copy(errorRes = null) }
 }

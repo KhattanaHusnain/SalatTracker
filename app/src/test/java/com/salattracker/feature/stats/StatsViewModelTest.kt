@@ -87,6 +87,6 @@ class StatsViewModelTest {
     fun `clearError resets the error`() = runTest {
         viewModel = createViewModel()
         viewModel.clearError()
-        assertEquals(null, viewModel.uiState.value.error)
+        assertEquals(null, viewModel.uiState.value.errorRes)
     }
 }

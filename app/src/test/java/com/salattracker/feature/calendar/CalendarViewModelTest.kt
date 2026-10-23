@@ -180,8 +180,8 @@ class CalendarViewModelTest {
     @Test
     fun `clearError resets the error`() = runTest {
         viewModel = createViewModel()
-        assertNull(viewModel.uiState.value.error)
+        assertNull(viewModel.uiState.value.errorRes)
         viewModel.clearError()
-        assertNull(viewModel.uiState.value.error)
+        assertNull(viewModel.uiState.value.errorRes)
     }
 }

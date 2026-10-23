@@ -2,6 +2,7 @@ package com.salattracker.feature.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.salattracker.R
 import com.salattracker.domain.model.AppLanguage
 import com.salattracker.domain.model.CalculationMethod
 import com.salattracker.domain.model.Gender
@@ -38,7 +39,7 @@ data class SettingsUiState(
      * You card shows no selection in that case rather than defaulting to one. */
     val gender: Gender? = null,
     val showCalculationMethodSheet: Boolean = false,
-    val error: String? = null,
+    val errorRes: Int? = null,
 )
 
 /**
@@ -65,7 +66,7 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             settingsRepository.observeSettings()
                 .onStart { _uiState.update { it.copy(isLoading = true) } }
-                .catch   { e -> _uiState.update { it.copy(isLoading = false, error = e.message) } }
+                .catch   { _ -> _uiState.update { it.copy(isLoading = false, errorRes = R.string.error_load_generic) } }
                 .collect { prefs ->
                     _uiState.update {
                         it.copy(
@@ -108,7 +109,7 @@ class SettingsViewModel @Inject constructor(
                 settingsRepository.setLocationLabel(null)
             }.onSuccess {
                 prayerReminderRescheduler.rescheduleAll()
-            }.onFailure { e -> _uiState.update { it.copy(error = e.message) } }
+            }.onFailure { _ -> _uiState.update { it.copy(errorRes = R.string.error_save_generic) } }
         }
     }
 
@@ -149,7 +150,7 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             runCatching { settingsRepository.setLanguage(language) }
                 .onSuccess { localeApplier.apply(language) }
-                .onFailure { e -> _uiState.update { it.copy(error = e.message) } }
+                .onFailure { _ -> _uiState.update { it.copy(errorRes = R.string.error_save_generic) } }
         }
     }
 
@@ -163,13 +164,13 @@ class SettingsViewModel @Inject constructor(
         write { settingsRepository.setGender(gender) }
     }
 
-    fun clearError() = _uiState.update { it.copy(error = null) }
+    fun clearError() = _uiState.update { it.copy(errorRes = null) }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private fun write(block: suspend () -> Unit) {
         viewModelScope.launch {
-            runCatching { block() }.onFailure { e -> _uiState.update { it.copy(error = e.message) } }
+            runCatching { block() }.onFailure { _ -> _uiState.update { it.copy(errorRes = R.string.error_save_generic) } }
         }
     }
 
@@ -179,7 +180,7 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             runCatching { block() }
                 .onSuccess { prayerReminderRescheduler.rescheduleAll() }
-                .onFailure { e -> _uiState.update { it.copy(error = e.message) } }
+                .onFailure { _ -> _uiState.update { it.copy(errorRes = R.string.error_save_generic) } }
         }
     }
 }

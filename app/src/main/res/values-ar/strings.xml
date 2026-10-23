@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="error_load_generic">تعذر تحميل البيانات. حاول مرة أخرى.</string>
+    <string name="error_save_generic">تعذر حفظ التغييرات. حاول مرة أخرى.</string>
     <string name="app_name">Salah Tracker</string>
 
     <string name="nav_home">الرئيسية</string>

@@ -2,6 +2,7 @@ package com.salattracker.feature.qaza
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.salattracker.R
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.repository.PrayerRepository
@@ -45,7 +46,7 @@ data class QazaUiState(
     val recentExpanded: Boolean = false,
     val logSheet: QuickLogSheetUi? = null,
     val undo: QazaUndoUi? = null,
-    val error: String? = null,
+    val errorRes: Int? = null,
 ) {
     val hasOutstanding: Boolean get() = progress.outstanding > 0
 }
@@ -89,7 +90,7 @@ class QazaViewModel @Inject constructor(
                 Quad(pending, madeUpCount, madeUpSince, recentMadeUp)
             }
                 .onStart { _uiState.update { it.copy(isLoading = true) } }
-                .catch { e -> _uiState.update { it.copy(isLoading = false, error = e.message) } }
+                .catch { _ -> _uiState.update { it.copy(isLoading = false, errorRes = R.string.error_load_generic) } }
                 .collect { (pending, madeUpCount, madeUpSince, recentMadeUp) ->
                     val slots = pending.map { it.toQazaSlot() }
                     pendingSlots = slots
@@ -127,8 +128,8 @@ class QazaViewModel @Inject constructor(
                 repository.bulkUpsertPrayerStatus(slots.map { it.date to it.prayerType }, PrayerStatus.QAZA_COMPLETED)
             }.onSuccess {
                 showUndo(slots)
-            }.onFailure { e ->
-                _uiState.update { it.copy(error = e.message) }
+            }.onFailure {
+                _uiState.update { it.copy(errorRes = R.string.error_save_generic) }
             }
         }
     }
@@ -143,7 +144,7 @@ class QazaViewModel @Inject constructor(
         viewModelScope.launch {
             runCatching {
                 repository.bulkUpsertPrayerStatus(slots.map { it.date to it.prayerType }, PrayerStatus.QAZA_PENDING)
-            }.onFailure { e -> _uiState.update { it.copy(error = e.message) } }
+            }.onFailure { _ -> _uiState.update { it.copy(errorRes = R.string.error_save_generic) } }
         }
     }
 
@@ -153,7 +154,7 @@ class QazaViewModel @Inject constructor(
         viewModelScope.launch {
             runCatching {
                 repository.upsertPrayerStatus(entry.slot.date, entry.slot.prayerType, PrayerStatus.QAZA_PENDING)
-            }.onFailure { e -> _uiState.update { it.copy(error = e.message) } }
+            }.onFailure { _ -> _uiState.update { it.copy(errorRes = R.string.error_save_generic) } }
         }
     }
 
@@ -210,7 +211,7 @@ class QazaViewModel @Inject constructor(
         makeUp(slots)
     }
 
-    fun clearError() = _uiState.update { it.copy(error = null) }
+    fun clearError() = _uiState.update { it.copy(errorRes = null) }
 
     companion object {
         private const val UNDO_WINDOW_MILLIS = 6_000L

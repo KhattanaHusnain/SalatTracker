@@ -174,6 +174,6 @@ class SettingsViewModelTest {
         // No direct way to force an error from these fakes (they never throw), so this just
         // confirms the no-op path leaves state untouched — clearError on a clean state is safe.
         viewModel.clearError()
-        assertNull(viewModel.uiState.value.error)
+        assertNull(viewModel.uiState.value.errorRes)
     }
 }

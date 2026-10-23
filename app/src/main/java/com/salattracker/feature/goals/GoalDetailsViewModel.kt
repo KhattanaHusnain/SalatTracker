@@ -3,6 +3,7 @@ package com.salattracker.feature.goals
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.salattracker.R
 import com.salattracker.domain.model.GoalCheckIn
 import com.salattracker.domain.model.GoalFrequency
 import com.salattracker.domain.model.GoalHistory
@@ -47,7 +48,7 @@ data class GoalDetailsUiState(
     val showDeleteConfirm: Boolean = false,
     /** Set once the goal is deleted — the Entry navigates back on it. */
     val deleted: Boolean = false,
-    val error: String? = null,
+    val errorRes: Int? = null,
 )
 
 /** Builds the log sheet for [date], pre-filled with whatever is already logged that day. */
@@ -165,7 +166,7 @@ class GoalDetailsViewModel @Inject constructor(
         _uiState.update { it.copy(logSheet = null) }
         viewModelScope.launch {
             runCatching { goalRepository.setDayLog(goalId, date, amount, skipped) }
-                .onFailure { e -> _uiState.update { it.copy(error = e.message) } }
+                .onFailure { _ -> _uiState.update { it.copy(errorRes = R.string.error_save_generic) } }
         }
     }
 
@@ -178,7 +179,7 @@ class GoalDetailsViewModel @Inject constructor(
                 goalRepository.setArchived(goalId, archive)
                 // Archiving stops reminders immediately; restoring re-evaluates every goal's next alarm.
                 if (archive) reminderScheduler.cancel(goalId) else reminderScheduler.rescheduleAll()
-            }.onFailure { e -> _uiState.update { it.copy(error = e.message) } }
+            }.onFailure { _ -> _uiState.update { it.copy(errorRes = R.string.error_save_generic) } }
         }
     }
 
@@ -192,11 +193,11 @@ class GoalDetailsViewModel @Inject constructor(
                 reminderScheduler.cancel(goalId)
             }.onSuccess {
                 _uiState.update { it.copy(showDeleteConfirm = false, deleted = true) }
-            }.onFailure { e ->
-                _uiState.update { it.copy(showDeleteConfirm = false, error = e.message) }
+            }.onFailure {
+                _uiState.update { it.copy(showDeleteConfirm = false, errorRes = R.string.error_save_generic) }
             }
         }
     }
 
-    fun clearError() = _uiState.update { it.copy(error = null) }
+    fun clearError() = _uiState.update { it.copy(errorRes = null) }
 }

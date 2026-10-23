@@ -2,6 +2,7 @@ package com.salattracker.feature.stats
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.salattracker.R
 import com.salattracker.core.util.runCatchingCancellable
 import com.salattracker.domain.model.GoalPeriodStat
 import com.salattracker.domain.model.Gender
@@ -81,7 +82,7 @@ data class StatsUiState(
     val goals: GoalsUiState = GoalsUiState(),
     val gender: Gender? = null,
 
-    val error: String? = null,
+    val errorRes: Int? = null,
 )
 
 // ── ViewModel ─────────────────────────────────────────────────────────────────
@@ -152,8 +153,8 @@ class StatsViewModel @Inject constructor(
                         )
                     )
                 }
-            }.onFailure { e ->
-                _uiState.update { it.copy(error = e.message, overview = it.overview.copy(isLoading = false)) }
+            }.onFailure {
+                _uiState.update { it.copy(errorRes = R.string.error_load_generic, overview = it.overview.copy(isLoading = false)) }
             }
         }
     }
@@ -167,8 +168,8 @@ class StatsViewModel @Inject constructor(
                 repository.getPrayerBreakdown(from, to)
             }.onSuccess { breakdown ->
                 _uiState.update { it.copy(prayerBreakdown = it.prayerBreakdown.copy(isLoading = false, breakdown = breakdown)) }
-            }.onFailure { e ->
-                _uiState.update { it.copy(error = e.message, prayerBreakdown = it.prayerBreakdown.copy(isLoading = false)) }
+            }.onFailure {
+                _uiState.update { it.copy(errorRes = R.string.error_load_generic, prayerBreakdown = it.prayerBreakdown.copy(isLoading = false)) }
             }
         }
     }
@@ -182,8 +183,8 @@ class StatsViewModel @Inject constructor(
                 goalRepository.getGoalPeriodStats(from, to)
             }.onSuccess { items ->
                 _uiState.update { it.copy(goals = it.goals.copy(isLoading = false, items = items)) }
-            }.onFailure { e ->
-                _uiState.update { it.copy(error = e.message, goals = it.goals.copy(isLoading = false)) }
+            }.onFailure {
+                _uiState.update { it.copy(errorRes = R.string.error_load_generic, goals = it.goals.copy(isLoading = false)) }
             }
         }
     }
@@ -211,7 +212,7 @@ class StatsViewModel @Inject constructor(
         }
     }
 
-    fun clearError() = _uiState.update { it.copy(error = null) }
+    fun clearError() = _uiState.update { it.copy(errorRes = null) }
 }
 
 // ── Period helpers ────────────────────────────────────────────────────────────

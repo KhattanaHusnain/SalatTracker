@@ -51,7 +51,7 @@ data class BulkUpdateUiState(
     val isApplying: Boolean = false,
     val applySuccess: Boolean = false,
     val skippedFutureCount: Int = 0,
-    val error: String? = null,
+    val errorRes: Int? = null,
 ) {
     /**
      * Week/Month are anchored to full calendar periods (Sun–Sat, 1st-to-last-day), so the
@@ -203,12 +203,12 @@ class BulkUpdateViewModel @Inject constructor(
                         skippedFutureCount = skippedCount,
                     )
                 }
-            }.onFailure { e ->
-                _uiState.update { it.copy(isApplying = false, showConfirmDialog = false, error = e.message) }
+            }.onFailure {
+                _uiState.update { it.copy(isApplying = false, showConfirmDialog = false, errorRes = R.string.error_save_generic) }
             }
         }
     }
 
     fun clearApplySuccess() = _uiState.update { it.copy(applySuccess = false, skippedFutureCount = 0) }
-    fun clearError() = _uiState.update { it.copy(error = null) }
+    fun clearError() = _uiState.update { it.copy(errorRes = null) }
 }

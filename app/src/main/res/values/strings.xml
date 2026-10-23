@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="error_load_generic">Couldn\'t load data. Please try again.</string>
+    <string name="error_save_generic">Couldn\'t save your changes. Please try again.</string>
     <string name="app_name">Salah Tracker</string>
 
     <!-- Bottom nav labels -->
