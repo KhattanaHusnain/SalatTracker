@@ -29,13 +29,16 @@ class LocationSyncViewModel @Inject constructor(
             val prefs = settingsRepository.getCurrentPrefs()
             if (!prefs.useDeviceLocation) return@launch
             val (lat, lon) = locationProvider.getCurrentLocation() ?: return@launch
-            settingsRepository.setLocation(lat, lon)
             // Prayer times now depend on location (on-device calculation). Reschedule only when
             // the location actually moved by a meaningful amount — comparing at ~1km precision
             // (2 decimal places) so ordinary GPS jitter on every launch doesn't churn the alarms.
             if (lat.roundedForComparison() != prefs.latitude.roundedForComparison() ||
                 lon.roundedForComparison() != prefs.longitude.roundedForComparison()
             ) {
+                settingsRepository.setLocation(lat, lon)
+                // A GPS refresh has no reliable city name. Clear a stale reverse-geocoded label
+                // so Settings accurately falls back to the new coordinates.
+                settingsRepository.setLocationLabel(null)
                 prayerReminderRescheduler.rescheduleAll()
             }
         }

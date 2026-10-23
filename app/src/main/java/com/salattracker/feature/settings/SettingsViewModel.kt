@@ -103,7 +103,12 @@ class SettingsViewModel @Inject constructor(
     fun fetchDeviceLocation() {
         viewModelScope.launch {
             val (lat, lon) = locationProvider.getCurrentLocation() ?: return@launch
-            writeAndReschedule { settingsRepository.setLocation(lat, lon) }
+            runCatching {
+                settingsRepository.setLocation(lat, lon)
+                settingsRepository.setLocationLabel(null)
+            }.onSuccess {
+                prayerReminderRescheduler.rescheduleAll()
+            }.onFailure { e -> _uiState.update { it.copy(error = e.message) } }
         }
     }
 
