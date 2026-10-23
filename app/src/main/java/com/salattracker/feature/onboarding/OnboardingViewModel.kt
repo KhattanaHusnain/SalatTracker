@@ -231,6 +231,10 @@ class OnboardingViewModel @Inject constructor(
     fun onPrayerRemindersChanged(enabled: Boolean) = _uiState.update { it.copy(prayerRemindersEnabled = enabled) }
     fun onFullScreenAlertChanged(enabled: Boolean) = _uiState.update { it.copy(fullScreenAlertEnabled = enabled) }
     fun onRemindersNext() = goTo(OnboardingStep.CATCH_UP)
+    fun onRemindersSkip() {
+        _uiState.update { it.copy(prayerRemindersEnabled = false) }
+        goTo(OnboardingStep.CATCH_UP)
+    }
 
     // ── Catch up ──────────────────────────────────────────────────────────────
 

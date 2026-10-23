@@ -58,9 +58,9 @@ fun OnboardingEntry(
         onCalculationMethodSelected     = viewModel::onCalculationMethodSelected,
         onPrayerRemindersChanged  = viewModel::onPrayerRemindersChanged,
         onFullScreenAlertChanged  = viewModel::onFullScreenAlertChanged,
-        onRemindersSkip           = viewModel::onRemindersNext,
+        onRemindersSkip           = viewModel::onRemindersSkip,
         onRemindersNext           = {
-            onRequestNotifications()
+            if (uiState.prayerRemindersEnabled) onRequestNotifications()
             viewModel.onRemindersNext()
         },
         onCatchUpAddClick         = viewModel::onCatchUpAddClick,

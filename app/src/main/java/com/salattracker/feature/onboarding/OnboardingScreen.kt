@@ -437,7 +437,11 @@ private fun RemindersStep(
         AzanPreviewRow()
 
         Spacer(Modifier.height(32.dp))
-        PrimaryButton(text = stringResource(R.string.onboarding_reminders_turn_on), icon = R.drawable.ic_arrow_forward, onClick = onNext)
+        PrimaryButton(
+            text = stringResource(if (prayerRemindersEnabled) R.string.onboarding_reminders_turn_on else R.string.action_continue),
+            icon = R.drawable.ic_arrow_forward,
+            onClick = onNext,
+        )
         Spacer(Modifier.height(8.dp))
         SecondaryLink(text = stringResource(R.string.action_skip_for_now), onClick = onSkip)
         Spacer(Modifier.height(24.dp))
