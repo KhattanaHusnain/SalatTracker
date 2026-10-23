@@ -4,9 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.salattracker.core.util.runCatchingCancellable
 import com.salattracker.domain.model.GoalPeriodStat
+import com.salattracker.domain.model.Gender
 import com.salattracker.domain.repository.GoalRepository
 import com.salattracker.domain.repository.PrayerBreakdown
 import com.salattracker.domain.repository.PrayerRepository
+import com.salattracker.domain.repository.SettingsRepository
 import com.salattracker.domain.repository.StatusCounts
 import com.salattracker.domain.usecase.PerfectDays
 import com.salattracker.domain.usecase.completionPercent
@@ -77,6 +79,7 @@ data class StatsUiState(
     val overview: OverviewUiState = OverviewUiState(),
     val prayerBreakdown: PrayerBreakdownUiState = PrayerBreakdownUiState(),
     val goals: GoalsUiState = GoalsUiState(),
+    val gender: Gender? = null,
 
     val error: String? = null,
 )
@@ -87,6 +90,7 @@ data class StatsUiState(
 class StatsViewModel @Inject constructor(
     private val repository: PrayerRepository,
     private val goalRepository: GoalRepository,
+    private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(StatsUiState())
@@ -99,6 +103,9 @@ class StatsViewModel @Inject constructor(
     private var goalsJob: Job? = null
 
     init {
+        viewModelScope.launch {
+            settingsRepository.observeSettings().collect { prefs -> _uiState.update { it.copy(gender = prefs.gender) } }
+        }
         loadAllForPeriod(StatsPeriod.MONTH, showSkeleton = true)
         observePrayerChanges()
         observeGoalChanges()

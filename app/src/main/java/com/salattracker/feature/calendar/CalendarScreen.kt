@@ -24,6 +24,7 @@ import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.core.ui.*
 import com.salattracker.domain.model.PrayerStatus
+import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.VerseInfo
 import com.salattracker.domain.usecase.*
@@ -78,7 +79,7 @@ fun CalendarScreen(
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
-                    DotLegend()
+                    DotLegend(items = legendItems(uiState.gender, uiState.marks))
                     Spacer(modifier = Modifier.height(16.dp))
 
                     MonthRingGrid(
@@ -126,7 +127,7 @@ fun CalendarScreen(
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
-                    DotLegend()
+                    DotLegend(items = legendItems(uiState.gender, uiState.marks))
                     Spacer(modifier = Modifier.height(20.dp))
 
                     WeekTable(
@@ -163,7 +164,7 @@ fun CalendarScreen(
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
-                    DotLegend(items = yearLegendItems())
+                    DotLegend(items = yearLegendItems(uiState.gender, uiState.marks))
                     Spacer(modifier = Modifier.height(20.dp))
 
                     YearGrid(
@@ -324,24 +325,30 @@ private data class LegendItem(val color: Color, val labelRes: Int)
 // Built fresh every call rather than cached in a top-level val — the SalatStatusXxx colors are
 // theme-aware composable getters now, so these lists can't be computed once outside composition.
 @Composable
-private fun legendItems() = listOf(
+private fun legendItems(gender: Gender?, marks: Map<LocalDate, Map<PrayerType, PrayerStatus>>) = listOf(
     LegendItem(SalatStatusCongregation,  R.string.status_congregation),
     LegendItem(SalatStatusIndividual,    R.string.status_individual),
     LegendItem(SalatStatusQazaPending,   PrayerStatus.QAZA_PENDING.labelRes),
     LegendItem(SalatStatusQazaCompleted, PrayerStatus.QAZA_COMPLETED.labelRes),
     LegendItem(SalatStatusExcused,       PrayerStatus.MENSTRUATION.labelRes),
     LegendItem(SalatStatusNotRecorded,   R.string.status_not_recorded),
-)
+).filter { item ->
+    val status = PrayerStatus.values().firstOrNull { it.labelRes == item.labelRes } ?: return@filter true
+    status.isOfferedFor(gender) || marks.values.any { status in it.values }
+}
 
 /** Year view's tones are coarser than a single prayer's status — see [DayTone]/[toneColor]. */
 @Composable
-private fun yearLegendItems() = listOf(
+private fun yearLegendItems(gender: Gender?, marks: Map<LocalDate, Map<PrayerType, PrayerStatus>>) = listOf(
     LegendItem(SalatStatusCongregation, R.string.year_tone_all_prayed),
     LegendItem(SalatStatusIndividual,   R.string.year_tone_partly),
     LegendItem(SalatStatusQazaPending,  PrayerStatus.QAZA_PENDING.labelRes),
     LegendItem(SalatStatusExcused,      PrayerStatus.MENSTRUATION.labelRes),
     LegendItem(SalatStatusNotRecorded,  R.string.status_not_recorded),
-)
+).filter { item ->
+    val status = PrayerStatus.values().firstOrNull { it.labelRes == item.labelRes } ?: return@filter true
+    status.isOfferedFor(gender) || marks.values.any { status in it.values }
+}
 
 @Composable
 private fun DotLegend(items: List<LegendItem> = legendItems()) {

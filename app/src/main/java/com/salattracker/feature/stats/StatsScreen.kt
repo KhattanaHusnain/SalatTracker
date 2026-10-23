@@ -27,6 +27,7 @@ import com.salattracker.core.ui.ShimmerBox
 import com.salattracker.core.ui.StatTile
 import com.salattracker.core.ui.goalUnitLabel
 import com.salattracker.core.ui.iconRes
+import com.salattracker.core.ui.isOfferedFor
 import com.salattracker.core.ui.label
 import com.salattracker.core.ui.labelRes
 import com.salattracker.core.ui.shortLabel
@@ -35,6 +36,7 @@ import com.salattracker.domain.model.GoalFrequency
 import com.salattracker.domain.model.GoalPeriodStat
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.PrayerStatus
+import com.salattracker.domain.model.Gender
 import com.salattracker.domain.repository.PrayerBreakdown
 import com.salattracker.domain.repository.StatusCounts
 import com.salattracker.domain.usecase.PerfectDays
@@ -71,7 +73,7 @@ fun StatsScreen(
             Spacer(modifier = Modifier.height(4.dp))
 
             PeriodToggle(selected = uiState.period, onSelect = onPeriodChanged)
-            SummaryCard(state = uiState.overview)
+            SummaryCard(state = uiState.overview, gender = uiState.gender)
             TrendCard(state = uiState.overview, period = uiState.period)
             PrayerBreakdownCard(state = uiState.prayerBreakdown)
             if (uiState.period.days >= 30) {
@@ -194,7 +196,7 @@ private fun LegendCount(color: Color, label: String, count: Int, modifier: Modif
 // ── Summary (prayed on time %, status bar + legend, perfect days, qaza recovery) ─
 
 @Composable
-private fun SummaryCard(state: OverviewUiState) {
+private fun SummaryCard(state: OverviewUiState, gender: Gender?) {
     StatsCard {
         Text(stringResource(R.string.stats_prayed_on_time), color = SalatOnSurfaceVariant, fontSize = 11.sp,
             fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily, letterSpacing = 1.sp)
@@ -228,7 +230,8 @@ private fun SummaryCard(state: OverviewUiState) {
         Spacer(Modifier.height(10.dp))
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                LegendCount(SalatStatusCongregation, stringResource(R.string.status_congregation), state.counts.congregation, Modifier.weight(1f))
+                if (PrayerStatus.CONGREGATION.isOfferedFor(gender) || state.counts.congregation > 0)
+                    LegendCount(SalatStatusCongregation, stringResource(R.string.status_congregation), state.counts.congregation, Modifier.weight(1f))
                 LegendCount(SalatStatusIndividual, stringResource(R.string.status_individual), state.counts.individual, Modifier.weight(1f))
             }
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -249,7 +252,7 @@ private fun SummaryCard(state: OverviewUiState) {
                 modifier = Modifier.weight(1f),
             )
         }
-        if (state.counts.excused > 0) {
+        if (state.counts.excused > 0 || PrayerStatus.MENSTRUATION.isOfferedFor(gender)) {
             Spacer(Modifier.height(10.dp))
             Text(
                 text = stringResource(R.string.stats_excused_not_counted, state.counts.excused),
