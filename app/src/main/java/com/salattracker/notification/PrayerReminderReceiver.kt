@@ -15,6 +15,7 @@ import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.repository.PrayerRepository
+import com.salattracker.domain.repository.PrayerReminderRescheduler
 import com.salattracker.domain.repository.SettingsRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -34,6 +35,7 @@ import javax.inject.Inject
 class PrayerReminderReceiver : BroadcastReceiver() {
 
     @Inject lateinit var prayerRepository: PrayerRepository
+    @Inject lateinit var prayerReminderRescheduler: PrayerReminderRescheduler
     @Inject lateinit var settingsRepository: SettingsRepository
     @Inject lateinit var channels: PrayerReminderChannels
 
@@ -116,6 +118,9 @@ class PrayerReminderReceiver : BroadcastReceiver() {
 
                 NotificationManagerCompat.from(context).notify(type.ordinal, builder.build())
             } finally {
+                // AlarmManager alarms are one-shot. Queue the next scheduling pass immediately
+                // rather than relying only on the periodic worker to cover tomorrow.
+                prayerReminderRescheduler.rescheduleAll()
                 pendingResult.finish()
             }
         }
