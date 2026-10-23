@@ -44,7 +44,7 @@ fun EditCoordinatesScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         when (uiState.mode) {
             EditLocationMode.COORDINATES -> CoordinatesContent(
-                latitude = uiState.latitude, longitude = uiState.longitude, isLocating = uiState.isLocating,
+                latitude = uiState.latitude, longitude = uiState.longitude, latitudeInvalid = uiState.latitudeInvalid, longitudeInvalid = uiState.longitudeInvalid, isLocating = uiState.isLocating,
                 onLatitudeChanged = onLatitudeChanged, onLongitudeChanged = onLongitudeChanged,
                 onSave = onSaveCoordinates, onUseMyLocationClick = onUseMyLocationClick, onSearchCityClick = onSearchCityClick,
             )
@@ -73,6 +73,8 @@ fun EditCoordinatesScreen(
 private fun CoordinatesContent(
     latitude: String,
     longitude: String,
+    latitudeInvalid: Boolean,
+    longitudeInvalid: Boolean,
     isLocating: Boolean,
     onLatitudeChanged: (String) -> Unit,
     onLongitudeChanged: (String) -> Unit,
@@ -88,12 +90,12 @@ private fun CoordinatesContent(
         Spacer(Modifier.height(8.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             CoordField(
-                label = stringResource(R.string.settings_latitude), value = latitude, onChanged = onLatitudeChanged,
+                label = stringResource(R.string.settings_latitude), value = latitude, onChanged = onLatitudeChanged, isError = latitudeInvalid,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
                 modifier = Modifier.weight(1f),
             )
             CoordField(
-                label = stringResource(R.string.settings_longitude), value = longitude, onChanged = onLongitudeChanged,
+                label = stringResource(R.string.settings_longitude), value = longitude, onChanged = onLongitudeChanged, isError = longitudeInvalid,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus(); onSave() }),
                 modifier = Modifier.weight(1f),
@@ -103,7 +105,7 @@ private fun CoordinatesContent(
         Spacer(Modifier.height(16.dp))
         SalatPrimaryButton(
             onClick = onSave,
-            enabled = latitude.toDoubleOrNull() != null && longitude.toDoubleOrNull() != null,
+            enabled = latitude.toDoubleOrNull() != null && longitude.toDoubleOrNull() != null && !latitudeInvalid && !longitudeInvalid,
         ) {
             Text(stringResource(R.string.settings_edit_location_save), fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
         }
@@ -139,6 +141,7 @@ private fun CoordField(
     label: String,
     value: String,
     onChanged: (String) -> Unit,
+    isError: Boolean,
     keyboardOptions: KeyboardOptions,
     modifier: Modifier = Modifier,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
@@ -147,13 +150,15 @@ private fun CoordField(
         Text(label, color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily)
         Spacer(Modifier.height(4.dp))
         OutlinedTextField(
-            value = value,
+        value = value,
+        isError = isError,
             onValueChange = onChanged,
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             textStyle = LocalTextStyle.current.copy(fontFamily = AppUiFontFamily, fontSize = 14.sp, color = SalatOnSurface),
             keyboardOptions = keyboardOptions,
             keyboardActions = keyboardActions,
+            supportingText = if (isError) { { Text(stringResource(R.string.settings_coordinate_range_error), fontFamily = AppUiFontFamily) } } else null,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = SalatPrimary, unfocusedBorderColor = SalatOutlineVariant,
                 focusedContainerColor = SalatSurfaceContainerLow, unfocusedContainerColor = SalatSurfaceContainerLow,

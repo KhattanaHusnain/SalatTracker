@@ -346,6 +346,7 @@
     <string name="onboarding_catch_up_confirm_title">Add missed prayers?</string>
     <string name="onboarding_catch_up_confirm_message">This will add %1$d prayers to your Qaza list.</string>
     <string name="action_undo">Undo</string>
+    <string name="settings_coordinate_range_error">Enter a valid coordinate in range.</string>
     <string name="reminders_vibration">Vibration</string>
     <string name="reminders_jumuah_title">Jumu\'ah on Fridays</string>
     <string name="reminders_jumuah_desc">Label Friday Dhuhr as Jumu\'ah across the app.</string>

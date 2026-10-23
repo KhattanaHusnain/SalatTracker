@@ -22,6 +22,8 @@ data class EditCoordinatesUiState(
     val mode: EditLocationMode = EditLocationMode.COORDINATES,
     val latitude: String = "",
     val longitude: String = "",
+    val latitudeInvalid: Boolean = false,
+    val longitudeInvalid: Boolean = false,
     val cityQuery: String = "",
     val cityResults: List<CityResult> = emptyList(),
     val isSearchingCity: Boolean = false,
@@ -66,13 +68,17 @@ class EditCoordinatesViewModel @Inject constructor(
         }
     }
 
-    fun onLatitudeChanged(value: String) = _uiState.update { it.copy(latitude = value) }
-    fun onLongitudeChanged(value: String) = _uiState.update { it.copy(longitude = value) }
+    fun onLatitudeChanged(value: String) = _uiState.update { it.copy(latitude = value, latitudeInvalid = value.toDoubleOrNull()?.let { latitude -> latitude !in -90.0..90.0 } ?: value.isNotBlank()) }
+    fun onLongitudeChanged(value: String) = _uiState.update { it.copy(longitude = value, longitudeInvalid = value.toDoubleOrNull()?.let { longitude -> longitude !in -180.0..180.0 } ?: value.isNotBlank()) }
 
     fun onSaveCoordinates() {
         val state = _uiState.value
-        val lat = state.latitude.toDoubleOrNull() ?: return
-        val lon = state.longitude.toDoubleOrNull() ?: return
+        val lat = state.latitude.toDoubleOrNull()
+        val lon = state.longitude.toDoubleOrNull()
+        if (lat == null || lon == null || lat !in -90.0..90.0 || lon !in -180.0..180.0) {
+            _uiState.update { it.copy(latitudeInvalid = lat == null || lat !in -90.0..90.0, longitudeInvalid = lon == null || lon !in -180.0..180.0) }
+            return
+        }
         viewModelScope.launch {
             settingsRepository.setUseDeviceLocation(false)
             settingsRepository.setLocation(lat, lon)
