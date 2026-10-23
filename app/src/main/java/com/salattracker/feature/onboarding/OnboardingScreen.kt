@@ -40,8 +40,10 @@ import com.salattracker.domain.usecase.toHijriOrNull
 import com.salattracker.core.ui.CitySearchField
 import com.salattracker.core.ui.CitySearchResults
 import com.salattracker.core.ui.DatePickerModal
+import com.salattracker.core.ui.fullLabel
 import com.salattracker.feature.settings.CalculationMethodSheet
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun OnboardingScreen(
@@ -340,7 +342,7 @@ private fun LocationConfirmStep(
             SummaryRow(
                 icon = R.drawable.ic_calendar_today,
                 label = stringResource(R.string.onboarding_hijri_date_label),
-                value = "${hijri.day}/${hijri.month}/${hijri.year} AH",
+                value = hijri.fullLabel(),
                 trailing = null,
             )
         }
@@ -551,17 +553,18 @@ private fun CatchUpDurationOption(option: CatchUpDuration, selected: CatchUpDura
 private fun CustomRangePickers(from: LocalDate, to: LocalDate, onChanged: (LocalDate, LocalDate) -> Unit) {
     var showFromPicker by remember { mutableStateOf(false) }
     var showToPicker by remember { mutableStateOf(false) }
+    val dateFormatter = remember { DateTimeFormatter.ofPattern("MMM d") }
 
     Row(modifier = Modifier.fillMaxWidth().padding(start = 16.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         OutlinedButton(onClick = { showFromPicker = true }, modifier = Modifier.weight(1f)) {
             Icon(painterResource(R.drawable.ic_calendar_today), null, tint = SalatPrimary, modifier = Modifier.size(16.dp))
             Spacer(Modifier.width(6.dp))
-            Text(stringResource(R.string.bulk_start, from.toString()), fontFamily = AppUiFontFamily, fontSize = 12.sp, color = SalatOnSurface)
+            Text(stringResource(R.string.bulk_start, from.format(dateFormatter)), fontFamily = AppUiFontFamily, fontSize = 12.sp, color = SalatOnSurface)
         }
         OutlinedButton(onClick = { showToPicker = true }, modifier = Modifier.weight(1f)) {
             Icon(painterResource(R.drawable.ic_calendar_today), null, tint = SalatPrimary, modifier = Modifier.size(16.dp))
             Spacer(Modifier.width(6.dp))
-            Text(stringResource(R.string.bulk_end, to.toString()), fontFamily = AppUiFontFamily, fontSize = 12.sp, color = SalatOnSurface)
+            Text(stringResource(R.string.bulk_end, to.format(dateFormatter)), fontFamily = AppUiFontFamily, fontSize = 12.sp, color = SalatOnSurface)
         }
     }
 
@@ -597,7 +600,13 @@ private fun DoneStep(uiState: OnboardingUiState, onFinish: () -> Unit) {
         Surface(shape = RoundedCornerShape(16.dp), color = SalatSurfaceContainerLowest, modifier = Modifier.fillMaxWidth()) {
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 DoneSummaryLine(stringResource(R.string.onboarding_done_summary_language), uiState.language.displayName)
-                DoneSummaryLine(stringResource(R.string.onboarding_location_label), uiState.confirmedCity?.name?.takeIf { it.isNotBlank() } ?: uiState.calculationMethod.displayName)
+                DoneSummaryLine(
+                    stringResource(R.string.onboarding_location_label),
+                    uiState.confirmedCity?.let { city ->
+                        city.name.takeIf { it.isNotBlank() }
+                            ?: stringResource(R.string.settings_coordinates_value, city.latitude, city.longitude)
+                    }.orEmpty(),
+                )
                 DoneSummaryLine(
                     stringResource(R.string.onboarding_done_summary_reminders),
                     stringResource(if (uiState.prayerRemindersEnabled) R.string.onboarding_done_reminders_on else R.string.onboarding_done_reminders_off),
