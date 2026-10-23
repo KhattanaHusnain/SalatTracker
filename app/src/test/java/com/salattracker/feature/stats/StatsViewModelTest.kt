@@ -6,6 +6,7 @@ import com.salattracker.domain.model.GoalPeriodStat
 import com.salattracker.domain.repository.StatusCounts
 import com.salattracker.testutil.FakeGoalRepository
 import com.salattracker.testutil.FakePrayerRepository
+import com.salattracker.testutil.FakeSettingsRepository
 import com.salattracker.testutil.MainDispatcherRule
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -29,7 +30,7 @@ class StatsViewModelTest {
         goalRepository = FakeGoalRepository()
     }
 
-    private fun createViewModel() = StatsViewModel(prayerRepository, goalRepository)
+    private fun createViewModel() = StatsViewModel(prayerRepository, goalRepository, FakeSettingsRepository())
 
     @Test
     fun `initial state loads every section for the month period`() = runTest {
