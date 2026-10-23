@@ -12,6 +12,7 @@ import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.StreakInfo
 import com.salattracker.domain.model.VerseInfo
 import com.salattracker.domain.repository.PrayerRepository
+import com.salattracker.domain.repository.ReminderNotifications
 import com.salattracker.domain.repository.SettingsRepository
 import com.salattracker.domain.repository.UserPrefs
 import com.salattracker.domain.repository.VerseRepository
@@ -81,6 +82,7 @@ class HomeViewModel @Inject constructor(
     private val calculateStreakUseCase: CalculateStreakUseCase,
     private val verseRepository: VerseRepository,
     private val workManager: WorkManager,
+    private val reminderNotifications: ReminderNotifications,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -235,6 +237,7 @@ class HomeViewModel @Inject constructor(
             runCatching {
                 prayerRepository.upsertPrayerStatus(args.date, args.prayerType, newStatus)
             }.onSuccess {
+                if (args.date == LocalDate.now()) reminderNotifications.dismiss(args.prayerType)
                 // Streak tiles refresh on their own — loadStreak()'s Flow collector
                 // re-emits automatically once upsertPrayerStatus's write commits.
                 _uiState.update { it.copy(isSaving = false, sheetArgs = null) }

@@ -8,6 +8,7 @@ import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.VerseInfo
 import com.salattracker.domain.repository.PrayerRepository
+import com.salattracker.domain.repository.ReminderNotifications
 import com.salattracker.domain.repository.SettingsRepository
 import com.salattracker.domain.repository.VerseRepository
 import com.salattracker.domain.usecase.CalendarViewType
@@ -53,6 +54,7 @@ class CalendarViewModel @Inject constructor(
     private val prayerRepository: PrayerRepository,
     private val verseRepository: VerseRepository,
     private val settingsRepository: SettingsRepository,
+    private val reminderNotifications: ReminderNotifications,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CalendarUiState())
@@ -179,6 +181,7 @@ class CalendarViewModel @Inject constructor(
             runCatching {
                 prayerRepository.upsertPrayerStatus(args.date, args.prayerType, newStatus)
             }.onSuccess {
+                if (args.date == LocalDate.now()) reminderNotifications.dismiss(args.prayerType)
                 _uiState.update { it.copy(isSaving = false, statusSheet = null) }
             }.onFailure { e ->
                 _uiState.update { it.copy(isSaving = false, error = e.message) }

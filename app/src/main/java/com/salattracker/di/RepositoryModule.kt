@@ -30,12 +30,14 @@ import com.salattracker.domain.repository.MosqueModeSyncScheduler
 import com.salattracker.domain.repository.MosqueRepository
 import com.salattracker.domain.repository.MushafRepository
 import com.salattracker.domain.repository.PrayerReminderRescheduler
+import com.salattracker.domain.repository.ReminderNotifications
 import com.salattracker.domain.repository.PrayerTimeCalculator
 import com.salattracker.domain.repository.RingerController
 import com.salattracker.notification.MosqueModeNotifierImpl
 import com.salattracker.notification.MosqueModeSyncSchedulerImpl
 import com.salattracker.notification.GoalReminderSchedulerImpl
 import com.salattracker.notification.PrayerReminderReschedulerImpl
+import com.salattracker.notification.ReminderNotificationsImpl
 import com.salattracker.domain.repository.PrayerRepository
 import com.salattracker.domain.repository.QuranContentRepository
 import com.salattracker.domain.repository.QuranUserDataRepository
@@ -95,6 +97,10 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindPrayerReminderRescheduler(impl: PrayerReminderReschedulerImpl): PrayerReminderRescheduler
+
+    @Binds
+    @Singleton
+    abstract fun bindReminderNotifications(impl: ReminderNotificationsImpl): ReminderNotifications
 
     @Binds
     @Singleton

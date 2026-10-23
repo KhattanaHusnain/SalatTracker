@@ -218,6 +218,19 @@ class PrayerReminderReceiver : BroadcastReceiver() {
                 alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pendingIntent)
             }
         }
+
+        /** Cancels a deferred snooze when the prayer is recorded elsewhere in the app. */
+        fun cancelSnooze(context: Context, type: PrayerType) {
+            val intent = Intent(context, PrayerReminderReceiver::class.java)
+            val pendingIntent = PendingIntent.getBroadcast(
+                context,
+                SNOOZE_REQUEST_CODE_OFFSET + type.ordinal,
+                intent,
+                PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE,
+            ) ?: return
+            context.getSystemService(AlarmManager::class.java).cancel(pendingIntent)
+            pendingIntent.cancel()
+        }
     }
 }
 

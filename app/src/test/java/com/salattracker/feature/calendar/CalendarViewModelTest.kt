@@ -6,6 +6,7 @@ import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.usecase.CALENDAR_MIN_DATE
 import com.salattracker.domain.usecase.CalendarViewType
 import com.salattracker.testutil.FakePrayerRepository
+import com.salattracker.testutil.FakeReminderNotifications
 import com.salattracker.testutil.FakeSettingsRepository
 import com.salattracker.testutil.FakeVerseRepository
 import com.salattracker.testutil.MainDispatcherRule
@@ -17,6 +18,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import java.time.LocalDate
+import java.time.LocalTime
 
 class CalendarViewModelTest {
 
@@ -24,14 +26,18 @@ class CalendarViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private lateinit var prayerRepository: FakePrayerRepository
+    private lateinit var reminderNotifications: FakeReminderNotifications
     private lateinit var viewModel: CalendarViewModel
 
     @Before
     fun setUp() {
         prayerRepository = FakePrayerRepository()
+        reminderNotifications = FakeReminderNotifications()
     }
 
-    private fun createViewModel() = CalendarViewModel(prayerRepository, FakeVerseRepository(), FakeSettingsRepository())
+    private fun createViewModel() = CalendarViewModel(
+        prayerRepository, FakeVerseRepository(), FakeSettingsRepository(), reminderNotifications,
+    )
 
     @Test
     fun `initial state loads today's marks and the verse`() = runTest {
@@ -120,6 +126,18 @@ class CalendarViewModelTest {
         assertEquals(false, viewModel.uiState.value.isSaving)
         assertEquals(PrayerStatus.CONGREGATION, viewModel.uiState.value.marks[date]?.get(PrayerType.MAGHRIB))
         assertEquals(listOf(Triple(date, PrayerType.MAGHRIB, PrayerStatus.CONGREGATION)), prayerRepository.upserts)
+        assertTrue(reminderNotifications.dismissed.isEmpty())
+    }
+
+    @Test
+    fun `onStatusSave dismisses today's prayer reminder`() = runTest {
+        prayerRepository.seedTimes(LocalDate.now(), mapOf(PrayerType.FAJR to LocalTime.MIN))
+        viewModel = createViewModel()
+        viewModel.onPrayerClick(LocalDate.now(), PrayerType.FAJR)
+
+        viewModel.onStatusSave(PrayerStatus.INDIVIDUAL)
+
+        assertEquals(listOf(PrayerType.FAJR), reminderNotifications.dismissed)
     }
 
     @Test

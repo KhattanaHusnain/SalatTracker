@@ -29,6 +29,7 @@ import com.salattracker.domain.repository.MosqueRepository
 import com.salattracker.domain.repository.RingerController
 import com.salattracker.domain.repository.PrayerBreakdown
 import com.salattracker.domain.repository.PrayerReminderRescheduler
+import com.salattracker.domain.repository.ReminderNotifications
 import com.salattracker.domain.repository.PrayerRepository
 import com.salattracker.domain.repository.SettingsRepository
 import com.salattracker.domain.repository.StatusCounts
@@ -282,6 +283,12 @@ class FakePrayerReminderRescheduler : PrayerReminderRescheduler {
         private set
 
     override fun rescheduleAll() { rescheduleCount++ }
+}
+
+class FakeReminderNotifications : ReminderNotifications {
+    val dismissed = mutableListOf<PrayerType>()
+
+    override fun dismiss(type: PrayerType) { dismissed += type }
 }
 
 class FakeLocaleApplier : LocaleApplier {
