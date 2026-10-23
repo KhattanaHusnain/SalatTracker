@@ -96,6 +96,8 @@ class SettingsViewModel @Inject constructor(
         writeAndReschedule { settingsRepository.setUseDeviceLocation(enabled) }
     }
 
+    fun onLocationPermissionDenied() = _uiState.update { it.copy(useDeviceLocation = false, errorRes = R.string.settings_edit_location_no_fix) }
+
     /** Called once ACCESS_FINE_LOCATION is confirmed granted (the device-location toggle just
      * turned on) — persists the fix; [loadSettings]'s reactive collector then updates the
      * displayed lat/lon on its own once the write lands. Manual coordinate entry and city search

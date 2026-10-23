@@ -25,18 +25,25 @@ fun SettingsEntry(
 
     val locationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
-    ) { granted -> if (granted) viewModel.fetchDeviceLocation() }
+    ) { granted ->
+        if (granted) {
+            viewModel.onUseDeviceLocationChanged(true)
+            viewModel.fetchDeviceLocation()
+        } else viewModel.onLocationPermissionDenied()
+    }
 
     SettingsScreen(
         uiState                    = uiState,
         onUseDeviceLocationChanged = { enabled ->
-            viewModel.onUseDeviceLocationChanged(enabled)
-            if (enabled) {
+            if (!enabled) {
+                viewModel.onUseDeviceLocationChanged(false)
+            } else {
                 if (ContextCompat.checkSelfPermission(
                         context,
                         Manifest.permission.ACCESS_FINE_LOCATION
                     ) == PackageManager.PERMISSION_GRANTED
                 ) {
+                    viewModel.onUseDeviceLocationChanged(true)
                     viewModel.fetchDeviceLocation()
                 } else {
                     locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
