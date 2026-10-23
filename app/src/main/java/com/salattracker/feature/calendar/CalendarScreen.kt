@@ -327,9 +327,9 @@ private data class LegendItem(val color: Color, val labelRes: Int)
 private fun legendItems() = listOf(
     LegendItem(SalatStatusCongregation,  R.string.status_congregation),
     LegendItem(SalatStatusIndividual,    R.string.status_individual),
-    LegendItem(SalatStatusQazaPending,   R.string.status_qaza),
-    LegendItem(SalatStatusQazaCompleted, R.string.status_qaza_done),
-    LegendItem(SalatStatusExcused,       R.string.status_excused),
+    LegendItem(SalatStatusQazaPending,   PrayerStatus.QAZA_PENDING.labelRes),
+    LegendItem(SalatStatusQazaCompleted, PrayerStatus.QAZA_COMPLETED.labelRes),
+    LegendItem(SalatStatusExcused,       PrayerStatus.MENSTRUATION.labelRes),
     LegendItem(SalatStatusNotRecorded,   R.string.status_not_recorded),
 )
 
@@ -338,8 +338,8 @@ private fun legendItems() = listOf(
 private fun yearLegendItems() = listOf(
     LegendItem(SalatStatusCongregation, R.string.year_tone_all_prayed),
     LegendItem(SalatStatusIndividual,   R.string.year_tone_partly),
-    LegendItem(SalatStatusQazaPending,  R.string.status_qaza),
-    LegendItem(SalatStatusExcused,      R.string.status_excused),
+    LegendItem(SalatStatusQazaPending,  PrayerStatus.QAZA_PENDING.labelRes),
+    LegendItem(SalatStatusExcused,      PrayerStatus.MENSTRUATION.labelRes),
     LegendItem(SalatStatusNotRecorded,  R.string.status_not_recorded),
 )
 

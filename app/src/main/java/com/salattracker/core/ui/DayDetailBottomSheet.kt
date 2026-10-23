@@ -185,27 +185,27 @@ internal fun PrayerStatusChip(status: PrayerStatus, isUpcoming: Boolean = false)
     } else when (status) {
         PrayerStatus.CONGREGATION   -> StatusChipStyle(
             SalatPrimaryFixed, SalatOnPrimaryFixedVariant,
-            R.drawable.ic_groups, stringResource(R.string.status_jamaat)
+            PrayerStatus.CONGREGATION.iconRes, stringResource(PrayerStatus.CONGREGATION.labelRes)
         )
         PrayerStatus.INDIVIDUAL     -> StatusChipStyle(
             SalatSecondaryContainer, SalatOnSecondaryContainer,
-            R.drawable.ic_person, stringResource(R.string.status_alone)
+            PrayerStatus.INDIVIDUAL.iconRes, stringResource(PrayerStatus.INDIVIDUAL.labelRes)
         )
         PrayerStatus.QAZA_PENDING   -> StatusChipStyle(
             Color(0xFFFFDCC3), Color(0xFF6E3900),
-            PrayerStatus.QAZA_PENDING.iconRes, stringResource(R.string.status_qaza)
+            PrayerStatus.QAZA_PENDING.iconRes, stringResource(PrayerStatus.QAZA_PENDING.labelRes)
         )
         PrayerStatus.QAZA_COMPLETED -> StatusChipStyle(
             Color(0xFFFFDCC3), Color(0xFF6E3900),
-            PrayerStatus.QAZA_COMPLETED.iconRes, stringResource(R.string.status_qaza_done)
+            PrayerStatus.QAZA_COMPLETED.iconRes, stringResource(PrayerStatus.QAZA_COMPLETED.labelRes)
         )
         PrayerStatus.MENSTRUATION   -> StatusChipStyle(
             SalatErrorContainer, SalatOnErrorContainer,
-            R.drawable.ic_female, stringResource(R.string.status_excused)
+            PrayerStatus.MENSTRUATION.iconRes, stringResource(PrayerStatus.MENSTRUATION.labelRes)
         )
         PrayerStatus.NOT_RECORDED   -> StatusChipStyle(
             SalatSurfaceContainerHigh, SalatOnSurfaceVariant,
-            R.drawable.ic_radio_unchecked, stringResource(R.string.status_not_set)
+            PrayerStatus.NOT_RECORDED.iconRes, stringResource(PrayerStatus.NOT_RECORDED.labelRes)
         )
     }
 

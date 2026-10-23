@@ -28,11 +28,13 @@ import com.salattracker.core.ui.StatTile
 import com.salattracker.core.ui.goalUnitLabel
 import com.salattracker.core.ui.iconRes
 import com.salattracker.core.ui.label
+import com.salattracker.core.ui.labelRes
 import com.salattracker.core.ui.shortLabel
 import com.salattracker.domain.model.GoalCategory
 import com.salattracker.domain.model.GoalFrequency
 import com.salattracker.domain.model.GoalPeriodStat
 import com.salattracker.domain.model.PrayerType
+import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.repository.PrayerBreakdown
 import com.salattracker.domain.repository.StatusCounts
 import com.salattracker.domain.usecase.PerfectDays
@@ -230,8 +232,8 @@ private fun SummaryCard(state: OverviewUiState) {
                 LegendCount(SalatStatusIndividual, stringResource(R.string.status_individual), state.counts.individual, Modifier.weight(1f))
             }
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                LegendCount(SalatStatusQazaCompleted, stringResource(R.string.status_qaza_done), state.counts.qazaCompleted, Modifier.weight(1f))
-                LegendCount(SalatStatusQazaPending, stringResource(R.string.status_qaza), state.counts.qazaPending, Modifier.weight(1f))
+                LegendCount(SalatStatusQazaCompleted, stringResource(PrayerStatus.QAZA_COMPLETED.labelRes), state.counts.qazaCompleted, Modifier.weight(1f))
+                LegendCount(SalatStatusQazaPending, stringResource(PrayerStatus.QAZA_PENDING.labelRes), state.counts.qazaPending, Modifier.weight(1f))
             }
         }
         Spacer(Modifier.height(16.dp))
