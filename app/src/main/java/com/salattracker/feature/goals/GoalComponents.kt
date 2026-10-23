@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.core.ui.goalUnitLabel
+import com.salattracker.core.ui.salatSwitchColors
 import com.salattracker.core.ui.shortLabel
 import com.salattracker.domain.usecase.GoalDayState
 import java.time.LocalDate
@@ -265,10 +266,7 @@ fun LogDaySheet(
                     Switch(
                         checked = state.skipped,
                         onCheckedChange = onSkippedChanged,
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = SalatOnPrimary, checkedTrackColor = SalatPrimary,
-                            uncheckedThumbColor = SalatOutline, uncheckedTrackColor = SalatOutlineVariant,
-                        ),
+                        colors = salatSwitchColors(),
                     )
                 }
             }

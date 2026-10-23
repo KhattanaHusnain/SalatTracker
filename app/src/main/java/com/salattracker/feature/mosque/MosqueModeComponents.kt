@@ -190,11 +190,8 @@ fun MosqueEditSheet(
             Text(stringResource(R.string.mosque_radius_hint), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
 
             Spacer(Modifier.height(20.dp))
-            Button(
+            com.salattracker.core.ui.SalatPrimaryButton(
                 onClick = onSave,
-                modifier = Modifier.fillMaxWidth().height(52.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = SalatPrimary, contentColor = SalatOnPrimary),
             ) { Text(stringResource(R.string.mosque_save), fontFamily = AppUiFontFamily, fontWeight = FontWeight.SemiBold) }
 
             if (isEditing) {

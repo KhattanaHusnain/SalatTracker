@@ -136,10 +136,8 @@ fun DonateScreen(onContactClick: () -> Unit) {
                 fontFamily = AppUiFontFamily,
             )
             Spacer(Modifier.height(12.dp))
-            Button(
+            com.salattracker.core.ui.SalatPrimaryButton(
                 onClick = onContactClick,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = SalatPrimary, contentColor = SalatOnPrimary),
             ) {
                 Text(stringResource(R.string.donate_contact_button), fontFamily = AppUiFontFamily, fontWeight = FontWeight.Medium)
             }

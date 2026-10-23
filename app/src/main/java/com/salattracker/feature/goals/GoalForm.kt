@@ -26,6 +26,7 @@ import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.core.ui.shortLabel
 import com.salattracker.core.ui.formatAppTime
+import com.salattracker.core.ui.salatSwitchColors
 import com.salattracker.domain.model.GoalCategory
 import com.salattracker.domain.model.GoalFrequency
 import java.time.DayOfWeek
@@ -216,7 +217,7 @@ fun GoalFormFields(form: GoalFormState, actions: GoalFormActions, use24HourForma
                 Switch(
                     checked = form.usesTasbihCounter,
                     onCheckedChange = actions.onUsesTasbihCounterChanged,
-                    colors = SwitchDefaults.colors(checkedThumbColor = SalatOnPrimary, checkedTrackColor = SalatPrimary),
+                    colors = salatSwitchColors(),
                 )
             }
         }
@@ -232,10 +233,7 @@ fun GoalFormFields(form: GoalFormState, actions: GoalFormActions, use24HourForma
             Switch(
                 checked = form.reminderEnabled,
                 onCheckedChange = actions.onReminderEnabledChanged,
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = SalatOnPrimary, checkedTrackColor = SalatPrimary,
-                    uncheckedThumbColor = SalatOutline, uncheckedTrackColor = SalatOutlineVariant,
-                ),
+                colors = salatSwitchColors(),
             )
         }
         if (form.reminderEnabled) {
@@ -263,10 +261,7 @@ fun GoalFormFields(form: GoalFormState, actions: GoalFormActions, use24HourForma
             Switch(
                 checked = form.endsAfterDuration,
                 onCheckedChange = actions.onEndsAfterChanged,
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = SalatOnPrimary, checkedTrackColor = SalatPrimary,
-                    uncheckedThumbColor = SalatOutline, uncheckedTrackColor = SalatOutlineVariant,
-                ),
+                colors = salatSwitchColors(),
             )
         }
         if (form.endsAfterDuration) {

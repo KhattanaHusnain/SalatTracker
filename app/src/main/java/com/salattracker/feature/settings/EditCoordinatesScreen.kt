@@ -23,6 +23,7 @@ import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.core.ui.CitySearchField
 import com.salattracker.core.ui.CitySearchResults
+import com.salattracker.core.ui.SalatPrimaryButton
 import com.salattracker.domain.model.CityResult
 
 @Composable
@@ -100,12 +101,9 @@ private fun CoordinatesContent(
         }
 
         Spacer(Modifier.height(16.dp))
-        Button(
+        SalatPrimaryButton(
             onClick = onSave,
             enabled = latitude.toDoubleOrNull() != null && longitude.toDoubleOrNull() != null,
-            modifier = Modifier.fillMaxWidth().height(52.dp),
-            shape = RoundedCornerShape(14.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = SalatPrimary, contentColor = SalatOnPrimary),
         ) {
             Text(stringResource(R.string.settings_edit_location_save), fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
         }

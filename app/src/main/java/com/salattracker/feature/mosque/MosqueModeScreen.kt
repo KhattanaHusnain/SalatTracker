@@ -126,12 +126,9 @@ fun MosqueModeScreen(
                 }
             }
 
-            Button(
+            com.salattracker.core.ui.SalatPrimaryButton(
                 onClick = onAddCurrentLocation,
                 enabled = !uiState.isLocating && !uiState.atLimit,
-                modifier = Modifier.fillMaxWidth().height(52.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = SalatPrimary, contentColor = SalatOnPrimary),
             ) {
                 if (uiState.isLocating) {
                     CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp, color = SalatOnPrimary)

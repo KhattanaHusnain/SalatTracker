@@ -49,16 +49,12 @@ fun EditGoalScreen(
         }
 
         // ── Save button (fixed at bottom) ───────────────────────────────────────
-        Button(
+        com.salattracker.core.ui.SalatPrimaryButton(
             onClick  = onSaveClick,
             enabled  = !uiState.isSaving,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .padding(20.dp)
-                .height(56.dp),
-            shape  = RoundedCornerShape(16.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = SalatPrimaryContainer, contentColor = SalatOnPrimary),
+                .padding(20.dp),
         ) {
             if (uiState.isSaving) {
                 CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp, color = SalatOnPrimary)

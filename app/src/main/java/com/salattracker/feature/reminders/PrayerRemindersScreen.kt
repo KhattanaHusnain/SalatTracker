@@ -35,6 +35,7 @@ import androidx.compose.ui.window.Dialog
 import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.core.ui.label
+import com.salattracker.core.ui.salatSwitchColors
 import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerType
@@ -146,12 +147,7 @@ private fun ReminderCard(
                     Switch(
                         checked         = setting.enabled,
                         onCheckedChange = onEnabledChanged,
-                        colors          = SwitchDefaults.colors(
-                            checkedThumbColor   = SalatOnPrimary,
-                            checkedTrackColor   = SalatPrimary,
-                            uncheckedThumbColor = SalatOutline,
-                            uncheckedTrackColor = SalatOutlineVariant,
-                        ),
+                        colors          = salatSwitchColors(),
                     )
                     Column {
                         Text(
@@ -279,12 +275,7 @@ private fun JumuahCard(
                 Switch(
                     checked         = enabled,
                     onCheckedChange = onEnabledChanged,
-                    colors          = SwitchDefaults.colors(
-                        checkedThumbColor   = SalatOnPrimary,
-                        checkedTrackColor   = SalatPrimary,
-                        uncheckedThumbColor = SalatOutline,
-                        uncheckedTrackColor = SalatOutlineVariant,
-                    ),
+                    colors          = salatSwitchColors(),
                 )
             }
 
@@ -478,12 +469,7 @@ private fun SwitchDetailRow(label: String, checked: Boolean, onChanged: (Boolean
             checked         = checked,
             onCheckedChange = onChanged,
             modifier        = Modifier.height(24.dp),
-            colors          = SwitchDefaults.colors(
-                checkedThumbColor   = SalatOnPrimary,
-                checkedTrackColor   = SalatPrimary,
-                uncheckedThumbColor = SalatOutline,
-                uncheckedTrackColor = SalatOutlineVariant,
-            ),
+            colors          = salatSwitchColors(),
         )
     }
 }

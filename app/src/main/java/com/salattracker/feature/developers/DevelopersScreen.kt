@@ -123,10 +123,8 @@ fun DevelopersScreen(
                 lineHeight = 19.sp,
             )
             Spacer(Modifier.height(12.dp))
-            Button(
+            com.salattracker.core.ui.SalatPrimaryButton(
                 onClick = onContributeClick,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = SalatPrimary, contentColor = SalatOnPrimary),
             ) {
                 Text(stringResource(R.string.developer_contribute_button), fontFamily = AppUiFontFamily, fontWeight = FontWeight.Medium)
             }

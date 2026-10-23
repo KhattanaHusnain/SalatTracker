@@ -32,6 +32,7 @@ import com.salattracker.core.ui.iconRes
 import com.salattracker.core.ui.label
 import com.salattracker.core.ui.labelRes
 import com.salattracker.core.ui.nameRes
+import com.salattracker.core.ui.SalatPrimaryButton
 import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
@@ -122,15 +123,9 @@ fun BulkUpdateScreen(
             StatusChipRow(selected = uiState.selectedStatus, gender = uiState.gender, onSelected = onStatusChanged)
 
             // ── Apply button ───────────────────────────────────────────────────
-            Button(
+            SalatPrimaryButton(
                 onClick  = onApplyClick,
                 enabled  = uiState.selectedPrayers.isNotEmpty(),
-                modifier = Modifier.fillMaxWidth().height(64.dp),
-                shape    = RoundedCornerShape(16.dp),
-                colors   = ButtonDefaults.buttonColors(
-                    containerColor = SalatPrimary,
-                    contentColor   = SalatOnPrimary,
-                ),
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(stringResource(R.string.bulk_apply_changes), fontFamily = AppTitleFontFamily, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)

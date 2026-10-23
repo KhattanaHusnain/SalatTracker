@@ -131,12 +131,9 @@ private fun NotConnectedCard(isWorking: Boolean, onConnectClick: () -> Unit) {
             color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = AppUiFontFamily,
         )
         Spacer(Modifier.height(16.dp))
-        Button(
+        com.salattracker.core.ui.SalatPrimaryButton(
             onClick  = onConnectClick,
             enabled  = !isWorking,
-            modifier = Modifier.fillMaxWidth().height(52.dp),
-            shape    = RoundedCornerShape(12.dp),
-            colors   = ButtonDefaults.buttonColors(containerColor = SalatPrimary, contentColor = SalatOnPrimary),
         ) {
             if (isWorking) {
                 CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp, color = SalatOnPrimary)
@@ -167,12 +164,9 @@ private fun ConnectedCard(
         )
 
         Spacer(Modifier.height(16.dp))
-        Button(
+        com.salattracker.core.ui.SalatPrimaryButton(
             onClick  = onBackupNowClick,
             enabled  = !uiState.isWorking,
-            modifier = Modifier.fillMaxWidth().height(52.dp),
-            shape    = RoundedCornerShape(12.dp),
-            colors   = ButtonDefaults.buttonColors(containerColor = SalatPrimary, contentColor = SalatOnPrimary),
         ) {
             if (uiState.isWorking) {
                 CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp, color = SalatOnPrimary)

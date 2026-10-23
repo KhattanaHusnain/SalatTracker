@@ -29,6 +29,7 @@ import com.salattracker.core.ui.StatTile
 import com.salattracker.core.ui.iconRes
 import com.salattracker.core.ui.label
 import com.salattracker.core.ui.shortLabel
+import com.salattracker.core.ui.SalatPrimaryButton
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.usecase.QazaDay
 import com.salattracker.domain.usecase.QazaEtaUnit
@@ -192,11 +193,8 @@ private fun ProgressCard(uiState: QazaUiState, onLogClick: () -> Unit, onAddMiss
 
             if (uiState.hasOutstanding) {
                 Spacer(Modifier.height(16.dp))
-                Button(
+                SalatPrimaryButton(
                     onClick = onLogClick,
-                    modifier = Modifier.fillMaxWidth().height(48.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = SalatPrimary, contentColor = SalatOnPrimary),
                 ) {
                     Text(stringResource(R.string.qaza_action_log), fontFamily = AppUiFontFamily, fontWeight = FontWeight.SemiBold)
                 }

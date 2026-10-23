@@ -243,12 +243,9 @@ fun QuickLogSheet(
             }
 
             Spacer(Modifier.height(20.dp))
-            Button(
+            com.salattracker.core.ui.SalatPrimaryButton(
                 onClick = onConfirm,
                 enabled = state.totalCount > 0,
-                modifier = Modifier.fillMaxWidth().height(48.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = SalatPrimary, contentColor = SalatOnPrimary),
             ) {
                 Text(stringResource(R.string.qaza_log_confirm, state.totalCount), fontFamily = AppUiFontFamily, fontWeight = FontWeight.SemiBold)
             }

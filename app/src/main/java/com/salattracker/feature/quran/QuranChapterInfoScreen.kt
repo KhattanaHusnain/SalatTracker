@@ -93,11 +93,8 @@ fun QuranChapterInfoScreen(uiState: QuranChapterInfoUiState, onReadClick: (Int) 
         }
 
         Spacer(Modifier.height(24.dp))
-        Button(
+        com.salattracker.core.ui.SalatPrimaryButton(
             onClick = { onReadClick(chapter.number) },
-            modifier = Modifier.fillMaxWidth().height(52.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = SalatPrimary, contentColor = SalatOnPrimary),
         ) {
             Text(stringResource(R.string.quran_info_start_reading), fontFamily = AppUiFontFamily, fontWeight = FontWeight.SemiBold)
         }

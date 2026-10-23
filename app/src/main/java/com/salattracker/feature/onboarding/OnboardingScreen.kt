@@ -41,6 +41,8 @@ import com.salattracker.core.ui.CitySearchField
 import com.salattracker.core.ui.CitySearchResults
 import com.salattracker.core.ui.DatePickerModal
 import com.salattracker.core.ui.fullLabel
+import com.salattracker.core.ui.salatSwitchColors
+import com.salattracker.core.ui.SalatPrimaryButton
 import com.salattracker.feature.settings.CalculationMethodSheet
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -745,12 +747,7 @@ private fun ToggleRow(icon: Int, label: String, checked: Boolean, onCheckedChang
             Switch(
                 checked         = checked,
                 onCheckedChange = onCheckedChange,
-                colors          = SwitchDefaults.colors(
-                    checkedThumbColor   = SalatOnPrimary,
-                    checkedTrackColor   = SalatPrimary,
-                    uncheckedThumbColor = SalatOutline,
-                    uncheckedTrackColor = SalatOutlineVariant,
-                ),
+                colors          = salatSwitchColors(),
             )
         }
     }
@@ -779,13 +776,7 @@ private fun StepDots(current: Int, total: Int) {
 
 @Composable
 private fun PrimaryButton(text: String, icon: Int? = null, enabled: Boolean = true, onClick: () -> Unit) {
-    Button(
-        onClick  = onClick,
-        enabled  = enabled,
-        modifier = Modifier.fillMaxWidth().height(56.dp),
-        shape    = RoundedCornerShape(16.dp),
-        colors   = ButtonDefaults.buttonColors(containerColor = SalatPrimary, contentColor = SalatOnPrimary),
-    ) {
+    SalatPrimaryButton(onClick = onClick, enabled = enabled) {
         Text(text, fontFamily = AppTitleFontFamily, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
         if (icon != null) {
             Spacer(Modifier.width(8.dp))
