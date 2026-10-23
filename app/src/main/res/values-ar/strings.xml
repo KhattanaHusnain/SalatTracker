@@ -185,7 +185,7 @@
 
     <!-- Onboarding: About you -->
     <string name="onboarding_about_you_title">أخبرنا عن نفسك</string>
-    <string name="onboarding_about_you_subtitle">هذا يخصّص تتبع صلواتك. لا تُغادر هذه البيانات جهازك مطلقًا.</string>
+    <string name="onboarding_about_you_subtitle">هذا يخصّص تتبع صلواتك. تُخزّن هذه البيانات على جهازك وفي نسخة Google Drive الاحتياطية إذا فعّلتها.</string>
     <string name="onboarding_gender_male">ذكر</string>
     <string name="onboarding_gender_male_desc">تتبع عادي</string>
     <string name="onboarding_gender_female">أنثى</string>

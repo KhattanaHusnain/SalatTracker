@@ -185,7 +185,7 @@
 
     <!-- Onboarding: About you -->
     <string name="onboarding_about_you_title">Parlez-nous de vous</string>
-    <string name="onboarding_about_you_subtitle">Cela adapte le suivi de vos prières. Ces données ne quittent jamais votre appareil.</string>
+    <string name="onboarding_about_you_subtitle">Cela adapte le suivi de vos prières. Ces données sont stockées sur votre appareil et dans votre sauvegarde Google Drive si vous l’activez.</string>
     <string name="onboarding_gender_male">Homme</string>
     <string name="onboarding_gender_male_desc">Suivi standard</string>
     <string name="onboarding_gender_female">Femme</string>

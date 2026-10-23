@@ -192,7 +192,7 @@
 
     <!-- Onboarding: About you -->
     <string name="onboarding_about_you_title">Tell us about you</string>
-    <string name="onboarding_about_you_subtitle">This tailors your prayer tracking. It never leaves your device.</string>
+    <string name="onboarding_about_you_subtitle">This tailors your prayer tracking. It is stored on this device and in your Google Drive backup if you turn that on.</string>
     <string name="onboarding_gender_male">Male</string>
     <string name="onboarding_gender_male_desc">Standard tracking</string>
     <string name="onboarding_gender_female">Female</string>

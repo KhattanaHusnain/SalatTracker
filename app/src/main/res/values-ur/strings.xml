@@ -185,7 +185,7 @@
 
     <!-- Onboarding: About you -->
     <string name="onboarding_about_you_title">اپنے بارے میں بتائیں</string>
-    <string name="onboarding_about_you_subtitle">یہ آپ کی نماز ٹریکنگ کو بہتر بناتا ہے۔ یہ ڈیٹا آپ کے آلے سے باہر نہیں جاتا۔</string>
+    <string name="onboarding_about_you_subtitle">یہ آپ کی نماز ٹریکنگ کو بہتر بناتا ہے۔ یہ ڈیٹا آپ کے آلے پر اور، اگر آپ فعال کریں، تو Google Drive بیک اپ میں محفوظ ہوتا ہے۔</string>
     <string name="onboarding_gender_male">مرد</string>
     <string name="onboarding_gender_male_desc">معیاری ٹریکنگ</string>
     <string name="onboarding_gender_female">عورت</string>
