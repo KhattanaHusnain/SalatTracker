@@ -151,6 +151,7 @@
     <string name="action_skip_for_now">ابھی کے لیے نظر انداز کریں</string>
 
     <string name="onboarding_welcome_title">Salah Tracker میں خوش آمدید</string>
+    <string name="onboarding_step_progress">مرحلہ %1$d از %2$d</string>
     <string name="onboarding_welcome_subtitle">اپنے سفر کا آغاز کرنے کے لیے براہ کرم اپنی پسندیدہ زبان منتخب کریں۔</string>
     <string name="onboarding_change_later">آپ اسے بعد میں ترتیبات میں تبدیل کر سکتے ہیں۔</string>
     <string name="onboarding_theme_title">اپنا انداز منتخب کریں</string>

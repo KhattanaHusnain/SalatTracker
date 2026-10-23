@@ -151,6 +151,7 @@
     <string name="action_skip_for_now">Ignorer pour l\'instant</string>
 
     <string name="onboarding_welcome_title">Bienvenue sur Salah Tracker</string>
+    <string name="onboarding_step_progress">Étape %1$d sur %2$d</string>
     <string name="onboarding_welcome_subtitle">Veuillez sélectionner votre langue préférée pour commencer votre parcours.</string>
     <string name="onboarding_change_later">Vous pourrez modifier ceci plus tard dans les réglages.</string>
     <string name="onboarding_theme_title">Choisissez votre ambiance</string>

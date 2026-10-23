@@ -9,11 +9,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
@@ -44,6 +46,8 @@ import com.salattracker.core.ui.rememberAzanPreviewPlayer
 import com.salattracker.core.ui.CalculationMethodSheet
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+
+private val LocalOnboardingBack = staticCompositionLocalOf<() -> Unit> { {} }
 
 @Composable
 fun OnboardingScreen(
@@ -77,46 +81,49 @@ fun OnboardingScreen(
     onCatchUpCustomRangeChanged: (LocalDate, LocalDate) -> Unit,
     onApplyCatchUp: () -> Unit,
     onUndoCatchUp: () -> Unit,
+    onBack: () -> Unit,
     onFinish: () -> Unit,
 ) {
     var showConfirmation by remember { mutableStateOf(false) }
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(SalatBackground)
-            .padding(horizontal = 24.dp),
-    ) {
-        when (uiState.step) {
-            OnboardingStep.WELCOME -> WelcomeStep(uiState.language, uiState.themeMode, onLanguageSelected, onThemeSelected, onWelcomeNext, onRestoreFromBackup)
-            OnboardingStep.ABOUT_YOU -> AboutYouStep(uiState.gender, onGenderSelected, onAboutYouNext)
-            OnboardingStep.SCHOOL -> SchoolStep(uiState.madhab, onMadhabSelected, onSchoolNext)
-            OnboardingStep.LOCATION_INTRO -> LocationIntroStep(uiState.isLocating, uiState.locationError, onAllowLocationClick, onEnterCityInstead)
-            OnboardingStep.CITY_SEARCH -> CitySearchStep(
-                query = uiState.cityQuery, results = uiState.cityResults, isSearching = uiState.isSearchingCity,
-                selected = uiState.confirmedCity, onQueryChanged = onCityQueryChanged, onSelect = onCitySelected,
-                onContinue = onCitySearchContinue, onUseMyLocationInstead = onUseMyLocationInstead,
-            )
-            OnboardingStep.LOCATION_CONFIRM -> LocationConfirmStep(
-                city = uiState.confirmedCity, calculationMethod = uiState.calculationMethod,
-                showCalculationMethodSheet = uiState.showCalculationMethodSheet,
-                onConfirm = onConfirmLocation, onChangeLocation = onChangeLocationClick,
-                onCalculationMethodClick = onCalculationMethodSheetOpen,
-                onCalculationMethodDismiss = onCalculationMethodSheetDismiss,
-                onCalculationMethodSelected = onCalculationMethodSelected,
-            )
-            OnboardingStep.REMINDERS -> RemindersStep(
-                prayerRemindersEnabled = uiState.prayerRemindersEnabled, fullScreenAlertEnabled = uiState.fullScreenAlertEnabled,
-                onPrayerRemindersChanged = onPrayerRemindersChanged, onFullScreenAlertChanged = onFullScreenAlertChanged,
-                onNext = onRemindersNext, onSkip = onRemindersSkip,
-            )
-            OnboardingStep.CATCH_UP -> CatchUpStep(onAddMissedClick = onCatchUpAddClick, onSkip = onCatchUpSkip)
-            OnboardingStep.CATCH_UP_ADD -> CatchUpAddStep(
-                duration = uiState.catchUpDuration, prayerCount = uiState.catchUpPrayerCount,
-                customFrom = uiState.catchUpCustomFrom, customTo = uiState.catchUpCustomTo,
-                onDurationChanged = onCatchUpDurationChanged, onCustomRangeChanged = onCatchUpCustomRangeChanged,
-                onApply = onApplyCatchUp,
-            )
-            OnboardingStep.DONE -> DoneStep(uiState, onUndoCatchUp, onFinish)
+    CompositionLocalProvider(LocalOnboardingBack provides onBack) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(SalatBackground)
+                .padding(horizontal = 24.dp),
+        ) {
+            when (uiState.step) {
+                OnboardingStep.WELCOME -> WelcomeStep(uiState.language, uiState.themeMode, onLanguageSelected, onThemeSelected, onWelcomeNext, onRestoreFromBackup)
+                OnboardingStep.ABOUT_YOU -> AboutYouStep(uiState.gender, onGenderSelected, onAboutYouNext)
+                OnboardingStep.SCHOOL -> SchoolStep(uiState.madhab, onMadhabSelected, onSchoolNext)
+                OnboardingStep.LOCATION_INTRO -> LocationIntroStep(uiState.isLocating, uiState.locationError, onAllowLocationClick, onEnterCityInstead)
+                OnboardingStep.CITY_SEARCH -> CitySearchStep(
+                    query = uiState.cityQuery, results = uiState.cityResults, isSearching = uiState.isSearchingCity,
+                    selected = uiState.confirmedCity, onQueryChanged = onCityQueryChanged, onSelect = onCitySelected,
+                    onContinue = onCitySearchContinue, onUseMyLocationInstead = onUseMyLocationInstead,
+                )
+                OnboardingStep.LOCATION_CONFIRM -> LocationConfirmStep(
+                    city = uiState.confirmedCity, calculationMethod = uiState.calculationMethod,
+                    showCalculationMethodSheet = uiState.showCalculationMethodSheet,
+                    onConfirm = onConfirmLocation, onChangeLocation = onChangeLocationClick,
+                    onCalculationMethodClick = onCalculationMethodSheetOpen,
+                    onCalculationMethodDismiss = onCalculationMethodSheetDismiss,
+                    onCalculationMethodSelected = onCalculationMethodSelected,
+                )
+                OnboardingStep.REMINDERS -> RemindersStep(
+                    prayerRemindersEnabled = uiState.prayerRemindersEnabled, fullScreenAlertEnabled = uiState.fullScreenAlertEnabled,
+                    onPrayerRemindersChanged = onPrayerRemindersChanged, onFullScreenAlertChanged = onFullScreenAlertChanged,
+                    onNext = onRemindersNext, onSkip = onRemindersSkip,
+                )
+                OnboardingStep.CATCH_UP -> CatchUpStep(onAddMissedClick = onCatchUpAddClick, onSkip = onCatchUpSkip)
+                OnboardingStep.CATCH_UP_ADD -> CatchUpAddStep(
+                    duration = uiState.catchUpDuration, prayerCount = uiState.catchUpPrayerCount,
+                    customFrom = uiState.catchUpCustomFrom, customTo = uiState.catchUpCustomTo,
+                    onDurationChanged = onCatchUpDurationChanged, onCustomRangeChanged = onCatchUpCustomRangeChanged,
+                    onApply = onApplyCatchUp,
+                )
+                OnboardingStep.DONE -> DoneStep(uiState, onUndoCatchUp, onFinish)
+            }
         }
     }
 }
@@ -244,6 +251,7 @@ private fun SchoolStep(selected: Madhab, onSelect: (Madhab) -> Unit, onNext: () 
 @Composable
 private fun LocationIntroStep(isLocating: Boolean, locationError: Boolean, onAllowLocation: () -> Unit, onEnterCityInstead: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+        OnboardingNavigationHeader(OnboardingStep.LOCATION_INTRO)
         Spacer(Modifier.weight(1f))
         Box(
             modifier = Modifier.size(120.dp).clip(CircleShape).background(SalatSecondaryContainer),
@@ -405,7 +413,8 @@ private fun RemindersStep(
     onSkip: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.height(40.dp))
+        OnboardingNavigationHeader(OnboardingStep.REMINDERS)
+        Spacer(Modifier.height(16.dp))
         Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
             Box(
                 modifier = Modifier.size(96.dp).clip(CircleShape).background(SalatPrimary),
@@ -644,20 +653,56 @@ private fun DoneSummaryLine(label: String, value: String) {
 
 // ── Shared pieces ──────────────────────────────────────────────────────────────
 
-/** Title + subtitle + progress dots used by every mid-flow step (not Welcome or Done, which have
- * their own centered hero layout). [stepIndex] is the 0-based [OnboardingStep] ordinal, excluding
- * [OnboardingStep.WELCOME] and [OnboardingStep.DONE] from the dot count. */
+/** Title, visible Back button, and five-stage progress used by every mid-flow step. */
 @Composable
 private fun StepHeader(stepIndex: Int, title: String, subtitle: String?) {
-    val total = OnboardingStep.values().size - 2
-    Spacer(Modifier.height(48.dp))
-    StepDots(current = (stepIndex - 1).coerceIn(0, total - 1), total = total)
-    Spacer(Modifier.height(24.dp))
+    OnboardingNavigationHeader(OnboardingStep.values()[stepIndex])
+    Spacer(Modifier.height(18.dp))
     Text(title, color = SalatPrimary, fontSize = 24.sp, fontWeight = FontWeight.Bold, fontFamily = AppTitleFontFamily, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
     if (subtitle != null) {
         Spacer(Modifier.height(8.dp))
         Text(subtitle, color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = AppUiFontFamily, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
     }
+}
+
+@Composable
+private fun OnboardingNavigationHeader(step: OnboardingStep) {
+    val progressStep = onboardingProgressStep(step)
+    Spacer(Modifier.height(48.dp))
+    Box(modifier = Modifier.fillMaxWidth()) {
+        IconButton(onClick = LocalOnboardingBack.current, modifier = Modifier.align(Alignment.CenterStart)) {
+            Icon(
+                painter = painterResource(R.drawable.ic_arrow_back),
+                contentDescription = stringResource(R.string.cd_back),
+                tint = SalatPrimary,
+            )
+        }
+        Column(modifier = Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
+            StepDots(current = progressStep, total = ONBOARDING_PROGRESS_STEPS)
+            Spacer(Modifier.height(6.dp))
+            Text(
+                text = stringResource(R.string.onboarding_step_progress, progressStep + 1, ONBOARDING_PROGRESS_STEPS),
+                color = SalatOnSurfaceVariant,
+                fontSize = 12.sp,
+                fontFamily = AppUiFontFamily,
+            )
+        }
+    }
+}
+
+private const val ONBOARDING_PROGRESS_STEPS = 5
+
+private fun onboardingProgressStep(step: OnboardingStep): Int = when (step) {
+    OnboardingStep.WELCOME -> 0
+    OnboardingStep.ABOUT_YOU -> 1
+    OnboardingStep.SCHOOL,
+    OnboardingStep.LOCATION_INTRO,
+    OnboardingStep.CITY_SEARCH,
+    OnboardingStep.LOCATION_CONFIRM -> 2
+    OnboardingStep.REMINDERS -> 3
+    OnboardingStep.CATCH_UP,
+    OnboardingStep.CATCH_UP_ADD,
+    OnboardingStep.DONE -> 4
 }
 
 @Composable
@@ -814,7 +859,7 @@ fun OnboardingWelcomePreview() {
         onCalculationMethodSheetOpen = {}, onCalculationMethodSheetDismiss = {}, onCalculationMethodSelected = {},
         onPrayerRemindersChanged = {}, onFullScreenAlertChanged = {}, onRemindersSkip = {}, onRemindersNext = {},
         onCatchUpAddClick = {}, onCatchUpSkip = {}, onCatchUpDurationChanged = {}, onCatchUpCustomRangeChanged = { _, _ -> },
-        onApplyCatchUp = {}, onUndoCatchUp = {}, onFinish = {},
+        onApplyCatchUp = {}, onUndoCatchUp = {}, onBack = {}, onFinish = {},
     )
 }
 
@@ -830,6 +875,6 @@ fun OnboardingDonePreview() {
         onCalculationMethodSheetOpen = {}, onCalculationMethodSheetDismiss = {}, onCalculationMethodSelected = {},
         onPrayerRemindersChanged = {}, onFullScreenAlertChanged = {}, onRemindersSkip = {}, onRemindersNext = {},
         onCatchUpAddClick = {}, onCatchUpSkip = {}, onCatchUpDurationChanged = {}, onCatchUpCustomRangeChanged = { _, _ -> },
-        onApplyCatchUp = {}, onUndoCatchUp = {}, onFinish = {},
+        onApplyCatchUp = {}, onUndoCatchUp = {}, onBack = {}, onFinish = {},
     )
 }

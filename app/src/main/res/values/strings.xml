@@ -158,6 +158,7 @@
 
     <!-- Onboarding -->
     <string name="onboarding_welcome_title">Welcome to Salah Tracker</string>
+    <string name="onboarding_step_progress">Step %1$d of %2$d</string>
     <string name="onboarding_welcome_subtitle">Please select your preferred language to begin your journey.</string>
     <string name="onboarding_change_later">You can change this later in settings.</string>
     <string name="onboarding_theme_title">Choose Your Vibe</string>

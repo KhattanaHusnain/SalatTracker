@@ -69,6 +69,7 @@ fun OnboardingEntry(
         onCatchUpCustomRangeChanged = viewModel::onCatchUpCustomRangeChanged,
         onApplyCatchUp            = viewModel::onApplyCatchUp,
         onUndoCatchUp             = viewModel::onUndoCatchUp,
+        onBack                    = viewModel::onBack,
         onFinish                  = viewModel::onFinish,
     )
 }
