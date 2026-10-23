@@ -323,7 +323,7 @@ private fun ArchivedSection(archived: List<ArchivedGoalUi>, onGoalClick: (Long) 
                             Text(item.goal.name, color = SalatOnSurface, fontSize = 14.sp, fontFamily = AppUiFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
                             Text(
                                 text = stringResource(if (item.status == GoalStatus.COMPLETED) R.string.goal_status_completed else R.string.goal_status_archived),
-                                color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily,
+                                color = SalatOnSurfaceVariant,  = 12.sp, fontFamily = AppUiFontFamily,
                             )
                         }
                     }
@@ -375,7 +375,7 @@ internal fun DeleteGoalConfirmDialog(goalName: String, onConfirm: () -> Unit, on
                         Text(
                             text = stringResource(R.string.goal_deleting),
                             color = SalatOnSurfaceVariant,
-                            fontSize = 10.sp,
+                             = 12.sp,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 0.5.sp,
                             fontFamily = AppUiFontFamily,

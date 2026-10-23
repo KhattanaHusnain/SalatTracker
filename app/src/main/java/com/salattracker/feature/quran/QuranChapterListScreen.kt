@@ -226,7 +226,7 @@ private fun QuranSearchResult(
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(primary, color = SalatOnSurface, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily)
-            Text(secondary, color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily)
+            Text(secondary, color = SalatOnSurfaceVariant,  = 12.sp, fontFamily = AppUiFontFamily)
         }
         Text(arabic, color = SalatOnSurface, fontSize = 18.sp, fontFamily = AmiriQuranFamily, textAlign = TextAlign.End)
     }
@@ -298,7 +298,7 @@ private fun JuzRow(juz: QuranJuzUi, onClick: () -> Unit) {
             Spacer(Modifier.height(2.dp))
             Text(
                 text = "${juz.pageCount} pages · ${juz.ayahCount} ayahs",
-                color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily,
+                color = SalatOnSurfaceVariant,  = 12.sp, fontFamily = AppUiFontFamily,
             )
         }
         Text(

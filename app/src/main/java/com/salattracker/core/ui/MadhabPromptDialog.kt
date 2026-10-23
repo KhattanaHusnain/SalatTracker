@@ -112,7 +112,7 @@ private fun MadhabPromptOption(title: String, subtitle: String, isSelected: Bool
             RadioButton(selected = isSelected, onClick = onClick, colors = RadioButtonDefaults.colors(selectedColor = SalatPrimary))
             Column(modifier = Modifier.weight(1f)) {
                 Text(title, color = SalatOnSurface, fontSize = 14.sp, fontWeight = FontWeight.Medium, fontFamily = AppUiFontFamily)
-                Text(subtitle, color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily)
+                Text(subtitle, color = SalatOnSurfaceVariant,  = 12.sp, fontFamily = AppUiFontFamily)
             }
         }
     }

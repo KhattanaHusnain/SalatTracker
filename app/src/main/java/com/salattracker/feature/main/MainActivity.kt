@@ -679,7 +679,7 @@ private fun SalatBottomNavBar(
                 label = {
                     Text(
                         stringResource(route.labelRes),
-                        fontSize   = 11.sp,
+                           = 12.sp,
                         fontFamily = AppUiFontFamily,
                         fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                     )

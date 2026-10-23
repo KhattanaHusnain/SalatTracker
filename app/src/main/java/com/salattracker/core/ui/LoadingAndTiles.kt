@@ -45,6 +45,6 @@ fun StatTile(label: String, value: String, modifier: Modifier = Modifier) {
     ) {
         Text(value, color = SalatPrimary, fontSize = 18.sp, fontWeight = FontWeight.Bold, fontFamily = AppTitleFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Spacer(Modifier.height(2.dp))
-        Text(label, color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily, maxLines = 2)
+        Text(label, color = SalatOnSurfaceVariant,  = 12.sp, fontFamily = AppUiFontFamily, maxLines = 2)
     }
 }

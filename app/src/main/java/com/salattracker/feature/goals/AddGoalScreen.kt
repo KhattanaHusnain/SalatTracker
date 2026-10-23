@@ -135,7 +135,7 @@ internal fun CategoryOption(category: GoalCategory, isSelected: Boolean, onClick
         Text(
             text = category.label(),
             color = if (isSelected) SalatPrimary else SalatSecondary,
-            fontSize = 10.sp,
+             = 12.sp,
             fontFamily = AppUiFontFamily,
         )
     }

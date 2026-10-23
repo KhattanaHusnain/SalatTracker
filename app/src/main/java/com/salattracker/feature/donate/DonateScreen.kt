@@ -186,7 +186,7 @@ private fun ProviderChip(label: String) {
             label,
             modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
             color = SalatOnSurfaceVariant,
-            fontSize = 11.sp,
+             = 12.sp,
             fontWeight = FontWeight.Medium,
             fontFamily = AppUiFontFamily,
         )

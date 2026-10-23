@@ -217,7 +217,7 @@ private fun LocationAndPrayerTimesCard(
         Spacer(modifier = Modifier.height(16.dp))
 
         // School of thought — changes Asr, and for Jafari also Isha.
-        Text(stringResource(R.string.settings_school), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily)
+        Text(stringResource(R.string.settings_school), color = SalatOnSurfaceVariant,  = 12.sp, fontFamily = AppUiFontFamily)
         Spacer(Modifier.height(8.dp))
         SchoolDropdown(selected = madhab, onSelect = onMadhabChanged)
 
@@ -226,9 +226,9 @@ private fun LocationAndPrayerTimesCard(
         Spacer(modifier = Modifier.height(16.dp))
 
         // High-latitude rule — bounds Fajr/Isha where the method's angle is never reached.
-        Text(stringResource(R.string.settings_high_latitude), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily)
+        Text(stringResource(R.string.settings_high_latitude), color = SalatOnSurfaceVariant,  = 12.sp, fontFamily = AppUiFontFamily)
         Spacer(Modifier.height(4.dp))
-        Text(stringResource(R.string.settings_high_latitude_desc), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily, lineHeight = 15.sp)
+        Text(stringResource(R.string.settings_high_latitude_desc), color = SalatOnSurfaceVariant,  = 12.sp, fontFamily = AppUiFontFamily, lineHeight = 15.sp)
         Spacer(Modifier.height(8.dp))
         HighLatitudeRuleDropdown(selected = highLatitudeRule, onSelect = onHighLatitudeRuleChanged)
     }
@@ -372,7 +372,7 @@ private fun AppearanceCard(
 ) {
     SettingsCard {
         // Theme
-        Text(stringResource(R.string.settings_theme), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily)
+        Text(stringResource(R.string.settings_theme), color = SalatOnSurfaceVariant,  = 12.sp, fontFamily = AppUiFontFamily)
         Spacer(Modifier.height(8.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             ThemeMode.values().forEach { mode ->
@@ -390,7 +390,7 @@ private fun AppearanceCard(
         Spacer(Modifier.height(16.dp))
 
         // Language
-        Text(stringResource(R.string.settings_language), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily)
+        Text(stringResource(R.string.settings_language), color = SalatOnSurfaceVariant,  = 12.sp, fontFamily = AppUiFontFamily)
         Spacer(Modifier.height(4.dp))
         var expanded by remember { mutableStateOf(false) }
         ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {

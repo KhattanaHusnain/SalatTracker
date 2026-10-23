@@ -189,7 +189,7 @@ private fun StatusBar(counts: StatusCounts, modifier: Modifier = Modifier, heigh
 private fun LegendCount(color: Color, label: String, count: Int, modifier: Modifier = Modifier) {
     Row(modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
         Box(Modifier.size(9.dp).clip(CircleShape).background(color))
-        Text("$label: $count", color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text("$label: $count", color = SalatOnSurfaceVariant,  = 12.sp, fontFamily = AppUiFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 
@@ -198,7 +198,7 @@ private fun LegendCount(color: Color, label: String, count: Int, modifier: Modif
 @Composable
 private fun SummaryCard(state: OverviewUiState, gender: Gender?) {
     StatsCard {
-        Text(stringResource(R.string.stats_prayed_on_time), color = SalatOnSurfaceVariant, fontSize = 11.sp,
+        Text(stringResource(R.string.stats_prayed_on_time), color = SalatOnSurfaceVariant,  = 12.sp,
             fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily, letterSpacing = 1.sp)
         Spacer(Modifier.height(6.dp))
         if (state.isLoading) {
@@ -217,7 +217,7 @@ private fun SummaryCard(state: OverviewUiState, gender: Gender?) {
                 Text(
                     text = stringResource(R.string.stats_vs_last, "${if (delta > 0) "+" else ""}$delta"),
                     color = if (delta > 0) SalatSurfaceTint else SalatError,
-                    fontSize = 11.sp, fontFamily = AppUiFontFamily, modifier = Modifier.padding(bottom = 6.dp),
+                     = 12.sp, fontFamily = AppUiFontFamily, modifier = Modifier.padding(bottom = 6.dp),
                 )
             }
         }
@@ -256,7 +256,7 @@ private fun SummaryCard(state: OverviewUiState, gender: Gender?) {
             Spacer(Modifier.height(10.dp))
             Text(
                 text = stringResource(R.string.stats_excused_not_counted, state.counts.excused),
-                color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily,
+                color = SalatOnSurfaceVariant,  = 12.sp, fontFamily = AppUiFontFamily,
             )
         }
     }
@@ -380,7 +380,7 @@ private fun WeekdayBar(day: DayOfWeek, pct: Int?, isWeakest: Boolean, modifier: 
             Box(Modifier.width(18.dp).fillMaxHeight(animFraction).clip(RoundedCornerShape(4.dp)).background(color))
         }
         Spacer(Modifier.height(6.dp))
-        Text(day.shortLabel(), color = SalatOnSurfaceVariant, fontSize = 10.sp, fontFamily = AppUiFontFamily, maxLines = 1)
+        Text(day.shortLabel(), color = SalatOnSurfaceVariant,  = 12.sp, fontFamily = AppUiFontFamily, maxLines = 1)
     }
 }
 
@@ -391,7 +391,7 @@ private fun GoalsCard(state: GoalsUiState, onAddGoalClick: () -> Unit) {
     StatsCard {
         Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.CenterVertically) {
             Text(stringResource(R.string.nav_goals), color = SalatPrimary, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily)
-            Text(stringResource(R.string.stats_targets_hit), color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily)
+            Text(stringResource(R.string.stats_targets_hit), color = SalatOnSurfaceVariant,  = 12.sp, fontFamily = AppUiFontFamily)
         }
         Spacer(Modifier.height(16.dp))
         when {
@@ -420,7 +420,7 @@ private fun GoalStatRow(item: GoalPeriodStat) {
                 Text(item.goalName.shortLabel(), color = SalatOnSurface, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(
                     text = "${item.loggedAmount} ${goalUnitLabel(item.unit)} · ${item.frequency.label()}",
-                    color = SalatOnSurfaceVariant, fontSize = 11.sp, fontFamily = AppUiFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                    color = SalatOnSurfaceVariant,  = 12.sp, fontFamily = AppUiFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis,
                 )
             }
             Text(

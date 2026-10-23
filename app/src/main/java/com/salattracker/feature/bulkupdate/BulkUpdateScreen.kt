@@ -138,7 +138,7 @@ fun BulkUpdateScreen(
                             "$prayersPart $daysPart",
                         ),
                         fontFamily = AppUiFontFamily,
-                        fontSize   = 10.sp,
+                           = 12.sp,
                         letterSpacing = 1.sp,
                         color      = SalatPrimaryFixed.copy(alpha = 0.9f),
                     )
@@ -213,7 +213,7 @@ private fun SectionLabel(text: String, modifier: Modifier = Modifier.fillMaxWidt
         text          = text.uppercase(),
         modifier      = modifier,
         color         = SalatOnSurfaceVariant,
-        fontSize      = 11.sp,
+              = 12.sp,
         fontWeight    = FontWeight.SemiBold,
         fontFamily    = AppUiFontFamily,
         letterSpacing = 1.5.sp,
@@ -371,7 +371,7 @@ private fun MiniCalendarGrid(
                     modifier  = Modifier.weight(1f),
                     textAlign = TextAlign.Center,
                     color     = SalatOutline,
-                    fontSize  = 10.sp,
+                      = 12.sp,
                     fontFamily = AppUiFontFamily,
                 )
             }
@@ -407,7 +407,7 @@ private fun MiniCalendarGrid(
                                 isFuture   -> SalatOutlineVariant
                                 else       -> SalatOutline
                             },
-                            fontSize = 11.sp,
+                             = 12.sp,
                             fontFamily = AppUiFontFamily,
                         )
                     }
@@ -545,7 +545,7 @@ private fun BulkUpdateConfirmDialog(
                         Text(
                             text = stringResource(R.string.bulk_confirm_desc),
                             color = SalatOnErrorContainer,
-                            fontSize = 11.sp,
+                             = 12.sp,
                             fontFamily = AppUiFontFamily,
                             lineHeight = 16.sp,
                         )

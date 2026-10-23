@@ -129,7 +129,7 @@ private fun DrawerItem(
             Column {
                 Text(label, fontSize = 14.sp, fontFamily = AppUiFontFamily, fontWeight = FontWeight.Medium)
                 if (subtitle != null) {
-                    Text(subtitle, fontSize = 11.sp, fontFamily = AppUiFontFamily, color = SalatError)
+                    Text(subtitle,  = 12.sp, fontFamily = AppUiFontFamily, color = SalatError)
                 }
             }
         },
