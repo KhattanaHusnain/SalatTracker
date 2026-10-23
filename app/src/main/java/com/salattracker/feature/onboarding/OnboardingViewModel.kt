@@ -1,6 +1,7 @@
 package com.salattracker.feature.onboarding
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.salattracker.core.locale.LocaleManager
@@ -110,26 +111,85 @@ class OnboardingViewModel @Inject constructor(
     private val geocodingRepository: GeocodingRepository,
     private val prayerRepository: PrayerRepository,
     private val workManager: WorkManager,
+    private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
     private var catchUpUndoEntries: List<Pair<LocalDate, PrayerType>>? = null
 
-    private val _uiState = MutableStateFlow(OnboardingUiState())
+    private val _uiState = MutableStateFlow(restoredState())
     val uiState: StateFlow<OnboardingUiState> = _uiState.asStateFlow()
 
     /** Steps visited, in order, so [onBack] always returns to wherever the current step was
      * actually reached from — e.g. Location Confirm back-targets Location or City Search
      * depending on which one led here, rather than a fixed previous-enum-value. */
-    private val backStack = mutableListOf<OnboardingStep>()
+    private val backStack = savedStateHandle.get<ArrayList<String>>(KEY_BACK_STACK)
+        .orEmpty()
+        .mapNotNull { runCatching { OnboardingStep.valueOf(it) }.getOrNull() }
+        .toMutableList()
 
     private val citySearch = DebouncedCitySearch(
         scope = viewModelScope,
         repository = geocodingRepository,
-        onSearching = { searching -> _uiState.update { it.copy(isSearchingCity = searching) } },
-        onResults = { results -> _uiState.update { it.copy(cityResults = results) } },
+        onSearching = { searching -> updateState { it.copy(isSearchingCity = searching) } },
+        onResults = { results -> updateState { it.copy(cityResults = results) } },
     )
 
     init { observeDeviceLocation() }
+
+    private fun updateState(transform: (OnboardingUiState) -> OnboardingUiState) {
+        _uiState.update { current -> transform(current).also(::saveState) }
+    }
+
+    private fun saveState(state: OnboardingUiState) {
+        savedStateHandle[KEY_STEP] = state.step.name
+        savedStateHandle[KEY_LANGUAGE] = state.language.name
+        savedStateHandle[KEY_THEME] = state.themeMode.name
+        savedStateHandle[KEY_GENDER] = state.gender?.name
+        savedStateHandle[KEY_MADHAB] = state.madhab.name
+        savedStateHandle[KEY_FROM_DEVICE] = state.isFromDeviceLocation
+        savedStateHandle[KEY_CALCULATION] = state.calculationMethod.id
+        savedStateHandle[KEY_CITY_QUERY] = state.cityQuery
+        savedStateHandle[KEY_REMINDERS] = state.prayerRemindersEnabled
+        savedStateHandle[KEY_FULLSCREEN] = state.fullScreenAlertEnabled
+        savedStateHandle[KEY_CATCH_UP_DURATION] = state.catchUpDuration.name
+        savedStateHandle[KEY_CATCH_UP_FROM] = state.catchUpCustomFrom.toString()
+        savedStateHandle[KEY_CATCH_UP_TO] = state.catchUpCustomTo.toString()
+        state.confirmedCity?.let { city ->
+            savedStateHandle[KEY_CITY_NAME] = city.name
+            savedStateHandle[KEY_CITY_REGION] = city.region
+            savedStateHandle[KEY_CITY_COUNTRY] = city.country
+            savedStateHandle[KEY_CITY_LATITUDE] = city.latitude
+            savedStateHandle[KEY_CITY_LONGITUDE] = city.longitude
+        }
+        savedStateHandle[KEY_BACK_STACK] = ArrayList(backStack.map { it.name })
+    }
+
+    private fun restoredState(): OnboardingUiState {
+        fun <T : Enum<T>> enum(key: String, values: Array<T>, fallback: T): T =
+            savedStateHandle.get<String>(key)?.let { name -> values.firstOrNull { it.name == name } } ?: fallback
+        val defaults = OnboardingUiState()
+        val cityName = savedStateHandle.get<String>(KEY_CITY_NAME)
+        val city = cityName?.let {
+            CityResult(it, savedStateHandle[KEY_CITY_REGION], savedStateHandle[KEY_CITY_COUNTRY],
+                savedStateHandle[KEY_CITY_LATITUDE] ?: 0.0, savedStateHandle[KEY_CITY_LONGITUDE] ?: 0.0)
+        }
+        return defaults.copy(
+            step = enum(KEY_STEP, OnboardingStep.values(), defaults.step),
+            language = enum(KEY_LANGUAGE, AppLanguage.values(), defaults.language),
+            themeMode = enum(KEY_THEME, ThemeMode.values(), defaults.themeMode),
+            gender = savedStateHandle.get<String>(KEY_GENDER)?.let { name -> Gender.values().firstOrNull { it.name == name } },
+            madhab = enum(KEY_MADHAB, Madhab.values(), defaults.madhab),
+            confirmedCity = city,
+            isFromDeviceLocation = savedStateHandle[KEY_FROM_DEVICE] ?: defaults.isFromDeviceLocation,
+            calculationMethod = CalculationMethod.values().firstOrNull { it.id == savedStateHandle.get<Int>(KEY_CALCULATION) } ?: defaults.calculationMethod,
+            cityQuery = savedStateHandle[KEY_CITY_QUERY] ?: "",
+            prayerRemindersEnabled = savedStateHandle[KEY_REMINDERS] ?: defaults.prayerRemindersEnabled,
+            fullScreenAlertEnabled = savedStateHandle[KEY_FULLSCREEN] ?: defaults.fullScreenAlertEnabled,
+            catchUpDuration = enum(KEY_CATCH_UP_DURATION, CatchUpDuration.values(), defaults.catchUpDuration),
+            catchUpCustomFrom = savedStateHandle.get<String>(KEY_CATCH_UP_FROM)?.let(LocalDate::parse) ?: defaults.catchUpCustomFrom,
+            catchUpCustomTo = savedStateHandle.get<String>(KEY_CATCH_UP_TO)?.let(LocalDate::parse) ?: defaults.catchUpCustomTo,
+        )
+    }
 
     /** The device-location permission flow (launched by the Activity via [onAllowLocationClick]'s
      * caller) writes straight to [SettingsRepository] once a fix lands — see MainActivity's
@@ -143,7 +203,7 @@ class OnboardingViewModel @Inject constructor(
                 val city = runCatching { geocodingRepository.reverseGeocode(prefs.latitude, prefs.longitude) }
                     .getOrNull()
                     ?: CityResult(name = "", region = null, country = null, latitude = prefs.latitude, longitude = prefs.longitude)
-                _uiState.update { it.copy(confirmedCity = city, isFromDeviceLocation = true, isLocating = false, locationError = false) }
+                updateState { it.copy(confirmedCity = city, isFromDeviceLocation = true, isLocating = false, locationError = false) }
                 goTo(OnboardingStep.LOCATION_CONFIRM)
             }
         }
@@ -151,38 +211,38 @@ class OnboardingViewModel @Inject constructor(
 
     private fun goTo(step: OnboardingStep) {
         backStack.add(_uiState.value.step)
-        _uiState.update { it.copy(step = step) }
+        updateState { it.copy(step = step) }
     }
 
     fun onBack() {
         val previous = backStack.removeLastOrNull() ?: return
-        _uiState.update { it.copy(step = previous) }
+        updateState { it.copy(step = previous) }
     }
 
-    fun onRestoreClick() = _uiState.update { it.copy(showRestore = true) }
-    fun onRestoreDismiss() = _uiState.update { it.copy(showRestore = false) }
+    fun onRestoreClick() = updateState { it.copy(showRestore = true) }
+    fun onRestoreDismiss() = updateState { it.copy(showRestore = false) }
 
     // ── Welcome ───────────────────────────────────────────────────────────────
 
-    fun onLanguageSelected(language: AppLanguage) = _uiState.update { it.copy(language = language) }
-    fun onThemeSelected(themeMode: ThemeMode) = _uiState.update { it.copy(themeMode = themeMode) }
+    fun onLanguageSelected(language: AppLanguage) = updateState { it.copy(language = language) }
+    fun onThemeSelected(themeMode: ThemeMode) = updateState { it.copy(themeMode = themeMode) }
     fun onWelcomeNext() = goTo(OnboardingStep.ABOUT_YOU)
 
     // ── About you ─────────────────────────────────────────────────────────────
 
-    fun onGenderSelected(gender: Gender) = _uiState.update { it.copy(gender = gender) }
+    fun onGenderSelected(gender: Gender) = updateState { it.copy(gender = gender) }
     fun onAboutYouNext() = goTo(OnboardingStep.SCHOOL)
 
     // ── School of thought ─────────────────────────────────────────────────────
 
-    fun onMadhabSelected(madhab: Madhab) = _uiState.update { it.copy(madhab = madhab) }
+    fun onMadhabSelected(madhab: Madhab) = updateState { it.copy(madhab = madhab) }
     fun onSchoolNext() = goTo(OnboardingStep.LOCATION_INTRO)
 
     // ── Location ──────────────────────────────────────────────────────────────
 
-    fun onLocationRequestStarted() = _uiState.update { it.copy(isLocating = true, locationError = false) }
+    fun onLocationRequestStarted() = updateState { it.copy(isLocating = true, locationError = false) }
     fun onLocationPermissionResult(granted: Boolean) {
-        if (!granted) _uiState.update { it.copy(isLocating = false, locationError = true) }
+        if (!granted) updateState { it.copy(isLocating = false, locationError = true) }
     }
     fun onEnterCityInstead() = goTo(OnboardingStep.CITY_SEARCH)
 
@@ -202,24 +262,24 @@ class OnboardingViewModel @Inject constructor(
 
     fun onChangeLocationClick() = goTo(OnboardingStep.CITY_SEARCH)
 
-    fun onCalculationMethodSheetOpen() = _uiState.update { it.copy(showCalculationMethodSheet = true) }
-    fun onCalculationMethodSheetDismiss() = _uiState.update { it.copy(showCalculationMethodSheet = false) }
+    fun onCalculationMethodSheetOpen() = updateState { it.copy(showCalculationMethodSheet = true) }
+    fun onCalculationMethodSheetDismiss() = updateState { it.copy(showCalculationMethodSheet = false) }
     fun onCalculationMethodSelected(method: CalculationMethod) =
-        _uiState.update { it.copy(calculationMethod = method, showCalculationMethodSheet = false) }
+        updateState { it.copy(calculationMethod = method, showCalculationMethodSheet = false) }
 
     // ── City search ───────────────────────────────────────────────────────────
 
     fun onCityQueryChanged(query: String) {
-        _uiState.update { it.copy(cityQuery = query) }
+        updateState { it.copy(cityQuery = query) }
         citySearch.search(query)
     }
 
-    fun onCitySelected(city: CityResult) = _uiState.update { it.copy(confirmedCity = city, isFromDeviceLocation = false) }
+    fun onCitySelected(city: CityResult) = updateState { it.copy(confirmedCity = city, isFromDeviceLocation = false) }
 
     /** Used by "Use my location instead" — a method switch, not a back-navigation (see the
      * onboarding nav map), so it goes straight to Location Intro without touching the back stack
      * the way [goTo] would (that stack already has Location Intro in it from getting here). */
-    fun onUseMyLocationInstead() = _uiState.update { it.copy(step = OnboardingStep.LOCATION_INTRO) }
+    fun onUseMyLocationInstead() = updateState { it.copy(step = OnboardingStep.LOCATION_INTRO) }
 
     fun onCitySearchContinue() {
         if (_uiState.value.confirmedCity == null) return
@@ -228,11 +288,11 @@ class OnboardingViewModel @Inject constructor(
 
     // ── Reminders ─────────────────────────────────────────────────────────────
 
-    fun onPrayerRemindersChanged(enabled: Boolean) = _uiState.update { it.copy(prayerRemindersEnabled = enabled) }
-    fun onFullScreenAlertChanged(enabled: Boolean) = _uiState.update { it.copy(fullScreenAlertEnabled = enabled) }
+    fun onPrayerRemindersChanged(enabled: Boolean) = updateState { it.copy(prayerRemindersEnabled = enabled) }
+    fun onFullScreenAlertChanged(enabled: Boolean) = updateState { it.copy(fullScreenAlertEnabled = enabled) }
     fun onRemindersNext() = goTo(OnboardingStep.CATCH_UP)
     fun onRemindersSkip() {
-        _uiState.update { it.copy(prayerRemindersEnabled = false) }
+        updateState { it.copy(prayerRemindersEnabled = false) }
         goTo(OnboardingStep.CATCH_UP)
     }
 
@@ -240,14 +300,14 @@ class OnboardingViewModel @Inject constructor(
 
     fun onCatchUpAddClick() = goTo(OnboardingStep.CATCH_UP_ADD)
     fun onCatchUpSkip() = goTo(OnboardingStep.DONE)
-    fun onCatchUpDurationChanged(duration: CatchUpDuration) = _uiState.update { it.copy(catchUpDuration = duration) }
+    fun onCatchUpDurationChanged(duration: CatchUpDuration) = updateState { it.copy(catchUpDuration = duration) }
 
     /** Mirrors feature/bulkupdate's own custom-range handling: swap if reversed, and never let
      * either end land after today (there's nothing to mark Qaza in the future). */
     fun onCatchUpCustomRangeChanged(from: LocalDate, to: LocalDate) {
         val today = LocalDate.now()
         val (lo, hi) = if (from.isAfter(to)) to to from else from to to
-        _uiState.update { it.copy(catchUpCustomFrom = minOf(lo, today), catchUpCustomTo = minOf(hi, today)) }
+        updateState { it.copy(catchUpCustomFrom = minOf(lo, today), catchUpCustomTo = minOf(hi, today)) }
     }
 
     fun onApplyCatchUp() {
@@ -257,7 +317,7 @@ class OnboardingViewModel @Inject constructor(
             goTo(OnboardingStep.DONE)
             return
         }
-        _uiState.update { it.copy(isApplyingCatchUp = true) }
+        updateState { it.copy(isApplyingCatchUp = true) }
         viewModelScope.launch {
             runCatching {
                 val today = LocalDate.now()
@@ -270,10 +330,10 @@ class OnboardingViewModel @Inject constructor(
                 entries.size to entries
             }.onSuccess { count ->
                 catchUpUndoEntries = count.second
-                _uiState.update { it.copy(isApplyingCatchUp = false, catchUpAppliedCount = count.first, catchUpUndoAvailable = true) }
+                updateState { it.copy(isApplyingCatchUp = false, catchUpAppliedCount = count.first, catchUpUndoAvailable = true) }
                 goTo(OnboardingStep.DONE)
             }.onFailure {
-                _uiState.update { it.copy(isApplyingCatchUp = false) }
+                updateState { it.copy(isApplyingCatchUp = false) }
             }
         }
     }
@@ -281,7 +341,7 @@ class OnboardingViewModel @Inject constructor(
     fun onUndoCatchUp() {
         val entries = catchUpUndoEntries ?: return
         catchUpUndoEntries = null
-        _uiState.update { it.copy(catchUpUndoAvailable = false, catchUpAppliedCount = null) }
+        updateState { it.copy(catchUpUndoAvailable = false, catchUpAppliedCount = null) }
         viewModelScope.launch { runCatching { prayerRepository.bulkUpsertPrayerStatus(entries, PrayerStatus.NOT_RECORDED) } }
     }
 
@@ -296,7 +356,7 @@ class OnboardingViewModel @Inject constructor(
      */
     fun onFinish() {
         val state = _uiState.value
-        _uiState.update { it.copy(isFinishing = true) }
+        updateState { it.copy(isFinishing = true) }
         viewModelScope.launch {
             settingsRepository.setLanguage(state.language)
             settingsRepository.setThemeMode(state.themeMode)
@@ -314,6 +374,28 @@ class OnboardingViewModel @Inject constructor(
             // Apply the chosen language app-wide (recreates the UI into that locale).
             LocaleManager.apply(state.language)
         }
+    }
+
+    private companion object {
+        const val KEY_STEP = "onboarding.step"
+        const val KEY_BACK_STACK = "onboarding.backStack"
+        const val KEY_LANGUAGE = "onboarding.language"
+        const val KEY_THEME = "onboarding.theme"
+        const val KEY_GENDER = "onboarding.gender"
+        const val KEY_MADHAB = "onboarding.madhab"
+        const val KEY_FROM_DEVICE = "onboarding.fromDevice"
+        const val KEY_CALCULATION = "onboarding.calculation"
+        const val KEY_CITY_QUERY = "onboarding.cityQuery"
+        const val KEY_CITY_NAME = "onboarding.city.name"
+        const val KEY_CITY_REGION = "onboarding.city.region"
+        const val KEY_CITY_COUNTRY = "onboarding.city.country"
+        const val KEY_CITY_LATITUDE = "onboarding.city.latitude"
+        const val KEY_CITY_LONGITUDE = "onboarding.city.longitude"
+        const val KEY_REMINDERS = "onboarding.reminders"
+        const val KEY_FULLSCREEN = "onboarding.fullscreen"
+        const val KEY_CATCH_UP_DURATION = "onboarding.catchUpDuration"
+        const val KEY_CATCH_UP_FROM = "onboarding.catchUpFrom"
+        const val KEY_CATCH_UP_TO = "onboarding.catchUpTo"
     }
 
 }
