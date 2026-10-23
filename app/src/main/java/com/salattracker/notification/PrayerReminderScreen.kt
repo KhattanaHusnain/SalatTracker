@@ -156,7 +156,7 @@ fun PrayerReminderScreen(
                     Text(
                         text     = verse.citation,
                         color    = SalatPrimaryFixedDim.copy(alpha = 0.6f),
-                         = 12.sp,
+                         fontSize = 12.sp,
                         fontFamily = AppUiFontFamily,
                     )
                 }

@@ -94,7 +94,7 @@ private fun ReadHistoryRow(item: QuranReadHistoryUi, use24HourFormat: Boolean, o
                 color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily,
             )
         }
-        Text(formatReadAt(item.entry.readAt, use24HourFormat), color = SalatOnSurfaceVariant,  = 12.sp, fontFamily = AppUiFontFamily)
+        Text(formatReadAt(item.entry.readAt, use24HourFormat), color = SalatOnSurfaceVariant,  fontSize = 12.sp, fontFamily = AppUiFontFamily)
     }
 }
 

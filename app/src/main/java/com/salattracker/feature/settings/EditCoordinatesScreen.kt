@@ -86,7 +86,7 @@ private fun CoordinatesContent(
 
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
         Spacer(Modifier.height(20.dp))
-        Text(stringResource(R.string.settings_edit_location_coordinates_label), color = SalatOnSurfaceVariant,  = 12.sp, fontFamily = AppUiFontFamily)
+        Text(stringResource(R.string.settings_edit_location_coordinates_label), color = SalatOnSurfaceVariant,  fontSize = 12.sp, fontFamily = AppUiFontFamily)
         Spacer(Modifier.height(8.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             CoordField(
@@ -147,7 +147,7 @@ private fun CoordField(
     keyboardActions: KeyboardActions = KeyboardActions.Default,
 ) {
     Column(modifier = modifier) {
-        Text(label, color = SalatOnSurfaceVariant,  = 12.sp, fontFamily = AppUiFontFamily)
+        Text(label, color = SalatOnSurfaceVariant,  fontSize = 12.sp, fontFamily = AppUiFontFamily)
         Spacer(Modifier.height(4.dp))
         OutlinedTextField(
         value = value,

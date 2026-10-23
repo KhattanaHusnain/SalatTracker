@@ -162,7 +162,7 @@ fun GoalDayCell(
                     drawArc(trackColor, 0f, 360f, false, Offset.Zero, arcSize, style = stroke)
                     drawArc(progressColor, -90f, 360f * fraction, false, Offset.Zero, arcSize, style = stroke)
                 }
-                Text("${day.amount}", color = SalatPrimary,  = 12.sp, fontWeight = FontWeight.Bold, fontFamily = AppUiFontFamily)
+                Text("${day.amount}", color = SalatPrimary,  fontSize = 12.sp, fontWeight = FontWeight.Bold, fontFamily = AppUiFontFamily)
             }
             GoalDayState.MISSED ->
                 Icon(painterResource(R.drawable.ic_close), null, tint = SalatError.copy(alpha = 0.6f), modifier = Modifier.size(14.dp))
@@ -173,7 +173,7 @@ fun GoalDayCell(
             GoalDayState.NOT_DUE ->
                 Box(Modifier.size(6.dp).clip(CircleShape).background(SalatOutlineVariant))
             GoalDayState.LOGGED ->
-                Text("${day.amount}", color = SalatOnSecondaryContainer,  = 12.sp, fontWeight = FontWeight.Bold, fontFamily = AppUiFontFamily)
+                Text("${day.amount}", color = SalatOnSecondaryContainer,  fontSize = 12.sp, fontWeight = FontWeight.Bold, fontFamily = AppUiFontFamily)
             GoalDayState.NONE, GoalDayState.LOCKED -> Unit
         }
     }
@@ -195,7 +195,7 @@ fun SevenDayStrip(
                 Text(
                     text = day.date.dayOfWeek.shortLabel(),
                     color = if (day.isToday) SalatPrimary else SalatOnSurfaceVariant,
-                     = 12.sp,
+                     fontSize = 12.sp,
                     fontWeight = if (day.isToday) FontWeight.Bold else FontWeight.Normal,
                     fontFamily = AppUiFontFamily,
                     maxLines = 1,

@@ -328,7 +328,7 @@ private fun WeekdayChips(
                         Box(Modifier.size(36.dp), contentAlignment = Alignment.Center) {
                             Text(
                                 day.shortLabel(), color = if (isSelected) SalatOnPrimaryContainer else SalatSecondary,
-                                 = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily, maxLines = 1,
+                                 fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily, maxLines = 1,
                             )
                         }
                     }

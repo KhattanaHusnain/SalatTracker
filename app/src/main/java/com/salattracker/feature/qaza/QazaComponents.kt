@@ -165,7 +165,7 @@ fun QazaDayCard(
                 ) {
                     Text(day.date.format(dateFormatter), color = SalatOnSurface, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
                     if (hijriLabel != null) {
-                        Text(hijriLabel, color = SalatOnSurfaceVariant,  = 12.sp, fontFamily = AppUiFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(hijriLabel, color = SalatOnSurfaceVariant,  fontSize = 12.sp, fontFamily = AppUiFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                 }
                 if (!selectionMode) {
@@ -208,7 +208,7 @@ fun QazaMonthHeader(month: QazaMonth, modifier: Modifier = Modifier) {
         Box(
             modifier = Modifier.clip(RoundedCornerShape(50)).background(QazaPendingPillBg).padding(horizontal = 8.dp, vertical = 1.dp),
         ) {
-            Text("$count", color = QazaPendingPillFg,  = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
+            Text("$count", color = QazaPendingPillFg,  fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
         }
     }
 }
@@ -263,7 +263,7 @@ private fun QuickLogRow(row: QuickLogRowUi, onCountChanged: (Int) -> Unit) {
         Spacer(Modifier.width(10.dp))
         Column(Modifier.weight(1f)) {
             Text(row.prayerType.label(), color = SalatOnSurface, fontSize = 14.sp, fontWeight = FontWeight.Medium, fontFamily = AppUiFontFamily)
-            Text(stringResource(R.string.qaza_log_outstanding, row.outstanding), color = SalatOnSurfaceVariant,  = 12.sp, fontFamily = AppUiFontFamily)
+            Text(stringResource(R.string.qaza_log_outstanding, row.outstanding), color = SalatOnSurfaceVariant,  fontSize = 12.sp, fontFamily = AppUiFontFamily)
         }
         FilledTonalIconButton(
             onClick = { onCountChanged((row.count - 1).coerceAtLeast(0)) },

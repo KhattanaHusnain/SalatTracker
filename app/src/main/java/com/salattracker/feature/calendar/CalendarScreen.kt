@@ -306,7 +306,7 @@ private fun CalendarHeader(
                 Text(
                     text       = subtitleText,
                     color      = SalatOnSurfaceVariant,
-                       = 12.sp,
+                       fontSize = 12.sp,
                     fontFamily = AppUiFontFamily,
                     textAlign  = TextAlign.Center,
                 )
@@ -375,7 +375,7 @@ private fun DotLegend(items: List<LegendItem> = legendItems()) {
 private fun LegendDot(item: LegendItem) {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
         Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(item.color))
-        Text(stringResource(item.labelRes), color = SalatOnSurfaceVariant,  = 12.sp, fontFamily = AppUiFontFamily, fontWeight = FontWeight.Medium)
+        Text(stringResource(item.labelRes), color = SalatOnSurfaceVariant,  fontSize = 12.sp, fontFamily = AppUiFontFamily, fontWeight = FontWeight.Medium)
     }
 }
 
@@ -401,7 +401,7 @@ private fun VerseCard(verse: VerseInfo) {
                 Text(
                     text       = verse.citation,
                     color      = SalatOnPrimaryContainer,
-                       = 12.sp,
+                       fontSize = 12.sp,
                     fontFamily = AppUiFontFamily,
                 )
             }
@@ -427,7 +427,7 @@ private fun WeekdayHeaderRow() {
                 modifier      = Modifier.weight(1f),
                 textAlign     = TextAlign.Center,
                 color         = if (isFriday) SalatPrimary else SalatOutline,
-                      = 12.sp,
+                      fontSize = 12.sp,
                 fontWeight    = if (isFriday) FontWeight.Bold else FontWeight.SemiBold,
                 fontFamily    = AppUiFontFamily,
                 letterSpacing = 1.sp,
@@ -542,7 +542,7 @@ private fun RingDayCell(
             Text(
                 text       = hijriDay.toString(),
                 color      = if (hijriDay == 1) SalatPrimary else SalatOutline,
-                   = 12.sp,
+                   fontSize = 12.sp,
                 fontWeight = if (hijriDay == 1) FontWeight.SemiBold else FontWeight.Normal,
                 fontFamily = AppUiFontFamily,
                 modifier   = Modifier.alpha(dimAlpha),
@@ -590,7 +590,7 @@ private fun WeekTable(
                     Text(
                         text       = stringResource(DAY_HEADERS[index]),
                         color      = if (isFriday) SalatPrimary else SalatOutline,
-                           = 12.sp,
+                           fontSize = 12.sp,
                         fontWeight = if (isFriday) FontWeight.Bold else FontWeight.SemiBold,
                         fontFamily = AppUiFontFamily,
                     )
@@ -619,7 +619,7 @@ private fun WeekTable(
                     text       = type.shortLabel(),
                     modifier   = Modifier.width(WEEK_TABLE_LABEL_WIDTH),
                     color      = SalatOnSurfaceVariant,
-                       = 12.sp,
+                       fontSize = 12.sp,
                     fontFamily = AppUiFontFamily,
                 )
                 dates.forEach { date ->

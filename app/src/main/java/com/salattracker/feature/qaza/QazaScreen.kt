@@ -245,7 +245,7 @@ private fun PrayerTilesRow(pendingByPrayer: Map<PrayerType, Int>, isLoading: Boo
                         val alpha = if (count == 0) 0.4f else 1f
                         Icon(painterResource(type.iconRes), null, tint = SalatSecondary.copy(alpha = alpha), modifier = Modifier.size(18.dp))
                         Spacer(Modifier.height(4.dp))
-                        Text(type.shortLabel(), color = SalatOnSurfaceVariant.copy(alpha = alpha),  = 12.sp, fontFamily = AppUiFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(type.shortLabel(), color = SalatOnSurfaceVariant.copy(alpha = alpha),  fontSize = 12.sp, fontFamily = AppUiFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         Text("$count", color = if (count == 0) SalatOutline else SalatPrimary, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily)
                     }
                 }
@@ -388,7 +388,7 @@ private fun RecentMadeUpRow(entry: RecentMadeUpUi, onUndo: () -> Unit) {
                 Text(entry.slot.prayerType.label(), color = SalatOnSurface, fontSize = 14.sp, fontWeight = FontWeight.Medium, fontFamily = AppUiFontFamily)
                 Text(
                     stringResource(R.string.qaza_made_up_on, entry.madeUpOn.format(dateFormatter)),
-                    color = SalatOnSurfaceVariant,  = 12.sp, fontFamily = AppUiFontFamily,
+                    color = SalatOnSurfaceVariant,  fontSize = 12.sp, fontFamily = AppUiFontFamily,
                 )
             }
             TextButton(onClick = onUndo) {

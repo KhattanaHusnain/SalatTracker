@@ -168,11 +168,11 @@ private fun SurahHeaderFrame(chapter: Chapter, pageNumber: Int?, juzNumber: Int?
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(
                     text = pageNumber?.let { "$PAGE_LABEL_ARABIC ${it.toArabicNumeral()}" } ?: "",
-                    color = SalatOnSurfaceVariant,  = 12.sp, fontFamily = AppUiFontFamily,
+                    color = SalatOnSurfaceVariant,  fontSize = 12.sp, fontFamily = AppUiFontFamily,
                 )
                 Text(
                     text = juzNumber?.let { "$JUZ_LABEL_ARABIC ${it.toArabicNumeral()}" } ?: "",
-                    color = SalatOnSurfaceVariant,  = 12.sp, fontFamily = AppUiFontFamily,
+                    color = SalatOnSurfaceVariant,  fontSize = 12.sp, fontFamily = AppUiFontFamily,
                 )
             }
             Spacer(Modifier.height(4.dp))

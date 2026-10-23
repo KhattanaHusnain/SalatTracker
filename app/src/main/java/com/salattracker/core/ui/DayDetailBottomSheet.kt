@@ -103,7 +103,7 @@ internal fun DayDetailHeader(
                 Text(
                     text       = stringResource(R.string.sheet_complete_count, completedCount, totalCount),
                     color      = SalatOnPrimaryContainer,
-                       = 12.sp,
+                       fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
                     fontFamily = AppUiFontFamily,
                     letterSpacing = 0.3.sp,
@@ -165,7 +165,7 @@ internal fun DayDetailPrayerRowItem(
                 Text(
                     text     = row.timeLabel,
                     color    = SalatOnSurfaceVariant,
-                     = 12.sp,
+                     fontSize = 12.sp,
                     fontFamily = AppUiFontFamily,
                 )
             }
@@ -228,7 +228,7 @@ internal fun PrayerStatusChip(status: PrayerStatus, isUpcoming: Boolean = false)
             Text(
                 text       = label,
                 color      = fg,
-                   = 12.sp,
+                   fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold,
                 fontFamily = AppUiFontFamily,
                 letterSpacing = 0.3.sp,

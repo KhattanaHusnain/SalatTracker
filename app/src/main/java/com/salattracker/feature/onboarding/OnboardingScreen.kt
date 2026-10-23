@@ -156,7 +156,7 @@ private fun WelcomeStep(
 
         Spacer(Modifier.height(32.dp))
 
-        Text(stringResource(R.string.settings_language), color = SalatOnSurfaceVariant,  = 12.sp, fontFamily = AppUiFontFamily)
+        Text(stringResource(R.string.settings_language), color = SalatOnSurfaceVariant,  fontSize = 12.sp, fontFamily = AppUiFontFamily)
         Spacer(Modifier.height(8.dp))
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             AppLanguage.values().forEach { lang ->
@@ -166,7 +166,7 @@ private fun WelcomeStep(
 
         Spacer(Modifier.height(24.dp))
 
-        Text(stringResource(R.string.onboarding_theme_title), color = SalatOnSurfaceVariant,  = 12.sp, fontFamily = AppUiFontFamily)
+        Text(stringResource(R.string.onboarding_theme_title), color = SalatOnSurfaceVariant,  fontSize = 12.sp, fontFamily = AppUiFontFamily)
         Spacer(Modifier.height(8.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             ThemeChip(R.drawable.ic_light_mode, stringResource(R.string.theme_light), themeMode == ThemeMode.LIGHT, Modifier.weight(1f)) { onThemeSelected(ThemeMode.LIGHT) }
@@ -187,7 +187,7 @@ private fun WelcomeStep(
         Text(
             stringResource(R.string.onboarding_change_later),
             modifier = Modifier.fillMaxWidth(),
-            color = SalatOnSurfaceVariant,  = 12.sp, fontFamily = AppUiFontFamily, textAlign = TextAlign.Center,
+            color = SalatOnSurfaceVariant,  fontSize = 12.sp, fontFamily = AppUiFontFamily, textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(24.dp))
     }
@@ -282,7 +282,7 @@ private fun LocationIntroStep(isLocating: Boolean, locationError: Boolean, onAll
         Spacer(Modifier.weight(1f))
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             Icon(painterResource(R.drawable.ic_check_circle_filled), null, tint = SalatOnSurfaceVariant, modifier = Modifier.size(14.dp))
-            Text(stringResource(R.string.onboarding_location_privacy), color = SalatOnSurfaceVariant,  = 12.sp, fontFamily = AppUiFontFamily)
+            Text(stringResource(R.string.onboarding_location_privacy), color = SalatOnSurfaceVariant,  fontSize = 12.sp, fontFamily = AppUiFontFamily)
         }
         Spacer(Modifier.height(24.dp))
     }

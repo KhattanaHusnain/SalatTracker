@@ -179,7 +179,7 @@ private fun HeaderCard(goal: SpiritualGoal, status: GoalStatus, dayIndex: Int?) 
 @Composable
 private fun StatusChip(text: String) {
     Box(Modifier.clip(RoundedCornerShape(50)).background(SalatTertiaryContainer).padding(horizontal = 8.dp, vertical = 4.dp)) {
-        Text(text, color = SalatOnTertiaryContainer,  = 12.sp, fontWeight = FontWeight.Bold, fontFamily = AppUiFontFamily)
+        Text(text, color = SalatOnTertiaryContainer,  fontSize = 12.sp, fontWeight = FontWeight.Bold, fontFamily = AppUiFontFamily)
     }
 }
 
@@ -249,7 +249,7 @@ private fun SmallTile(value: String, label: String, modifier: Modifier = Modifie
     Column(modifier.clip(RoundedCornerShape(12.dp)).background(SalatSurfaceContainer).padding(12.dp)) {
         Text(value, color = SalatPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold, fontFamily = AppTitleFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Spacer(Modifier.height(2.dp))
-        Text(label, color = SalatOnSurfaceVariant,  = 12.sp, fontFamily = AppUiFontFamily, maxLines = 2)
+        Text(label, color = SalatOnSurfaceVariant,  fontSize = 12.sp, fontFamily = AppUiFontFamily, maxLines = 2)
     }
 }
 
@@ -295,7 +295,7 @@ private fun CalendarCard(
             SUNDAY_FIRST.forEach { day ->
                 Text(
                     text = day.shortLabel(), modifier = Modifier.weight(1f), textAlign = TextAlign.Center,
-                    color = SalatOutline,  = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily,
+                    color = SalatOutline,  fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily,
                 )
             }
         }

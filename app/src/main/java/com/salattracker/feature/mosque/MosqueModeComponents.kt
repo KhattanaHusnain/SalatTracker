@@ -174,7 +174,7 @@ fun MosqueEditSheet(
             )
 
             Spacer(Modifier.height(16.dp))
-            Text(stringResource(R.string.mosque_radius_label), color = SalatOnSurfaceVariant,  = 12.sp, fontFamily = AppUiFontFamily)
+            Text(stringResource(R.string.mosque_radius_label), color = SalatOnSurfaceVariant,  fontSize = 12.sp, fontFamily = AppUiFontFamily)
             Spacer(Modifier.height(8.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 MosqueMode.RADIUS_OPTIONS_METERS.forEach { radius ->
@@ -269,7 +269,7 @@ fun NearbyMosquesSheet(
             Spacer(Modifier.height(12.dp))
             Text(
                 stringResource(R.string.mosque_osm_credit),
-                color = SalatOnSurfaceVariant,  = 12.sp, fontFamily = AppUiFontFamily,
+                color = SalatOnSurfaceVariant,  fontSize = 12.sp, fontFamily = AppUiFontFamily,
             )
         }
     }

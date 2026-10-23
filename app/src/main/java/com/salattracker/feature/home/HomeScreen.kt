@@ -184,7 +184,7 @@ private fun HeroCard(
                         Text(
                             text = stringResource(R.string.home_ring_caption),
                             color = SalatOnHero.copy(alpha = 0.75f),
-                             = 12.sp,
+                             fontSize = 12.sp,
                             fontFamily = AppUiFontFamily,
                         )
                     }
@@ -194,7 +194,7 @@ private fun HeroCard(
                     Text(
                         text = stringResource(R.string.home_next_prayer).uppercase(),
                             color = SalatOnHero.copy(alpha = 0.7f),
-                         = 12.sp,
+                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
                         fontFamily = AppUiFontFamily,
                         letterSpacing = 1.sp,
@@ -369,7 +369,7 @@ private fun TimelineRow(
                         Box(
                             modifier = Modifier.clip(RoundedCornerShape(50)).background(SalatPrimary).padding(horizontal = 8.dp, vertical = 2.dp),
                         ) {
-                            Text(stringResource(R.string.home_now), color = SalatOnPrimary,  = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily, maxLines = 1)
+                            Text(stringResource(R.string.home_now), color = SalatOnPrimary,  fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily, maxLines = 1)
                         }
                     }
                 }
@@ -380,7 +380,7 @@ private fun TimelineRow(
                     Text(
                         text = stringResource(R.string.home_reminder_at, entry.reminderTime.formatAppTime(use24HourFormat)),
                         color = SalatPrimary,
-                         = 12.sp,
+                         fontSize = 12.sp,
                         fontFamily = AppUiFontFamily,
                     )
                 }
@@ -474,7 +474,7 @@ private fun StreakChip(type: PrayerType, info: StreakInfo, modifier: Modifier = 
         modifier = modifier.clip(RoundedCornerShape(10.dp)).background(SalatSurfaceContainer).padding(vertical = 8.dp, horizontal = 2.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(type.shortLabel(), color = SalatOnSurfaceVariant,  = 12.sp, fontFamily = AppUiFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(type.shortLabel(), color = SalatOnSurfaceVariant,  fontSize = 12.sp, fontFamily = AppUiFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Spacer(modifier = Modifier.height(2.dp))
         Text("${info.currentStreak}", color = SalatPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold, fontFamily = AppTitleFontFamily)
         Spacer(modifier = Modifier.height(4.dp))
@@ -485,7 +485,7 @@ private fun StreakChip(type: PrayerType, info: StreakInfo, modifier: Modifier = 
         Text(
             text = stringResource(R.string.home_best_streak, info.highestStreak),
             color = SalatOnSurfaceVariant,
-             = 12.sp,
+             fontSize = 12.sp,
             fontFamily = AppUiFontFamily,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -524,7 +524,7 @@ private fun WeekRings(
                 Text(
                     text = stringResource(date.dayOfWeek.shortLabelRes),
                     color = if (isToday) SalatPrimary else SalatOnSurfaceVariant,
-                     = 12.sp,
+                     fontSize = 12.sp,
                     fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
                     fontFamily = AppUiFontFamily,
                     maxLines = 1,

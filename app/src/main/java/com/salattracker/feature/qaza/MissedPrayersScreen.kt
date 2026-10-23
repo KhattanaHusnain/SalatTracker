@@ -212,7 +212,7 @@ private fun FilterChip(label: String, count: Int, isSelected: Boolean, onClick: 
             )
             Text(
                 text = "$count", color = if (isSelected) SalatOnPrimaryContainer else SalatOutline,
-                 = 12.sp, fontFamily = AppUiFontFamily,
+                 fontSize = 12.sp, fontFamily = AppUiFontFamily,
             )
         }
     }
