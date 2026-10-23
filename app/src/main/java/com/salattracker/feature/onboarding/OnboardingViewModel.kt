@@ -61,6 +61,8 @@ data class OnboardingUiState(
     val isFromDeviceLocation: Boolean = true,
     val calculationMethod: CalculationMethod = CalculationMethod.DEFAULT,
     val showCalculationMethodSheet: Boolean = false,
+    val isLocating: Boolean = false,
+    val locationError: Boolean = false,
 
     // City search
     val cityQuery: String = "",
@@ -138,7 +140,7 @@ class OnboardingViewModel @Inject constructor(
                 val city = runCatching { geocodingRepository.reverseGeocode(prefs.latitude, prefs.longitude) }
                     .getOrNull()
                     ?: CityResult(name = "", region = null, country = null, latitude = prefs.latitude, longitude = prefs.longitude)
-                _uiState.update { it.copy(confirmedCity = city, isFromDeviceLocation = true) }
+                _uiState.update { it.copy(confirmedCity = city, isFromDeviceLocation = true, isLocating = false, locationError = false) }
                 goTo(OnboardingStep.LOCATION_CONFIRM)
             }
         }
@@ -175,8 +177,10 @@ class OnboardingViewModel @Inject constructor(
 
     // ── Location ──────────────────────────────────────────────────────────────
 
-    /** Just invokes the Activity-supplied permission launcher — [observeDeviceLocation] advances
-     * the step once (and if) a fix actually lands, so there is nothing else to do here. */
+    fun onLocationRequestStarted() = _uiState.update { it.copy(isLocating = true, locationError = false) }
+    fun onLocationPermissionResult(granted: Boolean) {
+        if (!granted) _uiState.update { it.copy(isLocating = false, locationError = true) }
+    }
     fun onEnterCityInstead() = goTo(OnboardingStep.CITY_SEARCH)
 
     fun onConfirmLocation() {

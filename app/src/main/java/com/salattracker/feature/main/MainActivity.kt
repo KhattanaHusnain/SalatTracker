@@ -123,9 +123,14 @@ class MainActivity : AppCompatActivity() {
             ) { }
 
             val locationSyncViewModel: LocationSyncViewModel = hiltViewModel()
+            var onboardingLocationResult by remember { mutableStateOf<((Boolean) -> Unit)?>(null) }
             val locationPermissionLauncher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.RequestPermission()
-            ) { granted -> if (granted) locationSyncViewModel.syncDeviceLocation() }
+            ) { granted ->
+                onboardingLocationResult?.invoke(granted)
+                onboardingLocationResult = null
+                if (granted) locationSyncViewModel.syncDeviceLocation()
+            }
 
             val appStartViewModel: AppStartViewModel = hiltViewModel()
             val appStart by appStartViewModel.state.collectAsState()
@@ -163,7 +168,8 @@ class MainActivity : AppCompatActivity() {
                     // null = DataStore not read yet — plain background avoids a flash of the wrong screen.
                     null  -> Box(modifier = Modifier.fillMaxSize().background(SalatBackground))
                     false -> OnboardingEntry(
-                        onAllowLocation = {
+                        onAllowLocation = { onResult ->
+                            onboardingLocationResult = onResult
                             locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
                         },
                         onRequestNotifications = {

@@ -88,7 +88,7 @@ fun OnboardingScreen(
             OnboardingStep.WELCOME -> WelcomeStep(uiState.language, uiState.themeMode, onLanguageSelected, onThemeSelected, onWelcomeNext, onRestoreFromBackup)
             OnboardingStep.ABOUT_YOU -> AboutYouStep(uiState.gender, onGenderSelected, onAboutYouNext)
             OnboardingStep.SCHOOL -> SchoolStep(uiState.madhab, onMadhabSelected, onSchoolNext)
-            OnboardingStep.LOCATION_INTRO -> LocationIntroStep(onAllowLocationClick, onEnterCityInstead)
+            OnboardingStep.LOCATION_INTRO -> LocationIntroStep(uiState.isLocating, uiState.locationError, onAllowLocationClick, onEnterCityInstead)
             OnboardingStep.CITY_SEARCH -> CitySearchStep(
                 query = uiState.cityQuery, results = uiState.cityResults, isSearching = uiState.isSearchingCity,
                 selected = uiState.confirmedCity, onQueryChanged = onCityQueryChanged, onSelect = onCitySelected,
@@ -240,7 +240,7 @@ private fun SchoolStep(selected: Madhab, onSelect: (Madhab) -> Unit, onNext: () 
 // ── Location: before permission ─────────────────────────────────────────────────
 
 @Composable
-private fun LocationIntroStep(onAllowLocation: () -> Unit, onEnterCityInstead: () -> Unit) {
+private fun LocationIntroStep(isLocating: Boolean, locationError: Boolean, onAllowLocation: () -> Unit, onEnterCityInstead: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
         Spacer(Modifier.weight(1f))
         Box(
@@ -257,7 +257,16 @@ private fun LocationIntroStep(onAllowLocation: () -> Unit, onEnterCityInstead: (
             color = SalatOnSurfaceVariant, fontSize = 15.sp, fontFamily = AppUiFontFamily, textAlign = TextAlign.Center, lineHeight = 22.sp,
         )
         Spacer(Modifier.height(36.dp))
-        PrimaryButton(text = stringResource(R.string.onboarding_allow_location), icon = R.drawable.ic_my_location, onClick = onAllowLocation)
+        if (locationError) {
+            Text(stringResource(R.string.onboarding_location_unavailable), color = SalatError, fontSize = 14.sp, fontFamily = AppUiFontFamily, textAlign = TextAlign.Center)
+            Spacer(Modifier.height(12.dp))
+        }
+        PrimaryButton(
+            text = if (isLocating) stringResource(R.string.onboarding_location_loading) else stringResource(R.string.onboarding_allow_location),
+            icon = R.drawable.ic_my_location,
+            enabled = !isLocating,
+            onClick = onAllowLocation,
+        )
         Spacer(Modifier.height(8.dp))
         SecondaryLink(text = stringResource(R.string.onboarding_location_enter_city), onClick = onEnterCityInstead)
         Spacer(Modifier.weight(1f))

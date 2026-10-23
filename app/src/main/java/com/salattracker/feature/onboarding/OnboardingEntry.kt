@@ -16,7 +16,7 @@ import com.salattracker.feature.backup.BackupEntry
  */
 @Composable
 fun OnboardingEntry(
-    onAllowLocation: () -> Unit,
+    onAllowLocation: ((Boolean) -> Unit) -> Unit,
     onRequestNotifications: () -> Unit,
     viewModel: OnboardingViewModel = hiltViewModel(),
 ) {
@@ -42,7 +42,10 @@ fun OnboardingEntry(
         onAboutYouNext            = viewModel::onAboutYouNext,
         onMadhabSelected          = viewModel::onMadhabSelected,
         onSchoolNext              = viewModel::onSchoolNext,
-        onAllowLocationClick      = onAllowLocation,
+        onAllowLocationClick      = {
+            viewModel.onLocationRequestStarted()
+            onAllowLocation(viewModel::onLocationPermissionResult)
+        },
         onEnterCityInstead        = viewModel::onEnterCityInstead,
         onCityQueryChanged        = viewModel::onCityQueryChanged,
         onCitySelected            = viewModel::onCitySelected,
