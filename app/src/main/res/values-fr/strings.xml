@@ -152,9 +152,10 @@
 
     <string name="onboarding_welcome_title">Bienvenue sur Salah Tracker</string>
     <string name="onboarding_step_progress">Étape %1$d sur %2$d</string>
-    <string name="onboarding_welcome_subtitle">Veuillez sélectionner votre langue préférée pour commencer votre parcours.</string>
+    <string name="onboarding_welcome_subtitle">Choisissez votre langue et votre thème. Vous pourrez les modifier plus tard.</string>
     <string name="onboarding_change_later">Vous pourrez modifier ceci plus tard dans les réglages.</string>
     <string name="onboarding_theme_title">Choisissez votre ambiance</string>
+    <string name="onboarding_theme_label">Thème</string>
     <string name="onboarding_theme_subtitle">Sélectionnez un thème qui vous apporte la paix.</string>
     <string name="theme_light">Clair</string>
     <string name="theme_light_desc">Pur et lumineux</string>

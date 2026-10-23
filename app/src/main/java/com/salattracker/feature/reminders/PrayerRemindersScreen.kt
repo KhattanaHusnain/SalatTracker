@@ -332,7 +332,7 @@ private fun JumuahLeadChip(minutes: Int, isSelected: Boolean, onClick: () -> Uni
         border  = BorderStroke(1.dp, if (isSelected) SalatPrimaryContainer else SalatOutlineVariant),
     ) {
         Text(
-            text       = if (minutes == 0) stringResource(R.string.reminders_jumuah_lead_off) else "${minutes}m",
+            text       = if (minutes == 0) stringResource(R.string.reminders_jumuah_lead_off) else stringResource(R.string.reminders_offset_minutes_value, minutes),
             modifier   = Modifier.padding(horizontal = 14.dp, vertical = 7.dp),
             color      = if (isSelected) SalatOnPrimaryContainer else SalatOnSurfaceVariant,
             fontSize   = 12.sp,
@@ -469,7 +469,7 @@ private fun SnoozeChip(minutes: Int, isSelected: Boolean, onClick: () -> Unit) {
         border  = BorderStroke(1.dp, if (isSelected) SalatPrimaryContainer else SalatOutlineVariant),
     ) {
         Text(
-            text       = "${minutes}m",
+            text       = stringResource(R.string.reminders_offset_minutes_value, minutes),
             modifier   = Modifier.padding(horizontal = 14.dp, vertical = 7.dp),
             color      = if (isSelected) SalatOnPrimaryContainer else SalatOnSurfaceVariant,
             fontSize   = 12.sp,

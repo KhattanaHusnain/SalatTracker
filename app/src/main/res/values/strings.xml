@@ -159,9 +159,10 @@
     <!-- Onboarding -->
     <string name="onboarding_welcome_title">Welcome to Salah Tracker</string>
     <string name="onboarding_step_progress">Step %1$d of %2$d</string>
-    <string name="onboarding_welcome_subtitle">Please select your preferred language to begin your journey.</string>
+    <string name="onboarding_welcome_subtitle">Choose your language and theme. You can change both later.</string>
     <string name="onboarding_change_later">You can change this later in settings.</string>
     <string name="onboarding_theme_title">Choose Your Vibe</string>
+    <string name="onboarding_theme_label">Theme</string>
     <string name="onboarding_theme_subtitle">Select a theme that brings you peace.</string>
     <string name="theme_light">Light</string>
     <string name="theme_light_desc">Pure and bright</string>
@@ -513,7 +514,7 @@
     <!-- Prayer reminder (full screen) -->
     <string name="reminder_prayer_title">%1$s Prayer</string>
     <string name="reminder_scheduled_for">Scheduled for %1$s</string>
-    <string name="reminder_snooze">Snooze %1$dm</string>
+    <string name="reminder_snooze">Snooze %1$d min</string>
     <string name="reminder_dismiss">DISMISS ALERT</string>
 
     <!-- Notifications -->
@@ -526,7 +527,7 @@
     <string name="notification_goal_title">Time for: %1$s</string>
     <string name="notification_goal_body">Tap to check in on your goal.</string>
     <string name="notification_action_check_in">Check-in</string>
-    <string name="notification_action_snooze">Snooze 10m</string>
+    <string name="notification_action_snooze">Snooze 10 min</string>
 
     <!-- Backup & Restore -->
     <string name="backup_title">Backup &amp; Restore</string>

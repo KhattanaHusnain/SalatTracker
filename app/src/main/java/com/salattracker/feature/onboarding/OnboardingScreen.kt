@@ -166,7 +166,7 @@ private fun WelcomeStep(
 
         Spacer(Modifier.height(24.dp))
 
-        Text(stringResource(R.string.onboarding_theme_title), color = SalatOnSurfaceVariant,  fontSize = 12.sp, fontFamily = AppUiFontFamily)
+        Text(stringResource(R.string.onboarding_theme_label), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
         Spacer(Modifier.height(8.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             ThemeChip(R.drawable.ic_light_mode, stringResource(R.string.theme_light), themeMode == ThemeMode.LIGHT, Modifier.weight(1f)) { onThemeSelected(ThemeMode.LIGHT) }
