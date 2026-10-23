@@ -150,6 +150,10 @@ class RoomBackupLocalSource @Inject constructor(
             calculationMethodId       = s.calculationMethodId,
             reminderEnabled           = s.reminderEnabled,
             reminderOffsetMinutes     = s.reminderOffsetMinutes,
+            reminderSnoozeMinutes     = s.reminderSnoozeMinutes,
+            reminderFullScreenAlert   = s.reminderFullScreenAlert,
+            reminderVibrationEnabled  = s.reminderVibrationEnabled,
+            reminderSoundUri          = s.reminderSoundUri,
             use24HourFormat           = s.use24HourFormat,
             language                  = s.language,
             themeMode                 = s.themeMode,
@@ -160,6 +164,7 @@ class RoomBackupLocalSource @Inject constructor(
             jumuahEnabled             = s.jumuahEnabled,
             jumuahReminderLeadMinutes = s.jumuahReminderLeadMinutes,
             gender                    = s.gender,
+            locationLabel             = s.locationLabel,
         )
         settingsRepository.setOnboardingCompleted(true)
 

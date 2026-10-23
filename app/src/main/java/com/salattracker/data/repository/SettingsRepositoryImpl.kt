@@ -36,6 +36,10 @@ class SettingsRepositoryImpl @Inject constructor(
         calculationMethodId: Int,
         reminderEnabled: Map<PrayerType, Boolean>,
         reminderOffsetMinutes: Map<PrayerType, Int>,
+        reminderSnoozeMinutes: Map<PrayerType, Int>,
+        reminderFullScreenAlert: Map<PrayerType, Boolean>,
+        reminderVibrationEnabled: Map<PrayerType, Boolean>,
+        reminderSoundUri: Map<PrayerType, String?>,
         use24HourFormat: Boolean,
         language: AppLanguage,
         themeMode: ThemeMode,
@@ -46,6 +50,7 @@ class SettingsRepositoryImpl @Inject constructor(
         jumuahEnabled: Boolean,
         jumuahReminderLeadMinutes: Int,
         gender: Gender?,
+        locationLabel: String?,
     ) = dataStore.saveSettings(
         useDeviceLocation         = useDeviceLocation,
         latitude                  = latitude,
@@ -53,6 +58,10 @@ class SettingsRepositoryImpl @Inject constructor(
         calculationMethodId       = calculationMethodId,
         reminderEnabled           = reminderEnabled,
         reminderOffsetMinutes     = reminderOffsetMinutes,
+        reminderSnoozeMinutes     = reminderSnoozeMinutes,
+        reminderFullScreenAlert   = reminderFullScreenAlert,
+        reminderVibrationEnabled  = reminderVibrationEnabled,
+        reminderSoundUri          = reminderSoundUri,
         use24HourFormat           = use24HourFormat,
         language                  = language,
         themeMode                 = themeMode,
@@ -63,6 +72,7 @@ class SettingsRepositoryImpl @Inject constructor(
         jumuahEnabled             = jumuahEnabled,
         jumuahReminderLeadMinutes = jumuahReminderLeadMinutes,
         gender                    = gender,
+        locationLabel             = locationLabel,
     )
 
     override suspend fun setUseDeviceLocation(enabled: Boolean) = dataStore.setUseDeviceLocation(enabled)

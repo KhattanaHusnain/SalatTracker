@@ -340,10 +340,13 @@ class FakeSettingsRepository(initial: UserPrefs = UserPrefs()) : SettingsReposit
     override suspend fun saveSettings(
         useDeviceLocation: Boolean, latitude: Double, longitude: Double, calculationMethodId: Int,
         reminderEnabled: Map<PrayerType, Boolean>, reminderOffsetMinutes: Map<PrayerType, Int>,
+        reminderSnoozeMinutes: Map<PrayerType, Int>, reminderFullScreenAlert: Map<PrayerType, Boolean>,
+        reminderVibrationEnabled: Map<PrayerType, Boolean>, reminderSoundUri: Map<PrayerType, String?>,
         use24HourFormat: Boolean, language: AppLanguage, themeMode: ThemeMode,
         madhab: Madhab, highLatitudeRule: HighLatitudeRule, prayerTimeAdjustMinutes: Map<PrayerType, Int>,
         madhabChosen: Boolean, jumuahEnabled: Boolean, jumuahReminderLeadMinutes: Int,
         gender: com.salattracker.domain.model.Gender?,
+        locationLabel: String?,
     ) = notUsed()
 
     override suspend fun setUseDeviceLocation(enabled: Boolean) {

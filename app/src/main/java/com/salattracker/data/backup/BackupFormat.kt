@@ -144,6 +144,10 @@ private data class SettingsDto(
     @SerializedName("calculationMethodId") val calculationMethodId: Int?,
     @SerializedName("reminderEnabled") val reminderEnabled: Map<String, Boolean>?,
     @SerializedName("reminderOffsetMinutes") val reminderOffsetMinutes: Map<String, Int>?,
+    @SerializedName("reminderSnoozeMinutes") val reminderSnoozeMinutes: Map<String, Int>?,
+    @SerializedName("reminderFullScreenAlert") val reminderFullScreenAlert: Map<String, Boolean>?,
+    @SerializedName("reminderVibrationEnabled") val reminderVibrationEnabled: Map<String, Boolean>?,
+    @SerializedName("reminderSoundUri") val reminderSoundUri: Map<String, String?>?,
     @SerializedName("use24HourFormat") val use24HourFormat: Boolean?,
     @SerializedName("language") val language: String?,
     @SerializedName("themeMode") val themeMode: String?,
@@ -157,6 +161,7 @@ private data class SettingsDto(
     @SerializedName("jumuahReminderLeadMinutes") val jumuahReminderLeadMinutes: Int?,
     // Added after format v1; absent in older backups, which then restore with gender unset (null).
     @SerializedName("gender") val gender: String?,
+    @SerializedName("locationLabel") val locationLabel: String?,
 )
 
 private data class PayloadDto(
@@ -327,6 +332,12 @@ object BackupCodec {
             calculationMethodId     = settings.calculationMethodId,
             reminderEnabled         = PrayerType.values().associate { it.name to (settings.reminderEnabled[it] ?: true) },
             reminderOffsetMinutes   = PrayerType.values().associate { it.name to (settings.reminderOffsetMinutes[it] ?: 0) },
+            reminderSnoozeMinutes   = PrayerType.values().associate { it.name to (settings.reminderSnoozeMinutes[it] ?: 10) },
+            reminderFullScreenAlert = PrayerType.values().associate { it.name to (settings.reminderFullScreenAlert[it] ?: true) },
+            reminderVibrationEnabled = PrayerType.values().associate { it.name to (settings.reminderVibrationEnabled[it] ?: true) },
+            reminderSoundUri = PrayerType.values().associate { type ->
+                type.name to settings.reminderSoundUri[type]?.takeUnless { it.startsWith("content:") }
+            },
             use24HourFormat         = settings.use24HourFormat,
             language                = settings.language.name,
             themeMode               = settings.themeMode.name,
@@ -338,6 +349,7 @@ object BackupCodec {
             jumuahEnabled           = settings.jumuahEnabled,
             jumuahReminderLeadMinutes = settings.jumuahReminderLeadMinutes,
             gender                  = settings.gender?.name,
+            locationLabel           = settings.locationLabel,
         ),
         mosques = mosques.map {
             MosqueDto(id = it.id, name = it.name, latitude = it.latitude, longitude = it.longitude, radiusMeters = it.radiusMeters)
@@ -421,6 +433,12 @@ object BackupCodec {
             calculationMethodId     = calculationMethodId ?: 3,
             reminderEnabled         = prayerBoolMapOf(reminderEnabled, true),
             reminderOffsetMinutes   = prayerMapOf(reminderOffsetMinutes, 0),
+            reminderSnoozeMinutes   = prayerMapOf(reminderSnoozeMinutes, 10),
+            reminderFullScreenAlert = prayerBoolMapOf(reminderFullScreenAlert, true),
+            reminderVibrationEnabled = prayerBoolMapOf(reminderVibrationEnabled, true),
+            reminderSoundUri = PrayerType.values().associateWith { type ->
+                reminderSoundUri?.get(type.name)?.takeUnless { it.startsWith("content:") }
+            },
             use24HourFormat         = use24HourFormat ?: false,
             language = language?.let { runCatching { com.salattracker.domain.model.AppLanguage.valueOf(it) }.getOrNull() }
                 ?: com.salattracker.domain.model.AppLanguage.ENGLISH,
@@ -438,6 +456,7 @@ object BackupCodec {
             jumuahEnabled = jumuahEnabled ?: true,
             jumuahReminderLeadMinutes = jumuahReminderLeadMinutes ?: 0,
             gender = gender?.let { runCatching { com.salattracker.domain.model.Gender.valueOf(it) }.getOrNull() },
+            locationLabel = locationLabel,
         )
     }
 

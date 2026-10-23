@@ -134,6 +134,10 @@ class DataStoreSettingsRepository @Inject constructor(
         calculationMethodId: Int,
         reminderEnabled: Map<PrayerType, Boolean>,
         reminderOffsetMinutes: Map<PrayerType, Int>,
+        reminderSnoozeMinutes: Map<PrayerType, Int>,
+        reminderFullScreenAlert: Map<PrayerType, Boolean>,
+        reminderVibrationEnabled: Map<PrayerType, Boolean>,
+        reminderSoundUri: Map<PrayerType, String?>,
         use24HourFormat: Boolean,
         language: AppLanguage,
         themeMode: ThemeMode,
@@ -144,6 +148,7 @@ class DataStoreSettingsRepository @Inject constructor(
         jumuahEnabled: Boolean,
         jumuahReminderLeadMinutes: Int,
         gender: Gender?,
+        locationLabel: String?,
     ) {
         dataStore.edit { prefs ->
             prefs[Keys.USE_DEVICE_LOCATION]   = useDeviceLocation
@@ -159,9 +164,15 @@ class DataStoreSettingsRepository @Inject constructor(
             prefs[Keys.JUMUAH_ENABLED]        = jumuahEnabled
             prefs[Keys.JUMUAH_REMINDER_LEAD]  = jumuahReminderLeadMinutes
             if (gender == null) prefs.remove(Keys.GENDER) else prefs[Keys.GENDER] = gender.name
+            if (locationLabel == null) prefs.remove(Keys.LOCATION_LABEL) else prefs[Keys.LOCATION_LABEL] = locationLabel
             PrayerType.values().forEach { type ->
                 prefs[Keys.reminderEnabled(type)]  = reminderEnabled[type] ?: true
                 prefs[Keys.reminderOffset(type)]   = reminderOffsetMinutes[type] ?: 0
+                prefs[Keys.reminderSnooze(type)] = reminderSnoozeMinutes[type] ?: 10
+                prefs[Keys.reminderFullScreen(type)] = reminderFullScreenAlert[type] ?: true
+                prefs[Keys.reminderVibration(type)] = reminderVibrationEnabled[type] ?: true
+                val sound = reminderSoundUri[type]
+                if (sound == null) prefs.remove(Keys.reminderSound(type)) else prefs[Keys.reminderSound(type)] = sound
                 prefs[Keys.prayerTimeAdjust(type)] = prayerTimeAdjustMinutes[type] ?: 0
             }
         }

@@ -39,6 +39,10 @@ interface SettingsRepository {
         calculationMethodId: Int,
         reminderEnabled: Map<PrayerType, Boolean>,
         reminderOffsetMinutes: Map<PrayerType, Int>,
+        reminderSnoozeMinutes: Map<PrayerType, Int>,
+        reminderFullScreenAlert: Map<PrayerType, Boolean>,
+        reminderVibrationEnabled: Map<PrayerType, Boolean>,
+        reminderSoundUri: Map<PrayerType, String?>,
         use24HourFormat: Boolean,
         language: AppLanguage,
         themeMode: ThemeMode,
@@ -49,6 +53,7 @@ interface SettingsRepository {
         jumuahEnabled: Boolean,
         jumuahReminderLeadMinutes: Int,
         gender: Gender?,
+        locationLabel: String?,
     )
 
     /** One-shot read, used when prayer times need refreshing. */
