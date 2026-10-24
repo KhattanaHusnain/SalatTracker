@@ -8,18 +8,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 /**
  * Nav entry-point for Stats, reached from the app drawer.
  * In MainActivity NavHost:
- *   composable(Routes.STATS) { StatsEntry(onAddGoalClick = { ... }) }
+ *   composable(Routes.STATS) { StatsEntry() }
  */
 @Composable
-fun StatsEntry(
-    onAddGoalClick: () -> Unit = {},
-    viewModel: StatsViewModel = hiltViewModel(),
-) {
+fun StatsEntry(viewModel: StatsViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsState()
     StatsScreen(
         uiState         = uiState,
         onPeriodChanged = viewModel::onPeriodChanged,
-        onAddGoalClick  = onAddGoalClick,
         onErrorDismiss  = viewModel::clearError,
     )
 }

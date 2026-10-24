@@ -10,16 +10,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.semantics.semantics
@@ -33,9 +30,6 @@ import com.salattracker.core.ui.isOfferedFor
 import com.salattracker.core.ui.label
 import com.salattracker.core.ui.labelRes
 import com.salattracker.core.ui.shortLabel
-import com.salattracker.domain.model.GoalCategory
-import com.salattracker.domain.model.GoalFrequency
-import com.salattracker.domain.model.GoalPeriodStat
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.Gender
@@ -49,15 +43,13 @@ import java.time.LocalDate
 import java.text.NumberFormat
 
 // ── Stats Screen ─────────────────────────────────────────────────────────────
-// A today-vs-history dashboard: one shared period selector drives everything except Goals
-// (judged by each goal's own frequency, not the period). Order: summary -> trend -> by prayer ->
-// goals, reading as "where do I stand" before "what should I improve".
+// A today-vs-history dashboard: one shared period selector drives summary, trend, and prayer
+// breakdown, reading as "where do I stand" before "what should I improve".
 
 @Composable
 fun StatsScreen(
     uiState: StatsUiState,
     onPeriodChanged: (StatsPeriod) -> Unit,
-    onAddGoalClick: () -> Unit = {},
     onErrorDismiss: () -> Unit = {},
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
@@ -75,7 +67,6 @@ fun StatsScreen(
             SummaryCard(state = uiState.overview, gender = uiState.gender)
             TrendCard(state = uiState.overview, period = uiState.period)
             PrayerBreakdownCard(state = uiState.prayerBreakdown)
-            GoalsCard(state = uiState.goals, onAddGoalClick = onAddGoalClick)
         }
         uiState.errorRes?.let { errorRes ->
             Snackbar(
@@ -349,73 +340,6 @@ private fun formatStatsPercent(value: Int, locale: java.util.Locale): String =
 private fun formatStatsRatio(first: Int, second: Int, locale: java.util.Locale): String =
     "${formatStatsNumber(first, locale)}/${formatStatsNumber(second, locale)}"
 
-// ── Goals (per-goal periods hit, judged by each goal's own frequency) ───────────────
-
-@Composable
-private fun GoalsCard(state: GoalsUiState, onAddGoalClick: () -> Unit) {
-    StatsCard {
-        Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.CenterVertically) {
-            Text(stringResource(R.string.nav_goals), color = SalatPrimary, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily)
-            Text(stringResource(R.string.stats_targets_hit), color = SalatOnSurfaceVariant,  fontSize = 12.sp, fontFamily = AppUiFontFamily)
-        }
-        Spacer(Modifier.height(16.dp))
-        when {
-            state.isLoading -> Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                repeat(3) { ShimmerBox(Modifier.fillMaxWidth().height(40.dp)) }
-            }
-            state.items.isEmpty() -> EmptyStateText(stringResource(R.string.stats_no_active_goals), onClick = onAddGoalClick)
-            else -> Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                state.items.forEach { item -> GoalStatRow(item) }
-            }
-        }
-    }
-}
-
-@Composable
-private fun GoalStatRow(item: GoalPeriodStat) {
-    val locale = LocalConfiguration.current.locales[0]
-    Column {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            Box(
-                modifier = Modifier.size(32.dp).clip(RoundedCornerShape(10.dp)).background(SalatPrimaryContainer),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(painterResource(item.category.iconRes), null, tint = SalatOnPrimaryContainer, modifier = Modifier.size(16.dp))
-            }
-            Column(Modifier.weight(1f)) {
-                Text(item.goalName, color = SalatOnSurface, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(
-                    text = "${statsGoalAmountLabel(item.loggedAmount, item.unit)} · ${item.frequency.label()}",
-                    color = SalatOnSurfaceVariant,  fontSize = 12.sp, fontFamily = AppUiFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis,
-                )
-            }
-            Text(
-                text = if (item.periodsCounted > 0) formatStatsRatio(item.periodsHit, item.periodsCounted, locale) else "—",
-                color = SalatPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily,
-            )
-        }
-        Spacer(Modifier.height(8.dp))
-        val rate = if (item.periodsCounted > 0) item.periodsHit.toFloat() / item.periodsCounted else 0f
-        LinearProgressBar(rate, SalatPrimaryContainer, SalatSurfaceContainerHigh, 8.dp)
-    }
-}
-
-@Composable
-private fun LinearProgressBar(progress: Float, color: Color, trackColor: Color, height: Dp = 6.dp) {
-    val animProg by animateFloatAsState(progress.coerceIn(0f, 1f), tween(800, easing = FastOutSlowInEasing), label = "p")
-    Box(Modifier.fillMaxWidth().height(height).clip(RoundedCornerShape(height / 2)).background(trackColor)) {
-        Box(Modifier.fillMaxWidth(animProg).fillMaxHeight().clip(RoundedCornerShape(height / 2)).background(color))
-    }
-}
-
-@Composable
-private fun statsGoalAmountLabel(amount: Int, unit: String): String = when (unit) {
-    "Time(s)" -> pluralStringResource(R.plurals.goal_amount_times, amount, amount)
-    "Minutes" -> pluralStringResource(R.plurals.goal_amount_minutes, amount, amount)
-    "Pages" -> pluralStringResource(R.plurals.goal_amount_pages, amount, amount)
-    else -> "$amount $unit"
-}
-
 // ── Preview ───────────────────────────────────────────────────────────────────
 
 private fun sampleBreakdown(rates: List<Float>): List<PrayerBreakdown> =
@@ -438,17 +362,8 @@ fun StatsScreenPreview() {
                 trend = (0..9).map { TrendPoint(LocalDate.now().minusDays((9 - it).toLong()), listOf(60,65,70,68,75,80,78,85,88,90)[it]) },
             ),
             prayerBreakdown = PrayerBreakdownUiState(isLoading = false, breakdown = sampleBreakdown(listOf(0.6f, 0.9f, 0.75f, 1f, 0.95f))),
-            goals = GoalsUiState(
-                isLoading = false,
-                items = listOf(
-                    GoalPeriodStat("Tahajjud Prayer", GoalCategory.SALAT, GoalFrequency.DAILY, "Time(s)", loggedAmount = 18, periodsHit = 18, periodsCounted = 26),
-                    GoalPeriodStat("Read Quran", GoalCategory.QURAN, GoalFrequency.WEEKLY, "Pages", loggedAmount = 142, periodsHit = 2, periodsCounted = 4),
-                    GoalPeriodStat("Morning Adhkar", GoalCategory.DHIKR, GoalFrequency.DAILY, "Time(s)", loggedAmount = 26, periodsHit = 26, periodsCounted = 26),
-                ),
-            ),
         ),
         onPeriodChanged = {},
-        onAddGoalClick  = {},
     )
 }
 
@@ -466,16 +381,8 @@ fun StatsScreenNinetyDaysPreview() {
                 trend = (0..12).map { TrendPoint(LocalDate.now().minusDays(((12 - it) * 7).toLong()), (50..90).shuffled().first()) },
             ),
             prayerBreakdown = PrayerBreakdownUiState(isLoading = false, breakdown = sampleBreakdown(listOf(0.4f, 0.8f, 0.7f, 0.9f, 0.85f))),
-            goals = GoalsUiState(
-                isLoading = false,
-                items = listOf(
-                    GoalPeriodStat("Tahajjud Prayer", GoalCategory.SALAT, GoalFrequency.DAILY, "Time(s)", loggedAmount = 60, periodsHit = 60, periodsCounted = 90),
-                    GoalPeriodStat("Read Quran", GoalCategory.QURAN, GoalFrequency.MONTHLY, "Pages", loggedAmount = 210, periodsHit = 1, periodsCounted = 3),
-                ),
-            ),
         ),
         onPeriodChanged = {},
-        onAddGoalClick  = {},
     )
 }
 
@@ -487,9 +394,7 @@ fun StatsScreenEmptyPreview() {
             period = StatsPeriod.MONTH,
             overview = OverviewUiState(isLoading = false),
             prayerBreakdown = PrayerBreakdownUiState(isLoading = false, breakdown = emptyList()),
-            goals = GoalsUiState(isLoading = false),
         ),
         onPeriodChanged = {},
-        onAddGoalClick  = {},
     )
 }

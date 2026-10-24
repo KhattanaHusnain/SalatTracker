@@ -1,10 +1,6 @@
 package com.salattracker.feature.stats
 
-import com.salattracker.domain.model.GoalCategory
-import com.salattracker.domain.model.GoalFrequency
-import com.salattracker.domain.model.GoalPeriodStat
 import com.salattracker.domain.repository.StatusCounts
-import com.salattracker.testutil.FakeGoalRepository
 import com.salattracker.testutil.FakePrayerRepository
 import com.salattracker.testutil.FakeSettingsRepository
 import com.salattracker.testutil.MainDispatcherRule
@@ -24,7 +20,6 @@ class StatsViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private lateinit var prayerRepository: FakePrayerRepository
-    private lateinit var goalRepository: FakeGoalRepository
     private lateinit var viewModel: StatsViewModel
     private val clock = Clock.fixed(Instant.parse("2026-10-23T12:00:00Z"), ZoneOffset.UTC)
     private val today = LocalDate.now(clock)
@@ -32,31 +27,26 @@ class StatsViewModelTest {
     @Before
     fun setUp() {
         prayerRepository = FakePrayerRepository()
-        goalRepository = FakeGoalRepository()
     }
 
-    private fun createViewModel() = StatsViewModel(prayerRepository, goalRepository, FakeSettingsRepository(), clock)
+    private fun createViewModel() = StatsViewModel(prayerRepository, FakeSettingsRepository(), clock)
 
     @Test
-    fun `initial state loads every section for the month period`() = runTest {
+    fun `initial state loads every stats section for the month period`() = runTest {
         prayerRepository.seedDailyCounts(today, StatusCounts(congregation = 5))
-        goalRepository.periodStats = listOf(GoalPeriodStat("Quran", GoalCategory.QURAN, GoalFrequency.DAILY, "Pages", 10, 5, 10))
         viewModel = createViewModel()
 
         val state = viewModel.uiState.value
         assertEquals(StatsPeriod.MONTH, state.period)
         assertEquals(false, state.overview.isLoading)
         assertEquals(false, state.prayerBreakdown.isLoading)
-        assertEquals(false, state.goals.isLoading)
-        assertEquals(1, state.goals.items.size)
     }
 
     @Test
-    fun `onPeriodChanged queries every section with the new period's date range`() = runTest {
+    fun `onPeriodChanged queries stats sections with the new period's date range`() = runTest {
         viewModel = createViewModel()
         prayerRepository.dailyStatusCountsCalls.clear()
         prayerRepository.prayerBreakdownCalls.clear()
-        goalRepository.periodStatsCalls.clear()
 
         viewModel.onPeriodChanged(StatsPeriod.NINETY_DAYS)
 
@@ -68,7 +58,6 @@ class StatsViewModelTest {
         assertEquals(expectedFrom.minusDays(90) to expectedFrom.minusDays(1), prayerRepository.dailyStatusCountsCalls[1])
 
         assertEquals(expectedFrom to today, prayerRepository.prayerBreakdownCalls.single())
-        assertEquals(expectedFrom to today, goalRepository.periodStatsCalls.single())
     }
 
     @Test

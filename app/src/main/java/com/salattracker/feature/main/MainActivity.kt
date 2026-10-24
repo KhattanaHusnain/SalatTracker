@@ -461,7 +461,7 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                     QuranCreditsEntry()
                 }
                 composable(Routes.STATS) {
-                    StatsEntry(onAddGoalClick = { navController.push(Routes.ADD_GOAL) })
+                    StatsEntry()
                 }
                 composable(
                     Routes.TASBIH,

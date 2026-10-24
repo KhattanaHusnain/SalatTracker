@@ -4,9 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.salattracker.R
 import com.salattracker.core.util.runCatchingCancellable
-import com.salattracker.domain.model.GoalPeriodStat
 import com.salattracker.domain.model.Gender
-import com.salattracker.domain.repository.GoalRepository
 import com.salattracker.domain.repository.PrayerBreakdown
 import com.salattracker.domain.repository.PrayerRepository
 import com.salattracker.domain.repository.SettingsRepository
@@ -68,17 +66,11 @@ data class PrayerBreakdownUiState(
     val breakdown: List<PrayerBreakdown> = emptyList(),
 )
 
-data class GoalsUiState(
-    val isLoading: Boolean = true,
-    val items: List<GoalPeriodStat> = emptyList(),
-)
-
 data class StatsUiState(
     val period: StatsPeriod = StatsPeriod.MONTH,
 
     val overview: OverviewUiState = OverviewUiState(),
     val prayerBreakdown: PrayerBreakdownUiState = PrayerBreakdownUiState(),
-    val goals: GoalsUiState = GoalsUiState(),
     val gender: Gender? = null,
 
     val errorRes: Int? = null,
@@ -89,7 +81,6 @@ data class StatsUiState(
 @HiltViewModel
 class StatsViewModel @Inject constructor(
     private val repository: PrayerRepository,
-    private val goalRepository: GoalRepository,
     private val settingsRepository: SettingsRepository,
     private val clock: Clock,
 ) : ViewModel() {
@@ -101,7 +92,6 @@ class StatsViewModel @Inject constructor(
     // instead of risking it landing after (and overwriting) the new period's result.
     private var overviewJob: Job? = null
     private var breakdownJob: Job? = null
-    private var goalsJob: Job? = null
 
     private val dayTicker: Flow<LocalDate> = flow {
         while (true) {
@@ -119,7 +109,6 @@ class StatsViewModel @Inject constructor(
         loadAllForPeriod(StatsPeriod.MONTH, showSkeleton = true)
         observeDayChanges()
         observePrayerChanges()
-        observeGoalChanges()
     }
 
     fun onPeriodChanged(period: StatsPeriod) {
@@ -130,7 +119,6 @@ class StatsViewModel @Inject constructor(
     private fun loadAllForPeriod(period: StatsPeriod, showSkeleton: Boolean) {
         loadOverview(period, showSkeleton)
         loadBreakdown(period, showSkeleton)
-        loadGoals(period, showSkeleton)
     }
 
     private fun loadOverview(period: StatsPeriod, showSkeleton: Boolean) {
@@ -183,21 +171,6 @@ class StatsViewModel @Inject constructor(
         }
     }
 
-    private fun loadGoals(period: StatsPeriod, showSkeleton: Boolean) {
-        goalsJob?.cancel()
-        goalsJob = viewModelScope.launch {
-            if (showSkeleton) _uiState.update { it.copy(goals = it.goals.copy(isLoading = true)) }
-            runCatchingCancellable {
-                val (from, to) = period.dateRange(LocalDate.now(clock))
-                goalRepository.getGoalPeriodStats(from, to)
-            }.onSuccess { items ->
-                _uiState.update { it.copy(goals = it.goals.copy(isLoading = false, items = items)) }
-            }.onFailure {
-                _uiState.update { it.copy(errorRes = R.string.error_load_generic, goals = it.goals.copy(isLoading = false)) }
-            }
-        }
-    }
-
     private fun observePrayerChanges() {
         viewModelScope.launch {
             // observeStreaks() re-emits on every prayer write (and after a backup restore) from
@@ -207,16 +180,6 @@ class StatsViewModel @Inject constructor(
             repository.observeStreaks().drop(1).collect {
                 loadOverview(_uiState.value.period, showSkeleton = false)
                 loadBreakdown(_uiState.value.period, showSkeleton = false)
-            }
-        }
-    }
-
-    private fun observeGoalChanges() {
-        viewModelScope.launch {
-            // Live so the goals card stays fresh when a goal is added, checked in, or edited from
-            // elsewhere — no skeleton flash either.
-            goalRepository.observeGoalHistories().drop(1).collect {
-                loadGoals(_uiState.value.period, showSkeleton = false)
             }
         }
     }
