@@ -137,6 +137,9 @@ class PrayerRepositoryImpl @Inject constructor(
             DayStatusCounts(date = row.date, counts = row.toCounts())
         }
 
+    override suspend fun getFirstRecordedPrayerDate(): LocalDate? =
+        prayerDao.getFirstRecordedPrayerDate(userId)
+
     override suspend fun getPrayerBreakdown(from: LocalDate, to: LocalDate): List<PrayerBreakdown> {
         val byType = prayerDao.getPrayerBreakdown(userId, from, to).associateBy { it.prayerType }
         // Always 5 rows, in PrayerType declaration order — the DAO's GROUP BY prayer_type has no

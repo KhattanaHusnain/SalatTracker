@@ -38,6 +38,18 @@ class StatsSummaryTest {
     }
 
     @Test
+    fun `loggingCoverage starts at first recorded day and excludes not-yet-due prayers today`() {
+        val start = today.minusDays(2)
+        val coverage = loggingCoverage(
+            days = listOf(DayStatusCounts(start, StatusCounts(congregation = 3, excused = 2))),
+            from = today.minusDays(10), today = today, firstRecorded = start,
+            now = java.time.LocalTime.of(12, 0),
+            todayTimes = mapOf(PrayerType.FAJR to java.time.LocalTime.of(5, 0), PrayerType.DHUHR to java.time.LocalTime.of(12, 30)),
+        )
+        assertEquals(LoggingCoverage(logged = 5, expected = 11), coverage)
+    }
+
+    @Test
     fun `congregationChallenge tracks current and best all-congregation runs`() {
         val days = listOf(
             DayStatusCounts(today.minusDays(4), StatusCounts(congregation = 5)),

@@ -231,6 +231,11 @@ private fun SummaryCard(state: OverviewUiState, gender: Gender?) {
             Spacer(Modifier.height(2.dp))
             Text(stringResource(R.string.stats_no_data_period), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
         }
+        state.loggingCoverage.percent?.let { coverage ->
+            Spacer(Modifier.height(4.dp))
+            Text(stringResource(R.string.stats_coverage, state.loggingCoverage.logged, state.loggingCoverage.expected), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
+            if (coverage < 70) Text(stringResource(R.string.stats_coverage_low), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
+        }
         Spacer(Modifier.height(16.dp))
         StatusBar(state.counts)
         Spacer(Modifier.height(10.dp))

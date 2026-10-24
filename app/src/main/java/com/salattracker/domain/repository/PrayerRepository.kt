@@ -81,6 +81,9 @@ interface PrayerRepository {
      */
     suspend fun getDailyStatusCounts(from: LocalDate, to: LocalDate): List<DayStatusCounts>
 
+    /** Earliest date with a prayer entry, or null before anything has been logged. */
+    suspend fun getFirstRecordedPrayerDate(): LocalDate?
+
     suspend fun getPrayerBreakdown(
         from: LocalDate,
         to: LocalDate,

@@ -396,6 +396,8 @@
     <string name="stats_congregation_challenge">40-day challenge</string>
     <string name="stats_congregation_day_of_40">Day %1$d of 40</string>
     <string name="stats_congregation_best_run">Best run: %1$d days</string>
+    <string name="stats_coverage">Based on %1$d of %2$d prayers logged</string>
+    <string name="stats_coverage_low">Log past prayers in Calendar or Bulk Update for accurate stats.</string>
 
     <!-- Goals dashboard -->
     <string name="goals_active">Active Goals</string>

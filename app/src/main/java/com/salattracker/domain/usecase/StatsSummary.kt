@@ -4,12 +4,30 @@ import com.salattracker.domain.repository.DayStatusCounts
 import com.salattracker.domain.repository.PrayerBreakdown
 import com.salattracker.domain.repository.StatusCounts
 import java.time.LocalDate
+import java.time.LocalTime
+import com.salattracker.domain.model.PrayerType
 
 // ── Completion % ──────────────────────────────────────────────────────────────
 
 /** Congregation + individual as a share of countable (non-excused) prayers. Null when nothing
  * is countable — the caller shows "—", not a misleading 0%. */
 fun completionPercent(counts: StatusCounts): Int? = counts.completionPercent
+
+data class LoggingCoverage(val logged: Int, val expected: Int) {
+    val percent: Int? get() = if (expected == 0) null else (logged * 100) / expected
+}
+
+/** Coverage starts at the later of the selected range and the first logged date. Today includes
+ * only prayers whose calculated time has passed; every stored status, including excused, counts. */
+fun loggingCoverage(days: List<DayStatusCounts>, from: LocalDate, today: LocalDate, firstRecorded: LocalDate?, now: LocalTime, todayTimes: Map<PrayerType, LocalTime>?): LoggingCoverage {
+    val start = listOfNotNull(from, firstRecorded).maxOrNull() ?: return LoggingCoverage(0, 0)
+    if (start.isAfter(today)) return LoggingCoverage(0, 0)
+    val completedDays = start.datesUntil(today).count()
+    val dueToday = todayTimes?.values?.count { !it.isAfter(now) } ?: 0
+    val expected = completedDays * PrayerType.values().size + dueToday
+    val logged = days.filter { !it.date.isBefore(start) }.sumOf { it.counts.congregation + it.counts.individual + it.counts.qazaPending + it.counts.qazaCompleted + it.counts.excused }
+    return LoggingCoverage(logged.coerceAtMost(expected), expected)
+}
 
 /** Congregation as a share of prayers that were actually prayed, excluding qaza and excused
  * statuses. Null distinguishes an empty period from a true 0% congregation rate. */

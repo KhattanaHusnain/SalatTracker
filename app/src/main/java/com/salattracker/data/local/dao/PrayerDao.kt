@@ -10,6 +10,9 @@ import java.time.LocalDate
 @Dao
 interface PrayerDao {
 
+    @Query("SELECT MIN(date) FROM prayer_entries WHERE user_id = :userId")
+    suspend fun getFirstRecordedPrayerDate(userId: String): LocalDate?
+
     // ── Single day ────────────────────────────────────────────────────────────
 
     @Query("""

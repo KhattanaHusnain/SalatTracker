@@ -139,6 +139,8 @@ class FakePrayerRepository : PrayerRepository {
             .map { (date, counts) -> DayStatusCounts(date, counts) }
     }
 
+    override suspend fun getFirstRecordedPrayerDate(): LocalDate? = dailyCounts.keys.minOrNull()
+
     override suspend fun getPrayerBreakdown(from: LocalDate, to: LocalDate): List<PrayerBreakdown> {
         prayerBreakdownCalls += from to to
         return prayerBreakdown

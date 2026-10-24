@@ -13,6 +13,8 @@ import com.salattracker.domain.usecase.PerfectDays
 import com.salattracker.domain.usecase.CongregationChallenge
 import com.salattracker.domain.usecase.congregationChallenge
 import com.salattracker.domain.usecase.congregationPercent
+import com.salattracker.domain.usecase.LoggingCoverage
+import com.salattracker.domain.usecase.loggingCoverage
 import com.salattracker.domain.usecase.completionPercent
 import com.salattracker.domain.usecase.completionTrend
 import com.salattracker.domain.usecase.perfectDays
@@ -62,6 +64,7 @@ data class OverviewUiState(
     val congregationPercent: Int? = null,
     val congregationDelta: Int? = null,
     val congregationChallenge: CongregationChallenge = CongregationChallenge(0, 0),
+    val loggingCoverage: LoggingCoverage = LoggingCoverage(0, 0),
     val trend: List<TrendPoint> = emptyList(),
 )
 
@@ -135,8 +138,10 @@ class StatsViewModel @Inject constructor(
                 val currentDays = repository.getDailyStatusCounts(from, to)
                 val previousDays = repository.getDailyStatusCounts(from.minusDays(period.days.toLong()), from.minusDays(1))
                 val challengeDays = repository.getDailyStatusCounts(today.minusDays(40), today.minusDays(1))
-                OverviewLoad(currentDays, previousDays, challengeDays, from, to)
-            }.onSuccess { (currentDays, previousDays, challengeDays, from, to) ->
+                val firstRecorded = repository.getFirstRecordedPrayerDate()
+                val todayTimes = repository.getPrayerTimes(today)
+                OverviewLoad(currentDays, previousDays, challengeDays, firstRecorded, todayTimes, from, to)
+            }.onSuccess { (currentDays, previousDays, challengeDays, firstRecorded, todayTimes, from, to) ->
                 val counts = currentDays.fold(StatusCounts()) { acc, d -> acc + d.counts }
                 val prevCounts = previousDays.fold(StatusCounts()) { acc, d -> acc + d.counts }
                 val pct = completionPercent(counts)
@@ -156,6 +161,7 @@ class StatsViewModel @Inject constructor(
                             congregationPercent = congregationPct,
                             congregationDelta = if (congregationPct != null && previousCongregationPct != null) congregationPct - previousCongregationPct else null,
                             congregationChallenge = congregationChallenge(challengeDays, to),
+                            loggingCoverage = loggingCoverage(currentDays, from, to, firstRecorded, java.time.LocalTime.now(clock), todayTimes),
                             trend           = trend,
                         )
                     )
@@ -209,6 +215,8 @@ private data class OverviewLoad(
     val currentDays: List<com.salattracker.domain.repository.DayStatusCounts>,
     val previousDays: List<com.salattracker.domain.repository.DayStatusCounts>,
     val challengeDays: List<com.salattracker.domain.repository.DayStatusCounts>,
+    val firstRecorded: LocalDate?,
+    val todayTimes: Map<com.salattracker.domain.model.PrayerType, java.time.LocalTime>?,
     val from: LocalDate,
     val to: LocalDate,
 )
