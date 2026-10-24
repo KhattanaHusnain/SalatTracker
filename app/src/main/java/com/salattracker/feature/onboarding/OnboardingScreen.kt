@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -529,7 +530,7 @@ private fun CatchUpAddStep(
         }
 
         Spacer(Modifier.height(28.dp))
-        PrimaryButton(text = stringResource(R.string.onboarding_catch_up_add_action, prayerCount), onClick = { showConfirmation = true })
+        PrimaryButton(text = pluralStringResource(R.plurals.onboarding_catch_up_add_action, prayerCount, prayerCount), onClick = { showConfirmation = true })
         Spacer(Modifier.height(24.dp))
     }
     if (showConfirmation) {
@@ -558,7 +559,7 @@ private fun CatchUpDurationOption(option: CatchUpDuration, selected: CatchUpDura
     val subtitle = if (option == CatchUpDuration.CUSTOM) {
         null
     } else {
-        stringResource(R.string.onboarding_catch_up_prayer_count, option.days * 5)
+        pluralStringResource(R.plurals.onboarding_catch_up_prayer_count, option.days * 5, option.days * 5)
     }
     TitledOption(
         icon = R.drawable.ic_pending_actions,

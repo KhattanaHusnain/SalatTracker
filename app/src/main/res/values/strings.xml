@@ -225,8 +225,8 @@
     <string name="onboarding_catch_up_duration_week">Last 7 days</string>
     <string name="onboarding_catch_up_duration_month">Last 30 days</string>
     <string name="onboarding_catch_up_duration_half_year">Last 6 months</string>
-    <string name="onboarding_catch_up_prayer_count">%1$d prayers</string>
-    <string name="onboarding_catch_up_add_action">Add %1$d prayers</string>
+    <plurals name="onboarding_catch_up_prayer_count"><item quantity="one">%1$d prayer</item><item quantity="other">%1$d prayers</item></plurals>
+    <plurals name="onboarding_catch_up_add_action"><item quantity="one">Add %1$d prayer</item><item quantity="other">Add %1$d prayers</item></plurals>
 
     <!-- Onboarding: Done -->
     <string name="onboarding_done_title">You\'re all set</string>

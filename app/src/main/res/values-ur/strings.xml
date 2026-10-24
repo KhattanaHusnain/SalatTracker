@@ -217,8 +217,8 @@
     <string name="onboarding_catch_up_duration_week">پچھلے 7 دن</string>
     <string name="onboarding_catch_up_duration_month">پچھلے 30 دن</string>
     <string name="onboarding_catch_up_duration_half_year">پچھلے 6 ماہ</string>
-    <string name="onboarding_catch_up_prayer_count">%1$d نمازیں</string>
-    <string name="onboarding_catch_up_add_action">%1$d نمازیں شامل کریں</string>
+    <plurals name="onboarding_catch_up_prayer_count"><item quantity="one">%1$d نماز</item><item quantity="other">%1$d نمازیں</item></plurals>
+    <plurals name="onboarding_catch_up_add_action"><item quantity="one">%1$d نماز شامل کریں</item><item quantity="other">%1$d نمازیں شامل کریں</item></plurals>
 
     <!-- Onboarding: Done -->
     <string name="onboarding_done_title">سب تیار ہے</string>

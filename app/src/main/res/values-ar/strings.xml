@@ -217,8 +217,8 @@
     <string name="onboarding_catch_up_duration_week">آخر 7 أيام</string>
     <string name="onboarding_catch_up_duration_month">آخر 30 يومًا</string>
     <string name="onboarding_catch_up_duration_half_year">آخر 6 أشهر</string>
-    <string name="onboarding_catch_up_prayer_count">%1$d صلاة</string>
-    <string name="onboarding_catch_up_add_action">إضافة %1$d صلاة</string>
+    <plurals name="onboarding_catch_up_prayer_count"><item quantity="zero">لا صلوات</item><item quantity="one">%1$d صلاة</item><item quantity="two">صلاتان</item><item quantity="few">%1$d صلوات</item><item quantity="many">%1$d صلاة</item><item quantity="other">%1$d صلاة</item></plurals>
+    <plurals name="onboarding_catch_up_add_action"><item quantity="zero">إضافة 0 صلاة</item><item quantity="one">إضافة %1$d صلاة</item><item quantity="two">إضافة صلاتين</item><item quantity="few">إضافة %1$d صلوات</item><item quantity="many">إضافة %1$d صلاة</item><item quantity="other">إضافة %1$d صلاة</item></plurals>
 
     <!-- Onboarding: Done -->
     <string name="onboarding_done_title">كل شيء جاهز</string>
