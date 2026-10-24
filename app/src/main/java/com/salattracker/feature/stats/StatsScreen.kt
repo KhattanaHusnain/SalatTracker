@@ -13,6 +13,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -25,7 +26,6 @@ import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.core.ui.ShimmerBox
 import com.salattracker.core.ui.StatTile
-import com.salattracker.core.ui.goalUnitLabel
 import com.salattracker.core.ui.iconRes
 import com.salattracker.core.ui.isOfferedFor
 import com.salattracker.core.ui.label
@@ -429,9 +429,9 @@ private fun GoalStatRow(item: GoalPeriodStat) {
                 Icon(painterResource(item.category.iconRes), null, tint = SalatOnPrimaryContainer, modifier = Modifier.size(16.dp))
             }
             Column(Modifier.weight(1f)) {
-                Text(item.goalName.shortLabel(), color = SalatOnSurface, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(item.goalName, color = SalatOnSurface, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(
-                    text = "${item.loggedAmount} ${goalUnitLabel(item.unit)} · ${item.frequency.label()}",
+                    text = "${statsGoalAmountLabel(item.loggedAmount, item.unit)} · ${item.frequency.label()}",
                     color = SalatOnSurfaceVariant,  fontSize = 12.sp, fontFamily = AppUiFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis,
                 )
             }
@@ -454,7 +454,13 @@ private fun LinearProgressBar(progress: Float, color: Color, trackColor: Color, 
     }
 }
 
-private fun String.shortLabel(): String = if (length <= 14) this else take(13) + "…"
+@Composable
+private fun statsGoalAmountLabel(amount: Int, unit: String): String = when (unit) {
+    "Time(s)" -> pluralStringResource(R.plurals.goal_amount_times, amount, amount)
+    "Minutes" -> pluralStringResource(R.plurals.goal_amount_minutes, amount, amount)
+    "Pages" -> pluralStringResource(R.plurals.goal_amount_pages, amount, amount)
+    else -> "$amount $unit"
+}
 
 // ── Preview ───────────────────────────────────────────────────────────────────
 

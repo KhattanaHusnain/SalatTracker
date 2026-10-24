@@ -403,6 +403,9 @@
     <string name="unit_times">مرة/مرات</string>
     <string name="unit_minutes">دقائق</string>
     <string name="unit_pages">صفحات</string>
+    <plurals name="goal_amount_times"><item quantity="zero">0 مرات</item><item quantity="one">%1$d مرة</item><item quantity="two">مرتان</item><item quantity="few">%1$d مرات</item><item quantity="many">%1$d مرة</item><item quantity="other">%1$d مرة</item></plurals>
+    <plurals name="goal_amount_minutes"><item quantity="zero">0 دقائق</item><item quantity="one">%1$d دقيقة</item><item quantity="two">دقيقتان</item><item quantity="few">%1$d دقائق</item><item quantity="many">%1$d دقيقة</item><item quantity="other">%1$d دقيقة</item></plurals>
+    <plurals name="goal_amount_pages"><item quantity="zero">0 صفحات</item><item quantity="one">%1$d صفحة</item><item quantity="two">صفحتان</item><item quantity="few">%1$d صفحات</item><item quantity="many">%1$d صفحة</item><item quantity="other">%1$d صفحة</item></plurals>
     <string name="addgoal_create">إنشاء الهدف</string>
     <string name="addgoal_created">تم إنشاء الهدف!</string>
     <string name="editgoal_delete">حذف الهدف</string>

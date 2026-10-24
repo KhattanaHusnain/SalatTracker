@@ -403,6 +403,9 @@
     <string name="unit_times">بار</string>
     <string name="unit_minutes">منٹ</string>
     <string name="unit_pages">صفحات</string>
+    <plurals name="goal_amount_times"><item quantity="one">%1$d بار</item><item quantity="other">%1$d بار</item></plurals>
+    <plurals name="goal_amount_minutes"><item quantity="one">%1$d منٹ</item><item quantity="other">%1$d منٹ</item></plurals>
+    <plurals name="goal_amount_pages"><item quantity="one">%1$d صفحہ</item><item quantity="other">%1$d صفحات</item></plurals>
     <string name="addgoal_create">ہدف بنائیں</string>
     <string name="addgoal_created">ہدف بن گیا!</string>
     <string name="editgoal_delete">ہدف حذف کریں</string>
