@@ -215,8 +215,16 @@ private fun SummaryCard(state: OverviewUiState, gender: Gender?) {
             )
             state.completionDelta?.let { delta ->
                 Text(
-                    text = stringResource(R.string.stats_vs_last, "${if (delta > 0) "+" else ""}$delta"),
-                    color = if (delta > 0) SalatSurfaceTint else SalatError,
+                    text = when {
+                        delta > 0 -> stringResource(R.string.stats_vs_last, "+$delta")
+                        delta < 0 -> stringResource(R.string.stats_vs_last, "−${-delta}")
+                        else -> stringResource(R.string.stats_no_change)
+                    },
+                    color = when {
+                        delta > 0 -> SalatSurfaceTint
+                        delta < 0 -> SalatError
+                        else -> SalatOnSurfaceVariant
+                    },
                      fontSize = 12.sp, fontFamily = AppUiFontFamily, modifier = Modifier.padding(bottom = 6.dp),
                 )
             }

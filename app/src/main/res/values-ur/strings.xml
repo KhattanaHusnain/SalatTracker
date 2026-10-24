@@ -344,6 +344,7 @@
     <string name="reminders_offset_minutes_value">%1$d منٹ</string>
 
     <string name="stats_vs_last">%1$s%% پچھلے کے مقابلے</string>
+    <string name="stats_no_change">کوئی تبدیلی نہیں</string>
     <string name="stats_no_active_goals">ابھی کوئی فعال ہدف نہیں — ایک مقرر کرنے کے لیے دبائیں۔</string>
     <string name="stats_prayed_on_time">ادا کی گئی نمازیں</string>
     <string name="stats_by_prayer">نماز کے لحاظ سے</string>

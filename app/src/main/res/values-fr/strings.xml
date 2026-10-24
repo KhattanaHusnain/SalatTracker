@@ -344,6 +344,7 @@
     <string name="reminders_offset_minutes_value">%1$d min</string>
 
     <string name="stats_vs_last">%1$s%% vs précédent</string>
+    <string name="stats_no_change">Aucun changement</string>
     <string name="stats_no_active_goals">Aucun objectif actif — appuyez pour en définir un.</string>
     <string name="stats_prayed_on_time">Prières accomplies</string>
     <string name="stats_by_prayer">Par prière</string>
