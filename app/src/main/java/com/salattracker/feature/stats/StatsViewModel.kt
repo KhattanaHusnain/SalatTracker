@@ -49,9 +49,8 @@ enum class StatsPeriod(val days: Int) {
 
 // ── UI state — one shared period, each section owns its own loading + data ────
 
-/** One point of the completion-trend line — unlike the domain's [com.salattracker.domain.usecase.CompletionTrendPoint],
- * [completionPct] here is never null: empty buckets are already filtered out before this is built. */
-data class TrendPoint(val start: LocalDate, val completionPct: Int)
+/** One point of the completion-trend line. A null [completionPct] is a real time gap, not 0%. */
+data class TrendPoint(val start: LocalDate, val completionPct: Int?)
 
 data class OverviewUiState(
     val isLoading: Boolean = true,
@@ -134,14 +133,14 @@ class StatsViewModel @Inject constructor(
                 val (from, to) = period.dateRange(today)
                 val currentDays = repository.getDailyStatusCounts(from, to)
                 val previousDays = repository.getDailyStatusCounts(from.minusDays(period.days.toLong()), from.minusDays(1))
-                Triple(currentDays, previousDays, today)
-            }.onSuccess { (currentDays, previousDays, today) ->
+                OverviewLoad(currentDays, previousDays, from, to)
+            }.onSuccess { (currentDays, previousDays, from, to) ->
                 val counts = currentDays.fold(StatusCounts()) { acc, d -> acc + d.counts }
                 val prevCounts = previousDays.fold(StatusCounts()) { acc, d -> acc + d.counts }
                 val pct = completionPercent(counts)
                 val prevPct = completionPercent(prevCounts)
-                val trend = completionTrend(currentDays, trendBucketFor(period.days), today)
-                    .mapNotNull { point -> point.completionPct?.let { TrendPoint(point.start, it) } }
+                val trend = completionTrend(currentDays, trendBucketFor(period.days), from, to)
+                    .map { point -> TrendPoint(point.start, point.completionPct) }
                 _uiState.update {
                     it.copy(
                         overview = it.overview.copy(
@@ -149,7 +148,7 @@ class StatsViewModel @Inject constructor(
                             counts          = counts,
                             completionPct   = pct,
                             completionDelta = if (pct != null && prevPct != null) pct - prevPct else null,
-                            perfectDays     = perfectDays(currentDays, today),
+                            perfectDays     = perfectDays(currentDays, to),
                             trend           = trend,
                             weekday         = weekdayCompletion(currentDays),
                         )
@@ -216,6 +215,13 @@ class StatsViewModel @Inject constructor(
 
     fun clearError() = _uiState.update { it.copy(errorRes = null) }
 }
+
+private data class OverviewLoad(
+    val currentDays: List<com.salattracker.domain.repository.DayStatusCounts>,
+    val previousDays: List<com.salattracker.domain.repository.DayStatusCounts>,
+    val from: LocalDate,
+    val to: LocalDate,
+)
 
 // ── Period helpers ────────────────────────────────────────────────────────────
 

@@ -30,6 +30,7 @@ import com.salattracker.core.theme.SalatOutline
 import com.salattracker.core.theme.SalatPrimary
 import com.salattracker.domain.usecase.TrendBucket
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
 /** Vico is only used here, for the completion-trend line — the one time series left in Stats.
  * Every other number (summary, by prayer, by weekday, goals) is a labelled category comparison,
@@ -38,21 +39,34 @@ import java.time.format.DateTimeFormatter
 // ── Completion trend: one line, fixed 0–100 range, no scroll ──────────────────
 
 @Composable
-fun CompletionTrendChart(points: List<TrendPoint>, bucket: TrendBucket, modifier: Modifier = Modifier) {
+fun CompletionTrendChart(
+    points: List<TrendPoint>,
+    bucket: TrendBucket,
+    rangeDays: Int,
+    modifier: Modifier = Modifier,
+) {
     val modelProducer = remember { CartesianChartModelProducer() }
+    val rangeStart = points.firstOrNull()?.start ?: return
+    val rangeSpan = (rangeDays - 1).coerceAtLeast(1).toLong()
+    val segments = remember(points) { points.contiguousSegments() }
     LaunchedEffect(points) {
-        if (points.isEmpty()) return@LaunchedEffect
+        if (segments.isEmpty()) return@LaunchedEffect
         modelProducer.runTransaction {
-            lineSeries { series(points.indices.toList(), points.map { it.completionPct }) }
+            lineSeries {
+                segments.forEach { segment ->
+                    series(
+                        segment.map { ChronoUnit.DAYS.between(rangeStart, it.start) },
+                        segment.map { it.completionPct!! },
+                    )
+                }
+            }
         }
     }
 
     val locale = LocalConfiguration.current.locales[0]
-    val labels = remember(points, bucket, locale) {
-        val formatter = DateTimeFormatter.ofPattern(if (bucket == TrendBucket.MONTH) "MMM" else "d/M", locale)
-        points.map { it.start.format(formatter) }
+    val formatter = remember(bucket, locale) {
+        DateTimeFormatter.ofPattern(if (bucket == TrendBucket.MONTH) "MMM yy" else "d/M", locale)
     }
-
     val line = LineCartesianLayer.rememberLine(fill = LineCartesianLayer.LineFill.single(fill(SalatPrimary)))
     val lineProvider = LineCartesianLayer.LineProvider.series(line)
     val axisLabel = rememberTextComponent(color = SalatOutline)
@@ -62,13 +76,14 @@ fun CompletionTrendChart(points: List<TrendPoint>, bucket: TrendBucket, modifier
         chart = rememberCartesianChart(
             rememberLineCartesianLayer(
                 lineProvider  = lineProvider,
-                rangeProvider = CartesianLayerRangeProvider.fixed(minY = 0.0, maxY = 100.0),
+                rangeProvider = CartesianLayerRangeProvider.fixed(minX = 0.0, maxX = rangeSpan.toDouble(), minY = 0.0, maxY = 100.0),
             ),
             startAxis = VerticalAxis.rememberStart(label = axisLabel),
             bottomAxis = HorizontalAxis.rememberBottom(
                 label = axisLabel,
+                itemPlacer = HorizontalAxis.ItemPlacer.aligned(),
                 valueFormatter = CartesianValueFormatter { _, x, _ ->
-                    labels.getOrNull(x.toInt())?.ifEmpty { " " } ?: " "
+                    rangeStart.plusDays(x.toLong()).format(formatter)
                 },
             ),
             marker = rememberDefaultCartesianMarker(label = markerLabel),
@@ -79,4 +94,19 @@ fun CompletionTrendChart(points: List<TrendPoint>, bucket: TrendBucket, modifier
         zoomState = rememberVicoZoomState(zoomEnabled = false, initialZoom = Zoom.Content),
         modifier = modifier.fillMaxWidth().height(180.dp),
     )
+}
+
+/** Turns missing values into independent series so Vico does not draw a line across a data gap. */
+private fun List<TrendPoint>.contiguousSegments(): List<List<TrendPoint>> {
+    val segments = mutableListOf<MutableList<TrendPoint>>()
+    var current: MutableList<TrendPoint>? = null
+    forEach { point ->
+        if (point.completionPct == null) {
+            current = null
+        } else {
+            val segment = current ?: mutableListOf<TrendPoint>().also { current = it; segments += it }
+            segment += point
+        }
+    }
+    return segments
 }

@@ -5,7 +5,6 @@ import com.salattracker.domain.repository.PrayerBreakdown
 import com.salattracker.domain.repository.StatusCounts
 import java.time.DayOfWeek
 import java.time.LocalDate
-import java.time.temporal.ChronoUnit
 
 // ── Completion % ──────────────────────────────────────────────────────────────
 
@@ -75,28 +74,42 @@ fun trendBucketFor(rangeDays: Int): TrendBucket = when {
     else             -> TrendBucket.MONTH
 }
 
-/** One x-axis point of the completion-trend chart: [start] is the bucket's first date, and
- * [completionPct] is null for a bucket with nothing countable (skipped by the chart, not
- * plotted as 0). */
+/** One x-axis point of the completion-trend chart: [start] is the bucket's first in-range date,
+ * and [completionPct] is null for a bucket with nothing countable. Null buckets deliberately
+ * remain in the result so the chart can preserve time gaps instead of joining unrelated days. */
 data class CompletionTrendPoint(val start: LocalDate, val completionPct: Int?)
 
 /**
- * Buckets [days] by [bucket] and reduces each bucket to one [CompletionTrendPoint]. Weekly
- * buckets are counted backward from [to] (so the most recent bucket always ends exactly on
- * [to], and the oldest may be a partial week) — matching the Stats period chips' own convention.
+ * Buckets [days] by [bucket] across every date from [from] through [to] and reduces each bucket
+ * to one [CompletionTrendPoint]. Empty buckets are retained as null points. Weekly buckets begin
+ * at [from], and calendar-month buckets are clipped to the selected range, so no plotted label
+ * can fall outside it.
  */
-fun completionTrend(days: List<DayStatusCounts>, bucket: TrendBucket, to: LocalDate): List<CompletionTrendPoint> {
-    val grouped: Map<LocalDate, List<DayStatusCounts>> = when (bucket) {
-        TrendBucket.DAY -> days.groupBy { it.date }
-        TrendBucket.WEEK -> days.groupBy { d ->
-            val weeksBack = ChronoUnit.DAYS.between(d.date, to) / 7
-            to.minusDays(weeksBack * 7 + 6)
-        }
-        TrendBucket.MONTH -> days.groupBy { it.date.withDayOfMonth(1) }
-    }
-    return grouped.toSortedMap().map { (start, bucketDays) ->
-        val total = bucketDays.fold(StatusCounts()) { acc, d -> acc + d.counts }
-        CompletionTrendPoint(start, total.completionPercent)
+fun completionTrend(
+    days: List<DayStatusCounts>,
+    bucket: TrendBucket,
+    from: LocalDate,
+    to: LocalDate,
+): List<CompletionTrendPoint> = trendWindows(bucket, from, to).map { (start, end) ->
+    val total = days.asSequence()
+        .filter { it.date in start..end }
+        .fold(StatusCounts()) { acc, day -> acc + day.counts }
+    CompletionTrendPoint(start, total.completionPercent)
+}
+
+private fun trendWindows(bucket: TrendBucket, from: LocalDate, to: LocalDate): List<Pair<LocalDate, LocalDate>> {
+    require(!from.isAfter(to)) { "Trend range start must not be after its end." }
+    return when (bucket) {
+        TrendBucket.DAY -> generateSequence(from) { date -> date.plusDays(1).takeIf { !it.isAfter(to) } }
+            .map { it to it }
+            .toList()
+        TrendBucket.WEEK -> generateSequence(from) { date -> date.plusDays(7).takeIf { !it.isAfter(to) } }
+            .map { start -> start to minOf(start.plusDays(6), to) }
+            .toList()
+        TrendBucket.MONTH -> generateSequence(java.time.YearMonth.from(from)) { it.plusMonths(1) }
+            .map { month -> maxOf(from, month.atDay(1)) to minOf(to, month.atEndOfMonth()) }
+            .takeWhile { (start, _) -> !start.isAfter(to) }
+            .toList()
     }
 }
 

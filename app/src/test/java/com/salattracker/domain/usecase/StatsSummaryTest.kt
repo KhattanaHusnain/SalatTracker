@@ -156,22 +156,41 @@ class StatsSummaryTest {
             DayStatusCounts(today.minusDays(1), StatusCounts(congregation = 1)),
             DayStatusCounts(today, StatusCounts(congregation = 1, qazaPending = 1)),
         )
-        val points = completionTrend(days, TrendBucket.DAY, today)
-        assertEquals(2, points.size)
-        assertEquals(100, points[0].completionPct)
-        assertEquals(50, points[1].completionPct)
+        val from = today.minusDays(2)
+        val points = completionTrend(days, TrendBucket.DAY, from, today)
+        assertEquals(3, points.size)
+        assertNull(points[0].completionPct)
+        assertEquals(100, points[1].completionPct)
+        assertEquals(50, points[2].completionPct)
     }
 
     @Test
-    fun `completionTrend groups weekly buckets counted back from the end date`() {
+    fun `completionTrend groups weekly buckets from the selected range start`() {
         val weekAgo = today.minusDays(7)
         val days = listOf(
             DayStatusCounts(weekAgo, StatusCounts(congregation = 1)),
             DayStatusCounts(today, StatusCounts(congregation = 1, qazaPending = 1)),
         )
-        val points = completionTrend(days, TrendBucket.WEEK, today)
+        val points = completionTrend(days, TrendBucket.WEEK, weekAgo, today)
         assertEquals(2, points.size)
+        assertEquals(weekAgo, points[0].start)
         assertTrue(points[0].start.isBefore(points[1].start))
+    }
+
+    @Test
+    fun `completionTrend keeps empty weekly buckets within the selected range`() {
+        val from = today.minusDays(20)
+        val points = completionTrend(
+            listOf(DayStatusCounts(today, StatusCounts(congregation = 1))),
+            TrendBucket.WEEK,
+            from,
+            today,
+        )
+
+        assertEquals(listOf(from, from.plusDays(7), from.plusDays(14)), points.map { it.start })
+        assertNull(points[0].completionPct)
+        assertNull(points[1].completionPct)
+        assertEquals(100, points[2].completionPct)
     }
 
     @Test
@@ -181,8 +200,10 @@ class StatsSummaryTest {
             DayStatusCounts(LocalDate.of(2026, 9, 20), StatusCounts(congregation = 1)),
             DayStatusCounts(LocalDate.of(2026, 10, 5), StatusCounts(qazaPending = 1)),
         )
-        val points = completionTrend(days, TrendBucket.MONTH, today)
+        val from = LocalDate.of(2026, 9, 5)
+        val points = completionTrend(days, TrendBucket.MONTH, from, today)
         assertEquals(2, points.size)
+        assertEquals(from, points[0].start)
         assertEquals(100, points[0].completionPct)
         assertEquals(0, points[1].completionPct)
     }
