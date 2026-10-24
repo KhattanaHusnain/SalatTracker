@@ -32,6 +32,14 @@ class StatsViewModelTest {
     private fun createViewModel() = StatsViewModel(prayerRepository, FakeSettingsRepository(), clock)
 
     @Test
+    fun `stats exposes week month and three-month periods only`() {
+        assertEquals(
+            listOf(StatsPeriod.WEEK, StatsPeriod.MONTH, StatsPeriod.NINETY_DAYS),
+            StatsPeriod.values().toList(),
+        )
+    }
+
+    @Test
     fun `initial state loads every stats section for the month period`() = runTest {
         prayerRepository.seedDailyCounts(today, StatusCounts(congregation = 5))
         viewModel = createViewModel()

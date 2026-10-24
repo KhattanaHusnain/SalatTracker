@@ -41,9 +41,7 @@ import javax.inject.Inject
 enum class StatsPeriod(val days: Int) {
     WEEK(7),
     MONTH(30),
-    FORTY_DAYS(40),
     NINETY_DAYS(90),
-    YEAR(365),
 }
 
 // ── UI state — one shared period, each section owns its own loading + data ────

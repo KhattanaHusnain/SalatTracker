@@ -84,9 +84,7 @@ fun StatsScreen(
 private val StatsPeriod.labelRes: Int get() = when (this) {
     StatsPeriod.WEEK        -> R.string.stats_period_7d
     StatsPeriod.MONTH       -> R.string.stats_period_30d
-    StatsPeriod.FORTY_DAYS  -> R.string.stats_period_40d
     StatsPeriod.NINETY_DAYS -> R.string.stats_period_90d
-    StatsPeriod.YEAR        -> R.string.stats_period_1y
 }
 
 @Composable
