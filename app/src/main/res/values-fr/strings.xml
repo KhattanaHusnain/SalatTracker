@@ -480,6 +480,7 @@
     <string name="sheet_n_of_m_logged">%1$d sur %2$d enregistrées</string>
 
     <string name="sheet_update_status">Mettez à jour le statut de votre prière</string>
+    <string name="sheet_current_status">Statut actuel</string>
     <string name="sheet_updating">Mise à jour…</string>
     <string name="sheet_save_status">Enregistrer le statut</string>
 

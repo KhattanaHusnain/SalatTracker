@@ -480,6 +480,7 @@
     <string name="sheet_n_of_m_logged">%2$d میں سے %1$d درج</string>
 
     <string name="sheet_update_status">اپنی نماز کی حیثیت اپ ڈیٹ کریں</string>
+    <string name="sheet_current_status">موجودہ حیثیت</string>
     <string name="sheet_updating">اپ ڈیٹ ہو رہا ہے…</string>
     <string name="sheet_save_status">حیثیت محفوظ کریں</string>
 

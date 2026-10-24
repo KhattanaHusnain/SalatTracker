@@ -509,6 +509,7 @@
 
     <!-- Prayer status sheet -->
     <string name="sheet_update_status">Update your prayer status</string>
+    <string name="sheet_current_status">Current status</string>
     <string name="sheet_updating">Updating…</string>
     <string name="sheet_save_status">Save Status</string>
 

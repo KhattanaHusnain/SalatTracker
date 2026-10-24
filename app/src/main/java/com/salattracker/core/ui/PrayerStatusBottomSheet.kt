@@ -66,7 +66,11 @@ fun PrayerStatusBottomSheet(
     gender: Gender? = null,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    var selected by remember(args) { mutableStateOf(args.currentStatus) }
+    val offeredItems = prayerStatusItems().filter { it.status.isOfferedFor(gender) }
+    val currentStatusIsOffered = offeredItems.any { it.status == args.currentStatus }
+    var selected by remember(args, gender) {
+        mutableStateOf(args.currentStatus.takeIf { currentStatusIsOffered })
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -115,7 +119,10 @@ fun PrayerStatusBottomSheet(
 
             // Status options
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                prayerStatusItems().filter { it.status.isOfferedFor(gender) }.forEach { item ->
+                if (!currentStatusIsOffered && args.currentStatus != PrayerStatus.NOT_RECORDED) {
+                    CurrentStatusRow(args.currentStatus)
+                }
+                offeredItems.forEach { item ->
                     StatusOptionRow(
                         item = item,
                         isSelected = selected == item.status,
@@ -128,8 +135,8 @@ fun PrayerStatusBottomSheet(
 
             // Save button
             Button(
-                onClick = { onSave(selected) },
-                enabled = !isSaving,
+                onClick = { selected?.let(onSave) },
+                enabled = !isSaving && selected != null && selected != args.currentStatus,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -159,6 +166,34 @@ fun PrayerStatusBottomSheet(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun CurrentStatusRow(status: PrayerStatus) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .border(1.dp, SalatOutlineVariant, RoundedCornerShape(12.dp))
+            .background(SalatSurfaceContainer)
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = stringResource(R.string.sheet_current_status),
+            modifier = Modifier.weight(1f),
+            color = SalatOnSurfaceVariant,
+            fontSize = 14.sp,
+            fontFamily = AppUiFontFamily,
+        )
+        Text(
+            text = stringResource(status.labelRes),
+            color = SalatOnSurface,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium,
+            fontFamily = AppUiFontFamily,
+        )
     }
 }
 
