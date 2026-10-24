@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Clock
 import java.time.DayOfWeek
 import java.time.LocalDate
 import javax.inject.Inject
@@ -92,6 +93,7 @@ class StatsViewModel @Inject constructor(
     private val repository: PrayerRepository,
     private val goalRepository: GoalRepository,
     private val settingsRepository: SettingsRepository,
+    private val clock: Clock,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(StatsUiState())
@@ -128,7 +130,7 @@ class StatsViewModel @Inject constructor(
         overviewJob = viewModelScope.launch {
             if (showSkeleton) _uiState.update { it.copy(overview = it.overview.copy(isLoading = true)) }
             runCatchingCancellable {
-                val today = LocalDate.now()
+                val today = LocalDate.now(clock)
                 val (from, to) = period.dateRange(today)
                 val currentDays = repository.getDailyStatusCounts(from, to)
                 val previousDays = repository.getDailyStatusCounts(from.minusDays(period.days.toLong()), from.minusDays(1))
@@ -164,7 +166,7 @@ class StatsViewModel @Inject constructor(
         breakdownJob = viewModelScope.launch {
             if (showSkeleton) _uiState.update { it.copy(prayerBreakdown = it.prayerBreakdown.copy(isLoading = true)) }
             runCatchingCancellable {
-                val (from, to) = period.dateRange(LocalDate.now())
+                val (from, to) = period.dateRange(LocalDate.now(clock))
                 repository.getPrayerBreakdown(from, to)
             }.onSuccess { breakdown ->
                 _uiState.update { it.copy(prayerBreakdown = it.prayerBreakdown.copy(isLoading = false, breakdown = breakdown)) }
@@ -179,7 +181,7 @@ class StatsViewModel @Inject constructor(
         goalsJob = viewModelScope.launch {
             if (showSkeleton) _uiState.update { it.copy(goals = it.goals.copy(isLoading = true)) }
             runCatchingCancellable {
-                val (from, to) = period.dateRange(LocalDate.now())
+                val (from, to) = period.dateRange(LocalDate.now(clock))
                 goalRepository.getGoalPeriodStats(from, to)
             }.onSuccess { items ->
                 _uiState.update { it.copy(goals = it.goals.copy(isLoading = false, items = items)) }

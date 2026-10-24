@@ -13,7 +13,10 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import java.time.Clock
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneOffset
 
 class StatsViewModelTest {
 
@@ -23,6 +26,8 @@ class StatsViewModelTest {
     private lateinit var prayerRepository: FakePrayerRepository
     private lateinit var goalRepository: FakeGoalRepository
     private lateinit var viewModel: StatsViewModel
+    private val clock = Clock.fixed(Instant.parse("2026-10-23T12:00:00Z"), ZoneOffset.UTC)
+    private val today = LocalDate.now(clock)
 
     @Before
     fun setUp() {
@@ -30,11 +35,11 @@ class StatsViewModelTest {
         goalRepository = FakeGoalRepository()
     }
 
-    private fun createViewModel() = StatsViewModel(prayerRepository, goalRepository, FakeSettingsRepository())
+    private fun createViewModel() = StatsViewModel(prayerRepository, goalRepository, FakeSettingsRepository(), clock)
 
     @Test
     fun `initial state loads every section for the month period`() = runTest {
-        prayerRepository.seedDailyCounts(LocalDate.now(), StatusCounts(congregation = 5))
+        prayerRepository.seedDailyCounts(today, StatusCounts(congregation = 5))
         goalRepository.periodStats = listOf(GoalPeriodStat("Quran", GoalCategory.QURAN, GoalFrequency.DAILY, "Pages", 10, 5, 10))
         viewModel = createViewModel()
 
@@ -57,7 +62,6 @@ class StatsViewModelTest {
 
         assertEquals(StatsPeriod.NINETY_DAYS, viewModel.uiState.value.period)
 
-        val today = LocalDate.now()
         val expectedFrom = today.minusDays(89)
         // getDailyStatusCounts is called twice: current period, then the previous period for the delta.
         assertEquals(expectedFrom to today, prayerRepository.dailyStatusCountsCalls[0])
@@ -69,14 +73,13 @@ class StatsViewModelTest {
 
     @Test
     fun `the delta is null when the previous period has nothing countable`() = runTest {
-        prayerRepository.seedDailyCounts(LocalDate.now(), StatusCounts(congregation = 5))
+        prayerRepository.seedDailyCounts(today, StatusCounts(congregation = 5))
         viewModel = createViewModel()
         assertEquals(null, viewModel.uiState.value.overview.completionDelta)
     }
 
     @Test
     fun `the delta is computed against the previous period of the same length`() = runTest {
-        val today = LocalDate.now()
         prayerRepository.seedDailyCounts(today, StatusCounts(congregation = 8, qazaPending = 2)) // 80%
         prayerRepository.seedDailyCounts(today.minusDays(StatsPeriod.MONTH.days.toLong()), StatusCounts(congregation = 5, qazaPending = 5)) // 50%
         viewModel = createViewModel()
