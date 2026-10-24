@@ -3,7 +3,6 @@ package com.salattracker.domain.usecase
 import com.salattracker.domain.repository.DayStatusCounts
 import com.salattracker.domain.repository.PrayerBreakdown
 import com.salattracker.domain.repository.StatusCounts
-import java.time.DayOfWeek
 import java.time.LocalDate
 
 // ── Completion % ──────────────────────────────────────────────────────────────
@@ -43,39 +42,6 @@ fun perfectDays(days: List<DayStatusCounts>, today: LocalDate): PerfectDays {
     }
     return PerfectDays(perfect, counted)
 }
-
-// ── By weekday ────────────────────────────────────────────────────────────────
-
-/** Completion % per day of the week, summed across every matching date in range. A weekday with
- * no countable prayers at all maps to null rather than 0. */
-fun weekdayCompletion(days: List<DayStatusCounts>): Map<DayOfWeek, Int?> {
-    val byWeekday = days.groupBy { it.date.dayOfWeek }
-    return DayOfWeek.values().associateWith { weekday ->
-        byWeekday[weekday]?.fold(StatusCounts()) { acc, d -> acc + d.counts }?.completionPercent
-    }
-}
-
-/** The weekday with the lowest completion %, or null when every weekday with data ties (or
- * there's at most one data point to compare). */
-fun weakestWeekday(
-    byWeekday: Map<DayOfWeek, Int?>,
-    countableByWeekday: Map<DayOfWeek, Int>,
-): DayOfWeek? {
-    val withData = byWeekday.filter { (day, completion) ->
-        completion != null && (countableByWeekday[day] ?: 0) >= MIN_INSIGHT_SAMPLE
-    }
-    if (withData.size < 2) return null
-    val min = withData.values.minOf { it!! }
-    val average = withData.values.map { it!! }.average()
-    if (average - min < MEANINGFUL_COMPLETION_GAP) return null
-    return withData.entries.first { it.value == min }.key
-}
-
-/** Countable prayers per weekday, retained alongside [weekdayCompletion] to avoid overconfident
- * weekday insights from a tiny number of recorded prayers. */
-fun weekdayCountable(days: List<DayStatusCounts>): Map<DayOfWeek, Int> =
-    days.groupBy { it.date.dayOfWeek }
-        .mapValues { (_, daysForWeekday) -> daysForWeekday.sumOf { it.counts.countable } }
 
 // ── Completion trend ──────────────────────────────────────────────────────────
 

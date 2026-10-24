@@ -33,7 +33,7 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
 /** Vico is only used here, for the completion-trend line — the one time series left in Stats.
- * Every other number (summary, by prayer, by weekday, goals) is a labelled category comparison,
+ * Every other number (summary, by prayer, goals) is a labelled category comparison,
  * which reads better as plain Compose bars than as a chart. */
 
 // ── Completion trend: one line, fixed 0–100 range, no scroll ──────────────────

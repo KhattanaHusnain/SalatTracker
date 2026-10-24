@@ -76,7 +76,7 @@ interface PrayerRepository {
     /**
      * One [StatusCounts] per date that has at least one recorded prayer in [from]..[to] —
      * dates with nothing recorded are omitted rather than returned as all-zero. Every Stats
-     * number (completion %, perfect days, qaza recovery, the trend line, by-weekday) is derived
+     * number (completion %, perfect days, qaza recovery, and the trend line) is derived
      * from this single source so they can never disagree with each other.
      */
     suspend fun getDailyStatusCounts(from: LocalDate, to: LocalDate): List<DayStatusCounts>

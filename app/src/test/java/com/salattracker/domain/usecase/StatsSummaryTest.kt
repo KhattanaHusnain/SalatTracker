@@ -5,10 +5,8 @@ import com.salattracker.domain.repository.DayStatusCounts
 import com.salattracker.domain.repository.PrayerBreakdown
 import com.salattracker.domain.repository.StatusCounts
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.time.DayOfWeek
 import java.time.LocalDate
 
 class StatsSummaryTest {
@@ -102,47 +100,6 @@ class StatsSummaryTest {
         val result = perfectDays(emptyList(), today)
         assertEquals(0, result.counted)
         assertEquals(0, result.perfect)
-    }
-
-    // ── weekdayCompletion / weakestWeekday ────────────────────────────────────
-
-    @Test
-    fun `weekdayCompletion has all 7 keys, null where there is no data`() {
-        val days = listOf(DayStatusCounts(LocalDate.of(2026, 10, 12), StatusCounts(congregation = 1))) // a Monday
-        val result = weekdayCompletion(days)
-        assertEquals(7, result.size)
-        assertEquals(100, result[DayOfWeek.MONDAY])
-        assertNull(result[DayOfWeek.TUESDAY])
-    }
-
-    @Test
-    fun `weakestWeekday is null when fewer than two weekdays have data`() {
-        val days = listOf(DayStatusCounts(LocalDate.of(2026, 10, 12), StatusCounts(congregation = 1)))
-        assertNull(weakestWeekday(weekdayCompletion(days), weekdayCountable(days)))
-    }
-
-    @Test
-    fun `weakestWeekday is null when every weekday with data ties`() {
-        val days = listOf(
-            DayStatusCounts(LocalDate.of(2026, 10, 12), StatusCounts(congregation = 1)), // Monday, 100%
-            DayStatusCounts(LocalDate.of(2026, 10, 13), StatusCounts(congregation = 1)), // Tuesday, 100%
-        )
-        assertNull(weakestWeekday(weekdayCompletion(days), weekdayCountable(days)))
-    }
-
-    @Test
-    fun `weakestWeekday requires a meaningful gap and enough prayers`() {
-        val days = listOf(
-            DayStatusCounts(LocalDate.of(2026, 10, 12), StatusCounts(congregation = 10)), // Monday, 100%
-            DayStatusCounts(LocalDate.of(2026, 10, 13), StatusCounts(congregation = 5, qazaPending = 5)), // Tuesday, 50%
-        )
-        assertEquals(DayOfWeek.TUESDAY, weakestWeekday(weekdayCompletion(days), weekdayCountable(days)))
-
-        val tinyGap = listOf(
-            DayStatusCounts(LocalDate.of(2026, 10, 12), StatusCounts(congregation = 10)),
-            DayStatusCounts(LocalDate.of(2026, 10, 13), StatusCounts(congregation = 9, qazaPending = 1)),
-        )
-        assertNull(weakestWeekday(weekdayCompletion(tinyGap), weekdayCountable(tinyGap)))
     }
 
     // ── trendBucketFor / completionTrend ──────────────────────────────────────

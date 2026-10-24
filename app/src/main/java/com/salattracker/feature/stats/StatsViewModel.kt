@@ -16,8 +16,6 @@ import com.salattracker.domain.usecase.completionPercent
 import com.salattracker.domain.usecase.completionTrend
 import com.salattracker.domain.usecase.perfectDays
 import com.salattracker.domain.usecase.trendBucketFor
-import com.salattracker.domain.usecase.weekdayCountable
-import com.salattracker.domain.usecase.weekdayCompletion
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -30,7 +28,6 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Clock
-import java.time.DayOfWeek
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -39,8 +36,7 @@ import javax.inject.Inject
 /**
  * The single range selector that drives every period-gated section of Stats. [days] is the
  * length of the range (inclusive of today), and drives both the date-range math and the
- * trend-bucketing policy in [com.salattracker.domain.usecase.trendBucketFor] (daily ≤ 40,
- * weekly ≤ 120, monthly beyond). Display labels live in StatsScreen.kt ([labelRes]) since this
+ * trend-bucketing policy in [com.salattracker.domain.usecase.trendBucketFor]. Display labels live in StatsScreen.kt ([labelRes]) since this
  * is a domain-adjacent enum with no feature-layer imports, and localized strings need
  * @Composable / R access.
  */
@@ -65,9 +61,6 @@ data class OverviewUiState(
     val completionDelta: Int? = null,
     val perfectDays: PerfectDays = PerfectDays(perfect = 0, counted = 0),
     val trend: List<TrendPoint> = emptyList(),
-    /** All 7 keys always present; a weekday with no countable prayers maps to null. */
-    val weekday: Map<DayOfWeek, Int?> = emptyMap(),
-    val weekdayCountable: Map<DayOfWeek, Int> = emptyMap(),
 )
 
 data class PrayerBreakdownUiState(
@@ -166,8 +159,6 @@ class StatsViewModel @Inject constructor(
                             completionDelta = if (pct != null && prevPct != null) pct - prevPct else null,
                             perfectDays     = perfectDays(currentDays, to),
                             trend           = trend,
-                            weekday         = weekdayCompletion(currentDays),
-                            weekdayCountable = weekdayCountable(currentDays),
                         )
                     )
                 }

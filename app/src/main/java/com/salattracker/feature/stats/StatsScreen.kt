@@ -45,18 +45,13 @@ import com.salattracker.domain.usecase.PerfectDays
 import com.salattracker.domain.usecase.allPrayersOnTrack
 import com.salattracker.domain.usecase.trendBucketFor
 import com.salattracker.domain.usecase.weakestPrayer
-import com.salattracker.domain.usecase.weakestWeekday
-import java.time.DayOfWeek
 import java.time.LocalDate
-import java.time.format.TextStyle
-import java.time.temporal.WeekFields
 import java.text.NumberFormat
 
 // ── Stats Screen ─────────────────────────────────────────────────────────────
 // A today-vs-history dashboard: one shared period selector drives everything except Goals
-// (judged by each goal's own frequency, not the period) and By Weekday (30D+ only). Order:
-// summary -> trend -> by prayer -> by weekday -> goals, reading as "where do I stand" before
-// "what's my long-run pattern".
+// (judged by each goal's own frequency, not the period). Order: summary -> trend -> by prayer ->
+// goals, reading as "where do I stand" before "what should I improve".
 
 @Composable
 fun StatsScreen(
@@ -80,13 +75,6 @@ fun StatsScreen(
             SummaryCard(state = uiState.overview, gender = uiState.gender)
             TrendCard(state = uiState.overview, period = uiState.period)
             PrayerBreakdownCard(state = uiState.prayerBreakdown)
-            if (uiState.period.days >= 30) {
-                WeekdayCard(
-                    weekday = uiState.overview.weekday,
-                    weekdayCountable = uiState.overview.weekdayCountable,
-                    isLoading = uiState.overview.isLoading,
-                )
-            }
             GoalsCard(state = uiState.goals, onAddGoalClick = onAddGoalClick)
         }
         uiState.errorRes?.let { errorRes ->
@@ -352,67 +340,6 @@ private fun PrayerBarRow(entry: PrayerBreakdown, modifier: Modifier = Modifier) 
     }
 }
 
-// ── By weekday (30D+ only) ────────────────────────────────────────────────────────
-
-@Composable
-private fun WeekdayCard(
-    weekday: Map<DayOfWeek, Int?>,
-    weekdayCountable: Map<DayOfWeek, Int>,
-    isLoading: Boolean,
-) {
-    StatsCard {
-        Text(stringResource(R.string.stats_by_weekday), color = SalatPrimary, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily)
-        Spacer(Modifier.height(16.dp))
-        if (isLoading) {
-            ShimmerBox(Modifier.fillMaxWidth().height(96.dp))
-            return@StatsCard
-        }
-        val locale = LocalConfiguration.current.locales[0]
-        val weekOrder = remember(locale) {
-            generateSequence(WeekFields.of(locale).firstDayOfWeek) { it.plus(1) }.take(7).toList()
-        }
-        val weakest = remember(weekday, weekdayCountable) { weakestWeekday(weekday, weekdayCountable) }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            weekOrder.forEach { day ->
-                WeekdayBar(day = day, pct = weekday[day], isWeakest = day == weakest, modifier = Modifier.weight(1f))
-            }
-        }
-        if (weakest != null) {
-            Spacer(Modifier.height(14.dp))
-            val fullName = remember(weakest, locale) { weakest.getDisplayName(TextStyle.FULL, locale) }
-            Text(
-                text = stringResource(R.string.stats_weakest_day, fullName),
-                color = SalatError, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily,
-            )
-        }
-    }
-}
-
-@Composable
-private fun WeekdayBar(day: DayOfWeek, pct: Int?, isWeakest: Boolean, modifier: Modifier = Modifier) {
-    val locale = LocalConfiguration.current.locales[0]
-    val fraction = ((pct ?: 0) / 100f).coerceIn(0.04f, 1f)
-    val animFraction by animateFloatAsState(fraction, tween(800, easing = FastOutSlowInEasing), label = "wd")
-    val color = when {
-        pct == null -> SalatSurfaceVariant
-        isWeakest   -> SalatError
-        else        -> SalatPrimaryContainer
-    }
-    val fullName = remember(day, locale) { day.getDisplayName(TextStyle.FULL, locale) }
-    val value = pct?.let { formatStatsPercent(it, locale) } ?: stringResource(R.string.stats_no_data_period)
-    val description = stringResource(R.string.stats_weekday_value, fullName, value)
-    Column(
-        modifier.semantics { contentDescription = description },
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Box(Modifier.fillMaxWidth().height(64.dp), contentAlignment = Alignment.BottomCenter) {
-            Box(Modifier.width(18.dp).fillMaxHeight(animFraction).clip(RoundedCornerShape(4.dp)).background(color))
-        }
-        Spacer(Modifier.height(6.dp))
-        Text(day.shortLabel(), color = SalatOnSurfaceVariant,  fontSize = 12.sp, fontFamily = AppUiFontFamily, maxLines = 1)
-    }
-}
-
 private fun formatStatsNumber(value: Int, locale: java.util.Locale): String =
     NumberFormat.getIntegerInstance(locale).format(value)
 
@@ -509,7 +436,6 @@ fun StatsScreenPreview() {
                 completionPct = 83, completionDelta = 5,
                 perfectDays = PerfectDays(perfect = 18, counted = 26),
                 trend = (0..9).map { TrendPoint(LocalDate.now().minusDays((9 - it).toLong()), listOf(60,65,70,68,75,80,78,85,88,90)[it]) },
-                weekday = weekOrder.associateWith { listOf(80, 70, 90, 60, 75, 85, 95)[weekOrder.indexOf(it)] },
             ),
             prayerBreakdown = PrayerBreakdownUiState(isLoading = false, breakdown = sampleBreakdown(listOf(0.6f, 0.9f, 0.75f, 1f, 0.95f))),
             goals = GoalsUiState(
@@ -538,7 +464,6 @@ fun StatsScreenNinetyDaysPreview() {
                 completionPct = 68, completionDelta = -3,
                 perfectDays = PerfectDays(perfect = 40, counted = 90),
                 trend = (0..12).map { TrendPoint(LocalDate.now().minusDays(((12 - it) * 7).toLong()), (50..90).shuffled().first()) },
-                weekday = weekOrder.associateWith { listOf(40, 80, 70, 90, 85, 60, 75)[weekOrder.indexOf(it)] },
             ),
             prayerBreakdown = PrayerBreakdownUiState(isLoading = false, breakdown = sampleBreakdown(listOf(0.4f, 0.8f, 0.7f, 0.9f, 0.85f))),
             goals = GoalsUiState(
