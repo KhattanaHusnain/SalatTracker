@@ -3,7 +3,6 @@ package com.salattracker.feature.onboarding
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import androidx.work.WorkManager
 import com.salattracker.core.locale.LocaleManager
 import com.salattracker.domain.model.AppLanguage
 import com.salattracker.domain.model.CalculationMethod
@@ -17,7 +16,7 @@ import com.salattracker.domain.repository.GeocodingRepository
 import com.salattracker.domain.repository.PrayerRepository
 import com.salattracker.domain.repository.SettingsRepository
 import com.salattracker.domain.usecase.isPrayerMarkable
-import com.salattracker.notification.PrayerReminderWorker
+import com.salattracker.domain.repository.PrayerReminderRescheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import com.salattracker.core.util.DebouncedCitySearch
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -110,7 +109,7 @@ class OnboardingViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val geocodingRepository: GeocodingRepository,
     private val prayerRepository: PrayerRepository,
-    private val workManager: WorkManager,
+    private val prayerReminderRescheduler: PrayerReminderRescheduler,
     private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -369,7 +368,7 @@ class OnboardingViewModel @Inject constructor(
                 settingsRepository.setReminderFullScreenAlert(type, state.fullScreenAlertEnabled)
             }
             // Reschedule prayer reminders to honour the master toggle chosen here.
-            PrayerReminderWorker.enqueueOneTime(workManager)
+            prayerReminderRescheduler.rescheduleAll()
             settingsRepository.setOnboardingCompleted(true)
             // Apply the chosen language app-wide (recreates the UI into that locale).
             LocaleManager.apply(state.language)
