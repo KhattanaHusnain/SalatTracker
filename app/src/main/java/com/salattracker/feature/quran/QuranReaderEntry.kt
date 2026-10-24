@@ -49,5 +49,6 @@ fun QuranReaderEntry(
     QuranReaderScreen(
         uiState = uiState,
         onChapterInfoClick = onChapterInfoClick,
+        onBookmarkToggle = viewModel::onBookmarkToggle,
     )
 }

@@ -83,6 +83,7 @@ private const val VERSES_LABEL_ARABIC = "آية"
 fun QuranReaderScreen(
     uiState: QuranReaderUiState,
     onChapterInfoClick: (Int) -> Unit,
+    onBookmarkToggle: (Int) -> Unit,
 ) {
     if (uiState.isLoading) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -93,6 +94,7 @@ fun QuranReaderScreen(
 
     val chapter = uiState.chapter ?: return
     val readerPage = uiState.pages.getOrNull(uiState.currentPageIndex)
+    val pageVerse = uiState.verses.firstOrNull { it.pageNumber == readerPage?.pageNumber }?.verseNumber
     val listState = rememberLazyListState()
 
     LaunchedEffect(readerPage?.pageNumber) {
@@ -100,6 +102,17 @@ fun QuranReaderScreen(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
+        pageVerse?.let { verseNumber ->
+            Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp), horizontalArrangement = Arrangement.End) {
+                IconButton(onClick = { onBookmarkToggle(verseNumber) }) {
+                    Icon(
+                        painterResource(R.drawable.ic_bookmark),
+                        stringResource(if (verseNumber in uiState.bookmarkedVerses) R.string.quran_remove_bookmark else R.string.quran_add_bookmark),
+                        tint = SalatPrimary,
+                    )
+                }
+            }
+        }
         LazyColumn(
             state = listState,
             modifier = Modifier.weight(1f),
@@ -321,5 +334,6 @@ private fun QuranReaderScreenPreview() {
             ),
         ),
         onChapterInfoClick = {},
+        onBookmarkToggle = {},
     )
 }
