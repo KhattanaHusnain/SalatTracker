@@ -290,7 +290,7 @@ private fun TrendCard(state: OverviewUiState, period: StatsPeriod) {
         Spacer(Modifier.height(16.dp))
         when {
             state.isLoading -> ShimmerBox(Modifier.fillMaxWidth().height(180.dp))
-            state.trend.count { it.completionPct != null } < 2 -> EmptyStateText(stringResource(R.string.stats_not_enough_data))
+            state.trend.count { it.completionPct != null } < 4 -> EmptyStateText(stringResource(R.string.stats_trend_four_weeks))
             else -> CompletionTrendChart(state.trend, trendBucketFor(period.days), period.days, Modifier.fillMaxWidth())
         }
     }

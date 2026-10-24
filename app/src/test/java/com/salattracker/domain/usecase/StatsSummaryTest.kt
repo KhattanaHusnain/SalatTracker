@@ -148,12 +148,10 @@ class StatsSummaryTest {
     // ── trendBucketFor / completionTrend ──────────────────────────────────────
 
     @Test
-    fun `trendBucketFor uses daily, weekly, then monthly thresholds`() {
-        assertEquals(TrendBucket.DAY, trendBucketFor(7))
-        assertEquals(TrendBucket.DAY, trendBucketFor(40))
-        assertEquals(TrendBucket.WEEK, trendBucketFor(41))
-        assertEquals(TrendBucket.WEEK, trendBucketFor(120))
-        assertEquals(TrendBucket.MONTH, trendBucketFor(121))
+    fun `trendBucketFor always uses weekly aggregation`() {
+        assertEquals(TrendBucket.WEEK, trendBucketFor(7))
+        assertEquals(TrendBucket.WEEK, trendBucketFor(40))
+        assertEquals(TrendBucket.WEEK, trendBucketFor(121))
     }
 
     @Test

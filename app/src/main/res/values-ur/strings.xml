@@ -363,6 +363,7 @@
     <string name="stats_excused_not_counted">معذور، شمار نہیں: %1$d</string>
     <string name="stats_trend">رجحان</string>
     <string name="stats_not_enough_data">ابھی کافی ڈیٹا موجود نہیں</string>
+    <string name="stats_trend_four_weeks">آپ کا رجحان 4 ہفتوں کی ٹریکنگ کے بعد ظاہر ہوگا۔</string>
     <string name="stats_by_weekday">ہفتے کے دن کے لحاظ سے</string>
     <string name="stats_weakest_day">%1$s آپ کا کمزور ترین دن ہے</string>
     <string name="stats_targets_hit">پورے کیے گئے اہداف</string>

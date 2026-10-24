@@ -387,6 +387,7 @@
     <string name="stats_excused_not_counted">Excused, not counted: %1$d</string>
     <string name="stats_trend">Trend</string>
     <string name="stats_not_enough_data">Not enough data yet</string>
+    <string name="stats_trend_four_weeks">Your trend appears after 4 weeks of tracking.</string>
     <string name="stats_by_weekday">By Weekday</string>
     <string name="stats_weakest_day">%1$s is your weakest day</string>
     <string name="stats_targets_hit">Targets hit</string>

@@ -81,12 +81,8 @@ fun weekdayCountable(days: List<DayStatusCounts>): Map<DayOfWeek, Int> =
 
 enum class TrendBucket { DAY, WEEK, MONTH }
 
-/** Daily ≤ 40 days, weekly ≤ 120, monthly beyond — same thresholds the Stats period chips use. */
-fun trendBucketFor(rangeDays: Int): TrendBucket = when {
-    rangeDays <= 40  -> TrendBucket.DAY
-    rangeDays <= 120 -> TrendBucket.WEEK
-    else             -> TrendBucket.MONTH
-}
+/** Weekly aggregation smooths five-prayer daily noise into a useful improvement trend. */
+fun trendBucketFor(_rangeDays: Int): TrendBucket = TrendBucket.WEEK
 
 /** One x-axis point of the completion-trend chart: [start] is the bucket's first in-range date,
  * and [completionPct] is null for a bucket with nothing countable. Null buckets deliberately

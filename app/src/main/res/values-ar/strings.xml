@@ -363,6 +363,7 @@
     <string name="stats_excused_not_counted">معذورة، غير محسوبة: %1$d</string>
     <string name="stats_trend">الاتجاه</string>
     <string name="stats_not_enough_data">لا توجد بيانات كافية بعد</string>
+    <string name="stats_trend_four_weeks">سيظهر اتجاهك بعد 4 أسابيع من المتابعة.</string>
     <string name="stats_by_weekday">حسب يوم الأسبوع</string>
     <string name="stats_weakest_day">%1$s هو أضعف أيامك</string>
     <string name="stats_targets_hit">الأهداف المحقَّقة</string>

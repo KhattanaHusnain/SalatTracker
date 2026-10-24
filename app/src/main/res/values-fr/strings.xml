@@ -363,6 +363,7 @@
     <string name="stats_excused_not_counted">Excusées, non comptées : %1$d</string>
     <string name="stats_trend">Tendance</string>
     <string name="stats_not_enough_data">Pas encore assez de données</string>
+    <string name="stats_trend_four_weeks">Votre tendance apparaîtra après 4 semaines de suivi.</string>
     <string name="stats_by_weekday">Par jour de la semaine</string>
     <string name="stats_weakest_day">%1$s est votre jour le plus faible</string>
     <string name="stats_targets_hit">Objectifs atteints</string>
