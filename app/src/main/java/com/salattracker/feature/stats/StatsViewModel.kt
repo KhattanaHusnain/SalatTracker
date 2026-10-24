@@ -10,6 +10,9 @@ import com.salattracker.domain.repository.PrayerRepository
 import com.salattracker.domain.repository.SettingsRepository
 import com.salattracker.domain.repository.StatusCounts
 import com.salattracker.domain.usecase.PerfectDays
+import com.salattracker.domain.usecase.CongregationChallenge
+import com.salattracker.domain.usecase.congregationChallenge
+import com.salattracker.domain.usecase.congregationPercent
 import com.salattracker.domain.usecase.completionPercent
 import com.salattracker.domain.usecase.completionTrend
 import com.salattracker.domain.usecase.perfectDays
@@ -56,6 +59,9 @@ data class OverviewUiState(
     /** Null when the previous period had nothing countable to compare against. */
     val completionDelta: Int? = null,
     val perfectDays: PerfectDays = PerfectDays(perfect = 0, counted = 0),
+    val congregationPercent: Int? = null,
+    val congregationDelta: Int? = null,
+    val congregationChallenge: CongregationChallenge = CongregationChallenge(0, 0),
     val trend: List<TrendPoint> = emptyList(),
 )
 
@@ -128,12 +134,15 @@ class StatsViewModel @Inject constructor(
                 val (from, to) = period.dateRange(today)
                 val currentDays = repository.getDailyStatusCounts(from, to)
                 val previousDays = repository.getDailyStatusCounts(from.minusDays(period.days.toLong()), from.minusDays(1))
-                OverviewLoad(currentDays, previousDays, from, to)
-            }.onSuccess { (currentDays, previousDays, from, to) ->
+                val challengeDays = repository.getDailyStatusCounts(today.minusDays(40), today.minusDays(1))
+                OverviewLoad(currentDays, previousDays, challengeDays, from, to)
+            }.onSuccess { (currentDays, previousDays, challengeDays, from, to) ->
                 val counts = currentDays.fold(StatusCounts()) { acc, d -> acc + d.counts }
                 val prevCounts = previousDays.fold(StatusCounts()) { acc, d -> acc + d.counts }
                 val pct = completionPercent(counts)
                 val prevPct = completionPercent(prevCounts)
+                val congregationPct = congregationPercent(counts)
+                val previousCongregationPct = congregationPercent(prevCounts)
                 val trend = completionTrend(currentDays, trendBucketFor(period.days), from, to)
                     .map { point -> TrendPoint(point.start, point.completionPct) }
                 _uiState.update {
@@ -144,6 +153,9 @@ class StatsViewModel @Inject constructor(
                             completionPct   = pct,
                             completionDelta = if (pct != null && prevPct != null) pct - prevPct else null,
                             perfectDays     = perfectDays(currentDays, to),
+                            congregationPercent = congregationPct,
+                            congregationDelta = if (congregationPct != null && previousCongregationPct != null) congregationPct - previousCongregationPct else null,
+                            congregationChallenge = congregationChallenge(challengeDays, to),
                             trend           = trend,
                         )
                     )
@@ -196,6 +208,7 @@ class StatsViewModel @Inject constructor(
 private data class OverviewLoad(
     val currentDays: List<com.salattracker.domain.repository.DayStatusCounts>,
     val previousDays: List<com.salattracker.domain.repository.DayStatusCounts>,
+    val challengeDays: List<com.salattracker.domain.repository.DayStatusCounts>,
     val from: LocalDate,
     val to: LocalDate,
 )

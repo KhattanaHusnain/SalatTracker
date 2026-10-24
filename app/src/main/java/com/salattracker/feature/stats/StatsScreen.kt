@@ -65,6 +65,9 @@ fun StatsScreen(
 
             PeriodToggle(selected = uiState.period, onSelect = onPeriodChanged)
             SummaryCard(state = uiState.overview, gender = uiState.gender)
+            if (uiState.gender != Gender.FEMALE) {
+                CongregationCard(state = uiState.overview, breakdown = uiState.prayerBreakdown)
+            }
             TrendCard(state = uiState.overview, period = uiState.period)
             PrayerBreakdownCard(state = uiState.prayerBreakdown)
         }
@@ -255,6 +258,45 @@ private fun SummaryCard(state: OverviewUiState, gender: Gender?) {
                 color = SalatOnSurfaceVariant,  fontSize = 12.sp, fontFamily = AppUiFontFamily,
             )
         }
+    }
+}
+
+@Composable
+private fun CongregationCard(state: OverviewUiState, breakdown: PrayerBreakdownUiState) {
+    StatsCard {
+        Text(stringResource(R.string.stats_congregation), color = SalatPrimary, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily)
+        Spacer(Modifier.height(12.dp))
+        if (state.isLoading) {
+            ShimmerBox(Modifier.fillMaxWidth().height(88.dp))
+            return@StatsCard
+        }
+        val locale = LocalConfiguration.current.locales[0]
+        val rate = state.congregationPercent
+        if (rate == null) {
+            EmptyStateText(stringResource(R.string.stats_congregation_no_data))
+            return@StatsCard
+        }
+        Row(verticalAlignment = Alignment.Bottom) {
+            Text(formatStatsPercent(rate, locale), color = SalatPrimary, fontSize = 32.sp, fontWeight = FontWeight.Bold, fontFamily = AppTitleFontFamily)
+            state.congregationDelta?.let { delta ->
+                Spacer(Modifier.width(10.dp))
+                Text(
+                    if (delta == 0) stringResource(R.string.stats_no_change) else stringResource(R.string.stats_vs_last, "${if (delta > 0) "+" else "−"}${formatStatsPercent(kotlin.math.abs(delta), locale)}"),
+                    color = if (delta < 0) SalatError else SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily,
+                )
+            }
+        }
+        if (!breakdown.isLoading) {
+            val entries = breakdown.breakdown.filter { it.counts.congregation + it.counts.individual > 0 }
+            if (entries.isNotEmpty()) {
+                Spacer(Modifier.height(12.dp))
+                Text(entries.joinToString(" · ") { entry -> "${entry.prayerType.shortLabel()} ${formatStatsPercent((entry.counts.congregation * 100) / (entry.counts.congregation + entry.counts.individual), locale)}" }, color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
+            }
+        }
+        Spacer(Modifier.height(16.dp))
+        Text(stringResource(R.string.stats_congregation_challenge), color = SalatOnSurface, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
+        Text(stringResource(R.string.stats_congregation_day_of_40, state.congregationChallenge.currentRun), color = SalatPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold, fontFamily = AppTitleFontFamily)
+        Text(stringResource(R.string.stats_congregation_best_run, state.congregationChallenge.bestRun), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
     }
 }
 

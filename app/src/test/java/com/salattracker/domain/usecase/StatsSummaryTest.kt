@@ -31,6 +31,23 @@ class StatsSummaryTest {
         assertEquals(100, completionPercent(StatusCounts(congregation = 5)))
     }
 
+    @Test
+    fun `congregationPercent counts congregation among prayed prayers only`() {
+        assertEquals(60, congregationPercent(StatusCounts(congregation = 3, individual = 2, qazaPending = 4)))
+        assertNull(congregationPercent(StatusCounts(qazaPending = 5)))
+    }
+
+    @Test
+    fun `congregationChallenge tracks current and best all-congregation runs`() {
+        val days = listOf(
+            DayStatusCounts(today.minusDays(4), StatusCounts(congregation = 5)),
+            DayStatusCounts(today.minusDays(3), StatusCounts(congregation = 5)),
+            DayStatusCounts(today.minusDays(2), StatusCounts(congregation = 5)),
+            DayStatusCounts(today.minusDays(1), StatusCounts(congregation = 5)),
+        )
+        assertEquals(CongregationChallenge(currentRun = 4, bestRun = 4), congregationChallenge(days, today))
+    }
+
     // ── perfectDays ───────────────────────────────────────────────────────────
 
     private val today = LocalDate.of(2026, 10, 14)

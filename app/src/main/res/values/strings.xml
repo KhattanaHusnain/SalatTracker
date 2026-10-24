@@ -391,6 +391,11 @@
     <string name="stats_by_weekday">By Weekday</string>
     <string name="stats_weakest_day">%1$s is your weakest day</string>
     <string name="stats_targets_hit">Targets hit</string>
+    <string name="stats_congregation">Congregation</string>
+    <string name="stats_congregation_no_data">No prayed prayers recorded in this period</string>
+    <string name="stats_congregation_challenge">40-day challenge</string>
+    <string name="stats_congregation_day_of_40">Day %1$d of 40</string>
+    <string name="stats_congregation_best_run">Best run: %1$d days</string>
 
     <!-- Goals dashboard -->
     <string name="goals_active">Active Goals</string>

@@ -11,6 +11,34 @@ import java.time.LocalDate
  * is countable — the caller shows "—", not a misleading 0%. */
 fun completionPercent(counts: StatusCounts): Int? = counts.completionPercent
 
+/** Congregation as a share of prayers that were actually prayed, excluding qaza and excused
+ * statuses. Null distinguishes an empty period from a true 0% congregation rate. */
+fun congregationPercent(counts: StatusCounts): Int? {
+    val prayed = counts.congregation + counts.individual
+    return if (prayed == 0) null else (counts.congregation * 100) / prayed
+}
+
+data class CongregationChallenge(val currentRun: Int, val bestRun: Int)
+
+/** Consecutive completed calendar days with all five prayers recorded in congregation, measured
+ * in the latest 40-day window. Missing or partially recorded dates break a run. */
+fun congregationChallenge(days: List<DayStatusCounts>, today: LocalDate): CongregationChallenge {
+    val byDate = days.associateBy { it.date }
+    val lastCompletedDay = today.minusDays(1)
+    val dates = (0 until 40).map { lastCompletedDay.minusDays(it.toLong()) }.reversed()
+    var current = 0
+    var best = 0
+    dates.forEach { date ->
+        if (byDate[date]?.counts?.congregation == 5) {
+            current++
+            best = maxOf(best, current)
+        } else {
+            current = 0
+        }
+    }
+    return CongregationChallenge(currentRun = current, bestRun = best)
+}
+
 // ── Perfect days ──────────────────────────────────────────────────────────────
 
 data class PerfectDays(val perfect: Int, val counted: Int)
