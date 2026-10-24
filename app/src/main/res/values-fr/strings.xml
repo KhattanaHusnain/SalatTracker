@@ -345,7 +345,7 @@
 
     <string name="stats_vs_last">%1$s%% vs précédent</string>
     <string name="stats_no_active_goals">Aucun objectif actif — appuyez pour en définir un.</string>
-    <string name="stats_prayed_on_time">Priées à l\'heure</string>
+    <string name="stats_prayed_on_time">Prières accomplies</string>
     <string name="stats_by_prayer">Par prière</string>
     <string name="stats_weakest_prayer">%1$s nécessite le plus d\'attention</string>
     <string name="stats_all_on_track">Toutes les prières sont sur la bonne voie</string>

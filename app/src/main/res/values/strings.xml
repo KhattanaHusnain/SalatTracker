@@ -369,7 +369,7 @@
     <!-- Stats -->
     <string name="stats_vs_last">%1$s%% vs last</string>
     <string name="stats_no_active_goals">No active goals yet — tap to set one.</string>
-    <string name="stats_prayed_on_time">Prayed on Time</string>
+    <string name="stats_prayed_on_time">Prayers completed</string>
     <string name="stats_by_prayer">By Prayer</string>
     <string name="stats_weakest_prayer">%1$s needs the most attention</string>
     <string name="stats_all_on_track">Every prayer on track</string>

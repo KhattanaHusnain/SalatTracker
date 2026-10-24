@@ -345,7 +345,7 @@
 
     <string name="stats_vs_last">%1$s%% پچھلے کے مقابلے</string>
     <string name="stats_no_active_goals">ابھی کوئی فعال ہدف نہیں — ایک مقرر کرنے کے لیے دبائیں۔</string>
-    <string name="stats_prayed_on_time">وقت پر ادا کی گئیں</string>
+    <string name="stats_prayed_on_time">ادا کی گئی نمازیں</string>
     <string name="stats_by_prayer">نماز کے لحاظ سے</string>
     <string name="stats_weakest_prayer">%1$s پر سب سے زیادہ توجہ درکار ہے</string>
     <string name="stats_all_on_track">ہر نماز درست سمت میں ہے</string>

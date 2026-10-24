@@ -193,7 +193,7 @@ private fun LegendCount(color: Color, label: String, count: Int, modifier: Modif
     }
 }
 
-// ── Summary (prayed on time %, status bar + legend, perfect days, qaza recovery) ─
+// ── Summary (completed-prayer %, status bar + legend, perfect days, qaza recovery) ─
 
 @Composable
 private fun SummaryCard(state: OverviewUiState, gender: Gender?) {

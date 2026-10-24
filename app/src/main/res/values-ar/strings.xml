@@ -345,7 +345,7 @@
 
     <string name="stats_vs_last">%1$s%% مقارنة بالسابق</string>
     <string name="stats_no_active_goals">لا توجد أهداف نشطة بعد — اضغط لتحديد هدف.</string>
-    <string name="stats_prayed_on_time">صُليت في وقتها</string>
+    <string name="stats_prayed_on_time">الصلوات المُؤدّاة</string>
     <string name="stats_by_prayer">حسب الصلاة</string>
     <string name="stats_weakest_prayer">تحتاج %1$s إلى المزيد من الاهتمام</string>
     <string name="stats_all_on_track">كل الصلوات على المسار الصحيح</string>
