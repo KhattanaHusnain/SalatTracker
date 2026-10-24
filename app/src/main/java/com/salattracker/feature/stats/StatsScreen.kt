@@ -266,22 +266,11 @@ private fun SummaryCard(state: OverviewUiState, gender: Gender?) {
             }
         }
         Spacer(Modifier.height(16.dp))
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            StatTile(
-                label = stringResource(R.string.stats_perfect_days),
-                value = if (state.perfectDays.counted > 0) formatStatsRatio(state.perfectDays.perfect, state.perfectDays.counted, locale) else "—",
-                modifier = Modifier.weight(1f),
-            )
-            StatTile(
-                label = stringResource(R.string.stats_qaza_made_up),
-                value = when {
-                    state.counts.countable == 0 -> "—"
-                    state.counts.missed > 0 -> formatStatsRatio(state.counts.qazaCompleted, state.counts.missed, locale)
-                    else -> stringResource(R.string.stats_nothing_missed)
-                },
-                modifier = Modifier.weight(1f),
-            )
-        }
+        StatTile(
+            label = stringResource(R.string.stats_perfect_days),
+            value = if (state.perfectDays.counted > 0) formatStatsRatio(state.perfectDays.perfect, state.perfectDays.counted, locale) else "—",
+            modifier = Modifier.fillMaxWidth(),
+        )
         if (state.counts.excused > 0 || PrayerStatus.MENSTRUATION.isOfferedFor(gender)) {
             Spacer(Modifier.height(10.dp))
             Text(
