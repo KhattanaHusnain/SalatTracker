@@ -300,7 +300,7 @@ private fun PrayerBreakdownCard(state: PrayerBreakdownUiState) {
             state.isLoading -> Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                 repeat(5) { ShimmerBox(Modifier.fillMaxWidth().height(20.dp)) }
             }
-            state.breakdown.isEmpty() -> EmptyStateText(stringResource(R.string.stats_no_data_period))
+            state.breakdown.all { it.counts.countable == 0 } -> EmptyStateText(stringResource(R.string.stats_no_data_period))
             else -> {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     state.breakdown.forEach { entry -> PrayerBarRow(entry) }
