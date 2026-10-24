@@ -12,7 +12,10 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import java.time.Clock
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneOffset
 
 class QazaViewModelTest {
 
@@ -22,14 +25,15 @@ class QazaViewModelTest {
     private lateinit var repository: FakePrayerRepository
     private lateinit var viewModel: QazaViewModel
 
-    private val today: LocalDate = LocalDate.now()
+    private val clock = Clock.fixed(Instant.parse("2026-10-23T12:00:00Z"), ZoneOffset.UTC)
+    private val today: LocalDate = LocalDate.now(clock)
 
     @Before
     fun setUp() {
         repository = FakePrayerRepository()
     }
 
-    private fun createViewModel() = QazaViewModel(repository).also { viewModel = it }
+    private fun createViewModel() = QazaViewModel(repository, clock).also { viewModel = it }
 
     @Test
     fun `loads outstanding total and per-prayer counts`() {
@@ -104,7 +108,7 @@ class QazaViewModelTest {
 
     @Test
     fun `onRecentUndo reverts one recently made-up entry directly, with no snackbar`() {
-        repository.seedStatus(today.minusDays(1), PrayerType.FAJR, PrayerStatus.QAZA_COMPLETED, updatedAt = System.currentTimeMillis())
+        repository.seedStatus(today.minusDays(1), PrayerType.FAJR, PrayerStatus.QAZA_COMPLETED, updatedAt = Instant.parse("2026-10-22T12:00:00Z").toEpochMilli())
         createViewModel()
 
         val entry = viewModel.uiState.value.recentMadeUp.first()

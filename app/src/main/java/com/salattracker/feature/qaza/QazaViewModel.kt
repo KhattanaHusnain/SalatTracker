@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Clock
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -57,6 +58,7 @@ private const val RECENT_MADE_UP_SHOWN = 5
 @HiltViewModel
 class QazaViewModel @Inject constructor(
     private val repository: PrayerRepository,
+    private val clock: Clock,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(QazaUiState())
@@ -83,7 +85,7 @@ class QazaViewModel @Inject constructor(
             combine(
                 repository.observePendingQazaEntries(),
                 repository.observeQazaMadeUpCount(),
-                repository.observeQazaMadeUpSince(LocalDate.now().minusDays((PACE_WINDOW_DAYS - 1).toLong())),
+                repository.observeQazaMadeUpSince(LocalDate.now(clock).minusDays((PACE_WINDOW_DAYS - 1).toLong())),
                 repository.observeRecentQazaMadeUp(RECENT_MADE_UP_SHOWN),
                 refreshTrigger,
             ) { pending, madeUpCount, madeUpSince, recentMadeUp, _ ->
@@ -94,7 +96,7 @@ class QazaViewModel @Inject constructor(
                 .collect { (pending, madeUpCount, madeUpSince, recentMadeUp) ->
                     val slots = pending.map { it.toQazaSlot() }
                     pendingSlots = slots
-                    val today = LocalDate.now()
+                    val today = LocalDate.now(clock)
                     val latestDays = groupPendingByDay(slots, newestFirst = true)
                     _uiState.update { state ->
                         state.copy(
