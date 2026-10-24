@@ -45,5 +45,26 @@ class QazaAutoMarkDeadlineTest {
         assertEquals(LocalDateTime.of(date.plusDays(1), LocalTime.of(5, 1)), autoMarkDeadline(PrayerType.MAGHRIB, date, combined, LocalTime.of(6, 20), tomorrowTimes()))
     }
 
+    @Test
+    fun `catch-up includes every elapsed day after an outage`() {
+        val today = LocalDate.of(2026, 10, 24)
+
+        assertEquals(
+            listOf(
+                LocalDate.of(2026, 10, 21),
+                LocalDate.of(2026, 10, 22),
+                LocalDate.of(2026, 10, 23),
+            ),
+            overdueDatesToCatchUp(LocalDate.of(2026, 10, 20), today),
+        )
+    }
+
+    @Test
+    fun `catch-up only includes yesterday before the first successful run`() {
+        val today = LocalDate.of(2026, 10, 24)
+
+        assertEquals(listOf(LocalDate.of(2026, 10, 23)), overdueDatesToCatchUp(null, today))
+    }
+
     private fun tomorrowTimes() = times + (PrayerType.FAJR to LocalTime.of(5, 1))
 }

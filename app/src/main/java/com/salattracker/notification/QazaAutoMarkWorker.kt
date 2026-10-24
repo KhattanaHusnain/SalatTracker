@@ -12,30 +12,33 @@ import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.repository.PrayerRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
 
 /**
  * Every [CHECK_INTERVAL_MINUTES] (WorkManager's minimum periodic interval), scans
- * today's and yesterday's prayers and auto-marks any prayer still NOT_RECORDED as
- * QAZA_PENDING after its valid prayer window has ended (plus a short logging buffer) — so a
- * missed prayer lands in the Qaza tracker on its own without calling an on-time prayer missed.
- * Yesterday is included too, as a safety net for whatever the last tick before
- * midnight didn't get to (device asleep, Doze, etc).
+ * today's prayers and every fully elapsed date since its last successful run, then auto-marks
+ * any still-NOT_RECORDED prayer as QAZA_PENDING after its valid prayer window has ended (plus a
+ * short logging buffer). This makes missed days visible after a device has been offline or
+ * WorkManager has been delayed, without calling an on-time prayer missed.
  */
 @HiltWorker
 class QazaAutoMarkWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted params: WorkerParameters,
     private val prayerRepository: PrayerRepository,
+    private val stateStore: QazaAutoMarkStateStore,
+    private val clock: Clock,
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
         return try {
-            val today = LocalDate.now()
-            markOverdue(today.minusDays(1))
+            val today = LocalDate.now(clock)
+            overdueDatesToCatchUp(stateStore.lastProcessedDate(), today).forEach(::markOverdue)
             markOverdue(today)
+            stateStore.setLastProcessedDate(today.minusDays(1))
             Result.success()
         } catch (e: Exception) {
             Result.retry()
@@ -45,7 +48,7 @@ class QazaAutoMarkWorker @AssistedInject constructor(
     private suspend fun markOverdue(date: LocalDate) {
         val times = prayerRepository.getPrayerTimes(date) ?: return
         val entries = prayerRepository.getPrayerEntriesForDate(date)
-        val now = LocalDateTime.now()
+        val now = LocalDateTime.now(clock)
         val nextDayTimes = prayerRepository.getPrayerTimes(date.plusDays(1))
         val sunrise = prayerRepository.getSunriseTime(date)
 
@@ -78,6 +81,15 @@ class QazaAutoMarkWorker @AssistedInject constructor(
             )
         }
     }
+}
+
+/** Fully elapsed dates missed since [lastProcessedDate]. A fresh install keeps the prior
+ * yesterday-only behaviour; subsequent runs fill every gap after an outage. */
+internal fun overdueDatesToCatchUp(lastProcessedDate: LocalDate?, today: LocalDate): List<LocalDate> {
+    val latestElapsedDate = today.minusDays(1)
+    val firstDate = lastProcessedDate?.plusDays(1) ?: latestElapsedDate
+    if (firstDate.isAfter(latestElapsedDate)) return emptyList()
+    return generateSequence(firstDate) { date -> date.plusDays(1).takeIf { !it.isAfter(latestElapsedDate) } }.toList()
 }
 
 /** The first moment a prayer can be considered missed, before the small logging buffer. */
