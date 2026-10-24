@@ -16,6 +16,9 @@ fun completionPercent(counts: StatusCounts): Int? = counts.completionPercent
 
 data class PerfectDays(val perfect: Int, val counted: Int)
 
+private const val MIN_INSIGHT_SAMPLE = 10
+private const val MEANINGFUL_COMPLETION_GAP = 10
+
 /**
  * How many of [days] were a "perfect day" — all five prayers prayed, none missed, Menstruation
  * days neutral. A day counts only once it's actually decided:
@@ -54,14 +57,25 @@ fun weekdayCompletion(days: List<DayStatusCounts>): Map<DayOfWeek, Int?> {
 
 /** The weekday with the lowest completion %, or null when every weekday with data ties (or
  * there's at most one data point to compare). */
-fun weakestWeekday(byWeekday: Map<DayOfWeek, Int?>): DayOfWeek? {
-    val withData = byWeekday.filterValues { it != null }
+fun weakestWeekday(
+    byWeekday: Map<DayOfWeek, Int?>,
+    countableByWeekday: Map<DayOfWeek, Int>,
+): DayOfWeek? {
+    val withData = byWeekday.filter { (day, completion) ->
+        completion != null && (countableByWeekday[day] ?: 0) >= MIN_INSIGHT_SAMPLE
+    }
     if (withData.size < 2) return null
     val min = withData.values.minOf { it!! }
-    val max = withData.values.maxOf { it!! }
-    if (min == max) return null
+    val average = withData.values.map { it!! }.average()
+    if (average - min < MEANINGFUL_COMPLETION_GAP) return null
     return withData.entries.first { it.value == min }.key
 }
+
+/** Countable prayers per weekday, retained alongside [weekdayCompletion] to avoid overconfident
+ * weekday insights from a tiny number of recorded prayers. */
+fun weekdayCountable(days: List<DayStatusCounts>): Map<DayOfWeek, Int> =
+    days.groupBy { it.date.dayOfWeek }
+        .mapValues { (_, daysForWeekday) -> daysForWeekday.sumOf { it.counts.countable } }
 
 // ── Completion trend ──────────────────────────────────────────────────────────
 
@@ -120,11 +134,13 @@ private fun trendWindows(bucket: TrendBucket, from: LocalDate, to: LocalDate): L
  * ties. Prayers with nothing countable are ignored; ties among the lowest break to the
  * earliest prayer in [PrayerType] order. */
 fun weakestPrayer(breakdown: List<PrayerBreakdown>): PrayerBreakdown? {
-    val withData = breakdown.filter { it.completionRate != null }
+    val withData = breakdown.filter {
+        it.completionRate != null && it.counts.countable >= MIN_INSIGHT_SAMPLE
+    }
     if (withData.size < 2) return null
     val min = withData.minOf { it.completionRate!! }
-    val max = withData.maxOf { it.completionRate!! }
-    if (min >= max) return null
+    val average = withData.map { it.completionRate!! }.average()
+    if (average - min < MEANINGFUL_COMPLETION_GAP / 100f) return null
     return withData.filter { it.completionRate == min }.minByOrNull { it.prayerType.ordinal }
 }
 

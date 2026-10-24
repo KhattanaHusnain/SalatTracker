@@ -16,6 +16,7 @@ import com.salattracker.domain.usecase.completionPercent
 import com.salattracker.domain.usecase.completionTrend
 import com.salattracker.domain.usecase.perfectDays
 import com.salattracker.domain.usecase.trendBucketFor
+import com.salattracker.domain.usecase.weekdayCountable
 import com.salattracker.domain.usecase.weekdayCompletion
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -62,6 +63,7 @@ data class OverviewUiState(
     val trend: List<TrendPoint> = emptyList(),
     /** All 7 keys always present; a weekday with no countable prayers maps to null. */
     val weekday: Map<DayOfWeek, Int?> = emptyMap(),
+    val weekdayCountable: Map<DayOfWeek, Int> = emptyMap(),
 )
 
 data class PrayerBreakdownUiState(
@@ -151,6 +153,7 @@ class StatsViewModel @Inject constructor(
                             perfectDays     = perfectDays(currentDays, to),
                             trend           = trend,
                             weekday         = weekdayCompletion(currentDays),
+                            weekdayCountable = weekdayCountable(currentDays),
                         )
                     )
                 }

@@ -118,7 +118,7 @@ class StatsSummaryTest {
     @Test
     fun `weakestWeekday is null when fewer than two weekdays have data`() {
         val days = listOf(DayStatusCounts(LocalDate.of(2026, 10, 12), StatusCounts(congregation = 1)))
-        assertNull(weakestWeekday(weekdayCompletion(days)))
+        assertNull(weakestWeekday(weekdayCompletion(days), weekdayCountable(days)))
     }
 
     @Test
@@ -127,16 +127,22 @@ class StatsSummaryTest {
             DayStatusCounts(LocalDate.of(2026, 10, 12), StatusCounts(congregation = 1)), // Monday, 100%
             DayStatusCounts(LocalDate.of(2026, 10, 13), StatusCounts(congregation = 1)), // Tuesday, 100%
         )
-        assertNull(weakestWeekday(weekdayCompletion(days)))
+        assertNull(weakestWeekday(weekdayCompletion(days), weekdayCountable(days)))
     }
 
     @Test
-    fun `weakestWeekday returns the lowest-scoring weekday`() {
+    fun `weakestWeekday requires a meaningful gap and enough prayers`() {
         val days = listOf(
-            DayStatusCounts(LocalDate.of(2026, 10, 12), StatusCounts(congregation = 1)),               // Monday, 100%
-            DayStatusCounts(LocalDate.of(2026, 10, 13), StatusCounts(congregation = 1, qazaPending = 1)), // Tuesday, 50%
+            DayStatusCounts(LocalDate.of(2026, 10, 12), StatusCounts(congregation = 10)), // Monday, 100%
+            DayStatusCounts(LocalDate.of(2026, 10, 13), StatusCounts(congregation = 5, qazaPending = 5)), // Tuesday, 50%
         )
-        assertEquals(DayOfWeek.TUESDAY, weakestWeekday(weekdayCompletion(days)))
+        assertEquals(DayOfWeek.TUESDAY, weakestWeekday(weekdayCompletion(days), weekdayCountable(days)))
+
+        val tinyGap = listOf(
+            DayStatusCounts(LocalDate.of(2026, 10, 12), StatusCounts(congregation = 10)),
+            DayStatusCounts(LocalDate.of(2026, 10, 13), StatusCounts(congregation = 9, qazaPending = 1)),
+        )
+        assertNull(weakestWeekday(weekdayCompletion(tinyGap), weekdayCountable(tinyGap)))
     }
 
     // ── trendBucketFor / completionTrend ──────────────────────────────────────
@@ -222,7 +228,7 @@ class StatsSummaryTest {
             PrayerBreakdown(PrayerType.DHUHR, StatusCounts(congregation = 2, qazaPending = 2)), // 50%
             PrayerBreakdown(PrayerType.ASR, StatusCounts(congregation = 1)), // 100%
         )
-        assertEquals(PrayerType.DHUHR, weakestPrayer(breakdown)?.prayerType)
+        assertNull(weakestPrayer(breakdown))
     }
 
     @Test
@@ -236,9 +242,9 @@ class StatsSummaryTest {
         // Dhuhr and Fajr both tie for lowest (50%); Asr is higher (100%), so there IS a weakest
         // tier — just a tied one — and it should resolve to Fajr, the earlier of the two.
         val breakdown = listOf(
-            PrayerBreakdown(PrayerType.DHUHR, StatusCounts(congregation = 1, qazaPending = 1)),
-            PrayerBreakdown(PrayerType.FAJR, StatusCounts(congregation = 1, qazaPending = 1)),
-            PrayerBreakdown(PrayerType.ASR, StatusCounts(congregation = 1)),
+            PrayerBreakdown(PrayerType.DHUHR, StatusCounts(congregation = 5, qazaPending = 5)),
+            PrayerBreakdown(PrayerType.FAJR, StatusCounts(congregation = 5, qazaPending = 5)),
+            PrayerBreakdown(PrayerType.ASR, StatusCounts(congregation = 10)),
         )
         assertEquals(PrayerType.FAJR, weakestPrayer(breakdown)?.prayerType)
     }
@@ -262,6 +268,16 @@ class StatsSummaryTest {
             PrayerBreakdown(PrayerType.ISHA, StatusCounts(congregation = 8, qazaPending = 2)),
         )
         assertEquals(PrayerType.FAJR, weakestPrayer(breakdown)?.prayerType)
+    }
+
+    @Test
+    fun `weakestPrayer ignores trivial differences despite a large sample`() {
+        val breakdown = listOf(
+            PrayerBreakdown(PrayerType.FAJR, StatusCounts(congregation = 99, qazaPending = 1)),
+            PrayerBreakdown(PrayerType.DHUHR, StatusCounts(congregation = 100)),
+        )
+
+        assertNull(weakestPrayer(breakdown))
     }
 
     @Test

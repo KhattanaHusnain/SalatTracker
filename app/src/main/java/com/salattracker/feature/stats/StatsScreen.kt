@@ -77,7 +77,11 @@ fun StatsScreen(
             TrendCard(state = uiState.overview, period = uiState.period)
             PrayerBreakdownCard(state = uiState.prayerBreakdown)
             if (uiState.period.days >= 30) {
-                WeekdayCard(weekday = uiState.overview.weekday, isLoading = uiState.overview.isLoading)
+                WeekdayCard(
+                    weekday = uiState.overview.weekday,
+                    weekdayCountable = uiState.overview.weekdayCountable,
+                    isLoading = uiState.overview.isLoading,
+                )
             }
             GoalsCard(state = uiState.goals, onAddGoalClick = onAddGoalClick)
         }
@@ -352,7 +356,11 @@ private val weekOrder = listOf(
 )
 
 @Composable
-private fun WeekdayCard(weekday: Map<DayOfWeek, Int?>, isLoading: Boolean) {
+private fun WeekdayCard(
+    weekday: Map<DayOfWeek, Int?>,
+    weekdayCountable: Map<DayOfWeek, Int>,
+    isLoading: Boolean,
+) {
     StatsCard {
         Text(stringResource(R.string.stats_by_weekday), color = SalatPrimary, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily)
         Spacer(Modifier.height(16.dp))
@@ -360,7 +368,7 @@ private fun WeekdayCard(weekday: Map<DayOfWeek, Int?>, isLoading: Boolean) {
             ShimmerBox(Modifier.fillMaxWidth().height(96.dp))
             return@StatsCard
         }
-        val weakest = remember(weekday) { weakestWeekday(weekday) }
+        val weakest = remember(weekday, weekdayCountable) { weakestWeekday(weekday, weekdayCountable) }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             weekOrder.forEach { day ->
                 WeekdayBar(day = day, pct = weekday[day], isWeakest = day == weakest, modifier = Modifier.weight(1f))
