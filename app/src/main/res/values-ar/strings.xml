@@ -343,8 +343,9 @@
     <string name="reminders_sound_silenced_banner">جهازك في الوضع الصامت — لن يتم تشغيل أي صوت الآن</string>
     <string name="reminders_offset_minutes_value">%1$d د</string>
 
-    <string name="stats_vs_last">%1$s%% مقارنة بالسابق</string>
+    <string name="stats_vs_last">%1$s مقارنة بالسابق</string>
     <string name="stats_no_change">لا تغيير</string>
+    <string name="stats_weekday_value">%1$s، %2$s</string>
     <string name="stats_no_active_goals">لا توجد أهداف نشطة بعد — اضغط لتحديد هدف.</string>
     <string name="stats_prayed_on_time">الصلوات المُؤدّاة</string>
     <string name="stats_by_prayer">حسب الصلاة</string>

@@ -22,6 +22,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
 import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.core.ui.ShimmerBox
@@ -47,6 +49,8 @@ import com.salattracker.domain.usecase.weakestWeekday
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.TextStyle
+import java.time.temporal.WeekFields
+import java.text.NumberFormat
 
 // ── Stats Screen ─────────────────────────────────────────────────────────────
 // A today-vs-history dashboard: one shared period selector drives everything except Goals
@@ -172,8 +176,16 @@ private fun EmptyStateText(text: String, modifier: Modifier = Modifier, onClick:
 
 @Composable
 private fun StatusBar(counts: StatusCounts, modifier: Modifier = Modifier, height: Dp = 10.dp) {
+    val locale = LocalConfiguration.current.locales[0]
+    val statusDescription = listOf(
+        "${stringResource(R.string.status_congregation)}: ${formatStatsNumber(counts.congregation, locale)}",
+        "${stringResource(R.string.status_individual)}: ${formatStatsNumber(counts.individual, locale)}",
+        "${stringResource(PrayerStatus.QAZA_COMPLETED.labelRes)}: ${formatStatsNumber(counts.qazaCompleted, locale)}",
+        "${stringResource(PrayerStatus.QAZA_PENDING.labelRes)}: ${formatStatsNumber(counts.qazaPending, locale)}",
+    ).joinToString()
+    val noDataDescription = stringResource(R.string.stats_no_data_period)
     if (counts.countable == 0) {
-        Box(modifier.fillMaxWidth().height(height).clip(RoundedCornerShape(height / 2)).background(SalatSurfaceVariant))
+        Box(modifier.semantics { contentDescription = noDataDescription }.fillMaxWidth().height(height).clip(RoundedCornerShape(height / 2)).background(SalatSurfaceVariant))
         return
     }
     val animCongregation by animateFloatAsState(counts.congregation.toFloat(), tween(800, easing = FastOutSlowInEasing), label = "c")
@@ -181,7 +193,7 @@ private fun StatusBar(counts: StatusCounts, modifier: Modifier = Modifier, heigh
     val animQazaCompleted by animateFloatAsState(counts.qazaCompleted.toFloat(), tween(800, easing = FastOutSlowInEasing), label = "qc")
     val animQazaPending by animateFloatAsState(counts.qazaPending.toFloat(), tween(800, easing = FastOutSlowInEasing), label = "qp")
 
-    Row(modifier.fillMaxWidth().height(height).clip(RoundedCornerShape(height / 2))) {
+    Row(modifier.semantics { contentDescription = statusDescription }.fillMaxWidth().height(height).clip(RoundedCornerShape(height / 2))) {
         if (animCongregation > 0f) Box(Modifier.weight(animCongregation).fillMaxHeight().background(SalatStatusCongregation))
         if (animIndividual > 0f) Box(Modifier.weight(animIndividual).fillMaxHeight().background(SalatStatusIndividual))
         if (animQazaCompleted > 0f) Box(Modifier.weight(animQazaCompleted).fillMaxHeight().background(SalatStatusQazaCompleted))
@@ -191,9 +203,10 @@ private fun StatusBar(counts: StatusCounts, modifier: Modifier = Modifier, heigh
 
 @Composable
 private fun LegendCount(color: Color, label: String, count: Int, modifier: Modifier = Modifier) {
+    val locale = LocalConfiguration.current.locales[0]
     Row(modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
         Box(Modifier.size(9.dp).clip(CircleShape).background(color))
-        Text("$label: $count", color = SalatOnSurfaceVariant,  fontSize = 12.sp, fontFamily = AppUiFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text("$label: ${formatStatsNumber(count, locale)}", color = SalatOnSurfaceVariant,  fontSize = 12.sp, fontFamily = AppUiFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 
@@ -201,6 +214,7 @@ private fun LegendCount(color: Color, label: String, count: Int, modifier: Modif
 
 @Composable
 private fun SummaryCard(state: OverviewUiState, gender: Gender?) {
+    val locale = LocalConfiguration.current.locales[0]
     StatsCard {
         Text(stringResource(R.string.stats_prayed_on_time), color = SalatOnSurfaceVariant,  fontSize = 12.sp,
             fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily, letterSpacing = 1.sp)
@@ -214,14 +228,14 @@ private fun SummaryCard(state: OverviewUiState, gender: Gender?) {
 
         Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
-                text = state.completionPct?.let { "$it%" } ?: "—",
+                text = state.completionPct?.let { formatStatsPercent(it, locale) } ?: "—",
                 color = SalatPrimary, fontSize = 36.sp, fontWeight = FontWeight.Bold, fontFamily = AppTitleFontFamily,
             )
             state.completionDelta?.let { delta ->
                 Text(
                     text = when {
-                        delta > 0 -> stringResource(R.string.stats_vs_last, "+$delta")
-                        delta < 0 -> stringResource(R.string.stats_vs_last, "−${-delta}")
+                        delta > 0 -> stringResource(R.string.stats_vs_last, "+${formatStatsPercent(delta, locale)}")
+                        delta < 0 -> stringResource(R.string.stats_vs_last, "−${formatStatsPercent(-delta, locale)}")
                         else -> stringResource(R.string.stats_no_change)
                     },
                     color = when {
@@ -255,14 +269,14 @@ private fun SummaryCard(state: OverviewUiState, gender: Gender?) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             StatTile(
                 label = stringResource(R.string.stats_perfect_days),
-                value = if (state.perfectDays.counted > 0) "${state.perfectDays.perfect}/${state.perfectDays.counted}" else "—",
+                value = if (state.perfectDays.counted > 0) formatStatsRatio(state.perfectDays.perfect, state.perfectDays.counted, locale) else "—",
                 modifier = Modifier.weight(1f),
             )
             StatTile(
                 label = stringResource(R.string.stats_qaza_made_up),
                 value = when {
                     state.counts.countable == 0 -> "—"
-                    state.counts.missed > 0 -> "${state.counts.qazaCompleted}/${state.counts.missed}"
+                    state.counts.missed > 0 -> formatStatsRatio(state.counts.qazaCompleted, state.counts.missed, locale)
                     else -> stringResource(R.string.stats_nothing_missed)
                 },
                 modifier = Modifier.weight(1f),
@@ -330,6 +344,7 @@ private fun PrayerBreakdownCard(state: PrayerBreakdownUiState) {
 
 @Composable
 private fun PrayerBarRow(entry: PrayerBreakdown, modifier: Modifier = Modifier) {
+    val locale = LocalConfiguration.current.locales[0]
     Row(modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Icon(painterResource(entry.prayerType.iconRes), null, tint = SalatPrimary, modifier = Modifier.size(16.dp))
         Spacer(Modifier.width(8.dp))
@@ -341,7 +356,7 @@ private fun PrayerBarRow(entry: PrayerBreakdown, modifier: Modifier = Modifier) 
         Box(Modifier.weight(1f)) { StatusBar(entry.counts, height = 8.dp) }
         Spacer(Modifier.width(8.dp))
         Text(
-            text = entry.completionRate?.let { "${(it * 100).toInt()}%" } ?: "—",
+            text = entry.completionRate?.let { formatStatsPercent((it * 100).toInt(), locale) } ?: "—",
             color = SalatPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold,
             fontFamily = AppUiFontFamily, textAlign = TextAlign.End, modifier = Modifier.width(36.dp),
         )
@@ -349,11 +364,6 @@ private fun PrayerBarRow(entry: PrayerBreakdown, modifier: Modifier = Modifier) 
 }
 
 // ── By weekday (30D+ only) ────────────────────────────────────────────────────────
-
-private val weekOrder = listOf(
-    DayOfWeek.SUNDAY, DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
-    DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY,
-)
 
 @Composable
 private fun WeekdayCard(
@@ -368,6 +378,10 @@ private fun WeekdayCard(
             ShimmerBox(Modifier.fillMaxWidth().height(96.dp))
             return@StatsCard
         }
+        val locale = LocalConfiguration.current.locales[0]
+        val weekOrder = remember(locale) {
+            generateSequence(WeekFields.of(locale).firstDayOfWeek) { it.plus(1) }.take(7).toList()
+        }
         val weakest = remember(weekday, weekdayCountable) { weakestWeekday(weekday, weekdayCountable) }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             weekOrder.forEach { day ->
@@ -376,7 +390,6 @@ private fun WeekdayCard(
         }
         if (weakest != null) {
             Spacer(Modifier.height(14.dp))
-            val locale = LocalConfiguration.current.locales[0]
             val fullName = remember(weakest, locale) { weakest.getDisplayName(TextStyle.FULL, locale) }
             Text(
                 text = stringResource(R.string.stats_weakest_day, fullName),
@@ -388,6 +401,7 @@ private fun WeekdayCard(
 
 @Composable
 private fun WeekdayBar(day: DayOfWeek, pct: Int?, isWeakest: Boolean, modifier: Modifier = Modifier) {
+    val locale = LocalConfiguration.current.locales[0]
     val fraction = ((pct ?: 0) / 100f).coerceIn(0.04f, 1f)
     val animFraction by animateFloatAsState(fraction, tween(800, easing = FastOutSlowInEasing), label = "wd")
     val color = when {
@@ -395,7 +409,13 @@ private fun WeekdayBar(day: DayOfWeek, pct: Int?, isWeakest: Boolean, modifier: 
         isWeakest   -> SalatError
         else        -> SalatPrimaryContainer
     }
-    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+    val fullName = remember(day, locale) { day.getDisplayName(TextStyle.FULL, locale) }
+    val value = pct?.let { formatStatsPercent(it, locale) } ?: stringResource(R.string.stats_no_data_period)
+    val description = stringResource(R.string.stats_weekday_value, fullName, value)
+    Column(
+        modifier.semantics { contentDescription = description },
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
         Box(Modifier.fillMaxWidth().height(64.dp), contentAlignment = Alignment.BottomCenter) {
             Box(Modifier.width(18.dp).fillMaxHeight(animFraction).clip(RoundedCornerShape(4.dp)).background(color))
         }
@@ -403,6 +423,15 @@ private fun WeekdayBar(day: DayOfWeek, pct: Int?, isWeakest: Boolean, modifier: 
         Text(day.shortLabel(), color = SalatOnSurfaceVariant,  fontSize = 12.sp, fontFamily = AppUiFontFamily, maxLines = 1)
     }
 }
+
+private fun formatStatsNumber(value: Int, locale: java.util.Locale): String =
+    NumberFormat.getIntegerInstance(locale).format(value)
+
+private fun formatStatsPercent(value: Int, locale: java.util.Locale): String =
+    NumberFormat.getPercentInstance(locale).apply { maximumFractionDigits = 0 }.format(value / 100.0)
+
+private fun formatStatsRatio(first: Int, second: Int, locale: java.util.Locale): String =
+    "${formatStatsNumber(first, locale)}/${formatStatsNumber(second, locale)}"
 
 // ── Goals (per-goal periods hit, judged by each goal's own frequency) ───────────────
 
@@ -428,6 +457,7 @@ private fun GoalsCard(state: GoalsUiState, onAddGoalClick: () -> Unit) {
 
 @Composable
 private fun GoalStatRow(item: GoalPeriodStat) {
+    val locale = LocalConfiguration.current.locales[0]
     Column {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Box(
@@ -444,7 +474,7 @@ private fun GoalStatRow(item: GoalPeriodStat) {
                 )
             }
             Text(
-                text = if (item.periodsCounted > 0) "${item.periodsHit}/${item.periodsCounted}" else "—",
+                text = if (item.periodsCounted > 0) formatStatsRatio(item.periodsHit, item.periodsCounted, locale) else "—",
                 color = SalatPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily,
             )
         }

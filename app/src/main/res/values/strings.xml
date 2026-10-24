@@ -367,8 +367,9 @@
     <string name="reminders_offset_minutes_value">%1$d min</string>
 
     <!-- Stats -->
-    <string name="stats_vs_last">%1$s%% vs last</string>
+    <string name="stats_vs_last">%1$s vs last</string>
     <string name="stats_no_change">No change</string>
+    <string name="stats_weekday_value">%1$s, %2$s</string>
     <string name="stats_no_active_goals">No active goals yet — tap to set one.</string>
     <string name="stats_prayed_on_time">Prayers completed</string>
     <string name="stats_by_prayer">By Prayer</string>
