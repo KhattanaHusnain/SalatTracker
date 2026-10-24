@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Clock
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -120,6 +121,7 @@ internal fun buildGoalsContent(
 @HiltViewModel
 class GoalsViewModel @Inject constructor(
     private val goalRepository: GoalRepository,
+    private val clock: Clock,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GoalsUiState())
@@ -135,7 +137,7 @@ class GoalsViewModel @Inject constructor(
 
     private fun observeGoals() {
         viewModelScope.launch {
-            combine(goalRepository.observeGoalHistories(), refreshTrigger) { h, _ -> h to LocalDate.now() }
+            combine(goalRepository.observeGoalHistories(), refreshTrigger) { h, _ -> h to LocalDate.now(clock) }
                 .catch { _ -> _uiState.update { it.copy(isLoading = false, errorRes = R.string.error_load_generic) } }
                 .collect { (h, today) ->
                     histories = h

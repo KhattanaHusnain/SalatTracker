@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Clock
 import java.time.LocalDate
 import java.time.YearMonth
 import javax.inject.Inject
@@ -67,12 +68,13 @@ class GoalDetailsViewModel @Inject constructor(
     private val goalRepository: GoalRepository,
     private val reminderScheduler: GoalReminderScheduler,
     savedStateHandle: SavedStateHandle,
+    private val clock: Clock,
 ) : ViewModel() {
 
     private val goalId: Long = checkNotNull(savedStateHandle["goalId"])
 
-    private val visibleMonth = MutableStateFlow(YearMonth.now())
-    private val _uiState = MutableStateFlow(GoalDetailsUiState())
+    private val visibleMonth = MutableStateFlow(YearMonth.now(clock))
+    private val _uiState = MutableStateFlow(GoalDetailsUiState(visibleMonth = YearMonth.now(clock)))
     val uiState: StateFlow<GoalDetailsUiState> = _uiState.asStateFlow()
 
     private var history: GoalHistory? = null
@@ -93,7 +95,7 @@ class GoalDetailsViewModel @Inject constructor(
             return
         }
         val goal = history.goal
-        val today = LocalDate.now()
+        val today = LocalDate.now(clock)
         val log = DayLog(history.checkIns)
         val cells = monthGridDates(month).map { date ->
             val amount = log.amountOn(date)

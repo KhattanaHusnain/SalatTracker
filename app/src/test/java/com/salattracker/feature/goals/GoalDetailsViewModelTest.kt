@@ -20,15 +20,19 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import java.time.Clock
+import java.time.Instant
 import java.time.LocalDate
 import java.time.YearMonth
+import java.time.ZoneOffset
 
 class GoalDetailsViewModelTest {
 
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val today = LocalDate.now()
+    private val clock = Clock.fixed(Instant.parse("2026-10-23T12:00:00Z"), ZoneOffset.UTC)
+    private val today = LocalDate.now(clock)
     private lateinit var repository: FakeGoalRepository
     private lateinit var scheduler: FakeGoalReminderScheduler
 
@@ -46,7 +50,7 @@ class GoalDetailsViewModelTest {
 
     private fun createViewModel(history: GoalHistory? = GoalHistory(goal(), emptyList())): GoalDetailsViewModel {
         history?.let { repository.seedHistories(listOf(it)) }
-        return GoalDetailsViewModel(repository, scheduler, SavedStateHandle(mapOf("goalId" to 7L)))
+        return GoalDetailsViewModel(repository, scheduler, SavedStateHandle(mapOf("goalId" to 7L)), clock)
     }
 
     @Test
@@ -70,11 +74,11 @@ class GoalDetailsViewModelTest {
         assertTrue(vm.uiState.value.canGoPrevMonth)
 
         vm.onPrevMonth()
-        assertEquals(YearMonth.now().minusMonths(1), vm.uiState.value.visibleMonth)
+        assertEquals(YearMonth.now(clock).minusMonths(1), vm.uiState.value.visibleMonth)
         assertTrue(vm.uiState.value.canGoNextMonth)
 
         vm.onNextMonth()
-        assertEquals(YearMonth.now(), vm.uiState.value.visibleMonth)
+        assertEquals(YearMonth.now(clock), vm.uiState.value.visibleMonth)
     }
 
     @Test

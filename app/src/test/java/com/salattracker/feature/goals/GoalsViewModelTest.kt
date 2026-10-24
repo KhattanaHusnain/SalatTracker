@@ -16,15 +16,19 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import java.time.Clock
 import java.time.DayOfWeek
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneOffset
 
 class GoalsViewModelTest {
 
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val today = LocalDate.now()
+    private val clock = Clock.fixed(Instant.parse("2026-10-23T12:00:00Z"), ZoneOffset.UTC)
+    private val today = LocalDate.now(clock)
     private lateinit var repository: FakeGoalRepository
 
     private fun goal(
@@ -44,7 +48,7 @@ class GoalsViewModelTest {
 
     private fun viewModel(vararg histories: GoalHistory): GoalsViewModel {
         repository.seedHistories(histories.toList())
-        return GoalsViewModel(repository)
+        return GoalsViewModel(repository, clock)
     }
 
     @Before
