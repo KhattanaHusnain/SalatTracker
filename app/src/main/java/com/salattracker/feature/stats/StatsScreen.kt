@@ -39,6 +39,8 @@ import com.salattracker.domain.usecase.PerfectDays
 import com.salattracker.domain.usecase.allPrayersOnTrack
 import com.salattracker.domain.usecase.trendBucketFor
 import com.salattracker.domain.usecase.weakestPrayer
+import com.salattracker.domain.usecase.StatsInsight
+import com.salattracker.domain.usecase.statsInsight
 import java.time.LocalDate
 import java.text.NumberFormat
 
@@ -64,6 +66,7 @@ fun StatsScreen(
             Spacer(modifier = Modifier.height(4.dp))
 
             PeriodToggle(selected = uiState.period, onSelect = onPeriodChanged)
+            StatsInsightRow(uiState.overview.completionDelta)
             SummaryCard(state = uiState.overview, gender = uiState.gender)
             if (uiState.gender != Gender.FEMALE) {
                 CongregationCard(state = uiState.overview, breakdown = uiState.prayerBreakdown)
@@ -79,6 +82,21 @@ fun StatsScreen(
                 containerColor = SalatInverseSurface, contentColor = SalatInverseOnSurface,
             ) { Text(stringResource(errorRes), fontFamily = AppUiFontFamily) }
         }
+    }
+}
+
+@Composable
+private fun StatsInsightRow(completionDelta: Int?) {
+    val insight = statsInsight(completionDelta) ?: return
+    val locale = LocalConfiguration.current.locales[0]
+    val points = (insight as StatsInsight.CompletionChanged).points
+    val text = if (points > 0) {
+        stringResource(R.string.stats_insight_improved, formatStatsPercent(points, locale))
+    } else {
+        stringResource(R.string.stats_insight_declined, formatStatsPercent(-points, locale))
+    }
+    Surface(color = SalatPrimaryContainer, shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth()) {
+        Text(text, color = SalatOnPrimaryContainer, fontSize = 13.sp, fontFamily = AppUiFontFamily, modifier = Modifier.padding(12.dp))
     }
 }
 

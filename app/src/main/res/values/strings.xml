@@ -401,6 +401,8 @@
     <string name="stats_qaza_recovery">Qaza recovery</string>
     <string name="stats_qaza_balance">%1$d → %2$d (%3$s)</string>
     <string name="stats_qaza_made_up_period">%1$d made up this period</string>
+    <string name="stats_insight_improved">Your prayer completion improved by %1$s compared with the previous period.</string>
+    <string name="stats_insight_declined">Your prayer completion decreased by %1$s compared with the previous period.</string>
 
     <!-- Goals dashboard -->
     <string name="goals_active">Active Goals</string>
