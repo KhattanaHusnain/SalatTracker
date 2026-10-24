@@ -20,9 +20,13 @@ import com.salattracker.domain.usecase.weekdayCountable
 import com.salattracker.domain.usecase.weekdayCompletion
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Clock
@@ -106,11 +110,21 @@ class StatsViewModel @Inject constructor(
     private var breakdownJob: Job? = null
     private var goalsJob: Job? = null
 
+    private val dayTicker: Flow<LocalDate> = flow {
+        while (true) {
+            val today = LocalDate.now(clock)
+            emit(today)
+            val nextMidnight = today.plusDays(1).atStartOfDay(clock.zone).toInstant().toEpochMilli()
+            delay((nextMidnight - clock.millis()).coerceAtLeast(1L))
+        }
+    }
+
     init {
         viewModelScope.launch {
             settingsRepository.observeSettings().collect { prefs -> _uiState.update { it.copy(gender = prefs.gender) } }
         }
         loadAllForPeriod(StatsPeriod.MONTH, showSkeleton = true)
+        observeDayChanges()
         observePrayerChanges()
         observeGoalChanges()
     }
@@ -199,7 +213,7 @@ class StatsViewModel @Inject constructor(
             // any screen — it's used here purely as a change signal, not for its streak payload,
             // to keep the Overview and By Prayer cards fresh without flashing a skeleton over
             // already-visible data.
-            repository.observeStreaks().collect {
+            repository.observeStreaks().drop(1).collect {
                 loadOverview(_uiState.value.period, showSkeleton = false)
                 loadBreakdown(_uiState.value.period, showSkeleton = false)
             }
@@ -210,8 +224,16 @@ class StatsViewModel @Inject constructor(
         viewModelScope.launch {
             // Live so the goals card stays fresh when a goal is added, checked in, or edited from
             // elsewhere — no skeleton flash either.
-            goalRepository.observeGoalHistories().collect {
+            goalRepository.observeGoalHistories().drop(1).collect {
                 loadGoals(_uiState.value.period, showSkeleton = false)
+            }
+        }
+    }
+
+    private fun observeDayChanges() {
+        viewModelScope.launch {
+            dayTicker.drop(1).collect {
+                loadAllForPeriod(_uiState.value.period, showSkeleton = true)
             }
         }
     }
