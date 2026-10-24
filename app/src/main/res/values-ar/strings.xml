@@ -35,7 +35,7 @@
 
     <string name="quran_continue_reading">متابعة القراءة</string>
     <string name="quran_continue_reading_subtitle">%1$s، الآية %2$d</string>
-    <string name="quran_verses_suffix">آية</string>
+    <plurals name="quran_verses_count"><item quantity="zero">0 آيات</item><item quantity="one">%1$d آية</item><item quantity="two">آيتان</item><item quantity="few">%1$d آيات</item><item quantity="many">%1$d آية</item><item quantity="other">%1$d آية</item></plurals>
     <string name="quran_revelation_meccan">مكية · %1$d آية</string>
     <string name="quran_revelation_medinan">مدنية · %1$d آية</string>
     <string name="quran_add_bookmark">إضافة إشارة مرجعية لهذه الآية</string>

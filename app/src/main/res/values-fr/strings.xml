@@ -35,7 +35,7 @@
 
     <string name="quran_continue_reading">Continuer la lecture</string>
     <string name="quran_continue_reading_subtitle">%1$s, verset %2$d</string>
-    <string name="quran_verses_suffix">versets</string>
+    <plurals name="quran_verses_count"><item quantity="one">%1$d verset</item><item quantity="other">%1$d versets</item></plurals>
     <string name="quran_revelation_meccan">Mecquoise · %1$d versets</string>
     <string name="quran_revelation_medinan">Médinoise · %1$d versets</string>
     <string name="quran_add_bookmark">Ajouter ce verset aux favoris</string>

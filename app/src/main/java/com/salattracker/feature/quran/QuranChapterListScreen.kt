@@ -35,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -343,7 +344,7 @@ private fun ChapterRow(chapter: Chapter, onClick: () -> Unit) {
             Text(chapter.nameTransliteration, color = SalatOnSurface, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily)
             Spacer(Modifier.height(2.dp))
             Text(
-                text = "${chapter.nameTranslation} · ${chapter.versesCount} " + stringResource(R.string.quran_verses_suffix),
+                text = "${chapter.nameTranslation} · " + pluralStringResource(R.plurals.quran_verses_count, chapter.versesCount, chapter.versesCount),
                 color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily,
             )
         }

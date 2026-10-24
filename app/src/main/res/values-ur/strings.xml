@@ -35,7 +35,7 @@
 
     <string name="quran_continue_reading">پڑھنا جاری رکھیں</string>
     <string name="quran_continue_reading_subtitle">%1$s، آیت %2$d</string>
-    <string name="quran_verses_suffix">آیات</string>
+    <plurals name="quran_verses_count"><item quantity="one">%1$d آیت</item><item quantity="other">%1$d آیات</item></plurals>
     <string name="quran_revelation_meccan">مکی · %1$d آیات</string>
     <string name="quran_revelation_medinan">مدنی · %1$d آیات</string>
     <string name="quran_add_bookmark">اس آیت کو بک مارک کریں</string>
