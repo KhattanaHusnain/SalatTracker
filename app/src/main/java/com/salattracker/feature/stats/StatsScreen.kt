@@ -248,7 +248,11 @@ private fun SummaryCard(state: OverviewUiState, gender: Gender?) {
             )
             StatTile(
                 label = stringResource(R.string.stats_qaza_made_up),
-                value = if (state.counts.missed > 0) "${state.counts.qazaCompleted}/${state.counts.missed}" else stringResource(R.string.stats_nothing_missed),
+                value = when {
+                    state.counts.countable == 0 -> "—"
+                    state.counts.missed > 0 -> "${state.counts.qazaCompleted}/${state.counts.missed}"
+                    else -> stringResource(R.string.stats_nothing_missed)
+                },
                 modifier = Modifier.weight(1f),
             )
         }
