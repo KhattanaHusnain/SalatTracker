@@ -130,6 +130,9 @@ class PrayerRepositoryImpl @Inject constructor(
     override fun observeRecentQazaMadeUp(limit: Int): Flow<List<PrayerEntry>> =
         prayerDao.observeRecentQazaMadeUp(userId, limit).map { it.map { e -> e.toDomain() } }
 
+    override suspend fun getQazaHistory(): List<PrayerEntry> =
+        prayerDao.getQazaHistory(userId).map { it.toDomain() }
+
     // ── Analytics ──────────────────────────────────────────────────────────────
 
     override suspend fun getDailyStatusCounts(from: LocalDate, to: LocalDate): List<DayStatusCounts> =

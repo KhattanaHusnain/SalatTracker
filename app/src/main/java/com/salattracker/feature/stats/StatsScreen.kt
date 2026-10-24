@@ -68,6 +68,7 @@ fun StatsScreen(
             if (uiState.gender != Gender.FEMALE) {
                 CongregationCard(state = uiState.overview, breakdown = uiState.prayerBreakdown)
             }
+            uiState.overview.qazaRecovery?.let { QazaRecoveryCard(it) }
             TrendCard(state = uiState.overview, period = uiState.period)
             PrayerBreakdownCard(state = uiState.prayerBreakdown)
         }
@@ -302,6 +303,24 @@ private fun CongregationCard(state: OverviewUiState, breakdown: PrayerBreakdownU
         Text(stringResource(R.string.stats_congregation_challenge), color = SalatOnSurface, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
         Text(stringResource(R.string.stats_congregation_day_of_40, state.congregationChallenge.currentRun), color = SalatPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold, fontFamily = AppTitleFontFamily)
         Text(stringResource(R.string.stats_congregation_best_run, state.congregationChallenge.bestRun), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
+    }
+}
+
+@Composable
+private fun QazaRecoveryCard(recovery: com.salattracker.domain.usecase.QazaRecovery) {
+    val locale = LocalConfiguration.current.locales[0]
+    StatsCard {
+        Text(stringResource(R.string.stats_qaza_recovery), color = SalatPrimary, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily)
+        Spacer(Modifier.height(12.dp))
+        val change = recovery.outstandingAtEnd - recovery.outstandingAtStart
+        val changeText = when {
+            change < 0 -> "−${formatStatsNumber(-change, locale)}"
+            change > 0 -> "+${formatStatsNumber(change, locale)}"
+            else -> stringResource(R.string.stats_no_change)
+        }
+        Text(stringResource(R.string.stats_qaza_balance, recovery.outstandingAtStart, recovery.outstandingAtEnd, changeText), color = SalatOnSurface, fontSize = 18.sp, fontWeight = FontWeight.Bold, fontFamily = AppTitleFontFamily)
+        Spacer(Modifier.height(4.dp))
+        Text(stringResource(R.string.stats_qaza_made_up_period, recovery.madeUp), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
     }
 }
 

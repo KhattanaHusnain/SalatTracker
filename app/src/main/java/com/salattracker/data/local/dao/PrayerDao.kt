@@ -116,6 +116,9 @@ interface PrayerDao {
     """)
     fun observeRecentQazaMadeUp(userId: String, limit: Int): Flow<List<PrayerEntryEntity>>
 
+    @Query("SELECT * FROM prayer_entries WHERE user_id = :userId AND status IN ('QAZA_PENDING', 'QAZA_COMPLETED') ORDER BY date ASC")
+    suspend fun getQazaHistory(userId: String): List<PrayerEntryEntity>
+
     // ── Analytics ─────────────────────────────────────────────────────────────
     // Every status-count query returns the same 5 columns (congregation / individual /
     // qazaPending / qazaCompleted / excused) so the domain layer can build one StatusCounts

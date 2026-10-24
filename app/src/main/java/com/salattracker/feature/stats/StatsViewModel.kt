@@ -15,6 +15,8 @@ import com.salattracker.domain.usecase.congregationChallenge
 import com.salattracker.domain.usecase.congregationPercent
 import com.salattracker.domain.usecase.LoggingCoverage
 import com.salattracker.domain.usecase.loggingCoverage
+import com.salattracker.domain.usecase.QazaRecovery
+import com.salattracker.domain.usecase.qazaRecovery
 import com.salattracker.domain.usecase.completionPercent
 import com.salattracker.domain.usecase.completionTrend
 import com.salattracker.domain.usecase.perfectDays
@@ -65,6 +67,7 @@ data class OverviewUiState(
     val congregationDelta: Int? = null,
     val congregationChallenge: CongregationChallenge = CongregationChallenge(0, 0),
     val loggingCoverage: LoggingCoverage = LoggingCoverage(0, 0),
+    val qazaRecovery: QazaRecovery? = null,
     val trend: List<TrendPoint> = emptyList(),
 )
 
@@ -140,8 +143,9 @@ class StatsViewModel @Inject constructor(
                 val challengeDays = repository.getDailyStatusCounts(today.minusDays(40), today.minusDays(1))
                 val firstRecorded = repository.getFirstRecordedPrayerDate()
                 val todayTimes = repository.getPrayerTimes(today)
-                OverviewLoad(currentDays, previousDays, challengeDays, firstRecorded, todayTimes, from, to)
-            }.onSuccess { (currentDays, previousDays, challengeDays, firstRecorded, todayTimes, from, to) ->
+                val qazaHistory = repository.getQazaHistory()
+                OverviewLoad(currentDays, previousDays, challengeDays, firstRecorded, todayTimes, qazaHistory, from, to)
+            }.onSuccess { (currentDays, previousDays, challengeDays, firstRecorded, todayTimes, qazaHistory, from, to) ->
                 val counts = currentDays.fold(StatusCounts()) { acc, d -> acc + d.counts }
                 val prevCounts = previousDays.fold(StatusCounts()) { acc, d -> acc + d.counts }
                 val pct = completionPercent(counts)
@@ -162,6 +166,7 @@ class StatsViewModel @Inject constructor(
                             congregationDelta = if (congregationPct != null && previousCongregationPct != null) congregationPct - previousCongregationPct else null,
                             congregationChallenge = congregationChallenge(challengeDays, to),
                             loggingCoverage = loggingCoverage(currentDays, from, to, firstRecorded, java.time.LocalTime.now(clock), todayTimes),
+                            qazaRecovery = qazaHistory.takeIf { it.isNotEmpty() }?.let { qazaRecovery(it, from, to, clock.zone) },
                             trend           = trend,
                         )
                     )
@@ -217,6 +222,7 @@ private data class OverviewLoad(
     val challengeDays: List<com.salattracker.domain.repository.DayStatusCounts>,
     val firstRecorded: LocalDate?,
     val todayTimes: Map<com.salattracker.domain.model.PrayerType, java.time.LocalTime>?,
+    val qazaHistory: List<com.salattracker.domain.model.PrayerEntry>,
     val from: LocalDate,
     val to: LocalDate,
 )

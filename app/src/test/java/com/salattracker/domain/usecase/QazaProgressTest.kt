@@ -1,5 +1,8 @@
 package com.salattracker.domain.usecase
 
+import com.salattracker.domain.model.PrayerEntry
+import com.salattracker.domain.model.PrayerStatus
+import com.salattracker.domain.model.PrayerType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -10,6 +13,16 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 
 class QazaProgressTest {
+
+    @Test
+    fun `qazaRecovery counts a completion made during the selected period`() {
+        val zone = ZoneOffset.UTC
+        val from = LocalDate.of(2026, 10, 1)
+        val completedAt = LocalDate.of(2026, 10, 10).atStartOfDay(zone).toInstant().toEpochMilli()
+        val entry = PrayerEntry(1, "local", LocalDate.of(2026, 9, 1), PrayerType.FAJR, PrayerStatus.QAZA_COMPLETED, completedAt)
+
+        assertEquals(QazaRecovery(1, 0, 1), qazaRecovery(listOf(entry), from, LocalDate.of(2026, 10, 31), zone))
+    }
 
     private val zone: ZoneId = ZoneOffset.UTC
     private val today = LocalDate.of(2026, 1, 15)

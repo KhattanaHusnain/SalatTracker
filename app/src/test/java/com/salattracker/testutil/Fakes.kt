@@ -185,6 +185,9 @@ class FakePrayerRepository : PrayerRepository {
     override fun observeRecentQazaMadeUp(limit: Int): Flow<List<PrayerEntry>> =
         entries.map { allEntriesWithStatus(PrayerStatus.QAZA_COMPLETED).sortedByDescending { it.updatedAt }.take(limit) }
 
+    override suspend fun getQazaHistory(): List<PrayerEntry> =
+        (allEntriesWithStatus(PrayerStatus.QAZA_PENDING) + allEntriesWithStatus(PrayerStatus.QAZA_COMPLETED)).sortedBy { it.date }
+
     override suspend fun recalculateStreaks() = notUsed()
     override fun observeTodayPrayers(date: LocalDate): Flow<List<PrayerEntry>> = notUsed()
 

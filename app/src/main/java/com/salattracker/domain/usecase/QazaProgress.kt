@@ -1,5 +1,7 @@
 package com.salattracker.domain.usecase
 
+import com.salattracker.domain.model.PrayerEntry
+import com.salattracker.domain.model.PrayerStatus
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -32,6 +34,24 @@ data class QazaProgress(
     /** Null whenever [hasEnoughSamplesForEta] is false, or [outstanding] is 0. */
     val eta: QazaEta?,
 )
+
+data class QazaRecovery(val outstandingAtStart: Int, val outstandingAtEnd: Int, val madeUp: Int)
+
+/** Reconstructs recovery from original Qaza dates and each completed entry's update timestamp. */
+fun qazaRecovery(entries: List<PrayerEntry>, from: LocalDate, to: LocalDate, zone: ZoneId): QazaRecovery {
+    fun endOf(date: LocalDate): Long = date.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli() - 1
+    fun outstandingAt(date: LocalDate) = entries.count { entry ->
+        !entry.date.isAfter(date) && (entry.status == PrayerStatus.QAZA_PENDING ||
+            (entry.status == PrayerStatus.QAZA_COMPLETED && entry.updatedAt > endOf(date)))
+    }
+    val startMillis = from.atStartOfDay(zone).toInstant().toEpochMilli()
+    val endMillis = to.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli()
+    return QazaRecovery(
+        outstandingAtStart = outstandingAt(from.minusDays(1)),
+        outstandingAtEnd = outstandingAt(to),
+        madeUp = entries.count { it.status == PrayerStatus.QAZA_COMPLETED && it.updatedAt in startMillis until endMillis },
+    )
+}
 
 /**
  * Builds the Qaza tab's progress summary from raw counts.

@@ -71,6 +71,9 @@ interface PrayerRepository {
     /** The most recently made-up prayers, newest first, capped at [limit]. */
     fun observeRecentQazaMadeUp(limit: Int): Flow<List<PrayerEntry>>
 
+    /** Pending and completed Qaza entries, including their original date and last status update. */
+    suspend fun getQazaHistory(): List<PrayerEntry>
+
     // ── Analytics ─────────────────────────────────────────────────────────────
 
     /**
