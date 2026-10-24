@@ -3,7 +3,6 @@ package com.salattracker.feature.stats
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -200,15 +199,6 @@ private fun StatusBar(counts: StatusCounts, modifier: Modifier = Modifier, heigh
     }
 }
 
-@Composable
-private fun LegendCount(color: Color, label: String, count: Int, modifier: Modifier = Modifier) {
-    val locale = LocalConfiguration.current.locales[0]
-    Row(modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        Box(Modifier.size(9.dp).clip(CircleShape).background(color))
-        Text("$label: ${formatStatsNumber(count, locale)}", color = SalatOnSurfaceVariant,  fontSize = 12.sp, fontFamily = AppUiFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
-    }
-}
-
 // ── Summary (completed-prayer %, status bar + legend, perfect days, qaza recovery) ─
 
 @Composable
@@ -257,18 +247,6 @@ private fun SummaryCard(state: OverviewUiState, gender: Gender?) {
         }
         Spacer(Modifier.height(16.dp))
         StatusBar(state.counts)
-        Spacer(Modifier.height(10.dp))
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                if (PrayerStatus.CONGREGATION.isOfferedFor(gender) || state.counts.congregation > 0)
-                    LegendCount(SalatStatusCongregation, stringResource(R.string.status_congregation), state.counts.congregation, Modifier.weight(1f))
-                LegendCount(SalatStatusIndividual, stringResource(R.string.status_individual), state.counts.individual, Modifier.weight(1f))
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                LegendCount(SalatStatusQazaCompleted, stringResource(PrayerStatus.QAZA_COMPLETED.labelRes), state.counts.qazaCompleted, Modifier.weight(1f))
-                LegendCount(SalatStatusQazaPending, stringResource(PrayerStatus.QAZA_PENDING.labelRes), state.counts.qazaPending, Modifier.weight(1f))
-            }
-        }
         Spacer(Modifier.height(16.dp))
         StatTile(
             label = stringResource(R.string.stats_perfect_days),
