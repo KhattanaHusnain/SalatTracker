@@ -17,8 +17,11 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import java.time.Clock
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.ZoneOffset
 
 class CalendarViewModelTest {
 
@@ -28,6 +31,8 @@ class CalendarViewModelTest {
     private lateinit var prayerRepository: FakePrayerRepository
     private lateinit var reminderNotifications: FakeReminderNotifications
     private lateinit var viewModel: CalendarViewModel
+    private val clock = Clock.fixed(Instant.parse("2026-10-23T12:00:00Z"), ZoneOffset.UTC)
+    private val today = LocalDate.now(clock)
 
     @Before
     fun setUp() {
@@ -37,16 +42,17 @@ class CalendarViewModelTest {
 
     private fun createViewModel() = CalendarViewModel(
         prayerRepository, FakeVerseRepository(), FakeSettingsRepository(), reminderNotifications,
+        clock,
     )
 
     @Test
     fun `initial state loads today's marks and the verse`() = runTest {
-        prayerRepository.seedStatus(LocalDate.now(), PrayerType.FAJR, PrayerStatus.CONGREGATION)
+        prayerRepository.seedStatus(today, PrayerType.FAJR, PrayerStatus.CONGREGATION)
         viewModel = createViewModel()
 
         val state = viewModel.uiState.value
         assertEquals(false, state.isLoadingMarks)
-        assertEquals(PrayerStatus.CONGREGATION, state.marks[LocalDate.now()]?.get(PrayerType.FAJR))
+        assertEquals(PrayerStatus.CONGREGATION, state.marks[today]?.get(PrayerType.FAJR))
         assertEquals("test verse", state.verse?.text)
     }
 
@@ -84,7 +90,7 @@ class CalendarViewModelTest {
 
     @Test
     fun `onPrayerClick opens the status sheet with the recorded status`() = runTest {
-        val date = LocalDate.now().minusDays(1)
+        val date = today.minusDays(1)
         prayerRepository.seedStatus(date, PrayerType.DHUHR, PrayerStatus.INDIVIDUAL)
         viewModel = createViewModel()
 
@@ -96,7 +102,7 @@ class CalendarViewModelTest {
     @Test
     fun `onPrayerClick on an unrecorded past day defaults to NOT_RECORDED`() = runTest {
         viewModel = createViewModel()
-        val date = LocalDate.now().minusDays(2)
+        val date = today.minusDays(2)
 
         viewModel.onPrayerClick(date, PrayerType.ASR)
 
@@ -106,7 +112,7 @@ class CalendarViewModelTest {
     @Test
     fun `onPrayerClick on a future day does nothing`() = runTest {
         viewModel = createViewModel()
-        val future = LocalDate.now().plusDays(3)
+        val future = today.plusDays(3)
 
         viewModel.onPrayerClick(future, PrayerType.FAJR)
 
@@ -115,7 +121,7 @@ class CalendarViewModelTest {
 
     @Test
     fun `onStatusSave persists and clears the sheet, and the mark updates reactively`() = runTest {
-        val date = LocalDate.now().minusDays(1)
+        val date = today.minusDays(1)
         viewModel = createViewModel()
         viewModel.onPrayerClick(date, PrayerType.MAGHRIB)
         assertEquals(PrayerStatus.NOT_RECORDED, viewModel.uiState.value.statusSheet?.currentStatus)
@@ -131,9 +137,9 @@ class CalendarViewModelTest {
 
     @Test
     fun `onStatusSave dismisses today's prayer reminder`() = runTest {
-        prayerRepository.seedTimes(LocalDate.now(), mapOf(PrayerType.FAJR to LocalTime.MIN))
+        prayerRepository.seedTimes(today, mapOf(PrayerType.FAJR to LocalTime.MIN))
         viewModel = createViewModel()
-        viewModel.onPrayerClick(LocalDate.now(), PrayerType.FAJR)
+        viewModel.onPrayerClick(today, PrayerType.FAJR)
 
         viewModel.onStatusSave(PrayerStatus.INDIVIDUAL)
 
@@ -143,7 +149,7 @@ class CalendarViewModelTest {
     @Test
     fun `onStatusSheetDismiss clears the sheet without saving`() = runTest {
         viewModel = createViewModel()
-        viewModel.onPrayerClick(LocalDate.now().minusDays(1), PrayerType.FAJR)
+        viewModel.onPrayerClick(today.minusDays(1), PrayerType.FAJR)
 
         viewModel.onStatusSheetDismiss()
 

@@ -22,6 +22,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.YearMonth
@@ -56,9 +57,15 @@ class CalendarViewModel @Inject constructor(
     private val verseRepository: VerseRepository,
     private val settingsRepository: SettingsRepository,
     private val reminderNotifications: ReminderNotifications,
+    private val clock: Clock,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(CalendarUiState())
+    private val _uiState = MutableStateFlow(
+        CalendarUiState(
+            today = LocalDate.now(clock),
+            selectedDate = LocalDate.now(clock),
+        ),
+    )
     val uiState: StateFlow<CalendarUiState> = _uiState.asStateFlow()
 
     init {
@@ -182,7 +189,7 @@ class CalendarViewModel @Inject constructor(
             runCatching {
                 prayerRepository.upsertPrayerStatus(args.date, args.prayerType, newStatus)
             }.onSuccess {
-                if (args.date == LocalDate.now()) reminderNotifications.dismiss(args.prayerType)
+                if (args.date == LocalDate.now(clock)) reminderNotifications.dismiss(args.prayerType)
                 _uiState.update { it.copy(isSaving = false, statusSheet = null) }
             }.onFailure {
                 _uiState.update { it.copy(isSaving = false, errorRes = R.string.error_save_generic) }
