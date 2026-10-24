@@ -518,8 +518,7 @@ private fun BulkUpdateConfirmDialog(
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                val context = LocalContext.current
-                val prayerNames = uiState.selectedPrayers.sortedBy { it.ordinal }.joinToString(", ") { context.getString(it.nameRes) }
+                val prayerNames = uiState.selectedPrayers.sortedBy { it.ordinal }.joinToString(", ") { stringResource(it.nameRes) }
                 val daysPart = pluralStringResource(R.plurals.bulk_days_count, uiState.dayCount, uiState.dayCount)
                 val range = "${uiState.rangeFrom.format(rangeLabelFormatter)} – ${uiState.effectiveRangeTo.format(rangeLabelFormatter)}"
                 Text(

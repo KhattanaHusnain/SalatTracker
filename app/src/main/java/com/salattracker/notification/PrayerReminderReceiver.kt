@@ -2,12 +2,14 @@ package com.salattracker.notification
 
 import android.app.AlarmManager
 import android.app.PendingIntent
+import android.Manifest
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import com.salattracker.R
 import com.salattracker.core.ui.labelRes
 import com.salattracker.domain.model.Gender
@@ -116,7 +118,7 @@ class PrayerReminderReceiver : BroadcastReceiver() {
                     builder.setFullScreenIntent(fullScreenPendingIntent, true)
                 }
 
-                NotificationManagerCompat.from(context).notify(type.ordinal, builder.build())
+                if (canPostNotifications(context)) NotificationManagerCompat.from(context).notify(type.ordinal, builder.build())
             } finally {
                 // AlarmManager alarms are one-shot. Queue the next scheduling pass immediately
                 // rather than relying only on the periodic worker to cover tomorrow.
@@ -147,7 +149,7 @@ class PrayerReminderReceiver : BroadcastReceiver() {
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                     .setAutoCancel(true)
                     .setContentIntent(pendingIntent)
-                NotificationManagerCompat.from(context).notify(JUMUAH_LEAD_NOTIFICATION_ID, builder.build())
+                if (canPostNotifications(context)) NotificationManagerCompat.from(context).notify(JUMUAH_LEAD_NOTIFICATION_ID, builder.build())
             } finally {
                 pendingResult.finish()
             }
@@ -249,4 +251,8 @@ internal fun parsePrayerDate(value: String?, fallback: LocalDate): LocalDate =
 internal fun canUseFullScreenIntent(context: Context): Boolean =
     Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE ||
         context.getSystemService(android.app.NotificationManager::class.java).canUseFullScreenIntent()
+
+internal fun canPostNotifications(context: Context): Boolean =
+    Build.VERSION.SDK_INT < 33 ||
+        ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == android.content.pm.PackageManager.PERMISSION_GRANTED
 

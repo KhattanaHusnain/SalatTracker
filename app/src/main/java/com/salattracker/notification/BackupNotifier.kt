@@ -3,6 +3,9 @@ package com.salattracker.notification
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.Manifest
+import android.os.Build
+import androidx.core.content.ContextCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.salattracker.R
@@ -48,6 +51,9 @@ class BackupNotifier @Inject constructor(
             .setContentIntent(pendingIntent)
             .build()
 
-        NotificationManagerCompat.from(context).notify(BACKUP_NOTIFICATION_ID, notification)
+        if (canPostNotifications(context)) NotificationManagerCompat.from(context).notify(BACKUP_NOTIFICATION_ID, notification)
     }
+
+    private fun canPostNotifications(context: Context) = Build.VERSION.SDK_INT < 33 ||
+        ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == android.content.pm.PackageManager.PERMISSION_GRANTED
 }

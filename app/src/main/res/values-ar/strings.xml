@@ -467,11 +467,19 @@
     <string name="bulk_apply_summary">تطبيق %1$s على %2$s</string>
     <string name="bulk_confirm_summary">أنت على وشك تطبيق حالة %1$s على %2$s.</string>
     <plurals name="bulk_prayers_count">
+        <item quantity="zero">لا صلوات</item>
         <item quantity="one">%1$d صلاة</item>
+        <item quantity="two">صلاتان</item>
+        <item quantity="few">%1$d صلوات</item>
+        <item quantity="many">%1$d صلاة</item>
         <item quantity="other">%1$d صلوات</item>
     </plurals>
     <plurals name="bulk_days_count">
+        <item quantity="zero">لمدة 0 يوم</item>
         <item quantity="one">لمدة %1$d يوم</item>
+        <item quantity="two">لمدة يومين</item>
+        <item quantity="few">لمدة %1$d أيام</item>
+        <item quantity="many">لمدة %1$d يومًا</item>
         <item quantity="other">لمدة %1$d أيام</item>
     </plurals>
 

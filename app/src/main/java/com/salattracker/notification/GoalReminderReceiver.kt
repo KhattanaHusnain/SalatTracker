@@ -2,11 +2,14 @@ package com.salattracker.notification
 
 import android.app.AlarmManager
 import android.app.PendingIntent
+import android.Manifest
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import com.salattracker.R
 import com.salattracker.domain.repository.GoalRepository
 import com.salattracker.feature.main.MainActivity
@@ -77,8 +80,11 @@ class GoalReminderReceiver : BroadcastReceiver() {
             .addAction(action(context, goalId, goalName, ACTION_SNOOZE, R.drawable.ic_schedule, context.getString(R.string.notification_action_snooze)))
             .build()
 
-        NotificationManagerCompat.from(context).notify(notificationIdFor(goalId), notification)
+        if (canPostNotifications(context)) NotificationManagerCompat.from(context).notify(notificationIdFor(goalId), notification)
     }
+
+    private fun canPostNotifications(context: Context) = Build.VERSION.SDK_INT < 33 ||
+        ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == android.content.pm.PackageManager.PERMISSION_GRANTED
 
     private fun action(
         context: Context,
