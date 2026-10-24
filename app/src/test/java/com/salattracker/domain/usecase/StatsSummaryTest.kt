@@ -54,6 +54,17 @@ class StatsSummaryTest {
     }
 
     @Test
+    fun `fully excused past and current days are excluded`() {
+        val days = listOf(
+            DayStatusCounts(today.minusDays(1), StatusCounts(excused = 5)),
+            DayStatusCounts(today, StatusCounts(excused = 5)),
+            DayStatusCounts(today.minusDays(2), StatusCounts(congregation = 5)),
+        )
+
+        assertEquals(PerfectDays(perfect = 1, counted = 1), perfectDays(days, today))
+    }
+
+    @Test
     fun `a past day missing a prayer is not perfect, matching the streak-break rule`() {
         // Only 3 of 5 slots accounted for, nothing missed outright — still not perfect.
         val days = listOf(DayStatusCounts(today.minusDays(1), StatusCounts(congregation = 3)))

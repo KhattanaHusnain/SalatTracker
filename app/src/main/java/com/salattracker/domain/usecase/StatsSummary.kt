@@ -22,8 +22,8 @@ data class PerfectDays(val perfect: Int, val counted: Int)
  * days neutral. A day counts only once it's actually decided:
  *  - [today] is skipped while still in progress (fewer than 5 prayers recorded yet and nothing
  *    missed) — it hasn't failed, but it hasn't earned a checkmark yet either.
- *  - A day with zero rows at all (nothing recorded, including [today]'s own gap above) isn't
- *    counted as a miss — it's simply excluded from both [PerfectDays.perfect] and [counted].
+ *  - A day with no countable prayers (nothing recorded or every prayer excused) isn't counted
+ *    as a miss — it's simply excluded from both [PerfectDays.perfect] and [counted].
  *  - A past day is perfect only when nothing was missed and every non-excused slot was prayed
  *    (prayed + excused == 5) with at least one prayer actually prayed — matching the streak
  *    rule where an entirely-unrecorded past day breaks the streak rather than counting as perfect.
@@ -32,7 +32,7 @@ fun perfectDays(days: List<DayStatusCounts>, today: LocalDate): PerfectDays {
     var perfect = 0
     var counted = 0
     for ((date, counts) in days) {
-        if (counts.countable == 0 && counts.excused == 0) continue // nothing recorded at all
+        if (counts.countable == 0) continue // nothing recorded or every prayer excused
         if (date == today && counts.missed == 0 && counts.prayed + counts.excused < 5) continue // still in progress
 
         counted++
