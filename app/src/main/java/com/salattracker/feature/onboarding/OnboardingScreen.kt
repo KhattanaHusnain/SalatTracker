@@ -521,6 +521,7 @@ private fun CatchUpAddStep(
     onCustomRangeChanged: (LocalDate, LocalDate) -> Unit,
     onApply: () -> Unit,
 ) {
+    var showConfirmation by remember { mutableStateOf(false) }
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         StepHeader(stepIndex = OnboardingStep.CATCH_UP.ordinal, title = stringResource(R.string.onboarding_catch_up_add_title), subtitle = stringResource(R.string.onboarding_catch_up_add_subtitle))
         Spacer(Modifier.height(28.dp))
