@@ -286,8 +286,11 @@ private fun UrduTranslation(text: String, textAlign: TextAlign = TextAlign.Cente
  * reflow the final words. */
 @Composable
 private fun MushafLineArabic(line: ReaderLine, textColor: Color) {
-    val assets = LocalContext.current.assets
-    val fontFamily = remember(line.pageNumber) { FontFamily(Font("quran/mushaf_fonts/v2/p${line.pageNumber}.ttf", assets)) }
+    val context = LocalContext.current
+    LaunchedEffect(line.pageNumber) { requestMushafAssets(context) }
+    val fontFamily = remember(line.pageNumber) {
+        mushafFontFile(context, line.pageNumber)?.let { FontFamily(Font(it)) } ?: AmiriQuranFamily
+    }
     val lineText = remember(line.words) { line.words.joinToString(" ") { it.glyphCode } }
     val textMeasurer = rememberTextMeasurer()
     val density = LocalDensity.current

@@ -17,7 +17,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -36,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.domain.model.MushafPage
+import kotlinx.coroutines.delay
 
 // ── Mushaf (print-accurate paginated) reader. Every word is rendered using that printed page's
 // own QCF glyph font, bundled as an asset (assets/quran/mushaf_fonts/v2/pN.ttf) — see
@@ -46,6 +51,15 @@ import com.salattracker.domain.model.MushafPage
 fun QuranMushafScreen(
     uiState: QuranMushafUiState,
 ) {
+    val context = LocalContext.current
+    var fontReady by remember { mutableStateOf(mushafFontFile(context, uiState.pageNumber) != null) }
+    LaunchedEffect(uiState.pageNumber) {
+        requestMushafAssets(context)
+        while (!fontReady) {
+            fontReady = mushafFontFile(context, uiState.pageNumber) != null
+            if (!fontReady) delay(500)
+        }
+    }
     Column(modifier = Modifier.fillMaxSize()) {
         when {
             uiState.isLoading -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -53,6 +67,9 @@ fun QuranMushafScreen(
             }
             uiState.errorMessage != null -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(uiState.errorMessage, color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = AppUiFontFamily)
+            }
+            !fontReady -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("Mushaf fonts are downloading for offline use.", color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = AppUiFontFamily)
             }
             uiState.page != null -> MushafPageContent(page = uiState.page)
         }
@@ -70,9 +87,9 @@ private const val PAGE_WIDTH_FRACTION = 0.94f
 
 @Composable
 private fun MushafPageContent(page: MushafPage) {
-    val assets = LocalContext.current.assets
+    val context = LocalContext.current
     val fontFamily = remember(page.pageNumber) {
-        FontFamily(Font("quran/mushaf_fonts/v2/p${page.pageNumber}.ttf", assets))
+        FontFamily(Font(checkNotNull(mushafFontFile(context, page.pageNumber))))
     }
 
     val lineTexts = remember(page) {
