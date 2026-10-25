@@ -6,7 +6,7 @@ clear right to be there, independent of whatever app's code inspired the feature
 
 **Why this file exists.** [AlfaazPlus/QuranApp](https://github.com/alfaazplus/quranapp) is
 GPL-3.0 licensed end-to-end, including the `inventory/` folder where its Quran text,
-translations, tafsirs and word-by-word data live. That blanket license doesn't establish that
+translations and other Quran data live. That blanket license doesn't establish that
 AlfaazPlus holds relicensable rights over that content — most of it originates from, and stays
 governed by, its own original source (a translator, a tafsir author, a reciter), independent of
 the app code sitting around it. So this document sources each content type directly from its own
@@ -110,10 +110,16 @@ under Word-by-word below) — Jalandhry is one of the most widely used, broadly-
 translations (also independently hosted by Tanzil.net itself), making it the safest neutral
 default among the several Urdu editions alquran.cloud offers (others include Ahmed Raza Khan's
 Kanzul Iman and Abul A'ala Maududi's, which carry more specific sectarian/organisational
-associations). A true Urdu **word-by-word** gloss (matching a traditional lafzi-tarjuma layout)
-was researched and explicitly **not found with clear terms** — see below.
+associations).
 
-## Tafsir
+## Removed optional content (2026-10-25)
+
+The initial tafsir and word-by-word datasets were removed from the application because their
+seeded data and reader UI were unused. They are not bundled, downloaded, or displayed. The
+research below remains as provenance only if either feature is reintroduced with an explicit
+user-facing implementation and renewed licence review.
+
+### Tafsir
 
 ⚠️ **[Quran-Tafseer/tafseer_api](https://github.com/Quran-Tafseer/tafseer_api)** — the API
 server's own repo is confirmed **MIT**. That covers the server code, not necessarily the tafsir
@@ -134,11 +140,9 @@ Al-Mukhtasar. A real JSON API exists for bulk fetching, confirmed working:
 `quranenc.com/api/v1/translation/sura/arabic_moyassar/{sura}` returns one entry per verse with
 `arabic_text` + `translation` (the tafsir commentary) fields — the same shape as the translation
 fetch already used for Saheeh International, so building this pack followed the established
-pattern. **Built (2026-10-22)** — bundled at `app/src/main/assets/quran/tafsirs/ar_muyassar.json`
-(6,236 entries), seeded into a real `QuranTafsirPackDatabase` on first run, with an expandable
-per-verse tafsir toggle live in the reader.
+pattern. This content is not currently bundled or displayed.
 
-## Word-by-word (morphology + per-word gloss)
+### Word-by-word (morphology + per-word gloss)
 
 🚫 **[Quranic Arabic Corpus](https://corpus.quran.com)** (University of Leeds) — confirmed
 **GPL v3** directly from its own `license.jsp`. Bundling GPL-licensed *data* into SalatTracker
@@ -160,13 +164,7 @@ under alquran.cloud's own already-cleared terms (store/embed freely, non-commerc
 with attribution), not the Corpus's GPL. Confirmed working via
 `api.alquran.cloud/v1/ayah/{verseKey}/quran-wordbyword`, returning one `$`-delimited entry per
 word (Arabic text, English gloss, plus positioning numbers for their own font rendering that
-this app doesn't need). **Built (2026-10-22)** — the bulk `v1/quran/quran-wordbyword` edition
-(one call, all 114 chapters) was parsed into 74,960 word entries: the Arabic text seeded as
-`WordSegmentEntity` rows directly in `QuranCoreDatabase` (language-independent, bundled core
-content) and the English glosses as a `WordByWordTranslationEntity` pack
-(`app/src/main/assets/quran/wordbyword/ar_en_wordbyword.json`), both seeded on first run. The
-reader has a per-verse word-by-word toggle showing each Arabic word with its gloss beneath it,
-right-to-left.
+this app doesn't need). This content is not currently bundled or displayed.
 
 🚫 **Urdu word-by-word — searched 2026-10-22, not found with clear terms.** A traditional
 lafzi-tarjuma (word-by-word Urdu gloss) layout was requested, matching classic Urdu Mushaf prints.
@@ -256,23 +254,23 @@ relicense — the official API path above was used instead.
 
 ## Summary
 
-**All six content types are now cleared.** Phase 2 (sourcing) is complete as of 2026-10-22.
+**The currently shipped content types are cleared.** Optional tafsir and word-by-word research is
+retained above, but those datasets are not shipped as of 2026-10-25.
 
 | Content type | Status | Lead source | Built? |
 |---|---|---|---|
 | Arabic text (Uthmani) | ✅ Cleared | alquran.cloud (`quran-uthmani`, Tanzil-derived) | ✅ Seeded — 114 chapters, 6,236 verses |
 | Translations | ✅ Cleared | alquran.cloud (Saheeh Intl. `en.sahih` + Jalandhry `ur.jalandhry` shipped) | ✅ Two shipped; more are Phase 3 |
-| Tafsir | ✅ Cleared | QuranEnc.com (At-Tafsir Al-Muyassar shipped) | ✅ Seeded — 6,236 entries |
-| Word-by-word (English) | ✅ Cleared | alquran.cloud (`quran-wordbyword` shipped) | ✅ Seeded — 74,960 words |
-| Word-by-word (Urdu) | 🚫 No cleared source found | — (QUL traces to rejected QuranWBW.com; QuranEnc has none) | ⏳ Unresolved |
-| Mushaf layout + QCF fonts | ✅ Cleared (bundling exemption) | Quran Foundation API/CDN | ✅ Seeded — 604 pages, 604 fonts |
+| Tafsir | ✅ Cleared | QuranEnc.com | ❌ Not shipped |
+| Word-by-word (English) | ✅ Cleared | alquran.cloud | ❌ Not shipped |
+| Word-by-word (Urdu) | 🚫 No cleared source found | — (QUL traces to rejected QuranWBW.com; QuranEnc has none) | ❌ Not shipped |
+| Mushaf layout + QCF fonts | ✅ Cleared (bundling exemption) | Quran Foundation API | ✅ Bundled as an on-demand Play asset pack — 604 pages, 604 fonts |
 | Recitation audio | ✅ Cleared (reciter-level removal risk) | alquran.cloud | ⏳ Not yet built |
 
 **Next steps (all Phase 3+ implementation work, not further sourcing research):**
 1. Add 1–2 more translations from GlobalQuran/data or alquran.cloud, each with a one-line terms
    confirmation (same discipline as Saheeh International above).
-2. A pack-selection UI — right now the translation/tafsir/word-by-word shown are hardcoded
-   defaults with no way to pick among alternatives, since there's only ever been one of each.
+2. Add a pack-selection UI if optional translations, tafsir, or word-by-word content is
+   reintroduced.
 3. Pick the first 1–2 reciters from alquran.cloud for the initial recitation pack (Phase 5).
-4. Wire up the About/credits screen this whole document keeps promising — Tanzil, alquran.cloud,
-   QuranEnc.com, and Quran Foundation/King Fahd Complex attribution all belong there.
+4. Keep the About/credits screen aligned with bundled content and its required attribution.

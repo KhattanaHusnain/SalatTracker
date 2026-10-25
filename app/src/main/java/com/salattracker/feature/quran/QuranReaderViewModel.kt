@@ -4,12 +4,10 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.salattracker.domain.model.Chapter
-import com.salattracker.domain.model.DEFAULT_TAFSIR_PACK_ID
 import com.salattracker.domain.model.DEFAULT_URDU_TRANSLATION_PACK_ID
 import com.salattracker.domain.model.MushafLine
 import com.salattracker.domain.model.MushafWord
 import com.salattracker.domain.model.QuranBookmark
-import com.salattracker.domain.model.TafsirEntry
 import com.salattracker.domain.model.Verse
 import com.salattracker.domain.repository.MushafRepository
 import com.salattracker.domain.repository.QuranContentRepository
@@ -61,13 +59,6 @@ data class QuranReaderUiState(
     /** Single-verse bookmarks only (fromVerse == toVerse == that verse number) in this chapter —
      * the per-verse bookmark toggle's own concern. Range bookmarks aren't editable from here. */
     val bookmarkedVerses: Set<Int> = emptySet(),
-    /** At-Tafsir Al-Muyassar entries for this chapter. A verse's tafsir may span a range
-     * ([TafsirEntry.fromVerse]..[TafsirEntry.toVerse]), so this isn't keyed by a single verse
-     * number the way [translations] is — the screen looks up the entry whose range contains
-     * the verse being shown. */
-    val tafsirs: List<TafsirEntry> = emptyList(),
-    /** Verse numbers whose tafsir is currently expanded in the reader. */
-    val expandedTafsirVerses: Set<Int> = emptySet(),
 )
 
 @HiltViewModel
@@ -102,12 +93,11 @@ class QuranReaderViewModel @Inject constructor(
             val initialPageIndex = readerPages.indexOfFirst { page ->
                 page.lines.any { line -> line.words.any { it.verseNumber == resumeVerseNumber } }
             }.takeIf { it >= 0 } ?: 0
-            val tafsirs = contentRepository.getTafsirEntries(DEFAULT_TAFSIR_PACK_ID, chapterNumber)
             _uiState.update {
                 it.copy(
                     isLoading = false, chapter = chapter, verses = verses,
                     lines = lines, pages = readerPages, currentPageIndex = initialPageIndex,
-                    translations = translations, tafsirs = tafsirs,
+                    translations = translations,
                 )
             }
             recordReadForPage(readerPages.getOrNull(initialPageIndex))
@@ -119,13 +109,6 @@ class QuranReaderViewModel @Inject constructor(
                     .associateBy { it.fromVerse }
                 _uiState.update { it.copy(bookmarkedVerses = bookmarksByVerse.keys) }
             }
-        }
-    }
-
-    fun onTafsirToggle(verseNumber: Int) {
-        _uiState.update {
-            val expanded = it.expandedTafsirVerses
-            it.copy(expandedTafsirVerses = if (verseNumber in expanded) expanded - verseNumber else expanded + verseNumber)
         }
     }
 

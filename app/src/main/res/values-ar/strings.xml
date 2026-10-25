@@ -58,10 +58,6 @@
     <string name="quran_credits_arabic_body">الرسم العثماني، من مشروع تنزيل، عبر alquran.cloud.</string>
     <string name="quran_credits_translation_title">الترجمة</string>
     <string name="quran_credits_translation_body">صحيح إنترناشونال، عبر alquran.cloud.</string>
-    <string name="quran_credits_tafsir_title">التفسير</string>
-    <string name="quran_credits_tafsir_body">التفسير الميسر، مجمع الملك فهد (المدينة المنورة)، عبر QuranEnc.com.</string>
-    <string name="quran_credits_wordbyword_title">الترجمة كلمة بكلمة</string>
-    <string name="quran_credits_wordbyword_body">إعداد د. شهناز شيخ وكوثر خطري، عبر alquran.cloud.</string>
     <string name="quran_credits_mushaf_title">تخطيط صفحات المصحف</string>
     <string name="quran_credits_mushaf_body">مجمع الملك فهد لطباعة المصحف الشريف (المدينة المنورة)، عبر Quran Foundation.</string>
     <string name="quran_credits_amiri_title">خط العرض العربي</string>

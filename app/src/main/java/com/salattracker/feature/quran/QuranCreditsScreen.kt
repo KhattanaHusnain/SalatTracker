@@ -45,8 +45,6 @@ private data class QuranCredit(val titleRes: Int, val bodyRes: Int, val url: Str
 private val QURAN_CREDITS = listOf(
     QuranCredit(R.string.quran_credits_arabic_title, R.string.quran_credits_arabic_body, "https://tanzil.net"),
     QuranCredit(R.string.quran_credits_translation_title, R.string.quran_credits_translation_body, "https://alquran.cloud"),
-    QuranCredit(R.string.quran_credits_tafsir_title, R.string.quran_credits_tafsir_body, "https://quranenc.com"),
-    QuranCredit(R.string.quran_credits_wordbyword_title, R.string.quran_credits_wordbyword_body, "https://alquran.cloud"),
     QuranCredit(R.string.quran_credits_mushaf_title, R.string.quran_credits_mushaf_body, "https://quran.foundation"),
     QuranCredit(R.string.quran_credits_amiri_title, R.string.quran_credits_amiri_body, "https://github.com/aliftype/amiri"),
     QuranCredit(R.string.quran_credits_nastaliq_title, R.string.quran_credits_nastaliq_body, "https://github.com/notofonts/NotoNastaliqUrdu"),

@@ -58,10 +58,6 @@
     <string name="quran_credits_arabic_body">Écriture Uthmani, du Projet Tanzil, fournie via alquran.cloud.</string>
     <string name="quran_credits_translation_title">Traduction</string>
     <string name="quran_credits_translation_body">Saheeh International, via alquran.cloud.</string>
-    <string name="quran_credits_tafsir_title">Tafsir</string>
-    <string name="quran_credits_tafsir_body">At-Tafsir Al-Muyassar, Complexe du Roi Fahd (Médine), via QuranEnc.com.</string>
-    <string name="quran_credits_wordbyword_title">Mot à mot</string>
-    <string name="quran_credits_wordbyword_body">Compilé par Dr. Shehnaz Shaikh et Kausar Khatri, via alquran.cloud.</string>
     <string name="quran_credits_mushaf_title">Mise en page du Mushaf</string>
     <string name="quran_credits_mushaf_body">Complexe du Roi Fahd pour l\'impression du Saint Coran (Médine), via Quran Foundation.</string>
     <string name="quran_credits_amiri_title">Police d\'affichage arabe</string>

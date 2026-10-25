@@ -58,10 +58,6 @@
     <string name="quran_credits_arabic_body">عثمانی رسم الخط، تنزیل پراجیکٹ سے، alquran.cloud کے ذریعے۔</string>
     <string name="quran_credits_translation_title">ترجمہ</string>
     <string name="quran_credits_translation_body">صحیح انٹرنیشنل، alquran.cloud کے ذریعے۔</string>
-    <string name="quran_credits_tafsir_title">تفسیر</string>
-    <string name="quran_credits_tafsir_body">التفسير الميسر، شاہ فہد کمپلیکس (مدینہ منورہ)، QuranEnc.com کے ذریعے۔</string>
-    <string name="quran_credits_wordbyword_title">لفظی ترجمہ</string>
-    <string name="quran_credits_wordbyword_body">ڈاکٹر شہناز شیخ اور کوثر خطری کی تدوین، alquran.cloud کے ذریعے۔</string>
     <string name="quran_credits_mushaf_title">مصحف صفحہ ترتیب</string>
     <string name="quran_credits_mushaf_body">شاہ فہد کمپلیکس برائے طباعتِ قرآن مجید (مدینہ منورہ)، Quran Foundation کے ذریعے۔</string>
     <string name="quran_credits_amiri_title">عربی ڈسپلے فونٹ</string>

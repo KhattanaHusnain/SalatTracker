@@ -59,10 +59,6 @@
     <string name="quran_credits_arabic_body">Uthmani script, from the Tanzil Project, served via alquran.cloud.</string>
     <string name="quran_credits_translation_title">Translation</string>
     <string name="quran_credits_translation_body">Saheeh International, via alquran.cloud.</string>
-    <string name="quran_credits_tafsir_title">Tafsir</string>
-    <string name="quran_credits_tafsir_body">At-Tafsir Al-Muyassar, King Fahd Complex (Madinah), via QuranEnc.com.</string>
-    <string name="quran_credits_wordbyword_title">Word by Word</string>
-    <string name="quran_credits_wordbyword_body">Compiled by Dr. Shehnaz Shaikh and Kausar Khatri, via alquran.cloud.</string>
     <string name="quran_credits_mushaf_title">Mushaf Page Layout</string>
     <string name="quran_credits_mushaf_body">King Fahd Glorious Quran Printing Complex (Madinah), via Quran Foundation.</string>
     <string name="quran_credits_amiri_title">Arabic Display Type</string>
