@@ -1,6 +1,5 @@
 package com.salattracker.feature.goals
 
-import android.content.Context
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -10,7 +9,6 @@ import com.salattracker.domain.model.GoalFrequency
 import com.salattracker.domain.repository.GoalReminderScheduler
 import com.salattracker.domain.repository.GoalRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -32,7 +30,6 @@ data class EditGoalUiState(
 class EditGoalViewModel @Inject constructor(
     private val goalRepository: GoalRepository,
     private val reminderScheduler: GoalReminderScheduler,
-    @ApplicationContext private val context: Context,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -47,7 +44,7 @@ class EditGoalViewModel @Inject constructor(
         viewModelScope.launch {
             val goal = goalRepository.getGoal(goalId)
             if (goal == null) {
-                _uiState.update { it.copy(isLoading = false, error = context.getString(R.string.error_goal_not_found)) }
+                _uiState.update { it.copy(isLoading = false, errorRes = R.string.error_goal_not_found) }
                 return@launch
             }
             _uiState.update {
@@ -92,7 +89,7 @@ class EditGoalViewModel @Inject constructor(
         if (state.isSaving || state.saveSuccess) return
         val form = state.form
         if (form.name.isBlank()) {
-            _uiState.update { it.copy(error = context.getString(R.string.error_goal_name)) }
+            _uiState.update { it.copy(errorRes = R.string.error_goal_name) }
             return
         }
 

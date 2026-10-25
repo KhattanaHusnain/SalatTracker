@@ -1,6 +1,5 @@
 package com.salattracker.feature.goals
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.salattracker.R
@@ -9,7 +8,6 @@ import com.salattracker.domain.model.GoalFrequency
 import com.salattracker.domain.repository.GoalReminderScheduler
 import com.salattracker.domain.repository.GoalRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,7 +28,6 @@ data class AddGoalUiState(
 class AddGoalViewModel @Inject constructor(
     private val goalRepository: GoalRepository,
     private val reminderScheduler: GoalReminderScheduler,
-    @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AddGoalUiState())
@@ -59,7 +56,7 @@ class AddGoalViewModel @Inject constructor(
         if (state.isSaving || state.saveSuccess) return
         val form = state.form
         if (form.name.isBlank()) {
-            _uiState.update { it.copy(error = context.getString(R.string.error_goal_name)) }
+            _uiState.update { it.copy(errorRes = R.string.error_goal_name) }
             return
         }
 
