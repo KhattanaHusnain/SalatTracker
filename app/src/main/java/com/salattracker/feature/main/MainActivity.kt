@@ -277,7 +277,8 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
     // recomposition doesn't navigate again.
     LaunchedEffect(initialRoute) {
         if (initialRoute != null) {
-            navController.navigate(initialRoute)
+            if (isTabRoute(initialRoute)) navController.navigateToTab(initialRoute)
+            else navController.push(initialRoute)
             onRouteConsumed()
         }
     }
