@@ -14,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -501,6 +502,7 @@ private fun BulkUpdateConfirmDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
 ) {
+    val context = LocalContext.current
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor   = SalatSurfaceContainerLowest,
@@ -518,7 +520,7 @@ private fun BulkUpdateConfirmDialog(
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                val prayerNames = uiState.selectedPrayers.sortedBy { it.ordinal }.joinToString(", ") { stringResource(it.nameRes) }
+                val prayerNames = uiState.selectedPrayers.sortedBy { it.ordinal }.joinToString(", ") { context.getString(it.nameRes) }
                 val daysPart = pluralStringResource(R.plurals.bulk_days_count, uiState.dayCount, uiState.dayCount)
                 val range = "${uiState.rangeFrom.format(rangeLabelFormatter)} – ${uiState.effectiveRangeTo.format(rangeLabelFormatter)}"
                 Text(
