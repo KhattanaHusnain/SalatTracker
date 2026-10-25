@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -17,6 +18,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
@@ -29,6 +31,7 @@ import com.salattracker.core.ui.isOfferedFor
 import com.salattracker.core.ui.label
 import com.salattracker.core.ui.labelRes
 import com.salattracker.core.ui.shortLabel
+import com.salattracker.core.ui.shortNameRes
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.Gender
@@ -265,6 +268,7 @@ private fun SummaryCard(state: OverviewUiState, gender: Gender?) {
 
 @Composable
 private fun CongregationCard(state: OverviewUiState, breakdown: PrayerBreakdownUiState) {
+    val context = LocalContext.current
     StatsCard {
         Text(stringResource(R.string.stats_congregation), color = SalatPrimary, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily)
         Spacer(Modifier.height(12.dp))
@@ -292,7 +296,7 @@ private fun CongregationCard(state: OverviewUiState, breakdown: PrayerBreakdownU
             val entries = breakdown.breakdown.filter { it.counts.congregation + it.counts.individual > 0 }
             if (entries.isNotEmpty()) {
                 Spacer(Modifier.height(12.dp))
-                Text(entries.joinToString(" · ") { entry -> "${entry.prayerType.shortLabel()} ${formatStatsPercent((entry.counts.congregation * 100) / (entry.counts.congregation + entry.counts.individual), locale)}" }, color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
+                Text(entries.joinToString(" · ") { entry -> "${context.getString(entry.prayerType.shortNameRes)} ${formatStatsPercent((entry.counts.congregation * 100) / (entry.counts.congregation + entry.counts.individual), locale)}" }, color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
             }
         }
         Spacer(Modifier.height(16.dp))
