@@ -23,6 +23,7 @@ import com.salattracker.domain.usecase.currentPrayerOf
 import com.salattracker.domain.usecase.isPrayerMarkable
 import com.salattracker.domain.usecase.minutesUntil
 import com.salattracker.domain.usecase.nextPrayerOf
+import com.salattracker.domain.usecase.prayerDayForHome
 import com.salattracker.notification.PrayerReminderWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -65,6 +66,7 @@ data class PrayerEntryUi(
 /** Everything the hero card and timeline need for one tick, built off the suspend
  * prayer-time lookups so it can be computed inside a single Flow transform. */
 private data class TodaySnapshot(
+    val prayerDate: LocalDate,
     val now: LocalDateTime,
     val prayers: List<PrayerEntryUi>,
     val nextPrayer: NextPrayer?,
@@ -101,7 +103,15 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private val todayDate: Flow<LocalDate> = ticker.map { it.toLocalDate() }.distinctUntilChanged()
+    /** The Home timeline changes at Fajr, not civil midnight, so late Isha remains available. */
+    private val todayDate: Flow<LocalDate> = ticker
+        .mapLatest { now ->
+            prayerDayForHome(
+                now = now,
+                todayFajr = prayerRepository.getPrayerTimes(now.toLocalDate())?.get(PrayerType.FAJR),
+            )
+        }
+        .distinctUntilChanged()
 
     init {
         observeToday()
@@ -128,7 +138,7 @@ class HomeViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoading        = false,
-                            todayDate        = snapshot.now.toLocalDate(),
+                            todayDate        = snapshot.prayerDate,
                             now              = snapshot.now,
                             prayers          = snapshot.prayers,
                             nextPrayer       = snapshot.nextPrayer,
@@ -166,8 +176,15 @@ class HomeViewModel @Inject constructor(
             )
         }
 
-        val nextPrayer = nextPrayerOf(times, tomorrowFajr, nowTime)
+        val nextPrayer = nextPrayerOf(times, tomorrowFajr, nowTime)?.let { next ->
+            // When [date] is yesterday during the pre-Fajr period, "tomorrow" is actually
+            // the current civil date. Its Fajr is still ahead today, not a day away.
+            if (date.isBefore(now.toLocalDate()) && next.type == PrayerType.FAJR && next.isTomorrow) {
+                next.copy(isTomorrow = false)
+            } else next
+        }
         return TodaySnapshot(
+            prayerDate       = date,
             now              = now,
             prayers          = prayers,
             nextPrayer       = nextPrayer,
@@ -238,7 +255,9 @@ class HomeViewModel @Inject constructor(
             runCatching {
                 prayerRepository.upsertPrayerStatus(args.date, args.prayerType, newStatus)
             }.onSuccess {
-                if (args.date == LocalDate.now()) reminderNotifications.dismiss(args.prayerType)
+                // Before Fajr, Home intentionally shows yesterday's Isha; logging that row must
+                // dismiss its still-visible reminder just like a same-civil-date prayer does.
+                if (args.date == _uiState.value.todayDate) reminderNotifications.dismiss(args.prayerType)
                 // Streak tiles refresh on their own — loadStreak()'s Flow collector
                 // re-emits automatically once upsertPrayerStatus's write commits.
                 _uiState.update { it.copy(isSaving = false, sheetArgs = null) }

@@ -2,6 +2,8 @@ package com.salattracker.domain.usecase
 
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.StreakInfo
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 
 private const val MINUTES_PER_DAY = 24 * 60
@@ -13,6 +15,12 @@ data class NextPrayer(
     val time: LocalTime,
     val isTomorrow: Boolean,
 )
+
+/** Home's prayer day begins at Fajr rather than midnight. Before today's Fajr, last night's
+ * Isha stays on the timeline so it can still be logged without opening Calendar. */
+fun prayerDayForHome(now: LocalDateTime, todayFajr: LocalTime?): LocalDate =
+    if (todayFajr != null && now.toLocalTime().isBefore(todayFajr)) now.toLocalDate().minusDays(1)
+    else now.toLocalDate()
 
 /** The first of today's prayers still ahead of [now], or tomorrow's Fajr (via [tomorrowFajr])
  * once today's are all behind it. Returns null only when even that isn't known yet (prayer

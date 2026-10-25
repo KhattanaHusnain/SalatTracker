@@ -6,6 +6,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 import java.time.LocalTime
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 private val TODAY_TIMES = mapOf(
     PrayerType.FAJR to LocalTime.of(5, 30),
@@ -16,6 +18,14 @@ private val TODAY_TIMES = mapOf(
 )
 
 class HomeDashboardTest {
+
+    @Test
+    fun `Home keeps the previous prayer day before Fajr`() {
+        val date = LocalDate.of(2026, 10, 25)
+
+        assertEquals(date.minusDays(1), prayerDayForHome(LocalDateTime.of(date, LocalTime.of(0, 30)), LocalTime.of(5, 0)))
+        assertEquals(date, prayerDayForHome(LocalDateTime.of(date, LocalTime.of(5, 0)), LocalTime.of(5, 0)))
+    }
 
     // ── nextPrayerOf ────────────────────────────────────────────────────────
 
