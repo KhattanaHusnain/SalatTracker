@@ -22,7 +22,7 @@ data class LoggingCoverage(val logged: Int, val expected: Int) {
 fun loggingCoverage(days: List<DayStatusCounts>, from: LocalDate, today: LocalDate, firstRecorded: LocalDate?, now: LocalTime, todayTimes: Map<PrayerType, LocalTime>?): LoggingCoverage {
     val start = listOfNotNull(from, firstRecorded).maxOrNull() ?: return LoggingCoverage(0, 0)
     if (start.isAfter(today)) return LoggingCoverage(0, 0)
-    val completedDays = start.datesUntil(today).count()
+    val completedDays = start.datesUntil(today).count().toInt()
     val dueToday = todayTimes?.values?.count { !it.isAfter(now) } ?: 0
     val expected = completedDays * PrayerType.values().size + dueToday
     val logged = days.filter { !it.date.isBefore(start) }.sumOf { it.counts.congregation + it.counts.individual + it.counts.qazaPending + it.counts.qazaCompleted + it.counts.excused }
