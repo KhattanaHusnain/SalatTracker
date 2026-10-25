@@ -46,6 +46,7 @@ import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.core.ui.label
 import com.salattracker.core.ui.LocalUse24HourFormat
+import com.salattracker.core.ui.LocalHijriAdjustmentDays
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.QuranReadHistoryEntry as QuranReadingPosition
 import com.salattracker.domain.model.isDark
@@ -163,7 +164,10 @@ class MainActivity : AppCompatActivity() {
             }
 
             SalatTrackerTheme(darkTheme = appStart.themeMode.isDark(isSystemInDarkTheme())) {
-                CompositionLocalProvider(LocalUse24HourFormat provides prefs.use24HourFormat) {
+                CompositionLocalProvider(
+                    LocalUse24HourFormat provides prefs.use24HourFormat,
+                    LocalHijriAdjustmentDays provides prefs.hijriAdjustmentDays,
+                ) {
                 when (onboardingCompleted) {
                     // null = DataStore not read yet — plain background avoids a flash of the wrong screen.
                     null  -> Box(modifier = Modifier.fillMaxSize().background(SalatBackground))

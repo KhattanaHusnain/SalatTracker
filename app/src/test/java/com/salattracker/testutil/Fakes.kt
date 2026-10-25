@@ -329,6 +329,7 @@ class FakeSettingsRepository(initial: UserPrefs = UserPrefs()) : SettingsReposit
     val useDeviceLocationCalls = mutableListOf<Boolean>()
     val locationCalls = mutableListOf<Pair<Double, Double>>()
     val calculationMethodIdCalls = mutableListOf<Int>()
+    val hijriAdjustmentCalls = mutableListOf<Int>()
     val use24HourFormatCalls = mutableListOf<Boolean>()
     val languageCalls = mutableListOf<AppLanguage>()
     val themeModeCalls = mutableListOf<ThemeMode>()
@@ -367,6 +368,11 @@ class FakeSettingsRepository(initial: UserPrefs = UserPrefs()) : SettingsReposit
     override suspend fun setCalculationMethodId(id: Int) {
         calculationMethodIdCalls += id
         prefs.update { it.copy(calculationMethodId = id) }
+    }
+
+    override suspend fun setHijriAdjustmentDays(days: Int) {
+        hijriAdjustmentCalls += days
+        prefs.update { it.copy(hijriAdjustmentDays = days.coerceIn(-2, 2)) }
     }
 
     override suspend fun setUse24HourFormat(enabled: Boolean) {

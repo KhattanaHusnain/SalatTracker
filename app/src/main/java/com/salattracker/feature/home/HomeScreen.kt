@@ -137,7 +137,8 @@ private fun HeroCard(
     onQazaClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val hijri = remember(todayDate) { todayDate.toHijriOrNull() }
+    val hijriAdjustment = LocalHijriAdjustmentDays.current
+    val hijri = remember(todayDate, hijriAdjustment) { todayDate.toHijriOrNull(hijriAdjustment) }
     val islamicEvent = hijri?.islamicEventOrNull()
     val hijriText = hijri?.fullLabel()
     val dateFormatter = remember { DateTimeFormatter.ofPattern("EEE, d MMM") }

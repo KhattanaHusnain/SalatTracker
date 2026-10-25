@@ -77,6 +77,9 @@ interface SettingsRepository {
 
     suspend fun setCalculationMethodId(id: Int)
 
+    /** Gregorian-day offset (-2..2) applied before converting a date to Umm al-Qura Hijri. */
+    suspend fun setHijriAdjustmentDays(days: Int)
+
     suspend fun setUse24HourFormat(enabled: Boolean)
 
     /** Also marks [UserPrefs.madhabChosen] true, so this is the single call both onboarding and
@@ -139,6 +142,8 @@ data class UserPrefs(
     val longitude: Double = 0.0,
     val timezone: String = "UTC",
     val calculationMethodId: Int = 3,           // 3 = MWL (AlAdhan default)
+    /** Local moon-sighting correction, clamped when stored to the supported -2..2 range. */
+    val hijriAdjustmentDays: Int = 0,
     val reminderEnabled: Map<PrayerType, Boolean> = PrayerType.values()
         .associateWith { true },
     val reminderOffsetMinutes: Map<PrayerType, Int> = PrayerType.values()

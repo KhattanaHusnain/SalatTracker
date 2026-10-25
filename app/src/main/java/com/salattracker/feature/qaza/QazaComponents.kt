@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.core.ui.iconRes
+import com.salattracker.core.ui.LocalHijriAdjustmentDays
 import com.salattracker.core.ui.label
 import com.salattracker.core.ui.shortLabel
 import com.salattracker.domain.model.PrayerType
@@ -69,7 +70,7 @@ internal fun rememberQazaMonthFormatter(): DateTimeFormatter {
  * that's at most a couple of years deep). Null when the platform can't convert this date. */
 @Composable
 internal fun qazaHijriDayLabel(date: LocalDate): String? {
-    val hijri = date.toHijriOrNull() ?: return null
+    val hijri = date.toHijriOrNull(LocalHijriAdjustmentDays.current) ?: return null
     val months = stringArrayResource(R.array.hijri_months)
     return "${hijri.day} ${months[hijri.month - 1]}"
 }

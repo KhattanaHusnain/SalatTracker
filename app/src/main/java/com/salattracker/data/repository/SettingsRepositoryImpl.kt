@@ -81,6 +81,8 @@ class SettingsRepositoryImpl @Inject constructor(
 
     override suspend fun setCalculationMethodId(id: Int) = dataStore.setCalculationMethodId(id)
 
+    override suspend fun setHijriAdjustmentDays(days: Int) = dataStore.setHijriAdjustmentDays(days)
+
     override suspend fun setUse24HourFormat(enabled: Boolean) = dataStore.setUse24HourFormat(enabled)
 
     override suspend fun setLanguage(language: AppLanguage) = dataStore.setLanguage(language)

@@ -1,6 +1,7 @@
 package com.salattracker.domain.usecase
 
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.LocalDate
@@ -22,6 +23,22 @@ class HijriDateTest {
         val b = LocalDate.of(2026, 10, 15).toHijriOrNull()!!
         fun key(h: HijriDate) = h.year * 400 + h.month * 31 + h.day
         assertTrue(key(b) > key(a))
+    }
+
+    @Test
+    fun `adjustment shifts the Gregorian conversion by the chosen number of days`() {
+        val date = LocalDate.of(2026, 10, 14)
+
+        assertEquals(date.plusDays(1).toHijriOrNull(), date.toHijriOrNull(1))
+        assertEquals(date.minusDays(2).toHijriOrNull(), date.toHijriOrNull(-2))
+    }
+
+    @Test
+    fun `adjustment is limited to the supported two-day range`() {
+        val date = LocalDate.of(2026, 10, 14)
+
+        assertEquals(date.plusDays(2).toHijriOrNull(), date.toHijriOrNull(99))
+        assertEquals(date.minusDays(2).toHijriOrNull(), date.toHijriOrNull(-99))
     }
 
     @Test

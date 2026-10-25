@@ -306,6 +306,11 @@
     <string name="settings_edit_location_no_fix">آپ کی لوکیشن معلوم نہیں ہو سکی۔ چیک کریں کہ لوکیشن سروسز آن ہیں۔</string>
     <string name="settings_about_you_section">آپ کے بارے میں</string>
     <string name="settings_calc_method">حساب کا طریقہ</string>
+    <string name="settings_hijri_adjustment">ہجری تاریخ کی درستی</string>
+    <string name="settings_hijri_adjustment_desc">تاریخ کو اپنی مقامی کمیونٹی کے اعلان کے مطابق کریں۔</string>
+    <string name="settings_hijri_adjustment_value">%1$d دن</string>
+    <string name="settings_hijri_adjustment_decrease">ہجری تاریخ کی درستی کم کریں</string>
+    <string name="settings_hijri_adjustment_increase">ہجری تاریخ کی درستی بڑھائیں</string>
     <string name="settings_calculation_method_sheet_title">حساب کا طریقہ</string>
     <string name="settings_school">فقہی مسلک</string>
     <string name="settings_high_latitude">ہائی لیٹیٹیوڈ اصول</string>

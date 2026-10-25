@@ -42,6 +42,7 @@ fun SettingsScreen(
     onCalculationMethodSheetOpen: () -> Unit,
     onCalculationMethodSheetDismiss: () -> Unit,
     onCalculationMethodChanged: (CalculationMethod) -> Unit,
+    onHijriAdjustmentChanged: (Int) -> Unit,
     onMadhabChanged: (Madhab) -> Unit,
     onHighLatitudeRuleChanged: (HighLatitudeRule) -> Unit,
     onPrayerTimeAdjustChanged: (PrayerType, Int) -> Unit,
@@ -82,11 +83,13 @@ fun SettingsScreen(
                 longitude         = uiState.longitude,
                 locationLabel     = uiState.locationLabel,
                 calculationMethod = uiState.calculationMethod,
+                hijriAdjustmentDays = uiState.hijriAdjustmentDays,
                 madhab            = uiState.madhab,
                 highLatitudeRule  = uiState.highLatitudeRule,
                 onToggleDevice    = onUseDeviceLocationChanged,
                 onEditLocationClick = onEditLocationClick,
                 onCalculationMethodClick = onCalculationMethodSheetOpen,
+                onHijriAdjustmentChanged = onHijriAdjustmentChanged,
                 onMadhabChanged   = onMadhabChanged,
                 onHighLatitudeRuleChanged = onHighLatitudeRuleChanged,
             )
@@ -143,11 +146,13 @@ private fun LocationAndPrayerTimesCard(
     longitude: Double,
     locationLabel: String?,
     calculationMethod: CalculationMethod,
+    hijriAdjustmentDays: Int,
     madhab: Madhab,
     highLatitudeRule: HighLatitudeRule,
     onToggleDevice: (Boolean) -> Unit,
     onEditLocationClick: () -> Unit,
     onCalculationMethodClick: () -> Unit,
+    onHijriAdjustmentChanged: (Int) -> Unit,
     onMadhabChanged: (Madhab) -> Unit,
     onHighLatitudeRuleChanged: (HighLatitudeRule) -> Unit,
 ) {
@@ -192,6 +197,16 @@ private fun LocationAndPrayerTimesCard(
             fontFamily = AppUiFontFamily,
             maxLines = 1,
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
+        HorizontalDivider(color = SalatOutlineVariant.copy(alpha = 0.4f))
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(stringResource(R.string.settings_hijri_adjustment), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
+        Spacer(Modifier.height(4.dp))
+        Text(stringResource(R.string.settings_hijri_adjustment_desc), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily, lineHeight = 15.sp)
+        Spacer(Modifier.height(8.dp))
+        HijriAdjustmentStepper(days = hijriAdjustmentDays, onDaysChanged = onHijriAdjustmentChanged)
 
         Spacer(modifier = Modifier.height(16.dp))
         HorizontalDivider(color = SalatOutlineVariant.copy(alpha = 0.4f))
@@ -516,6 +531,7 @@ fun SettingsScreenPreview() {
         onCalculationMethodSheetOpen    = {},
         onCalculationMethodSheetDismiss = {},
         onCalculationMethodChanged = {},
+        onHijriAdjustmentChanged = {},
         onMadhabChanged            = {},
         onHighLatitudeRuleChanged  = {},
         onPrayerTimeAdjustChanged  = { _, _ -> },

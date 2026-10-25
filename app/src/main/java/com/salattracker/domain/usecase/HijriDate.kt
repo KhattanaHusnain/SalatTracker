@@ -13,8 +13,8 @@ data class HijriDate(val day: Int, val month: Int, val year: Int)
  * platform's Hijrah data can't represent this date, so the UI can simply omit the label
  * instead of showing something wrong.
  */
-fun LocalDate.toHijriOrNull(): HijriDate? = try {
-    val hijrah = HijrahDate.from(this)
+fun LocalDate.toHijriOrNull(adjustmentDays: Int = 0): HijriDate? = try {
+    val hijrah = HijrahDate.from(plusDays(adjustmentDays.coerceIn(-2, 2).toLong()))
     HijriDate(
         day   = hijrah.get(ChronoField.DAY_OF_MONTH),
         month = hijrah.get(ChronoField.MONTH_OF_YEAR),

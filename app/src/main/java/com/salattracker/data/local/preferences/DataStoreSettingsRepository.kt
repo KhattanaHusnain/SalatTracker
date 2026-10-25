@@ -31,6 +31,7 @@ class DataStoreSettingsRepository @Inject constructor(
         val LONGITUDE             = doublePreferencesKey("longitude")
         val TIMEZONE              = stringPreferencesKey("timezone")
         val CALCULATION_METHOD_ID = intPreferencesKey("calculation_method_id")
+        val HIJRI_ADJUSTMENT_DAYS = intPreferencesKey("hijri_adjustment_days")
         val USE_24_HOUR           = booleanPreferencesKey("use_24_hour")
         val LANGUAGE              = stringPreferencesKey("language")
         val THEME_MODE            = stringPreferencesKey("theme_mode")
@@ -87,6 +88,7 @@ class DataStoreSettingsRepository @Inject constructor(
         longitude            = this[Keys.LONGITUDE]              ?: 0.0,
         timezone             = this[Keys.TIMEZONE]               ?: "UTC",
         calculationMethodId  = this[Keys.CALCULATION_METHOD_ID] ?: 3,
+        hijriAdjustmentDays  = (this[Keys.HIJRI_ADJUSTMENT_DAYS] ?: 0).coerceIn(-2, 2),
         reminderEnabled      = PrayerType.values().associateWith { type ->
             this[Keys.reminderEnabled(type)] ?: true
         },
@@ -191,6 +193,10 @@ class DataStoreSettingsRepository @Inject constructor(
 
     override suspend fun setCalculationMethodId(id: Int) {
         dataStore.edit { it[Keys.CALCULATION_METHOD_ID] = id }
+    }
+
+    override suspend fun setHijriAdjustmentDays(days: Int) {
+        dataStore.edit { it[Keys.HIJRI_ADJUSTMENT_DAYS] = days.coerceIn(-2, 2) }
     }
 
     override suspend fun setUse24HourFormat(enabled: Boolean) {

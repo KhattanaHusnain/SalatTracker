@@ -91,6 +91,16 @@ class SettingsViewModelTest {
     }
 
     @Test
+    fun `Hijri adjustment is saved within its supported range`() {
+        val viewModel = createViewModel()
+
+        viewModel.onHijriAdjustmentChanged(3)
+
+        assertEquals(2, viewModel.uiState.value.hijriAdjustmentDays)
+        assertEquals(listOf(2), repository.hijriAdjustmentCalls)
+    }
+
+    @Test
     fun `onMadhabChanged writes and reschedules`() {
         val viewModel = createViewModel()
 

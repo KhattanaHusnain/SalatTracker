@@ -29,6 +29,7 @@ data class SettingsUiState(
      * falls back to showing the raw coordinates. */
     val locationLabel: String? = null,
     val calculationMethod: CalculationMethod = CalculationMethod.DEFAULT,
+    val hijriAdjustmentDays: Int = 0,
     val madhab: Madhab = Madhab.STANDARD,
     val highLatitudeRule: HighLatitudeRule = HighLatitudeRule.AUTOMATIC,
     val prayerTimeAdjustMinutes: Map<PrayerType, Int> = PrayerType.values().associateWith { 0 },
@@ -76,6 +77,7 @@ class SettingsViewModel @Inject constructor(
                             longitude         = prefs.longitude,
                             locationLabel     = prefs.locationLabel,
                             calculationMethod = CalculationMethod.fromId(prefs.calculationMethodId),
+                            hijriAdjustmentDays = prefs.hijriAdjustmentDays,
                             madhab            = prefs.madhab,
                             highLatitudeRule  = prefs.highLatitudeRule,
                             prayerTimeAdjustMinutes = prefs.prayerTimeAdjustMinutes,
@@ -123,6 +125,12 @@ class SettingsViewModel @Inject constructor(
     fun onCalculationMethodChanged(method: CalculationMethod) {
         _uiState.update { it.copy(calculationMethod = method, showCalculationMethodSheet = false) }
         writeAndReschedule { settingsRepository.setCalculationMethodId(method.id) }
+    }
+
+    fun onHijriAdjustmentChanged(days: Int) {
+        val clamped = days.coerceIn(-2, 2)
+        _uiState.update { it.copy(hijriAdjustmentDays = clamped) }
+        write { settingsRepository.setHijriAdjustmentDays(clamped) }
     }
 
     fun onMadhabChanged(madhab: Madhab) {

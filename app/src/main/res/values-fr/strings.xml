@@ -306,6 +306,11 @@
     <string name="settings_edit_location_no_fix">Impossible d\'obtenir votre position. Vérifiez que les services de localisation sont activés.</string>
     <string name="settings_about_you_section">À propos de vous</string>
     <string name="settings_calc_method">Méthode de calcul</string>
+    <string name="settings_hijri_adjustment">Ajustement de la date hégirienne</string>
+    <string name="settings_hijri_adjustment_desc">Alignez la date sur l’annonce de votre communauté locale.</string>
+    <string name="settings_hijri_adjustment_value">%1$d jours</string>
+    <string name="settings_hijri_adjustment_decrease">Réduire l’ajustement de la date hégirienne</string>
+    <string name="settings_hijri_adjustment_increase">Augmenter l’ajustement de la date hégirienne</string>
     <string name="settings_calculation_method_sheet_title">Méthode de calcul</string>
     <string name="settings_school">École juridique</string>
     <string name="settings_high_latitude">Règle de haute latitude</string>

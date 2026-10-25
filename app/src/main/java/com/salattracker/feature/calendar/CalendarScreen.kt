@@ -240,8 +240,9 @@ private fun buildDayDetailRows(
 @Composable
 private fun monthHeaderTexts(visibleMonth: YearMonth): Pair<String, String?> {
     val titleFormatter = remember { DateTimeFormatter.ofPattern("MMMM yyyy") }
-    val startHijri = remember(visibleMonth) { visibleMonth.atDay(1).toHijriOrNull() }
-    val endHijri = remember(visibleMonth) { visibleMonth.atEndOfMonth().toHijriOrNull() }
+    val adjustment = LocalHijriAdjustmentDays.current
+    val startHijri = remember(visibleMonth, adjustment) { visibleMonth.atDay(1).toHijriOrNull(adjustment) }
+    val endHijri = remember(visibleMonth, adjustment) { visibleMonth.atEndOfMonth().toHijriOrNull(adjustment) }
     val subtitle = if (startHijri != null && endHijri != null) hijriMonthRangeLabel(startHijri, endHijri) else null
     return visibleMonth.format(titleFormatter) to subtitle
 }
@@ -257,8 +258,9 @@ private fun weekHeaderTexts(start: LocalDate, end: LocalDate): Pair<String, Stri
     } else {
         "${start.format(dayMonth)} – ${end.format(dayMonthYear)}"
     }
-    val startHijri = remember(start) { start.toHijriOrNull() }
-    val endHijri = remember(end) { end.toHijriOrNull() }
+    val adjustment = LocalHijriAdjustmentDays.current
+    val startHijri = remember(start, adjustment) { start.toHijriOrNull(adjustment) }
+    val endHijri = remember(end, adjustment) { end.toHijriOrNull(adjustment) }
     val subtitle = if (startHijri != null && endHijri != null) hijriMonthRangeLabel(startHijri, endHijri) else null
     return title to subtitle
 }
@@ -266,8 +268,9 @@ private fun weekHeaderTexts(start: LocalDate, end: LocalDate): Pair<String, Stri
 /** "2026" + the Hijri years it spans — the Year view's header. */
 @Composable
 private fun yearHeaderTexts(year: Int): Pair<String, String?> {
-    val startHijri = remember(year) { LocalDate.of(year, 1, 1).toHijriOrNull() }
-    val endHijri = remember(year) { LocalDate.of(year, 12, 31).toHijriOrNull() }
+    val adjustment = LocalHijriAdjustmentDays.current
+    val startHijri = remember(year, adjustment) { LocalDate.of(year, 1, 1).toHijriOrNull(adjustment) }
+    val endHijri = remember(year, adjustment) { LocalDate.of(year, 12, 31).toHijriOrNull(adjustment) }
     val subtitle = if (startHijri != null && endHijri != null) hijriYearRangeLabel(startHijri.year, endHijri.year) else null
     return year.toString() to subtitle
 }
@@ -509,7 +512,8 @@ private fun RingDayCell(
     modifier: Modifier = Modifier,
 ) {
     val dimAlpha = if (isCurrentMonth) 1f else 0.35f
-    val hijriDay = remember(date) { date.toHijriOrNull()?.day }
+    val adjustment = LocalHijriAdjustmentDays.current
+    val hijriDay = remember(date, adjustment) { date.toHijriOrNull(adjustment)?.day }
 
     Column(
         modifier = modifier
@@ -773,7 +777,8 @@ private fun SelectedDayPanel(
     times: Map<PrayerType, LocalTime>?,
     onPrayerClick: (PrayerType) -> Unit,
 ) {
-    val hijri = remember(date) { date.toHijriOrNull() }
+    val adjustment = LocalHijriAdjustmentDays.current
+    val hijri = remember(date, adjustment) { date.toHijriOrNull(adjustment) }
     val islamicEvent = hijri?.islamicEventOrNull()
     val rows = buildDayDetailRows(date, today, statuses, times)
 

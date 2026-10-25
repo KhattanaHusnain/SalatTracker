@@ -105,3 +105,18 @@ fun MinuteStepper(
         }
     }
 }
+
+/** A small bounded adjustment for the local Hijri date announced by a user's community. */
+@Composable
+fun HijriAdjustmentStepper(days: Int, onDaysChanged: (Int) -> Unit) {
+    val valueDescription = stringResource(R.string.settings_hijri_adjustment_value, days)
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+        IconButton(onClick = { if (days > -2) onDaysChanged(days - 1) }, enabled = days > -2, modifier = Modifier.size(32.dp)) {
+            Icon(painterResource(R.drawable.ic_remove), stringResource(R.string.settings_hijri_adjustment_decrease), tint = SalatPrimary, modifier = Modifier.size(16.dp))
+        }
+        Text(valueDescription, modifier = Modifier.widthIn(min = 72.dp).semantics { stateDescription = valueDescription }, textAlign = TextAlign.Center, color = SalatOnSurface, fontSize = 13.sp, fontWeight = FontWeight.Medium, fontFamily = AppUiFontFamily)
+        IconButton(onClick = { if (days < 2) onDaysChanged(days + 1) }, enabled = days < 2, modifier = Modifier.size(32.dp)) {
+            Icon(painterResource(R.drawable.ic_add), stringResource(R.string.settings_hijri_adjustment_increase), tint = SalatPrimary, modifier = Modifier.size(16.dp))
+        }
+    }
+}

@@ -54,6 +54,7 @@ fun SettingsEntry(
         onCalculationMethodSheetOpen    = viewModel::onCalculationMethodSheetOpen,
         onCalculationMethodSheetDismiss = viewModel::onCalculationMethodSheetDismiss,
         onCalculationMethodChanged      = viewModel::onCalculationMethodChanged,
+        onHijriAdjustmentChanged        = viewModel::onHijriAdjustmentChanged,
         onMadhabChanged                 = viewModel::onMadhabChanged,
         onHighLatitudeRuleChanged       = viewModel::onHighLatitudeRuleChanged,
         onPrayerTimeAdjustChanged       = viewModel::onPrayerTimeAdjustChanged,

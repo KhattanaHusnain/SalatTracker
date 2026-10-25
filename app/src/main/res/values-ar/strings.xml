@@ -306,6 +306,11 @@
     <string name="settings_edit_location_no_fix">تعذّر تحديد موقعك. تحقّق من تفعيل خدمات الموقع.</string>
     <string name="settings_about_you_section">عنك</string>
     <string name="settings_calc_method">طريقة الحساب</string>
+    <string name="settings_hijri_adjustment">تعديل التاريخ الهجري</string>
+    <string name="settings_hijri_adjustment_desc">طابق التاريخ المُعلن من مجتمعك المحلي.</string>
+    <string name="settings_hijri_adjustment_value">%1$d أيام</string>
+    <string name="settings_hijri_adjustment_decrease">تقليل تعديل التاريخ الهجري</string>
+    <string name="settings_hijri_adjustment_increase">زيادة تعديل التاريخ الهجري</string>
     <string name="settings_calculation_method_sheet_title">طريقة الحساب</string>
     <string name="settings_school">المذهب الفقهي</string>
     <string name="settings_high_latitude">قاعدة خطوط العرض العالية</string>

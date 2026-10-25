@@ -166,6 +166,7 @@ class RoomBackupLocalSource @Inject constructor(
             gender                    = s.gender,
             locationLabel             = s.locationLabel,
         )
+        settingsRepository.setHijriAdjustmentDays(s.hijriAdjustmentDays)
         settingsRepository.setOnboardingCompleted(true)
 
         // Cancel alarms/notifications for every goal that existed before the replace —

@@ -316,6 +316,11 @@
     <string name="settings_about_you_section">About You</string>
     <string name="topbar_edit_location">Location</string>
     <string name="settings_calc_method">Calculation Method</string>
+    <string name="settings_hijri_adjustment">Hijri date adjustment</string>
+    <string name="settings_hijri_adjustment_desc">Match the date announced by your local community.</string>
+    <string name="settings_hijri_adjustment_value">%1$d days</string>
+    <string name="settings_hijri_adjustment_decrease">Decrease Hijri date adjustment</string>
+    <string name="settings_hijri_adjustment_increase">Increase Hijri date adjustment</string>
     <string name="settings_calculation_method_sheet_title">Calculation Method</string>
     <string name="settings_school">School of Thought</string>
     <string name="settings_high_latitude">High-Latitude Rule</string>
