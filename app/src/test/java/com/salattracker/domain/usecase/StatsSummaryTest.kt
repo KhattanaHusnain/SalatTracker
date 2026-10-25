@@ -5,6 +5,7 @@ import com.salattracker.domain.repository.DayStatusCounts
 import com.salattracker.domain.repository.PrayerBreakdown
 import com.salattracker.domain.repository.StatusCounts
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.LocalDate
