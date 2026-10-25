@@ -13,6 +13,8 @@ data class QuranPageControls(
     val hasNextPage: Boolean,
     val onPreviousPage: () -> Unit,
     val onNextPage: () -> Unit,
+    val showMushafButton: Boolean = false,
+    val onMushafButtonClick: () -> Unit = {},
 )
 
 /**

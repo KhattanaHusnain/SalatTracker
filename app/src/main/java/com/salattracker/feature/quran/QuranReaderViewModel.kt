@@ -160,9 +160,14 @@ fun Int.toUrduNumeral(): String = toString().map { URDU_DIGITS[it - '0'] }.joinT
 fun verseTranslationWithNumber(translation: String, verseNumber: Int): String =
     "$translation ﴿${verseNumber.toUrduNumeral()}﴾"
 
-private fun List<MushafLine>.toReaderLines(translations: Map<Int, String>): List<ReaderLine> {
+/** Shared by the surah and juz readers so Urdu follows the same Arabic line chunks in both. */
+fun List<MushafLine>.toReaderLines(translations: Map<Int, String>): List<ReaderLine> {
     val totalWordsByVerse = HashMap<Int, Int>()
-    forEach { line -> line.words.forEach { totalWordsByVerse[it.verseNumber] = (totalWordsByVerse[it.verseNumber] ?: 0) + 1 } }
+    forEach { line ->
+        line.words.filterNot { it.isVerseEndMarker }.forEach { word ->
+            totalWordsByVerse[word.verseNumber] = (totalWordsByVerse[word.verseNumber] ?: 0) + 1
+        }
+    }
 
     val urduWordsByVerse = translations.mapValues { (_, text) -> text.trim().split(WHITESPACE).filter { it.isNotEmpty() } }
 
@@ -171,8 +176,13 @@ private fun List<MushafLine>.toReaderLines(translations: Map<Int, String>): List
     val urduWordsEmitted = HashMap<Int, Int>()
 
     return map { line ->
-        val versesOnLine = LinkedHashSet<Int>().apply { line.words.forEach { add(it.verseNumber) } }
-        val arabicWordsOnLineByVerse = line.words.groupingBy { it.verseNumber }.eachCount()
+        val versesOnLine = LinkedHashSet<Int>().apply {
+            line.words.filterNot { it.isVerseEndMarker }.forEach { add(it.verseNumber) }
+        }
+        val arabicWordsOnLineByVerse = line.words
+            .filterNot { it.isVerseEndMarker }
+            .groupingBy { it.verseNumber }
+            .eachCount()
 
         val chunks = versesOnLine.mapNotNull { verseNumber ->
             val totalArabicWords = totalWordsByVerse[verseNumber] ?: return@mapNotNull null
@@ -186,7 +196,9 @@ private fun List<MushafLine>.toReaderLines(translations: Map<Int, String>): List
             val targetEmitted = if (isVerseComplete) {
                 urduWords.size
             } else {
-                ((urduWords.size.toDouble() * consumed / totalArabicWords).toInt()).coerceIn(alreadyEmitted, urduWords.size)
+                kotlin.math.ceil(urduWords.size.toDouble() * consumed / totalArabicWords)
+                    .toInt()
+                    .coerceIn(alreadyEmitted, urduWords.size)
             }
             if (targetEmitted <= alreadyEmitted) return@mapNotNull null
             urduWordsEmitted[verseNumber] = targetEmitted

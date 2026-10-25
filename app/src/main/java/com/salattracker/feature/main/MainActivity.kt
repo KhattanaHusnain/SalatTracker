@@ -338,8 +338,13 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                             }
                         }
                     },
-                    showMushafButton     = currentDest?.route == Routes.QURAN_READER,
-                    onMushafButtonClick  = { navController.push(Routes.quranMushaf(quranReaderPageNumber)) },
+                    showMushafButton     = currentDest?.route == Routes.QURAN_READER ||
+                        (currentDest?.route == Routes.QURAN_MUSHAF && quranPageControls?.showMushafButton == true),
+                    onMushafButtonClick  = {
+                        quranPageControls?.takeIf { it.showMushafButton }?.onMushafButtonClick
+                            ?.invoke()
+                            ?: navController.push(Routes.quranMushaf(quranReaderPageNumber))
+                    },
                     quranPageControls    = if (isQuranPageRoute) quranPageControls else null,
                     calendarView             = calendarUiState.view,
                     onCalendarViewChanged    = calendarViewModel::onViewChanged,

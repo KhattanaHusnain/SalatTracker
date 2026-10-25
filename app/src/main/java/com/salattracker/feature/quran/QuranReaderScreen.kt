@@ -252,7 +252,7 @@ private fun ReaderLineBlock(line: ReaderLine, isFirstLine: Boolean) {
 }
 
 @Composable
-private fun UrduTranslation(text: String, textAlign: TextAlign = TextAlign.Center) {
+fun UrduTranslation(text: String, textAlign: TextAlign = TextAlign.Center) {
     val textMeasurer = rememberTextMeasurer()
     val density = LocalDensity.current
     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
@@ -285,7 +285,7 @@ private fun UrduTranslation(text: String, textAlign: TextAlign = TextAlign.Cente
  * the complete row first and scale it to the reader's actual width instead of letting Compose
  * reflow the final words. */
 @Composable
-private fun MushafLineArabic(line: ReaderLine, textColor: Color) {
+internal fun MushafLineArabic(line: ReaderLine, textColor: Color) {
     val context = LocalContext.current
     val fontFamily = remember(line.pageNumber) {
         FontFamily(Font("quran/mushaf_fonts/v2/p${line.pageNumber}.ttf", context.assets))
@@ -296,14 +296,17 @@ private fun MushafLineArabic(line: ReaderLine, textColor: Color) {
 
     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
         val availableWidthPx = with(density) { maxWidth.toPx() }
-        val fontSize = remember(lineText, fontFamily, availableWidthPx) {
+        val fontSize = remember(lineText, fontFamily, availableWidthPx, density) {
             val referenceSize = 32.sp
             val measuredWidth = textMeasurer.measure(
                 text = lineText,
                 style = TextStyle(fontFamily = fontFamily, fontSize = referenceSize, textDirection = TextDirection.Rtl),
             ).size.width
-            if (measuredWidth <= 0) referenceSize else referenceSize *
-                (availableWidthPx * 0.98f / measuredWidth).coerceAtMost(1f)
+            if (measuredWidth <= 0) referenceSize else with(density) {
+                // Android's enlarged-font scaling is nonlinear in sp. Fit in pixels, then
+                // convert back so the rendered glyphs match the measured width at every scale.
+                (referenceSize.toPx() * (availableWidthPx * 0.98f / measuredWidth).coerceAtMost(1f)).toSp()
+            }
         }
         Text(
             text = lineText,

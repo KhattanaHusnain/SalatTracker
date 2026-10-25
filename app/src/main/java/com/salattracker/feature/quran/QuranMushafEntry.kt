@@ -12,7 +12,7 @@ fun QuranMushafEntry(
     viewModel: QuranMushafViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    LaunchedEffect(uiState.pageNumber) {
+    LaunchedEffect(uiState.pageNumber, uiState.showTranslations) {
         onPageControlsChanged(
             QuranPageControls(
                 pageNumber = uiState.pageNumber,
@@ -20,6 +20,8 @@ fun QuranMushafEntry(
                 hasNextPage = viewModel.hasNextPage,
                 onPreviousPage = viewModel::onPreviousPage,
                 onNextPage = viewModel::onNextPage,
+                showMushafButton = uiState.showTranslations,
+                onMushafButtonClick = viewModel::showMushafOnly,
             )
         )
     }
