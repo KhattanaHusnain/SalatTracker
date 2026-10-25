@@ -100,7 +100,7 @@ private fun ReadHistoryRow(item: QuranReadHistoryUi, use24HourFormat: Boolean, o
 
 private fun formatReadAt(epochMillis: Long, use24HourFormat: Boolean): String =
     Instant.ofEpochMilli(epochMillis).atZone(ZoneId.systemDefault()).let {
-        "${it.toLocalDate().format(DateTimeFormatter.ofPattern(\"d MMM\"))}, ${it.toLocalTime().formatAppTime(use24HourFormat)}"
+        "${it.toLocalDate().format(DateTimeFormatter.ofPattern("d MMM"))}, ${it.toLocalTime().formatAppTime(use24HourFormat)}"
     }
 
 @Preview(showBackground = true, showSystemUi = true)
