@@ -3,6 +3,7 @@ package com.salattracker.feature.quran
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.salattracker.R
 import com.salattracker.domain.model.MUSHAF_TOTAL_PAGES
 import com.salattracker.domain.model.MushafPage
 import com.salattracker.domain.repository.QuranContentRepository
@@ -24,7 +25,7 @@ data class QuranMushafUiState(
     val firstPageNumber: Int = FIRST_MUSHAF_PAGE,
     val lastPageNumber: Int = MUSHAF_TOTAL_PAGES,
     val page: MushafPage? = null,
-    val errorMessage: String? = null,
+    val errorRes: Int? = null,
 )
 
 @HiltViewModel
@@ -72,33 +73,28 @@ class QuranMushafViewModel @Inject constructor(
             val firstPage = contentRepository.getVerse(firstLocation.chapterNumber, firstLocation.verseNumber)
                 ?.pageNumber
                 ?: return@launch loadPage(requestedPage)
-            val nextFirstPage = contentRepository.firstVerseOfJuz(juzNumber + 1)
-                ?.let { contentRepository.getVerse(it.chapterNumber, it.verseNumber)?.pageNumber }
-            val lastPage = (nextFirstPage ?: MUSHAF_TOTAL_PAGES + 1) - 1
-            val page = requestedPage.coerceIn(firstPage, lastPage)
+            val page = requestedPage.coerceIn(firstPage, MUSHAF_TOTAL_PAGES)
             _uiState.update {
-                it.copy(pageNumber = page, firstPageNumber = firstPage, lastPageNumber = lastPage)
+                it.copy(pageNumber = page, firstPageNumber = FIRST_MUSHAF_PAGE, lastPageNumber = MUSHAF_TOTAL_PAGES)
             }
             loadPage(page)
         }
     }
 
     private fun loadPage(pageNumber: Int) {
-        _uiState.update { it.copy(isLoading = true, pageNumber = pageNumber, errorMessage = null) }
+        _uiState.update { it.copy(isLoading = it.page == null, pageNumber = pageNumber, errorRes = null) }
         viewModelScope.launch {
             runCatching { mushafRepository.getPage(pageNumber) }.fold(
                 onSuccess = { page ->
                     _uiState.update { it.copy(isLoading = false, page = page) }
-                    selectedJuzNumber?.let { juzNumber ->
-                        userDataRepository.recordRead(
-                            chapterNumber = page.firstVerse.chapterNumber,
-                            verseNumber = page.firstVerse.verseNumber,
-                            juzNumber = juzNumber,
-                            pageNumber = page.pageNumber,
-                        )
-                    }
+                    userDataRepository.recordRead(
+                        chapterNumber = page.firstVerse.chapterNumber,
+                        verseNumber = page.firstVerse.verseNumber,
+                        juzNumber = selectedJuzNumber,
+                        pageNumber = page.pageNumber,
+                    )
                 },
-                onFailure = { e -> _uiState.update { it.copy(isLoading = false, errorMessage = e.message ?: "Couldn't load this page") } },
+                onFailure = { _ -> _uiState.update { it.copy(isLoading = false, errorRes = R.string.error_load_generic) } },
             )
         }
     }

@@ -1,6 +1,7 @@
 package com.salattracker.feature.quran
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -24,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -50,9 +52,11 @@ import kotlinx.coroutines.delay
 @Composable
 fun QuranMushafScreen(
     uiState: QuranMushafUiState,
+    onPreviousPage: () -> Unit = {},
+    onNextPage: () -> Unit = {},
 ) {
     val context = LocalContext.current
-    var fontReady by remember { mutableStateOf(mushafFontFile(context, uiState.pageNumber) != null) }
+    var fontReady by remember(uiState.pageNumber) { mutableStateOf(mushafFontFile(context, uiState.pageNumber) != null) }
     LaunchedEffect(uiState.pageNumber) {
         requestMushafAssets(context)
         while (!fontReady) {
@@ -65,13 +69,13 @@ fun QuranMushafScreen(
             uiState.isLoading -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = SalatPrimary)
             }
-            uiState.errorMessage != null -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(uiState.errorMessage, color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = AppUiFontFamily)
+            uiState.errorRes != null -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(stringResource(uiState.errorRes), color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = AppUiFontFamily)
             }
             !fontReady -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Mushaf fonts are downloading for offline use.", color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = AppUiFontFamily)
+                Text(stringResource(R.string.quran_mushaf_fonts_downloading), color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = AppUiFontFamily)
             }
-            uiState.page != null -> MushafPageContent(page = uiState.page)
+            uiState.page != null -> MushafPageContent(page = uiState.page, onPreviousPage = onPreviousPage, onNextPage = onNextPage)
         }
     }
 }
@@ -86,7 +90,7 @@ private val REFERENCE_FONT_SIZE = 40.sp
 private const val PAGE_WIDTH_FRACTION = 0.94f
 
 @Composable
-private fun MushafPageContent(page: MushafPage) {
+private fun MushafPageContent(page: MushafPage, onPreviousPage: () -> Unit, onNextPage: () -> Unit) {
     val context = LocalContext.current
     val fontFamily = remember(page.pageNumber) {
         FontFamily(Font(checkNotNull(mushafFontFile(context, page.pageNumber))))
@@ -109,11 +113,24 @@ private fun MushafPageContent(page: MushafPage) {
             REFERENCE_FONT_SIZE * (availableWidthPx / widestLinePx)
         }
 
+        var dragDistance by remember(page.pageNumber) { mutableStateOf(0f) }
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 12.dp, vertical = 8.dp)
-                .border(1.dp, SalatOutlineVariant),
+                .border(1.dp, SalatOutlineVariant)
+                .pointerInput(page.pageNumber) {
+                    detectHorizontalDragGestures(
+                        onDragStart = { dragDistance = 0f },
+                        onHorizontalDrag = { _, amount -> dragDistance += amount },
+                        onDragEnd = {
+                            when {
+                                dragDistance <= -80f -> onNextPage()
+                                dragDistance >= 80f -> onPreviousPage()
+                            }
+                        },
+                    )
+                },
             contentPadding = PaddingValues(0.dp),
         ) {
             itemsIndexed(lineTexts, key = { _, (lineNumber, _) -> lineNumber }) { _, (_, text) ->

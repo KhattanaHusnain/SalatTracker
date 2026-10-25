@@ -23,5 +23,5 @@ fun QuranMushafEntry(
             )
         )
     }
-    QuranMushafScreen(uiState = uiState)
+    QuranMushafScreen(uiState = uiState, onPreviousPage = viewModel::onPreviousPage, onNextPage = viewModel::onNextPage)
 }

@@ -89,6 +89,7 @@
     <string name="quran_mushaf_page_label">صفحة %1$d</string>
     <string name="quran_mushaf_next_page">الصفحة التالية</string>
     <string name="quran_mushaf_previous_page">الصفحة السابقة</string>
+    <string name="quran_mushaf_fonts_downloading">يجري تنزيل خطوط المصحف للاستخدام دون اتصال.</string>
 
     <string name="prayer_fajr">الفجر</string>
     <string name="prayer_dhuhr">الظهر</string>

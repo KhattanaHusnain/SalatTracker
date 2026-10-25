@@ -90,6 +90,7 @@
     <string name="quran_mushaf_page_label">Page %1$d</string>
     <string name="quran_mushaf_next_page">Next page</string>
     <string name="quran_mushaf_previous_page">Previous page</string>
+    <string name="quran_mushaf_fonts_downloading">Mushaf fonts are downloading for offline use.</string>
 
     <!-- Prayer names -->
     <string name="prayer_fajr">Fajr</string>

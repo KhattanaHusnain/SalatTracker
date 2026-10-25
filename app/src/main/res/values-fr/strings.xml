@@ -89,6 +89,7 @@
     <string name="quran_mushaf_page_label">Page %1$d</string>
     <string name="quran_mushaf_next_page">Page suivante</string>
     <string name="quran_mushaf_previous_page">Page précédente</string>
+    <string name="quran_mushaf_fonts_downloading">Les polices du Mushaf sont en cours de téléchargement pour une utilisation hors ligne.</string>
 
     <string name="prayer_fajr">Fajr</string>
     <string name="prayer_dhuhr">Dhuhr</string>
