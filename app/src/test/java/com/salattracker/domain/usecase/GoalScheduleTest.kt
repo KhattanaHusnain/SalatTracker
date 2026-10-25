@@ -183,6 +183,26 @@ class GoalScheduleTest {
     }
 
     @Test
+    fun `next reminder skips a completed daily target`() {
+        val g = goal(target = 3, reminder = LocalTime.of(20, 0))
+
+        assertEquals(
+            LocalDateTime.of(2026, 10, 15, 20, 0),
+            nextReminderAt(g, LocalDateTime.of(2026, 10, 14, 9, 0), listOf(ci(14, 3))),
+        )
+    }
+
+    @Test
+    fun `next reminder skips the rest of a completed weekly period`() {
+        val g = goal(frequency = GoalFrequency.WEEKLY, target = 3, reminder = LocalTime.of(20, 0))
+
+        assertEquals(
+            LocalDateTime.of(2026, 10, 18, 20, 0),
+            nextReminderAt(g, LocalDateTime.of(2026, 10, 14, 9, 0), listOf(ci(12, 3))),
+        )
+    }
+
+    @Test
     fun `no reminder when off, archived, or after the end date`() {
         val now = LocalDateTime.of(2026, 10, 14, 9, 0)
         assertNull(nextReminderAt(goal(reminder = null), now))

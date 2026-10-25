@@ -4,7 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import com.salattracker.domain.model.SpiritualGoal
+import com.salattracker.domain.model.GoalHistory
 import com.salattracker.domain.usecase.nextReminderAt
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -14,13 +14,14 @@ class GoalAlarmScheduler(private val context: Context) {
 
     private val alarmManager = context.getSystemService(AlarmManager::class.java) as AlarmManager
 
-    fun scheduleAll(goals: List<SpiritualGoal>) {
+    fun scheduleAll(histories: List<GoalHistory>) {
         val zoneId = ZoneId.systemDefault()
         val now = LocalDateTime.now()
-        goals.forEach { goal ->
+        histories.forEach { history ->
+            val goal = history.goal
             // Null when the reminder is off, the goal is archived, or it has no further due day
             // (wrong weekday all week, or past its end date) — nothing to schedule then.
-            val triggerAt = nextReminderAt(goal, now)?.atZone(zoneId)?.toInstant()?.toEpochMilli()
+            val triggerAt = nextReminderAt(goal, now, history.checkIns)?.atZone(zoneId)?.toInstant()?.toEpochMilli()
             if (triggerAt == null) {
                 cancel(goal.id)
                 return@forEach

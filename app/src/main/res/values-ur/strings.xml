@@ -506,6 +506,7 @@
     <string name="notification_goal_title">وقت ہو گیا: %1$s</string>
     <string name="notification_goal_body">اپنے ہدف پر چیک اِن کے لیے دبائیں۔</string>
     <string name="notification_action_check_in">چیک اِن</string>
+    <string name="notification_action_mark_done">مکمل نشان زد کریں</string>
     <string name="notification_action_snooze">10 منٹ بعد</string>
 
     <!-- Backup & Restore -->

@@ -514,6 +514,7 @@
     <string name="notification_goal_title">حان وقت: %1$s</string>
     <string name="notification_goal_body">اضغط لتسجيل تقدّمك في الهدف.</string>
     <string name="notification_action_check_in">تسجيل</string>
+    <string name="notification_action_mark_done">وضع علامة كمكتمل</string>
     <string name="notification_action_snooze">غفوة 10 دقائق</string>
 
     <!-- Backup & Restore -->

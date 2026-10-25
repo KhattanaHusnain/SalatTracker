@@ -506,6 +506,7 @@
     <string name="notification_goal_title">C\'est l\'heure : %1$s</string>
     <string name="notification_goal_body">Appuyez pour pointer votre objectif.</string>
     <string name="notification_action_check_in">Pointer</string>
+    <string name="notification_action_mark_done">Marquer comme terminé</string>
     <string name="notification_action_snooze">Reporter 10 min</string>
 
     <!-- Backup & Restore -->

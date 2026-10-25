@@ -119,13 +119,17 @@ fun goalStreak(goal: SpiritualGoal, checkIns: List<GoalCheckIn>, today: LocalDat
  * week that the goal is due on and whose reminder time is still ahead. Null when reminders are
  * off, the goal is archived, or it has no further due day (e.g. it has ended).
  */
-fun nextReminderAt(goal: SpiritualGoal, now: LocalDateTime): LocalDateTime? {
+fun nextReminderAt(
+    goal: SpiritualGoal,
+    now: LocalDateTime,
+    checkIns: List<GoalCheckIn> = emptyList(),
+): LocalDateTime? {
     val time = goal.reminderTime ?: return null
     if (!goal.reminderEnabled || !goal.isActive) return null
     for (offset in 0..7) {
         val date = now.toLocalDate().plusDays(offset.toLong())
         val at = LocalDateTime.of(date, time)
-        if (at.isAfter(now) && goal.isDueOn(date)) return at
+        if (at.isAfter(now) && goal.isDueOn(date) && currentPeriodAmount(goal, checkIns, date) < goal.targetAmount) return at
     }
     return null
 }

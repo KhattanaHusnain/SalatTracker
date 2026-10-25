@@ -12,6 +12,7 @@ import androidx.work.WorkerParameters
 import com.salattracker.domain.repository.GoalRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.flow.first
 import java.util.concurrent.TimeUnit
 
 /**
@@ -29,8 +30,8 @@ class GoalReminderWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         return try {
-            val goals = goalRepository.getAllActiveGoals()
-            GoalAlarmScheduler(applicationContext).scheduleAll(goals)
+            val histories = goalRepository.observeGoalHistories().first().filter { it.goal.isActive }
+            GoalAlarmScheduler(applicationContext).scheduleAll(histories)
             Result.success()
         } catch (e: Exception) {
             Result.retry()

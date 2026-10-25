@@ -10,14 +10,18 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import androidx.work.WorkManager
 import com.salattracker.R
 import com.salattracker.domain.repository.GoalRepository
+import com.salattracker.domain.usecase.currentPeriodAmount
 import com.salattracker.feature.main.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -36,19 +40,24 @@ class GoalReminderReceiver : BroadcastReceiver() {
         val goalName = intent.getStringExtra(EXTRA_GOAL_NAME) ?: ""
 
         when (intent.action) {
-            ACTION_CHECK_IN -> checkInAndDismiss(context, goalId)
+            ACTION_MARK_DONE -> markDoneAndDismiss(context, goalId)
             ACTION_SNOOZE   -> snooze(context, goalId, goalName)
-            else            -> showNotification(context, goalId, goalName)
+            else            -> showNotificationIfNeeded(context, goalId, goalName)
         }
     }
 
-    private fun checkInAndDismiss(context: Context, goalId: Long) {
+    private fun markDoneAndDismiss(context: Context, goalId: Long) {
         val pendingResult = goAsync()
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             try {
-                goalRepository.checkIn(goalId)
+                val history = goalRepository.observeGoalHistory(goalId).first()
+                if (history != null) {
+                    val remaining = history.goal.targetAmount - currentPeriodAmount(history.goal, history.checkIns, LocalDate.now())
+                    if (remaining > 0) goalRepository.checkIn(goalId, amount = remaining)
+                }
             } finally {
                 NotificationManagerCompat.from(context).cancel(notificationIdFor(goalId))
+                GoalReminderWorker.enqueueOneTime(WorkManager.getInstance(context))
                 pendingResult.finish()
             }
         }
@@ -57,6 +66,22 @@ class GoalReminderReceiver : BroadcastReceiver() {
     private fun snooze(context: Context, goalId: Long, goalName: String) {
         NotificationManagerCompat.from(context).cancel(notificationIdFor(goalId))
         scheduleSnooze(context, goalId, goalName)
+    }
+
+    private fun showNotificationIfNeeded(context: Context, goalId: Long, fallbackGoalName: String) {
+        val pendingResult = goAsync()
+        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            try {
+                val history = goalRepository.observeGoalHistory(goalId).first() ?: return@launch
+                if (!history.goal.isActive || currentPeriodAmount(history.goal, history.checkIns, LocalDate.now()) >= history.goal.targetAmount) {
+                    GoalReminderWorker.enqueueOneTime(WorkManager.getInstance(context))
+                    return@launch
+                }
+                showNotification(context, goalId, history.goal.name.ifBlank { fallbackGoalName })
+            } finally {
+                pendingResult.finish()
+            }
+        }
     }
 
     private fun showNotification(context: Context, goalId: Long, goalName: String) {
@@ -76,7 +101,7 @@ class GoalReminderReceiver : BroadcastReceiver() {
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
             .setContentIntent(contentPendingIntent)
-            .addAction(action(context, goalId, goalName, ACTION_CHECK_IN, R.drawable.ic_add, context.getString(R.string.notification_action_check_in)))
+            .addAction(action(context, goalId, goalName, ACTION_MARK_DONE, R.drawable.ic_add, context.getString(R.string.notification_action_mark_done)))
             .addAction(action(context, goalId, goalName, ACTION_SNOOZE, R.drawable.ic_schedule, context.getString(R.string.notification_action_snooze)))
             .build()
 
@@ -109,7 +134,7 @@ class GoalReminderReceiver : BroadcastReceiver() {
     }
 
     companion object {
-        const val ACTION_CHECK_IN = "com.salattracker.action.GOAL_CHECK_IN"
+        const val ACTION_MARK_DONE = "com.salattracker.action.GOAL_MARK_DONE"
         const val ACTION_SNOOZE   = "com.salattracker.action.GOAL_SNOOZE"
         const val EXTRA_GOAL_ID   = "goal_id"
         const val EXTRA_GOAL_NAME = "goal_name"
