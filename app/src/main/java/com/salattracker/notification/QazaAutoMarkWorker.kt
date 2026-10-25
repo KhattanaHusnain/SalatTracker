@@ -36,7 +36,9 @@ class QazaAutoMarkWorker @AssistedInject constructor(
     override suspend fun doWork(): Result {
         return try {
             val today = LocalDate.now(clock)
-            overdueDatesToCatchUp(stateStore.lastProcessedDate(), today).forEach(::markOverdue)
+            for (date in overdueDatesToCatchUp(stateStore.lastProcessedDate(), today)) {
+                markOverdue(date)
+            }
             markOverdue(today)
             stateStore.setLastProcessedDate(today.minusDays(1))
             Result.success()
