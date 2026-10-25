@@ -249,7 +249,11 @@ private fun ConflictDialog(
         text = {
             val deviceLabel = info.deviceModel.ifBlank { stringResource(R.string.backup_unknown_device) }
             Text(
-                stringResource(R.string.backup_conflict_desc, deviceLabel, formatEpoch(info.createdAt)),
+                stringResource(
+                    R.string.backup_conflict_desc,
+                    deviceLabel,
+                    formatEpoch(info.createdAt, LocalUse24HourFormat.current),
+                ),
                 color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = AppUiFontFamily,
             )
         },
@@ -297,7 +301,7 @@ private fun DisconnectConfirmDialog(onConfirm: () -> Unit, onDismiss: () -> Unit
 private fun formatEpoch(epochMillis: Long, use24HourFormat: Boolean): String =
     if (epochMillis <= 0L) "—" else
         Instant.ofEpochMilli(epochMillis).atZone(ZoneId.systemDefault()).let {
-            "${it.toLocalDate().format(DateTimeFormatter.ofPattern(\"d MMM yyyy\"))}, ${it.toLocalTime().formatAppTime(use24HourFormat)}"
+            "${it.toLocalDate().format(DateTimeFormatter.ofPattern("d MMM yyyy"))}, ${it.toLocalTime().formatAppTime(use24HourFormat)}"
         }
 
 private fun formatLastBackup(epochMillis: Long?, bytes: Long?, neverLabel: String, use24HourFormat: Boolean): String {
