@@ -354,7 +354,7 @@ private fun yearLegendItems(gender: Gender?, marks: Map<LocalDate, Map<PrayerTyp
 }
 
 @Composable
-private fun DotLegend(items: List<LegendItem> = legendItems()) {
+private fun DotLegend(items: List<LegendItem>) {
     Surface(
         modifier       = Modifier.fillMaxWidth(),
         shape          = RoundedCornerShape(12.dp),
