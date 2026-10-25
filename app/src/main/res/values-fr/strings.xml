@@ -195,6 +195,7 @@
     <string name="onboarding_location_confirm_title">Est-ce correct ?</string>
     <string name="onboarding_location_confirm_subtitle">Confirmez votre position, ou modifiez-la.</string>
     <string name="onboarding_location_confirm_action">Confirmer la position</string>
+    <string name="onboarding_calculation_method_suggested">Suggéré pour %1$s</string>
     <string name="onboarding_location_change">Modifier</string>
     <string name="onboarding_location_label">Position</string>
     <string name="onboarding_hijri_date_label">Date hégirienne aujourd\'hui</string>

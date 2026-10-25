@@ -195,6 +195,7 @@
     <string name="onboarding_location_confirm_title">کیا یہ درست ہے؟</string>
     <string name="onboarding_location_confirm_subtitle">اپنی لوکیشن کی تصدیق کریں، یا اسے تبدیل کریں۔</string>
     <string name="onboarding_location_confirm_action">لوکیشن کی تصدیق کریں</string>
+    <string name="onboarding_calculation_method_suggested">%1$s کے لیے تجویز کردہ</string>
     <string name="onboarding_location_change">تبدیل کریں</string>
     <string name="onboarding_location_label">لوکیشن</string>
     <string name="onboarding_hijri_date_label">آج کی ہجری تاریخ</string>

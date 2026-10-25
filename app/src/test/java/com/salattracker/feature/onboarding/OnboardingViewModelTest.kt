@@ -2,6 +2,8 @@ package com.salattracker.feature.onboarding
 
 import androidx.lifecycle.SavedStateHandle
 import com.salattracker.domain.model.AppLanguage
+import com.salattracker.domain.model.CalculationMethod
+import com.salattracker.domain.model.CityResult
 import com.salattracker.domain.model.Gender
 import com.salattracker.testutil.FakeGeocodingRepository
 import com.salattracker.testutil.FakePrayerReminderRescheduler
@@ -30,6 +32,19 @@ class OnboardingViewModelTest {
         assertEquals(Gender.FEMALE, restored.uiState.value.gender)
         restored.onBack()
         assertEquals(OnboardingStep.WELCOME, restored.uiState.value.step)
+    }
+
+    @Test
+    fun `city country suggests a calculation method until the user chooses one`() {
+        val viewModel = viewModel(SavedStateHandle())
+        val karachi = CityResult("Karachi", "Sindh", "Pakistan", 24.86, 67.01, "PK")
+
+        viewModel.onCitySelected(karachi)
+        assertEquals(CalculationMethod.KARACHI, viewModel.uiState.value.calculationMethod)
+
+        viewModel.onCalculationMethodSelected(CalculationMethod.MWL)
+        viewModel.onCitySelected(karachi.copy(country = "Turkey", countryCode = "TR"))
+        assertEquals(CalculationMethod.MWL, viewModel.uiState.value.calculationMethod)
     }
 
     private fun viewModel(handle: SavedStateHandle) = OnboardingViewModel(

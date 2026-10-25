@@ -335,6 +335,13 @@ private fun LocationConfirmStep(
 ) {
     val today = remember { LocalDate.now() }
     val hijri = remember(today) { today.toHijriOrNull() }
+    val suggestedCountry = city?.let { selectedCity -> selectedCity.country?.takeIf {
+        calculationMethod != CalculationMethod.DEFAULT && calculationMethod == CalculationMethod.suggestedFor(selectedCity.countryCode)
+    }
+    }
+    val methodValue = suggestedCountry?.let {
+        "${calculationMethod.displayName}\n${stringResource(R.string.onboarding_calculation_method_suggested, it)}"
+    } ?: calculationMethod.displayName
 
     Column(modifier = Modifier.fillMaxSize()) {
         StepHeader(stepIndex = OnboardingStep.LOCATION_CONFIRM.ordinal, title = stringResource(R.string.onboarding_location_confirm_title), subtitle = stringResource(R.string.onboarding_location_confirm_subtitle))
@@ -352,7 +359,7 @@ private fun LocationConfirmStep(
         SummaryRow(
             icon = R.drawable.ic_history_edu,
             label = stringResource(R.string.settings_calc_method),
-            value = calculationMethod.displayName,
+            value = methodValue,
             trailing = { SecondaryLink(stringResource(R.string.onboarding_location_change), onCalculationMethodClick) },
         )
         if (hijri != null) {

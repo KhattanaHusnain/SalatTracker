@@ -60,6 +60,8 @@ data class OnboardingUiState(
     val confirmedCity: CityResult? = null,
     val isFromDeviceLocation: Boolean = true,
     val calculationMethod: CalculationMethod = CalculationMethod.DEFAULT,
+    /** Location may suggest a method until the person explicitly selects a different one. */
+    val calculationMethodManuallySelected: Boolean = false,
     val showCalculationMethodSheet: Boolean = false,
     val isLocating: Boolean = false,
     val locationError: Boolean = false,
@@ -147,6 +149,7 @@ class OnboardingViewModel @Inject constructor(
         savedStateHandle[KEY_MADHAB] = state.madhab.name
         savedStateHandle[KEY_FROM_DEVICE] = state.isFromDeviceLocation
         savedStateHandle[KEY_CALCULATION] = state.calculationMethod.id
+        savedStateHandle[KEY_CALCULATION_MANUALLY_SELECTED] = state.calculationMethodManuallySelected
         savedStateHandle[KEY_CITY_QUERY] = state.cityQuery
         savedStateHandle[KEY_REMINDERS] = state.prayerRemindersEnabled
         savedStateHandle[KEY_FULLSCREEN] = state.fullScreenAlertEnabled
@@ -157,6 +160,7 @@ class OnboardingViewModel @Inject constructor(
             savedStateHandle[KEY_CITY_NAME] = city.name
             savedStateHandle[KEY_CITY_REGION] = city.region
             savedStateHandle[KEY_CITY_COUNTRY] = city.country
+            savedStateHandle[KEY_CITY_COUNTRY_CODE] = city.countryCode
             savedStateHandle[KEY_CITY_LATITUDE] = city.latitude
             savedStateHandle[KEY_CITY_LONGITUDE] = city.longitude
         }
@@ -170,7 +174,8 @@ class OnboardingViewModel @Inject constructor(
         val cityName = savedStateHandle.get<String>(KEY_CITY_NAME)
         val city = cityName?.let {
             CityResult(it, savedStateHandle[KEY_CITY_REGION], savedStateHandle[KEY_CITY_COUNTRY],
-                savedStateHandle[KEY_CITY_LATITUDE] ?: 0.0, savedStateHandle[KEY_CITY_LONGITUDE] ?: 0.0)
+                savedStateHandle[KEY_CITY_LATITUDE] ?: 0.0, savedStateHandle[KEY_CITY_LONGITUDE] ?: 0.0,
+                savedStateHandle[KEY_CITY_COUNTRY_CODE])
         }
         return defaults.copy(
             step = enum(KEY_STEP, OnboardingStep.values(), defaults.step),
@@ -181,6 +186,7 @@ class OnboardingViewModel @Inject constructor(
             confirmedCity = city,
             isFromDeviceLocation = savedStateHandle[KEY_FROM_DEVICE] ?: defaults.isFromDeviceLocation,
             calculationMethod = CalculationMethod.values().firstOrNull { it.id == savedStateHandle.get<Int>(KEY_CALCULATION) } ?: defaults.calculationMethod,
+            calculationMethodManuallySelected = savedStateHandle[KEY_CALCULATION_MANUALLY_SELECTED] ?: defaults.calculationMethodManuallySelected,
             cityQuery = savedStateHandle[KEY_CITY_QUERY] ?: "",
             prayerRemindersEnabled = savedStateHandle[KEY_REMINDERS] ?: defaults.prayerRemindersEnabled,
             fullScreenAlertEnabled = savedStateHandle[KEY_FULLSCREEN] ?: defaults.fullScreenAlertEnabled,
@@ -202,7 +208,10 @@ class OnboardingViewModel @Inject constructor(
                 val city = runCatching { geocodingRepository.reverseGeocode(prefs.latitude, prefs.longitude) }
                     .getOrNull()
                     ?: CityResult(name = "", region = null, country = null, latitude = prefs.latitude, longitude = prefs.longitude)
-                updateState { it.copy(confirmedCity = city, isFromDeviceLocation = true, isLocating = false, locationError = false) }
+                updateState { state ->
+                    state.withSuggestedCalculationMethod(city)
+                        .copy(confirmedCity = city, isFromDeviceLocation = true, isLocating = false, locationError = false)
+                }
                 goTo(OnboardingStep.LOCATION_CONFIRM)
             }
         }
@@ -264,7 +273,7 @@ class OnboardingViewModel @Inject constructor(
     fun onCalculationMethodSheetOpen() = updateState { it.copy(showCalculationMethodSheet = true) }
     fun onCalculationMethodSheetDismiss() = updateState { it.copy(showCalculationMethodSheet = false) }
     fun onCalculationMethodSelected(method: CalculationMethod) =
-        updateState { it.copy(calculationMethod = method, showCalculationMethodSheet = false) }
+        updateState { it.copy(calculationMethod = method, calculationMethodManuallySelected = true, showCalculationMethodSheet = false) }
 
     // ── City search ───────────────────────────────────────────────────────────
 
@@ -273,7 +282,9 @@ class OnboardingViewModel @Inject constructor(
         citySearch.search(query)
     }
 
-    fun onCitySelected(city: CityResult) = updateState { it.copy(confirmedCity = city, isFromDeviceLocation = false) }
+    fun onCitySelected(city: CityResult) = updateState {
+        it.withSuggestedCalculationMethod(city).copy(confirmedCity = city, isFromDeviceLocation = false)
+    }
 
     /** Used by "Use my location instead" — a method switch, not a back-navigation (see the
      * onboarding nav map), so it goes straight to Location Intro without touching the back stack
@@ -284,6 +295,10 @@ class OnboardingViewModel @Inject constructor(
         if (_uiState.value.confirmedCity == null) return
         goTo(OnboardingStep.LOCATION_CONFIRM)
     }
+
+    private fun OnboardingUiState.withSuggestedCalculationMethod(city: CityResult): OnboardingUiState =
+        if (calculationMethodManuallySelected) this
+        else copy(calculationMethod = CalculationMethod.suggestedFor(city.countryCode))
 
     // ── Reminders ─────────────────────────────────────────────────────────────
 
@@ -384,10 +399,12 @@ class OnboardingViewModel @Inject constructor(
         const val KEY_MADHAB = "onboarding.madhab"
         const val KEY_FROM_DEVICE = "onboarding.fromDevice"
         const val KEY_CALCULATION = "onboarding.calculation"
+        const val KEY_CALCULATION_MANUALLY_SELECTED = "onboarding.calculationManuallySelected"
         const val KEY_CITY_QUERY = "onboarding.cityQuery"
         const val KEY_CITY_NAME = "onboarding.city.name"
         const val KEY_CITY_REGION = "onboarding.city.region"
         const val KEY_CITY_COUNTRY = "onboarding.city.country"
+        const val KEY_CITY_COUNTRY_CODE = "onboarding.city.countryCode"
         const val KEY_CITY_LATITUDE = "onboarding.city.latitude"
         const val KEY_CITY_LONGITUDE = "onboarding.city.longitude"
         const val KEY_REMINDERS = "onboarding.reminders"

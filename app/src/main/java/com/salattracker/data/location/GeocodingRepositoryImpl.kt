@@ -58,6 +58,7 @@ class GeocodingRepositoryImpl @Inject constructor(
             country   = countryName,
             latitude  = latitude,
             longitude = longitude,
+            countryCode = countryCode,
         )
     }
 

@@ -195,6 +195,7 @@
     <string name="onboarding_location_confirm_title">هل هذا صحيح؟</string>
     <string name="onboarding_location_confirm_subtitle">أكّد موقعك، أو قم بتغييره.</string>
     <string name="onboarding_location_confirm_action">تأكيد الموقع</string>
+    <string name="onboarding_calculation_method_suggested">مقترح لـ %1$s</string>
     <string name="onboarding_location_change">تغيير</string>
     <string name="onboarding_location_label">الموقع</string>
     <string name="onboarding_hijri_date_label">التاريخ الهجري اليوم</string>

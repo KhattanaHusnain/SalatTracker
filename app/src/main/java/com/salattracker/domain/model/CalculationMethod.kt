@@ -1,5 +1,7 @@
 package com.salattracker.domain.model
 
+import java.util.Locale
+
 /**
  * A prayer-time calculation method. [id] follows the AlAdhan API's own numbering
  * (https://api.aladhan.com/v1/methods — fetched 2026; ids 0–23, no id 6) purely as a stable,
@@ -47,5 +49,30 @@ enum class CalculationMethod(val id: Int, val displayName: String) {
         val DEFAULT = MWL
 
         fun fromId(id: Int): CalculationMethod = values().firstOrNull { it.id == id } ?: DEFAULT
+
+        /** The regional preset for an ISO 3166-1 alpha-2 country code. Unknown countries use MWL. */
+        fun suggestedFor(countryCode: String?): CalculationMethod = when (countryCode?.uppercase(Locale.ROOT)) {
+            "PK", "IN", "BD" -> KARACHI
+            "US", "CA" -> ISNA
+            "SA" -> UMM_AL_QURA
+            "EG" -> EGYPT
+            "AE" -> DUBAI
+            "BH", "OM" -> GULF_REGION
+            "KW" -> KUWAIT
+            "QA" -> QATAR
+            "SG" -> SINGAPORE
+            "TR" -> TURKEY
+            "RU" -> RUSSIA
+            "MY" -> JAKIM_MALAYSIA
+            "ID" -> INDONESIA
+            "FR" -> FRANCE
+            "TN" -> TUNISIA
+            "DZ" -> ALGERIA
+            "MA" -> MOROCCO
+            "PT" -> LISBON
+            "JO" -> JORDAN
+            "IR" -> TEHRAN
+            else -> DEFAULT
+        }
     }
 }

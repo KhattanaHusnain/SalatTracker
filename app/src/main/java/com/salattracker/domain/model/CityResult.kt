@@ -7,6 +7,8 @@ data class CityResult(
     val country: String?,
     val latitude: Double,
     val longitude: Double,
+    /** ISO 3166-1 alpha-2 country code, when the platform geocoder supplies one. */
+    val countryCode: String? = null,
 ) {
     /** "Karachi, Sindh, Pakistan" — drops any part that's blank or missing. */
     val displayLine: String get() = listOfNotNull(region, country).joinToString(", ")

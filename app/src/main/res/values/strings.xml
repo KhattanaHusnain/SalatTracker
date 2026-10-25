@@ -203,6 +203,7 @@
     <string name="onboarding_location_confirm_title">Is this right?</string>
     <string name="onboarding_location_confirm_subtitle">Confirm your location, or change it.</string>
     <string name="onboarding_location_confirm_action">Confirm location</string>
+    <string name="onboarding_calculation_method_suggested">Suggested for %1$s</string>
     <string name="onboarding_location_change">Change</string>
     <string name="onboarding_location_label">Location</string>
     <string name="onboarding_hijri_date_label">Hijri date today</string>
