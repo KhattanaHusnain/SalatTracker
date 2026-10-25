@@ -33,6 +33,8 @@ import androidx.compose.ui.window.Dialog
 import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.core.ui.label
+import com.salattracker.core.ui.LocalUse24HourFormat
+import com.salattracker.core.ui.formatAppTime
 import com.salattracker.core.ui.salatSwitchColors
 import com.salattracker.core.ui.rememberAzanPreviewPlayer
 import com.salattracker.domain.model.Gender
