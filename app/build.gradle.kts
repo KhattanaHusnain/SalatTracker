@@ -54,11 +54,9 @@ android {
     sourceSets {
         getByName("androidTest").assets.srcDir("$projectDir/schemas")
     }
-    assetPacks += listOf(":mushaf_assets")
 }
 android.buildFeatures.buildConfig = true
 dependencies {
-    implementation("com.google.android.play:asset-delivery-ktx:2.3.0")
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.activity.ktx)

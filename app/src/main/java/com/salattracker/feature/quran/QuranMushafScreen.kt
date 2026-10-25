@@ -18,10 +18,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,12 +41,11 @@ import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.domain.model.MushafPage
-import kotlinx.coroutines.delay
 
 // ── Mushaf (print-accurate paginated) reader. Every word is rendered using that printed page's
-// own QCF glyph font, bundled as an asset (assets/quran/mushaf_fonts/v2/pN.ttf) — see
-// QuranSeedWorker — so line breaks match a real Mushaf exactly and the whole mode works with no
-// connection at all, unlike the regular verse-by-verse QuranReaderScreen's natural text reflow. ──
+// own QCF glyph font, bundled in the base APK at assets/quran/mushaf_fonts/v2/pN.ttf. This keeps
+// the reader fully offline, unlike the regular verse-by-verse QuranReaderScreen's natural text
+// reflow. ──
 
 @Composable
 fun QuranMushafScreen(
@@ -55,15 +53,6 @@ fun QuranMushafScreen(
     onPreviousPage: () -> Unit = {},
     onNextPage: () -> Unit = {},
 ) {
-    val context = LocalContext.current
-    var fontReady by remember(uiState.pageNumber) { mutableStateOf(mushafFontFile(context, uiState.pageNumber) != null) }
-    LaunchedEffect(uiState.pageNumber) {
-        requestMushafAssets(context)
-        while (!fontReady) {
-            fontReady = mushafFontFile(context, uiState.pageNumber) != null
-            if (!fontReady) delay(500)
-        }
-    }
     Column(modifier = Modifier.fillMaxSize()) {
         when {
             uiState.isLoading -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -71,9 +60,6 @@ fun QuranMushafScreen(
             }
             uiState.errorRes != null -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(stringResource(uiState.errorRes), color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = AppUiFontFamily)
-            }
-            !fontReady -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(stringResource(R.string.quran_mushaf_fonts_downloading), color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = AppUiFontFamily)
             }
             uiState.page != null -> MushafPageContent(page = uiState.page, onPreviousPage = onPreviousPage, onNextPage = onNextPage)
         }
@@ -93,7 +79,7 @@ private const val PAGE_WIDTH_FRACTION = 0.94f
 private fun MushafPageContent(page: MushafPage, onPreviousPage: () -> Unit, onNextPage: () -> Unit) {
     val context = LocalContext.current
     val fontFamily = remember(page.pageNumber) {
-        FontFamily(Font(checkNotNull(mushafFontFile(context, page.pageNumber))))
+        FontFamily(Font("quran/mushaf_fonts/v2/p${page.pageNumber}.ttf", context.assets))
     }
 
     val lineTexts = remember(page) {

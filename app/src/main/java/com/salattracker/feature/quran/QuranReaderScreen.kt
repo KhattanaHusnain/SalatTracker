@@ -287,9 +287,8 @@ private fun UrduTranslation(text: String, textAlign: TextAlign = TextAlign.Cente
 @Composable
 private fun MushafLineArabic(line: ReaderLine, textColor: Color) {
     val context = LocalContext.current
-    LaunchedEffect(line.pageNumber) { requestMushafAssets(context) }
     val fontFamily = remember(line.pageNumber) {
-        mushafFontFile(context, line.pageNumber)?.let { FontFamily(Font(it)) } ?: AmiriQuranFamily
+        FontFamily(Font("quran/mushaf_fonts/v2/p${line.pageNumber}.ttf", context.assets))
     }
     val lineText = remember(line.words) { line.words.joinToString(" ") { it.glyphCode } }
     val textMeasurer = rememberTextMeasurer()
