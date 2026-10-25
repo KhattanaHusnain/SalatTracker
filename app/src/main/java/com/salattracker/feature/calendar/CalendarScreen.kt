@@ -392,6 +392,17 @@ private fun VerseCard(verse: VerseInfo) {
         color    = SalatPrimaryContainer,
     ) {
         Column(modifier = Modifier.fillMaxWidth().padding(20.dp)) {
+            if (verse.arabic.isNotBlank()) {
+                Text(
+                    text = verse.arabic,
+                    color = SalatOnPrimary,
+                    fontSize = 20.sp,
+                    fontFamily = AmiriQuranFamily,
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+            }
             Text(
                 text       = "“${verse.text}”",
                 color      = SalatOnPrimary,

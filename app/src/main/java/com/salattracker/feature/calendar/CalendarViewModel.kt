@@ -86,7 +86,7 @@ class CalendarViewModel @Inject constructor(
 
     private fun loadVerse() {
         viewModelScope.launch {
-            _uiState.update { it.copy(verse = verseRepository.getRandomVerse()) }
+            _uiState.update { it.copy(verse = verseRepository.getVerseOfDay()) }
         }
     }
 

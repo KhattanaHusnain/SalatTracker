@@ -60,7 +60,7 @@ class PrayerReminderActivity : AppCompatActivity() {
 
             LaunchedEffect(type) {
                 scheduledTime = prayerRepository.getPrayerTimes(date)?.get(type)
-                verse = verseRepository.getRandomVerse()
+                verse = verseRepository.getVerseOfDay()
                 val prefs = settingsRepository.getCurrentPrefs()
                 snoozeMinutes = prefs.reminderSnoozeMinutes[type] ?: PrayerReminderReceiver.DEFAULT_SNOOZE_MINUTES
                 jumuahEnabled = prefs.jumuahEnabled

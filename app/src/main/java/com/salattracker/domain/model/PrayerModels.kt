@@ -42,4 +42,5 @@ data class StreakInfo(
 data class VerseInfo(
     val text: String,
     val citation: String,   // e.g. "Al-Baqarah 2:238"
+    val arabic: String = "",
 )

@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.AppUiFontFamily
 import com.salattracker.core.theme.AppTitleFontFamily
+import com.salattracker.core.theme.AmiriQuranFamily
 import com.salattracker.core.theme.SalatHeroGradientEnd
 import com.salattracker.core.theme.SalatHeroGradientStart
 import com.salattracker.core.theme.SalatOnHero
@@ -142,6 +143,17 @@ fun PrayerReminderScreen(
 
             if (verse != null) {
                 Spacer(modifier = Modifier.height(32.dp))
+                if (verse.arabic.isNotBlank()) {
+                    Text(
+                        text = verse.arabic,
+                        color = SalatOnHero.copy(alpha = 0.9f),
+                        fontSize = 24.sp,
+                        fontFamily = AmiriQuranFamily,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
                 Text(
                     text       = "“${verse.text}”",
                     color      = SalatOnHero.copy(alpha = 0.9f),
