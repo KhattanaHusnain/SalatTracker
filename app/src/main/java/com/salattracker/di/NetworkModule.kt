@@ -78,7 +78,7 @@ object NetworkModule {
             .addInterceptor { chain ->
                 chain.proceed(
                     chain.request().newBuilder()
-                        .header("User-Agent", "SalatTracker/${BuildConfig.VERSION_NAME} (Android)")
+                        .header("User-Agent", "Istiqamah/${BuildConfig.VERSION_NAME} (Android)")
                         .build()
                 )
             }

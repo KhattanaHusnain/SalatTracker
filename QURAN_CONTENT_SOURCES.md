@@ -145,7 +145,7 @@ pattern. This content is not currently bundled or displayed.
 ### Word-by-word (morphology + per-word gloss)
 
 🚫 **[Quranic Arabic Corpus](https://corpus.quran.com)** (University of Leeds) — confirmed
-**GPL v3** directly from its own `license.jsp`. Bundling GPL-licensed *data* into SalatTracker
+**GPL v3** directly from its own `license.jsp`. Bundling GPL-licensed *data* into Istiqamah
 risks the same copyleft entanglement this whole plan exists to avoid with QuranApp's GPL *code*.
 **Not used.**
 

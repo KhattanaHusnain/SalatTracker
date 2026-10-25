@@ -22,6 +22,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Salat Tracker"
+rootProject.name = "Istiqamah"
 include(":app")
 include(":mushaf_assets")

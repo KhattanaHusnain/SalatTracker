@@ -4,7 +4,8 @@
     <string name="reminders_notifications_fix">اطلاعات آن کریں</string>
     <string name="error_load_generic">ڈیٹا لوڈ نہیں ہو سکا۔ دوبارہ کوشش کریں۔</string>
     <string name="error_save_generic">تبدیلیاں محفوظ نہیں ہو سکیں۔ دوبارہ کوشش کریں۔</string>
-    <string name="app_name">Salah Tracker</string>
+    <string name="app_name">Istiqamah</string>
+    <string name="app_full_name">Istiqamah: نماز ٹریکر</string>
 
     <string name="nav_home">ہوم</string>
     <string name="nav_quran">قرآن</string>
@@ -27,7 +28,7 @@
     <string name="topbar_edit_goal">ہدف میں ترمیم</string>
     <string name="topbar_missed_prayers">چھوٹی ہوئی نمازیں</string>
     <string name="topbar_backup">بیک اپ اور بحالی</string>
-    <string name="topbar_default">Salah Tracker</string>
+    <string name="topbar_default">Istiqamah</string>
     <string name="cd_menu">مینو</string>
     <string name="cd_back">واپس</string>
     <string name="action_add_goal">ہدف شامل کریں</string>
@@ -147,7 +148,7 @@
     <string name="action_mark_done">مکمل نشان زد کریں</string>
     <string name="action_skip_for_now">ابھی کے لیے نظر انداز کریں</string>
 
-    <string name="onboarding_welcome_title">Salah Tracker میں خوش آمدید</string>
+    <string name="onboarding_welcome_title">Istiqamah: نماز ٹریکر میں خوش آمدید</string>
     <string name="onboarding_step_progress">مرحلہ %1$d از %2$d</string>
     <string name="onboarding_welcome_subtitle">اپنی زبان اور تھیم منتخب کریں۔ آپ دونوں کو بعد میں تبدیل کر سکتے ہیں۔</string>
     <string name="onboarding_change_later">آپ اسے بعد میں ترتیبات میں تبدیل کر سکتے ہیں۔</string>
@@ -542,7 +543,7 @@
     <string name="backup_notif_sign_in_title">بیک اپ کو آپ کی توجہ درکار ہے</string>
     <string name="backup_notif_sign_in_body">گوگل ڈرائیو پر بیک اپ جاری رکھنے کے لیے دوبارہ سائن اِن کریں۔</string>
     <string name="backup_notif_remote_changed_title">ایک مختلف بیک اپ ملا ہے</string>
-    <string name="backup_notif_remote_changed_body">آگے بڑھنے کا طریقہ منتخب کرنے کے لیے Salah Tracker کھولیں۔</string>
+    <string name="backup_notif_remote_changed_body">آگے بڑھنے کا طریقہ منتخب کرنے کے لیے Istiqamah کھولیں۔</string>
     <string name="backup_notif_local_missing_title">بیک اپ روک دیا گیا</string>
     <string name="backup_notif_local_missing_body">اس ڈیوائس میں آپ کے بیک اپ سے کم ڈیٹا ہے۔ آگے بڑھنے کا طریقہ منتخب کرنے کے لیے ایپ کھولیں۔</string>
     <string name="backup_notif_storage_full_title">گوگل ڈرائیو اسٹوریج بھر گیا</string>
@@ -637,9 +638,9 @@
     <!-- Donate -->
     <string name="action_donate">عطیہ کریں</string>
     <string name="topbar_donate">عطیہ کریں</string>
-    <string name="donate_title">Salah Tracker کی مدد کریں</string>
+    <string name="donate_title">Istiqamah کی مدد کریں</string>
     <string name="donate_subtitle">یہ ایپ بنانے میں حقیقی وقت اور وسائل لگتے ہیں</string>
-    <string name="donate_body">Salah Tracker ایک چھوٹی ٹیم نے اپنے فارغ وقت میں بنایا اور اسے برقرار رکھا ہے۔ اسے چلانے اور بہتر بنانے میں اب بھی لاگت آتی ہے — ایپ سٹور کی فیس، سرورز اور اے پی آئیز، ٹیسٹنگ آلات، اور بگ ٹھیک کرنے اور نئی خصوصیات شامل کرنے میں لگنے والے بہت سے گھنٹے۔ اگر اس ایپ نے آپ کی مدد کی ہے، تو آپ کی حمایت ہمیں اسے بناتے رہنے میں مدد دیتی ہے۔</string>
+    <string name="donate_body">Istiqamah ایک چھوٹی ٹیم نے اپنے فارغ وقت میں بنایا اور اسے برقرار رکھا ہے۔ اسے چلانے اور بہتر بنانے میں اب بھی لاگت آتی ہے — ایپ سٹور کی فیس، سرورز اور اے پی آئیز، ٹیسٹنگ آلات، اور بگ ٹھیک کرنے اور نئی خصوصیات شامل کرنے میں لگنے والے بہت سے گھنٹے۔ اگر اس ایپ نے آپ کی مدد کی ہے، تو آپ کی حمایت ہمیں اسے بناتے رہنے میں مدد دیتی ہے۔</string>
     <string name="donate_bank_title">بینک ٹرانسفر</string>
     <string name="donate_account_title_label">اکاؤنٹ ٹائٹل</string>
     <string name="donate_account_number_label">اکاؤنٹ نمبر</string>
@@ -651,19 +652,19 @@
     <string name="donate_copied">کلپ بورڈ پر کاپی ہو گیا</string>
     <string name="donate_contact_hint">کوئی سوال ہے، یا کسی اور طریقے سے بھیجنا چاہتے ہیں؟ رابطہ کریں اور ہم مدد کریں گے۔</string>
     <string name="donate_contact_button">رابطہ کریں</string>
-    <string name="donate_email_subject">عطیہ — Salah Tracker</string>
-    <string name="donate_email_body">السلام علیکم، میں Salah Tracker کی ترقی میں مدد کرنے کے طریقے کے بارے میں مزید جاننا چاہتا ہوں۔</string>
+    <string name="donate_email_subject">عطیہ — Istiqamah</string>
+    <string name="donate_email_body">السلام علیکم، میں Istiqamah کی ترقی میں مدد کرنے کے طریقے کے بارے میں مزید جاننا چاہتا ہوں۔</string>
 
     <!-- Developers -->
     <string name="action_developers">ڈیولپرز</string>
     <string name="topbar_developers">ڈیولپرز</string>
-    <string name="developers_subtitle">Salah Tracker کے پیچھے موجود لوگ</string>
+    <string name="developers_subtitle">Istiqamah کے پیچھے موجود لوگ</string>
     <string name="developer_view_linkedin">لنکڈ اِن پروفائل دیکھیں</string>
     <string name="developer_contribute_title">حصہ لینا چاہتے ہیں؟</string>
-    <string name="developer_contribute_body">Salah Tracker شراکت کے لیے کھلا ہے — بگ فکسز، نئی خصوصیات، تراجم، یا محض خیالات۔ اگر آپ شامل ہونا چاہتے ہیں تو رابطہ کریں اور ہم آپ کو صحیح سمت دکھائیں گے۔</string>
+    <string name="developer_contribute_body">Istiqamah شراکت کے لیے کھلا ہے — بگ فکسز، نئی خصوصیات، تراجم، یا محض خیالات۔ اگر آپ شامل ہونا چاہتے ہیں تو رابطہ کریں اور ہم آپ کو صحیح سمت دکھائیں گے۔</string>
     <string name="developer_contribute_button">رابطہ کریں</string>
-    <string name="developer_contribute_email_subject">تعاون — Salah Tracker</string>
-    <string name="developer_contribute_email_body">السلام علیکم، میں Salah Tracker میں تعاون کرنا چاہتا ہوں۔ یہاں تھوڑا سا بتا رہا ہوں کہ میں کس چیز میں مدد کرنا چاہوں گا:</string>
+    <string name="developer_contribute_email_subject">تعاون — Istiqamah</string>
+    <string name="developer_contribute_email_body">السلام علیکم، میں Istiqamah میں تعاون کرنا چاہتا ہوں۔ یہاں تھوڑا سا بتا رہا ہوں کہ میں کس چیز میں مدد کرنا چاہوں گا:</string>
     <!-- Tasbih -->
     <string name="tasbih_title">تسبیح</string>
     <string name="template_tasbih">تسبیح</string>

@@ -1,8 +1,8 @@
-# Future Features — Salah Tracker
+# Future Features — Istiqamah
 
 _Researched and compiled: 2026-10-18. Updated: 2026-10-22 — the offline Quran reader and prayer-time accuracy features shipped._
 
-Ideas for Salah Tracker's next features. The document covers:
+Ideas for Istiqamah's next features. The document covers:
 - how the app compares with other prayer and habit apps
 - what users complain about in those apps
 - features others have that we lack
@@ -19,7 +19,7 @@ Ideas for Salah Tracker's next features. The document covers:
 
 ---
 
-## 1. Where Salah Tracker stands today
+## 1. Where Istiqamah stands today
 
 This was checked against the code, not taken from memory.
 
@@ -61,7 +61,7 @@ This was checked against the code, not taken from memory.
 | Tanwir / Niyat / Ask Quran / Quran Study | AI chat companions for questions about Islam. |
 | Tarteel | AI feedback on Quran recitation and memorisation. |
 
-### 2.2 Where Salah Tracker is already ahead
+### 2.2 Where Istiqamah is already ahead
 
 - **Mosque Mode.** It switches the ringer automatically near saved mosques, using geofences. None of the apps reviewed do this.
 - **Qaza bulk update.** It catches up historical logs more thoroughly than most trackers do.
@@ -170,7 +170,7 @@ These are cheap to build because the app already converts dates to Hijri.
 
 ## 4. New ideas: what no competitor reviewed offers
 
-These build on what only Salah Tracker has, mainly Mosque Mode and its ringer and geofence code.
+These build on what only Istiqamah has, mainly Mosque Mode and its ringer and geofence code.
 
 ### N1. Mosque check-in that logs congregation automatically ⭐ top pick
 - **What it does:** when Mosque Mode registers a dwell inside a saved mosque during a prayer window, a notification asks "Prayed Asr in congregation at Masjid Al-Noor?" One tap logs `CONGREGATION`.
