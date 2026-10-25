@@ -33,7 +33,14 @@ fun CalculationMethodSheet(selected: CalculationMethod, onSelect: (CalculationMe
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         val selectedMethod = method == selected
-                        Text(method.displayName, Modifier.weight(1f), if (selectedMethod) SalatPrimary else SalatOnSurface, 14.sp, if (selectedMethod) FontWeight.SemiBold else FontWeight.Normal, fontFamily = AppUiFontFamily)
+                        Text(
+                            text = method.displayName,
+                            modifier = Modifier.weight(1f),
+                            color = if (selectedMethod) SalatPrimary else SalatOnSurface,
+                            fontSize = 14.sp,
+                            fontWeight = if (selectedMethod) FontWeight.SemiBold else FontWeight.Normal,
+                            fontFamily = AppUiFontFamily,
+                        )
                         if (selectedMethod) Icon(painterResource(R.drawable.ic_check_circle_filled), null, tint = SalatPrimary, modifier = Modifier.size(20.dp))
                     }
                 }
