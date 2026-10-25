@@ -703,4 +703,20 @@
     <string name="tasbih_phrase_allahu_akbar">الله أكبر</string>
     <string name="tasbih_phrase_tahlil">لا إله إلا الله</string>
     <string name="tasbih_phrase_astaghfirullah">أستغفر الله</string>
+    <string name="onboarding_add_missed">إضافة صلوات فائتة</string>
+    <string name="onboarding_restore_backup">استعادة نسخة احتياطية</string>
+    <string name="onboarding_excused_explanation">يتضمن التسجيل حالة الحيض، فلا تُحسب أيام العذر ضمن الصلوات الفائتة.</string>
+    <string name="onboarding_prayer_times">أوقات الصلاة</string>
+    <string name="onboarding_exact_city">تُحسب لمدينتك بدقة.</string>
+    <string name="onboarding_region_date">يتوافق مع منطقتك.</string>
+    <string name="onboarding_each_adhan">عند كل أذان</string>
+    <string name="onboarding_sound">الصوت</string>
+    <string name="onboarding_preview">معاينة</string>
+    <string name="onboarding_android_permissions">قد يطلب Android السماح بالإشعارات والمنبهات الدقيقة.</string>
+    <string name="onboarding_catch_up_explanation">اختر فترة وحالة مرة واحدة، وسيتولى التحديث الجماعي الباقي.</string>
+    <string name="onboarding_pick_dates">اختر تاريخ البداية والنهاية</string>
+    <string name="onboarding_all_prayers">الصلوات الخمس</string>
+    <string name="onboarding_prayers_included">الصلوات المشمولة</string>
+    <string name="onboarding_edit_calendar">يمكنك تعديل أي يوم لاحقًا في التقويم.</string>
+    <string name="onboarding_suggested_cities">مدن مقترحة</string>
 </resources>

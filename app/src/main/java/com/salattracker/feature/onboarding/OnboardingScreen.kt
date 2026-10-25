@@ -2,53 +2,39 @@ package com.salattracker.feature.onboarding
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.*
-import com.salattracker.domain.model.AppLanguage
-import com.salattracker.domain.model.CalculationMethod
-import com.salattracker.domain.model.CityResult
-import com.salattracker.domain.model.Gender
-import com.salattracker.domain.model.Madhab
-import com.salattracker.domain.model.ThemeMode
-import com.salattracker.domain.usecase.toHijriOrNull
-import com.salattracker.core.ui.CitySearchField
-import com.salattracker.core.ui.CitySearchResults
+import com.salattracker.core.ui.CalculationMethodSheet
 import com.salattracker.core.ui.DatePickerModal
 import com.salattracker.core.ui.fullLabel
-import com.salattracker.core.ui.salatSwitchColors
-import com.salattracker.core.ui.SalatPrimaryButton
 import com.salattracker.core.ui.rememberAzanPreviewPlayer
-import com.salattracker.core.ui.CalculationMethodSheet
+import com.salattracker.domain.model.*
+import com.salattracker.domain.usecase.toHijriOrNull
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-
-private val LocalOnboardingBack = staticCompositionLocalOf<() -> Unit> { {} }
 
 @Composable
 fun OnboardingScreen(
@@ -76,7 +62,6 @@ fun OnboardingScreen(
     onFullScreenAlertChanged: (Boolean) -> Unit,
     onRemindersSkip: () -> Unit,
     onRemindersNext: () -> Unit,
-    onCatchUpAddClick: () -> Unit,
     onCatchUpSkip: () -> Unit,
     onCatchUpDurationChanged: (CatchUpDuration) -> Unit,
     onCatchUpCustomRangeChanged: (LocalDate, LocalDate) -> Unit,
@@ -84,810 +69,439 @@ fun OnboardingScreen(
     onUndoCatchUp: () -> Unit,
     onBack: () -> Unit,
     onFinish: () -> Unit,
+    onCatchUpNext: () -> Unit = {},
 ) {
-    var showConfirmation by remember { mutableStateOf(false) }
-    CompositionLocalProvider(LocalOnboardingBack provides onBack) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(SalatBackground)
-                .padding(horizontal = 24.dp),
-        ) {
-            when (uiState.step) {
-                OnboardingStep.WELCOME -> WelcomeStep(uiState.language, uiState.themeMode, onLanguageSelected, onThemeSelected, onWelcomeNext, onRestoreFromBackup)
-                OnboardingStep.ABOUT_YOU -> AboutYouStep(uiState.gender, onGenderSelected, onAboutYouNext)
-                OnboardingStep.SCHOOL -> SchoolStep(uiState.madhab, onMadhabSelected, onSchoolNext)
-                OnboardingStep.LOCATION_INTRO -> LocationIntroStep(uiState.isLocating, uiState.locationError, onAllowLocationClick, onEnterCityInstead)
-                OnboardingStep.CITY_SEARCH -> CitySearchStep(
-                    query = uiState.cityQuery, results = uiState.cityResults, isSearching = uiState.isSearchingCity,
-                    selected = uiState.confirmedCity, onQueryChanged = onCityQueryChanged, onSelect = onCitySelected,
-                    onContinue = onCitySearchContinue, onUseMyLocationInstead = onUseMyLocationInstead,
-                )
-                OnboardingStep.LOCATION_CONFIRM -> LocationConfirmStep(
-                    city = uiState.confirmedCity, calculationMethod = uiState.calculationMethod,
-                    showCalculationMethodSheet = uiState.showCalculationMethodSheet,
-                    onConfirm = onConfirmLocation, onChangeLocation = onChangeLocationClick,
-                    onCalculationMethodClick = onCalculationMethodSheetOpen,
-                    onCalculationMethodDismiss = onCalculationMethodSheetDismiss,
-                    onCalculationMethodSelected = onCalculationMethodSelected,
-                )
-                OnboardingStep.REMINDERS -> RemindersStep(
-                    prayerRemindersEnabled = uiState.prayerRemindersEnabled, fullScreenAlertEnabled = uiState.fullScreenAlertEnabled,
-                    onPrayerRemindersChanged = onPrayerRemindersChanged, onFullScreenAlertChanged = onFullScreenAlertChanged,
-                    onNext = onRemindersNext, onSkip = onRemindersSkip,
-                )
-                OnboardingStep.CATCH_UP -> CatchUpStep(onAddMissedClick = onCatchUpAddClick, onSkip = onCatchUpSkip)
-                OnboardingStep.CATCH_UP_ADD -> CatchUpAddStep(
-                    duration = uiState.catchUpDuration, prayerCount = uiState.catchUpPrayerCount,
-                    customFrom = uiState.catchUpCustomFrom, customTo = uiState.catchUpCustomTo,
-                    onDurationChanged = onCatchUpDurationChanged, onCustomRangeChanged = onCatchUpCustomRangeChanged,
-                    onApply = onApplyCatchUp,
-                )
-                OnboardingStep.DONE -> DoneStep(uiState, onUndoCatchUp, onFinish)
-            }
+    var confirmCatchUp by remember { mutableStateOf(false) }
+    val s = uiState
+    OnboardingDesign(s.themeMode) {
+        val title = when (s.step) {
+            OnboardingStep.WELCOME -> R.string.onboarding_welcome_title
+            OnboardingStep.ABOUT_YOU -> R.string.onboarding_about_you_title
+            OnboardingStep.SCHOOL -> R.string.onboarding_school_title
+            OnboardingStep.LOCATION_INTRO -> R.string.onboarding_location_title
+            OnboardingStep.CITY_SEARCH -> R.string.onboarding_city_search_title
+            OnboardingStep.LOCATION_CONFIRM -> R.string.onboarding_location_confirm_title
+            OnboardingStep.REMINDERS -> R.string.onboarding_notifications_title
+            OnboardingStep.CATCH_UP -> R.string.onboarding_catch_up_title
+            OnboardingStep.CATCH_UP_RANGE -> R.string.onboarding_catch_up_add_title
+            OnboardingStep.DONE -> R.string.onboarding_done_title
         }
-    }
-}
-
-// ── Welcome (language + theme) ─────────────────────────────────────────────────
-
-@Composable
-private fun WelcomeStep(
-    language: AppLanguage,
-    themeMode: ThemeMode,
-    onLanguageSelected: (AppLanguage) -> Unit,
-    onThemeSelected: (ThemeMode) -> Unit,
-    onContinue: () -> Unit,
-    onRestoreFromBackup: () -> Unit,
-) {
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.height(48.dp))
-        Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            Box(
-                modifier = Modifier.size(72.dp).clip(RoundedCornerShape(20.dp)).background(SalatPrimary),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(painterResource(R.drawable.ic_mosque), null, tint = SalatOnPrimary, modifier = Modifier.size(36.dp))
-            }
-            Spacer(Modifier.height(20.dp))
-            Text(stringResource(R.string.onboarding_welcome_title), color = SalatPrimary, fontSize = 26.sp, fontWeight = FontWeight.Bold, fontFamily = AppTitleFontFamily, textAlign = TextAlign.Center)
-            Spacer(Modifier.height(8.dp))
-            Text(stringResource(R.string.onboarding_welcome_subtitle), color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = AppUiFontFamily, textAlign = TextAlign.Center)
+        val subtitle = when (s.step) {
+            OnboardingStep.WELCOME -> R.string.onboarding_welcome_subtitle
+            OnboardingStep.ABOUT_YOU -> R.string.onboarding_about_you_subtitle
+            OnboardingStep.SCHOOL -> R.string.onboarding_school_subtitle
+            OnboardingStep.LOCATION_INTRO -> R.string.onboarding_location_desc
+            OnboardingStep.LOCATION_CONFIRM -> R.string.onboarding_location_confirm_subtitle
+            OnboardingStep.REMINDERS -> R.string.onboarding_notifications_subtitle
+            OnboardingStep.CATCH_UP -> R.string.onboarding_catch_up_subtitle
+            OnboardingStep.CATCH_UP_RANGE -> R.string.onboarding_catch_up_add_subtitle
+            OnboardingStep.DONE -> R.string.onboarding_done_subtitle
+            OnboardingStep.CITY_SEARCH -> null
         }
-
-        Spacer(Modifier.height(32.dp))
-
-        Text(stringResource(R.string.settings_language), color = SalatOnSurfaceVariant,  fontSize = 12.sp, fontFamily = AppUiFontFamily)
-        Spacer(Modifier.height(8.dp))
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            AppLanguage.values().forEach { lang ->
-                SelectableRow(icon = R.drawable.ic_language, label = lang.displayName, isSelected = lang == language, onClick = { onLanguageSelected(lang) })
-            }
+        val action = when (s.step) {
+            OnboardingStep.SCHOOL -> stringResource(R.string.action_next)
+            OnboardingStep.LOCATION_INTRO -> stringResource(if (s.isLocating) R.string.onboarding_location_loading else R.string.onboarding_allow_location)
+            OnboardingStep.LOCATION_CONFIRM -> stringResource(R.string.onboarding_location_confirm_action)
+            OnboardingStep.REMINDERS -> stringResource(if (s.prayerRemindersEnabled) R.string.onboarding_reminders_turn_on else R.string.action_continue)
+            OnboardingStep.CATCH_UP -> stringResource(R.string.onboarding_add_missed)
+            OnboardingStep.CATCH_UP_RANGE -> pluralStringResource(R.plurals.onboarding_catch_up_add_action, s.catchUpPrayerCount, s.catchUpPrayerCount)
+            OnboardingStep.DONE -> stringResource(R.string.onboarding_done_action)
+            else -> stringResource(R.string.action_continue)
         }
-
-        Spacer(Modifier.height(24.dp))
-
-        Text(stringResource(R.string.onboarding_theme_label), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
-        Spacer(Modifier.height(8.dp))
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            ThemeChip(R.drawable.ic_light_mode, stringResource(R.string.theme_light), themeMode == ThemeMode.LIGHT, Modifier.weight(1f)) { onThemeSelected(ThemeMode.LIGHT) }
-            ThemeChip(R.drawable.ic_dark_mode, stringResource(R.string.theme_dark), themeMode == ThemeMode.DARK, Modifier.weight(1f)) { onThemeSelected(ThemeMode.DARK) }
-            ThemeChip(R.drawable.ic_contrast, stringResource(R.string.theme_system), themeMode == ThemeMode.SYSTEM, Modifier.weight(1f)) { onThemeSelected(ThemeMode.SYSTEM) }
+        val secondary = when (s.step) {
+            OnboardingStep.WELCOME -> R.string.onboarding_restore_backup
+            OnboardingStep.LOCATION_INTRO, OnboardingStep.LOCATION_CONFIRM -> R.string.onboarding_location_enter_city
+            OnboardingStep.CITY_SEARCH -> R.string.onboarding_location_use_my_location
+            OnboardingStep.REMINDERS, OnboardingStep.CATCH_UP -> R.string.action_skip_for_now
+            else -> null
         }
-
-        Spacer(Modifier.height(28.dp))
-
-        PrimaryButton(text = stringResource(R.string.action_continue), onClick = onContinue)
-        Spacer(Modifier.height(12.dp))
-        TextButton(onClick = onRestoreFromBackup, modifier = Modifier.fillMaxWidth()) {
-            Icon(painterResource(R.drawable.ic_cloud_upload), null, tint = SalatPrimary, modifier = Modifier.size(16.dp))
-            Spacer(Modifier.width(6.dp))
-            Text(stringResource(R.string.backup_onboarding_restore_action), color = SalatPrimary, fontSize = 13.sp, fontFamily = AppUiFontFamily, fontWeight = FontWeight.Medium)
-        }
-        Spacer(Modifier.height(4.dp))
-        Text(
-            stringResource(R.string.onboarding_change_later),
-            modifier = Modifier.fillMaxWidth(),
-            color = SalatOnSurfaceVariant,  fontSize = 12.sp, fontFamily = AppUiFontFamily, textAlign = TextAlign.Center,
-        )
-        Spacer(Modifier.height(24.dp))
-    }
-}
-
-@Composable
-private fun ThemeChip(icon: Int, label: String, isSelected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
-    Surface(
-        onClick = onClick, modifier = modifier, shape = RoundedCornerShape(12.dp),
-        color = if (isSelected) SalatPrimary else SalatSurfaceContainerLowest,
-        border = BorderStroke(1.dp, if (isSelected) SalatPrimary else SalatOutlineVariant),
-    ) {
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(vertical = 14.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Icon(painterResource(icon), null, tint = if (isSelected) SalatOnPrimary else SalatPrimary, modifier = Modifier.size(22.dp))
-            Spacer(Modifier.height(6.dp))
-            Text(label, color = if (isSelected) SalatOnPrimary else SalatOnSurfaceVariant, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
-        }
-    }
-}
-
-// ── About you (gender) ──────────────────────────────────────────────────────────
-
-@Composable
-private fun AboutYouStep(selected: Gender?, onSelect: (Gender) -> Unit, onNext: () -> Unit) {
-    Column(modifier = Modifier.fillMaxSize()) {
-        StepHeader(stepIndex = OnboardingStep.ABOUT_YOU.ordinal, title = stringResource(R.string.onboarding_about_you_title), subtitle = stringResource(R.string.onboarding_about_you_subtitle))
-        Spacer(Modifier.height(32.dp))
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            TitledOption(R.drawable.ic_person, stringResource(R.string.onboarding_gender_male), stringResource(R.string.onboarding_gender_male_desc), selected == Gender.MALE) { onSelect(Gender.MALE) }
-            TitledOption(R.drawable.ic_female, stringResource(R.string.onboarding_gender_female), stringResource(R.string.onboarding_gender_female_desc), selected == Gender.FEMALE) { onSelect(Gender.FEMALE) }
-        }
-        Spacer(Modifier.weight(1f))
-        PrimaryButton(text = stringResource(R.string.action_continue), enabled = selected != null, onClick = onNext)
-        Spacer(Modifier.height(24.dp))
-    }
-}
-
-// ── School of thought (Asr calculation) ─────────────────────────────────────────
-
-@Composable
-private fun SchoolStep(selected: Madhab, onSelect: (Madhab) -> Unit, onNext: () -> Unit) {
-    Column(modifier = Modifier.fillMaxSize()) {
-        StepHeader(stepIndex = OnboardingStep.SCHOOL.ordinal, title = stringResource(R.string.onboarding_school_title), subtitle = stringResource(R.string.onboarding_school_subtitle))
-        Spacer(Modifier.height(32.dp))
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            TitledOption(R.drawable.ic_mosque, stringResource(R.string.school_standard_title), stringResource(R.string.school_standard_desc), selected == Madhab.STANDARD) { onSelect(Madhab.STANDARD) }
-            TitledOption(R.drawable.ic_mosque, stringResource(R.string.school_hanafi_title), stringResource(R.string.school_hanafi_desc), selected == Madhab.HANAFI) { onSelect(Madhab.HANAFI) }
-            TitledOption(R.drawable.ic_mosque, stringResource(R.string.school_jafari_title), stringResource(R.string.school_jafari_desc), selected == Madhab.JAFARI) { onSelect(Madhab.JAFARI) }
-        }
-        Spacer(Modifier.weight(1f))
-        PrimaryButton(text = stringResource(R.string.action_next), onClick = onNext)
-        Spacer(Modifier.height(24.dp))
-    }
-}
-
-// ── Location: before permission ─────────────────────────────────────────────────
-
-@Composable
-private fun LocationIntroStep(isLocating: Boolean, locationError: Boolean, onAllowLocation: () -> Unit, onEnterCityInstead: () -> Unit) {
-    Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-        OnboardingNavigationHeader(OnboardingStep.LOCATION_INTRO)
-        Spacer(Modifier.weight(1f))
-        Box(
-            modifier = Modifier.size(120.dp).clip(CircleShape).background(SalatSecondaryContainer),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(painterResource(R.drawable.ic_my_location), null, tint = SalatPrimary, modifier = Modifier.size(56.dp))
-        }
-        Spacer(Modifier.height(28.dp))
-        Text(stringResource(R.string.onboarding_location_title), color = SalatPrimary, fontSize = 28.sp, fontWeight = FontWeight.Bold, fontFamily = AppTitleFontFamily, textAlign = TextAlign.Center)
-        Spacer(Modifier.height(12.dp))
-        Text(
-            stringResource(R.string.onboarding_location_desc),
-            color = SalatOnSurfaceVariant, fontSize = 15.sp, fontFamily = AppUiFontFamily, textAlign = TextAlign.Center, lineHeight = 22.sp,
-        )
-        Spacer(Modifier.height(36.dp))
-        if (locationError) {
-            Text(stringResource(R.string.onboarding_location_unavailable), color = SalatError, fontSize = 14.sp, fontFamily = AppUiFontFamily, textAlign = TextAlign.Center)
-            Spacer(Modifier.height(12.dp))
-        }
-        PrimaryButton(
-            text = if (isLocating) stringResource(R.string.onboarding_location_loading) else stringResource(R.string.onboarding_allow_location),
-            icon = R.drawable.ic_my_location,
-            enabled = !isLocating,
-            onClick = onAllowLocation,
-        )
-        Spacer(Modifier.height(8.dp))
-        SecondaryLink(text = stringResource(R.string.onboarding_location_enter_city), onClick = onEnterCityInstead)
-        Spacer(Modifier.weight(1f))
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            Icon(painterResource(R.drawable.ic_check_circle_filled), null, tint = SalatOnSurfaceVariant, modifier = Modifier.size(14.dp))
-            Text(stringResource(R.string.onboarding_location_privacy), color = SalatOnSurfaceVariant,  fontSize = 12.sp, fontFamily = AppUiFontFamily)
-        }
-        Spacer(Modifier.height(24.dp))
-    }
-}
-
-// ── City search ───────────────────────────────────────────────────────────────
-
-@Composable
-private fun CitySearchStep(
-    query: String,
-    results: List<CityResult>,
-    isSearching: Boolean,
-    selected: CityResult?,
-    onQueryChanged: (String) -> Unit,
-    onSelect: (CityResult) -> Unit,
-    onContinue: () -> Unit,
-    onUseMyLocationInstead: () -> Unit,
-) {
-    Column(modifier = Modifier.fillMaxSize()) {
-        StepHeader(stepIndex = OnboardingStep.LOCATION_CONFIRM.ordinal, title = stringResource(R.string.onboarding_city_search_title), subtitle = null)
-        Spacer(Modifier.height(20.dp))
-
-        CitySearchField(query = query, onQueryChanged = onQueryChanged)
-
-        Spacer(Modifier.height(16.dp))
-
-        CitySearchResults(query = query, results = results, isSearching = isSearching, selected = selected, onSelect = onSelect)
-
-        Spacer(Modifier.weight(1f))
-        PrimaryButton(text = stringResource(R.string.action_continue), enabled = selected != null, onClick = onContinue)
-        Spacer(Modifier.height(8.dp))
-        SecondaryLink(text = stringResource(R.string.onboarding_location_use_my_location), onClick = onUseMyLocationInstead)
-        Spacer(Modifier.height(24.dp))
-    }
-}
-
-// ── Location: after permission / after city chosen (confirm) ───────────────────
-
-@Composable
-private fun LocationConfirmStep(
-    city: CityResult?,
-    calculationMethod: CalculationMethod,
-    showCalculationMethodSheet: Boolean,
-    onConfirm: () -> Unit,
-    onChangeLocation: () -> Unit,
-    onCalculationMethodClick: () -> Unit,
-    onCalculationMethodDismiss: () -> Unit,
-    onCalculationMethodSelected: (CalculationMethod) -> Unit,
-) {
-    val today = remember { LocalDate.now() }
-    val hijri = remember(today) { today.toHijriOrNull() }
-    val suggestedCountry = city?.let { selectedCity -> selectedCity.country?.takeIf {
-        calculationMethod != CalculationMethod.DEFAULT && calculationMethod == CalculationMethod.suggestedFor(selectedCity.countryCode)
-    }
-    }
-    val methodValue = suggestedCountry?.let {
-        "${calculationMethod.displayName}\n${stringResource(R.string.onboarding_calculation_method_suggested, it)}"
-    } ?: calculationMethod.displayName
-
-    Column(modifier = Modifier.fillMaxSize()) {
-        StepHeader(stepIndex = OnboardingStep.LOCATION_CONFIRM.ordinal, title = stringResource(R.string.onboarding_location_confirm_title), subtitle = stringResource(R.string.onboarding_location_confirm_subtitle))
-        Spacer(Modifier.height(28.dp))
-
-        SummaryRow(
-            icon = R.drawable.ic_my_location,
-            label = city?.name?.takeIf { it.isNotBlank() } ?: stringResource(R.string.onboarding_location_label),
-            value = city?.displayLine.orEmpty(),
-            trailing = { SecondaryLink(stringResource(R.string.onboarding_location_change), onChangeLocation) },
-        )
-        Spacer(Modifier.height(16.dp))
-        HorizontalDivider(color = SalatOutlineVariant.copy(alpha = 0.4f))
-        Spacer(Modifier.height(16.dp))
-        SummaryRow(
-            icon = R.drawable.ic_history_edu,
-            label = stringResource(R.string.settings_calc_method),
-            value = methodValue,
-            trailing = { SecondaryLink(stringResource(R.string.onboarding_location_change), onCalculationMethodClick) },
-        )
-        if (hijri != null) {
-            Spacer(Modifier.height(16.dp))
-            HorizontalDivider(color = SalatOutlineVariant.copy(alpha = 0.4f))
-            Spacer(Modifier.height(16.dp))
-            SummaryRow(
-                icon = R.drawable.ic_calendar_today,
-                label = stringResource(R.string.onboarding_hijri_date_label),
-                value = hijri.fullLabel(),
-                trailing = null,
-            )
-        }
-
-        Spacer(Modifier.weight(1f))
-        PrimaryButton(text = stringResource(R.string.onboarding_location_confirm_action), enabled = city != null, onClick = onConfirm)
-        Spacer(Modifier.height(24.dp))
-    }
-
-    if (showCalculationMethodSheet) {
-        CalculationMethodSheet(selected = calculationMethod, onSelect = onCalculationMethodSelected, onDismiss = onCalculationMethodDismiss)
-    }
-}
-
-@Composable
-private fun SummaryRow(icon: Int, label: String, value: String, trailing: (@Composable () -> Unit)?) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-            Box(
-                modifier = Modifier.size(40.dp).clip(CircleShape).background(SalatSecondaryContainer),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(painterResource(icon), null, tint = SalatPrimary, modifier = Modifier.size(20.dp))
-            }
-            Column {
-                Text(label, color = SalatOnSurface, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
-                if (value.isNotBlank()) {
-                    Text(value, color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
-                }
-            }
-        }
-        trailing?.invoke()
-    }
-}
-
-// ── Reminders ────────────────────────────────────────────────────────────────
-
-@Composable
-private fun RemindersStep(
-    prayerRemindersEnabled: Boolean,
-    fullScreenAlertEnabled: Boolean,
-    onPrayerRemindersChanged: (Boolean) -> Unit,
-    onFullScreenAlertChanged: (Boolean) -> Unit,
-    onNext: () -> Unit,
-    onSkip: () -> Unit,
-) {
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        OnboardingNavigationHeader(OnboardingStep.REMINDERS)
-        Spacer(Modifier.height(16.dp))
-        Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            Box(
-                modifier = Modifier.size(96.dp).clip(CircleShape).background(SalatPrimary),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(painterResource(R.drawable.ic_notifications), null, tint = SalatOnPrimary, modifier = Modifier.size(44.dp))
-            }
-            Spacer(Modifier.height(24.dp))
-            Text(stringResource(R.string.onboarding_notifications_title), color = SalatPrimary, fontSize = 26.sp, fontWeight = FontWeight.Bold, fontFamily = AppTitleFontFamily, textAlign = TextAlign.Center)
-            Spacer(Modifier.height(8.dp))
-            Text(stringResource(R.string.onboarding_notifications_subtitle), color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = AppUiFontFamily, textAlign = TextAlign.Center)
-        }
-
-        Spacer(Modifier.height(32.dp))
-
-        ToggleRow(icon = R.drawable.ic_schedule, label = stringResource(R.string.prayer_reminders), checked = prayerRemindersEnabled, onCheckedChange = onPrayerRemindersChanged)
-        Spacer(Modifier.height(10.dp))
-        ToggleRow(icon = R.drawable.ic_notifications, label = stringResource(R.string.onboarding_reminders_fullscreen_title), checked = fullScreenAlertEnabled, onCheckedChange = onFullScreenAlertChanged)
-        Spacer(Modifier.height(10.dp))
-        AzanPreviewRow()
-
-        Spacer(Modifier.height(32.dp))
-        PrimaryButton(
-            text = stringResource(if (prayerRemindersEnabled) R.string.onboarding_reminders_turn_on else R.string.action_continue),
-            icon = R.drawable.ic_arrow_forward,
-            onClick = onNext,
-        )
-        Spacer(Modifier.height(8.dp))
-        SecondaryLink(text = stringResource(R.string.action_skip_for_now), onClick = onSkip)
-        Spacer(Modifier.height(24.dp))
-    }
-}
-
-/** Previews the app's default reminder sound (Azan) — the one sound onboarding offers; picking a
- * different per-prayer sound stays a Prayer Reminders / Settings thing, done after onboarding.
- * Uses the same explicit notification-usage [AudioAttributes] as
- * feature/reminders's SoundChooserDialog, so the preview matches what the real reminder sounds
- * like (and still respects ringer mode) rather than defaulting to the media/music stream. */
-@Composable
-private fun AzanPreviewRow() {
-    val previewPlayer = rememberAzanPreviewPlayer(R.raw.azan)
-
-    Surface(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp), color = SalatSurfaceContainerLow) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Box(
-                    modifier = Modifier.size(40.dp).clip(CircleShape).background(SalatSecondaryContainer),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(painterResource(R.drawable.ic_notifications), null, tint = SalatOnSecondaryContainer, modifier = Modifier.size(20.dp))
-                }
-                Text(stringResource(R.string.reminders_sound_azan), color = SalatOnSurface, fontSize = 15.sp, fontWeight = FontWeight.Medium, fontFamily = AppUiFontFamily)
-            }
-            TextButton(onClick = {
-                previewPlayer.play()
-            }) {
-                Text(stringResource(R.string.reminders_sound_preview), color = SalatPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
-            }
-        }
-    }
-}
-
-// ── Catch up (optional) ─────────────────────────────────────────────────────────
-
-@Composable
-private fun CatchUpStep(onAddMissedClick: () -> Unit, onSkip: () -> Unit) {
-    Column(modifier = Modifier.fillMaxSize()) {
-        StepHeader(stepIndex = OnboardingStep.CATCH_UP.ordinal, title = stringResource(R.string.onboarding_catch_up_title), subtitle = stringResource(R.string.onboarding_catch_up_subtitle))
-        Spacer(Modifier.height(28.dp))
-
-        Box(
-            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(SalatSurfaceContainerLowest).padding(16.dp),
-        ) {
-            Icon(painterResource(R.drawable.ic_pending_actions), null, tint = SalatTertiary, modifier = Modifier.size(28.dp))
-        }
-
-        Spacer(Modifier.weight(1f))
-        PrimaryButton(text = stringResource(R.string.action_continue), icon = R.drawable.ic_pending_actions, onClick = onAddMissedClick)
-        Spacer(Modifier.height(8.dp))
-        SecondaryLink(text = stringResource(R.string.action_skip_for_now), onClick = onSkip)
-        Spacer(Modifier.height(24.dp))
-    }
-}
-
-@Composable
-private fun CatchUpAddStep(
-    duration: CatchUpDuration,
-    prayerCount: Int,
-    customFrom: LocalDate,
-    customTo: LocalDate,
-    onDurationChanged: (CatchUpDuration) -> Unit,
-    onCustomRangeChanged: (LocalDate, LocalDate) -> Unit,
-    onApply: () -> Unit,
-) {
-    var showConfirmation by remember { mutableStateOf(false) }
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        StepHeader(stepIndex = OnboardingStep.CATCH_UP.ordinal, title = stringResource(R.string.onboarding_catch_up_add_title), subtitle = stringResource(R.string.onboarding_catch_up_add_subtitle))
-        Spacer(Modifier.height(28.dp))
-
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            CatchUpDurationOption(CatchUpDuration.WEEK, duration, onDurationChanged)
-            CatchUpDurationOption(CatchUpDuration.MONTH, duration, onDurationChanged)
-            CatchUpDurationOption(CatchUpDuration.HALF_YEAR, duration, onDurationChanged)
-            CatchUpDurationOption(CatchUpDuration.CUSTOM, duration, onDurationChanged)
-
-            if (duration == CatchUpDuration.CUSTOM) {
-                CustomRangePickers(from = customFrom, to = customTo, onChanged = onCustomRangeChanged)
-            }
-        }
-
-        Spacer(Modifier.height(28.dp))
-        PrimaryButton(text = pluralStringResource(R.plurals.onboarding_catch_up_add_action, prayerCount, prayerCount), onClick = { showConfirmation = true })
-        Spacer(Modifier.height(24.dp))
-    }
-    if (showConfirmation) {
-        AlertDialog(
-            onDismissRequest = { showConfirmation = false },
-            title = { Text(stringResource(R.string.onboarding_catch_up_confirm_title), fontFamily = AppTitleFontFamily) },
-            text = { Text(stringResource(R.string.onboarding_catch_up_confirm_message, prayerCount), fontFamily = AppUiFontFamily) },
-            confirmButton = {
-                TextButton(onClick = { showConfirmation = false; onApply() }) {
-                    Text(stringResource(R.string.action_continue), color = SalatPrimary)
+        OnboardingFrame(
+            step = s.step, title = stringResource(title), subtitle = subtitle?.let { stringResource(it) },
+            action = action, enabled = when (s.step) {
+                OnboardingStep.ABOUT_YOU -> s.gender != null
+                OnboardingStep.CITY_SEARCH, OnboardingStep.LOCATION_CONFIRM -> s.confirmedCity != null
+                OnboardingStep.LOCATION_INTRO -> !s.isLocating
+                OnboardingStep.CATCH_UP_RANGE -> !s.isApplyingCatchUp
+                OnboardingStep.DONE -> !s.isFinishing
+                else -> true
+            },
+            onAction = {
+                when (s.step) {
+                    OnboardingStep.WELCOME -> onWelcomeNext()
+                    OnboardingStep.ABOUT_YOU -> onAboutYouNext()
+                    OnboardingStep.SCHOOL -> onSchoolNext()
+                    OnboardingStep.LOCATION_INTRO -> onAllowLocationClick()
+                    OnboardingStep.CITY_SEARCH -> onCitySearchContinue()
+                    OnboardingStep.LOCATION_CONFIRM -> onConfirmLocation()
+                    OnboardingStep.REMINDERS -> onRemindersNext()
+                    OnboardingStep.CATCH_UP -> onCatchUpNext()
+                    OnboardingStep.CATCH_UP_RANGE -> { confirmCatchUp = true }
+                    OnboardingStep.DONE -> onFinish()
                 }
             },
-            dismissButton = { TextButton(onClick = { showConfirmation = false }) { Text(stringResource(R.string.action_cancel)) } },
+            secondary = secondary?.let { stringResource(it) },
+            onSecondary = {
+                when (s.step) {
+                    OnboardingStep.WELCOME -> onRestoreFromBackup()
+                    OnboardingStep.LOCATION_INTRO -> onEnterCityInstead()
+                    OnboardingStep.LOCATION_CONFIRM -> onChangeLocationClick()
+                    OnboardingStep.CITY_SEARCH -> onUseMyLocationInstead()
+                    OnboardingStep.REMINDERS -> onRemindersSkip()
+                    OnboardingStep.CATCH_UP -> onCatchUpSkip()
+                    else -> Unit
+                }
+            },
+            onBack = onBack,
+        ) {
+            when (s.step) {
+                OnboardingStep.WELCOME -> {
+                    SectionLabel(stringResource(R.string.settings_language))
+                    AppLanguage.values().forEach { language ->
+                        OptionRow(language.displayName, selected = s.language == language,
+                            onClick = { onLanguageSelected(language) })
+                    }
+                    Spacer(Modifier.height(12.dp))
+                    SectionLabel(stringResource(R.string.onboarding_theme_label))
+                    Row(Modifier.fillMaxWidth().testTag("onboarding-theme-tray").clip(RoundedCornerShape(10.dp))
+                        .background(SalatSurfaceContainerLow).padding(2.dp)) {
+                        listOf(Triple(ThemeMode.LIGHT, R.drawable.ic_light_mode, R.string.theme_light),
+                            Triple(ThemeMode.DARK, R.drawable.ic_dark_mode, R.string.theme_dark),
+                            Triple(ThemeMode.SYSTEM, R.drawable.ic_contrast, R.string.theme_system)).forEach { (mode, icon, label) ->
+                            val selected = mode == s.themeMode
+                            Row(Modifier.weight(1f).clip(RoundedCornerShape(8.dp))
+                                .background(if (selected) SalatBackground else Color.Transparent)
+                                .selectable(selected, onClick = { onThemeSelected(mode) }, role = Role.RadioButton)
+                                .heightIn(min = 40.dp).padding(horizontal = 4.dp, vertical = 6.dp),
+                                horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                                Icon(painterResource(icon), null, Modifier.size(13.dp), tint = SalatPrimary)
+                                Spacer(Modifier.width(5.dp))
+                                BodyText(stringResource(label), size = 11, weight = if (selected) FontWeight.SemiBold else FontWeight.Normal)
+                            }
+                        }
+                    }
+                }
+                OnboardingStep.ABOUT_YOU -> {
+                    OptionRow(stringResource(R.string.onboarding_gender_male), stringResource(R.string.onboarding_gender_male_desc),
+                        s.gender == Gender.MALE, R.drawable.onboarding_male) { onGenderSelected(Gender.MALE) }
+                    OptionRow(stringResource(R.string.onboarding_gender_female), stringResource(R.string.onboarding_gender_female_desc),
+                        s.gender == Gender.FEMALE, R.drawable.onboarding_female) { onGenderSelected(Gender.FEMALE) }
+                    Spacer(Modifier.height(14.dp))
+                    BodyText(stringResource(R.string.onboarding_excused_explanation))
+                    Spacer(Modifier.height(12.dp))
+                    BodyText(stringResource(R.string.onboarding_location_privacy), size = 11, muted = true)
+                }
+                OnboardingStep.SCHOOL -> {
+                    listOf(Triple(Madhab.STANDARD, R.string.school_standard_title, R.string.school_standard_desc),
+                        Triple(Madhab.HANAFI, R.string.school_hanafi_title, R.string.school_hanafi_desc),
+                        Triple(Madhab.JAFARI, R.string.school_jafari_title, R.string.school_jafari_desc)).forEach { (school, label, description) ->
+                        OptionRow(stringResource(label), stringResource(description), s.madhab == school) { onMadhabSelected(school) }
+                    }
+                }
+                OnboardingStep.LOCATION_INTRO -> {
+                    OnboardingLocationHero()
+                    SummaryRow(stringResource(R.string.onboarding_prayer_times), stringResource(R.string.onboarding_exact_city), R.drawable.ic_schedule)
+                    SummaryRow(stringResource(R.string.onboarding_hijri_date_label), stringResource(R.string.onboarding_region_date), R.drawable.ic_calendar_today)
+                    Spacer(Modifier.height(12.dp))
+                    BodyText(stringResource(R.string.onboarding_location_privacy), size = 11, muted = true)
+                    if (s.locationError) {
+                        Spacer(Modifier.height(12.dp))
+                        BodyText(stringResource(R.string.onboarding_location_unavailable), color = SalatError)
+                    }
+                }
+                OnboardingStep.CITY_SEARCH -> CitySearchBody(s, onCityQueryChanged, onCitySelected)
+                OnboardingStep.LOCATION_CONFIRM -> {
+                    SummaryRow(s.confirmedCity?.fullLabel.orEmpty(), stringResource(R.string.onboarding_location_label),
+                        R.drawable.onboarding_pin, stringResource(R.string.onboarding_location_change), onChangeLocationClick)
+                    SummaryRow(s.calculationMethod.displayName + " · " + s.madhab.name.lowercase().replaceFirstChar { it.titlecase() },
+                        stringResource(R.string.settings_calc_method), R.drawable.onboarding_method,
+                        stringResource(R.string.onboarding_location_change), onCalculationMethodSheetOpen)
+                    val hijri = remember { LocalDate.now().toHijriOrNull() }
+                    if (hijri != null) SummaryRow(hijri.fullLabel(), stringResource(R.string.onboarding_hijri_date_label), R.drawable.ic_calendar_today)
+                    Spacer(Modifier.height(12.dp))
+                    BodyText(stringResource(R.string.onboarding_location_privacy), size = 11, muted = true)
+                }
+                OnboardingStep.REMINDERS -> {
+                    ReminderRow(stringResource(R.string.prayer_reminders), stringResource(R.string.onboarding_each_adhan),
+                        R.drawable.ic_notifications, s.prayerRemindersEnabled, onPrayerRemindersChanged)
+                    ReminderRow(stringResource(R.string.onboarding_reminders_fullscreen_title), stringResource(R.string.onboarding_reminders_fullscreen_desc),
+                        R.drawable.onboarding_screen, s.fullScreenAlertEnabled, onFullScreenAlertChanged)
+                    val preview = rememberAzanPreviewPlayer(R.raw.azan)
+                    SummaryRow(stringResource(R.string.reminders_sound_azan), stringResource(R.string.onboarding_sound),
+                        R.drawable.onboarding_sound, stringResource(R.string.onboarding_preview), { preview.play() })
+                    Spacer(Modifier.height(12.dp))
+                    BodyText(stringResource(R.string.onboarding_android_permissions), size = 11, muted = true)
+                }
+                OnboardingStep.CATCH_UP -> {
+                    val arabic = listOf("الفجر", "الظهر", "العصر", "المغرب", "العشاء")
+                    PrayerType.values().forEachIndexed { index, prayer ->
+                        Row(Modifier.fillMaxWidth().heightIn(min = LocalOnboardingRowMinHeight.current).padding(vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically) {
+                            BodyText(prayer.name.lowercase().replaceFirstChar { it.titlecase() }, Modifier.weight(1f), size = 15)
+                            Text(arabic[index], color = SalatOnSurfaceVariant, fontFamily = OnboardingArabicFont, fontSize = 20.sp)
+                            Spacer(Modifier.width(14.dp))
+                            BodyText("0", weight = FontWeight.SemiBold)
+                        }
+                        HorizontalDivider(color = SalatOutlineVariant)
+                    }
+                    Spacer(Modifier.height(14.dp))
+                    BodyText(stringResource(R.string.onboarding_catch_up_explanation))
+                }
+                OnboardingStep.CATCH_UP_RANGE -> {
+                    CatchUpDuration.values().forEach { duration ->
+                        val label = when (duration) {
+                            CatchUpDuration.WEEK -> R.string.onboarding_catch_up_duration_week
+                            CatchUpDuration.MONTH -> R.string.onboarding_catch_up_duration_month
+                            CatchUpDuration.HALF_YEAR -> R.string.onboarding_catch_up_duration_half_year
+                            CatchUpDuration.CUSTOM -> R.string.bulk_dur_custom
+                        }
+                        OptionRow(stringResource(label),
+                            if (duration == CatchUpDuration.CUSTOM) stringResource(R.string.onboarding_pick_dates)
+                            else pluralStringResource(R.plurals.onboarding_catch_up_prayer_count, duration.days * 5, duration.days * 5),
+                            s.catchUpDuration == duration) { onCatchUpDurationChanged(duration) }
+                    }
+                    if (s.catchUpDuration == CatchUpDuration.CUSTOM)
+                        CustomRangePickers(s.catchUpCustomFrom, s.catchUpCustomTo, onCatchUpCustomRangeChanged)
+                    SummaryRow(stringResource(R.string.onboarding_all_prayers), stringResource(R.string.onboarding_prayers_included))
+                    Spacer(Modifier.height(12.dp))
+                    BodyText(stringResource(R.string.onboarding_edit_calendar), size = 11, muted = true)
+                }
+                OnboardingStep.DONE -> {
+                    SummaryRow(s.language.displayName, stringResource(R.string.onboarding_done_summary_language))
+                    SummaryRow(listOfNotNull(s.confirmedCity?.name, s.madhab.name.lowercase().replaceFirstChar { it.titlecase() }).joinToString(", "),
+                        stringResource(R.string.settings_calc_method))
+                    SummaryRow(stringResource(if (s.prayerRemindersEnabled) R.string.onboarding_done_reminders_on else R.string.onboarding_done_reminders_off),
+                        stringResource(R.string.onboarding_done_summary_reminders))
+                    SummaryRow(stringResource(if (s.catchUpAppliedCount != null) R.string.onboarding_done_qaza_added else R.string.onboarding_done_qaza_set_up_later),
+                        stringResource(R.string.onboarding_done_summary_qaza))
+                    if (s.catchUpUndoAvailable) TextButton(onClick = onUndoCatchUp) { BodyText(stringResource(R.string.action_undo), color = SalatPrimary) }
+                }
+            }
+        }
+        if (s.showCalculationMethodSheet) CalculationMethodSheet(s.calculationMethod, onCalculationMethodSelected, onCalculationMethodSheetDismiss)
+        if (confirmCatchUp) AlertDialog(
+            onDismissRequest = { confirmCatchUp = false },
+            title = { BodyText(stringResource(R.string.onboarding_catch_up_confirm_title), size = 20) },
+            text = { BodyText(stringResource(R.string.onboarding_catch_up_confirm_message, s.catchUpPrayerCount)) },
+            confirmButton = { TextButton(onClick = { confirmCatchUp = false; onApplyCatchUp() }) { BodyText(stringResource(R.string.action_continue), color = SalatPrimary) } },
+            dismissButton = { TextButton(onClick = { confirmCatchUp = false }) { BodyText(stringResource(R.string.action_cancel)) } },
         )
     }
 }
 
+/** The body receives bounded space; actions are measured first and never scroll out of reach. */
 @Composable
-private fun CatchUpDurationOption(option: CatchUpDuration, selected: CatchUpDuration, onSelect: (CatchUpDuration) -> Unit) {
-    val titleRes = when (option) {
-        CatchUpDuration.WEEK -> R.string.onboarding_catch_up_duration_week
-        CatchUpDuration.MONTH -> R.string.onboarding_catch_up_duration_month
-        CatchUpDuration.HALF_YEAR -> R.string.onboarding_catch_up_duration_half_year
-        CatchUpDuration.CUSTOM -> R.string.bulk_dur_custom
+private fun OnboardingFrame(
+    step: OnboardingStep, title: String, subtitle: String?,
+    action: String, enabled: Boolean, onAction: () -> Unit,
+    secondary: String?, onSecondary: () -> Unit, onBack: () -> Unit,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    Column(Modifier.fillMaxSize().background(SalatBackground).safeDrawingPadding().imePadding()) {
+        Box(Modifier.fillMaxWidth()) {
+            OnboardingLanterns(Modifier.matchParentSize().wrapContentWidth(Alignment.End, unbounded = true)
+                .width(190.dp).offset(x = 8.dp, y = (-16).dp).testTag("onboarding-lanterns"))
+            Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(top = 16.dp)) {
+                val progress = when (step) {
+                    OnboardingStep.WELCOME -> 1
+                    OnboardingStep.ABOUT_YOU -> 2
+                    OnboardingStep.SCHOOL, OnboardingStep.LOCATION_INTRO, OnboardingStep.LOCATION_CONFIRM, OnboardingStep.CITY_SEARCH -> 3
+                    OnboardingStep.REMINDERS -> 4
+                    OnboardingStep.CATCH_UP, OnboardingStep.CATCH_UP_RANGE -> 5
+                    OnboardingStep.DONE -> 0
+                }
+                Row(Modifier.fillMaxWidth().heightIn(min = 20.dp), verticalAlignment = Alignment.CenterVertically) {
+                    if (progress != 0) {
+                        Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            repeat(5) { index -> Box(Modifier.weight(1f).height(2.dp).clip(CircleShape)
+                                .background(if (index < progress) SalatPrimary else SalatOutlineVariant)) }
+                        }
+                        Spacer(Modifier.width(10.dp))
+                        BodyText(stringResource(R.string.onboarding_step_progress, progress, 5), size = 10, muted = true)
+                    }
+                }
+                Spacer(Modifier.height(16.dp))
+                Text(title, color = SalatOnSurface, fontFamily = if (LocalConfiguration.current.locales[0].language in listOf("ar", "ur")) OnboardingArabicFont else OnboardingTitleFont,
+                    fontWeight = FontWeight.SemiBold, fontSize = 28.sp, lineHeight = 32.sp,
+                    textAlign = TextAlign.Start, modifier = Modifier.fillMaxWidth())
+                Spacer(Modifier.height(4.dp))
+                Box(Modifier.width(26.dp).height(2.dp).background(OnboardingGold))
+                Spacer(Modifier.height(10.dp))
+                if (subtitle != null) BodyText(subtitle, size = 14, muted = true)
+                Spacer(Modifier.height(14.dp))
+            }
+        }
+        key(step) {
+            BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
+                // Share spare height across the functional rows, reserving room for
+                // descriptions and helper text. Keep content near the heading; do not
+                // move the entire body down into the middle of a tall window.
+                val (rows, supportingContent, rowLimit) = when (step) {
+                    OnboardingStep.WELCOME -> Triple(4, 152.dp, 96.dp)
+                    OnboardingStep.ABOUT_YOU -> Triple(2, 148.dp, 144.dp)
+                    OnboardingStep.SCHOOL -> Triple(3, 32.dp, 144.dp)
+                    OnboardingStep.LOCATION_INTRO -> Triple(2, 201.dp, 120.dp)
+                    OnboardingStep.CITY_SEARCH -> Triple(3, 128.dp, 128.dp)
+                    OnboardingStep.LOCATION_CONFIRM, OnboardingStep.REMINDERS -> Triple(3, 80.dp, 128.dp)
+                    OnboardingStep.CATCH_UP -> Triple(5, 100.dp, 96.dp)
+                    OnboardingStep.CATCH_UP_RANGE -> Triple(5, 80.dp, 112.dp)
+                    OnboardingStep.DONE -> Triple(4, 24.dp, 128.dp)
+                }
+                val rowHeight = ((maxHeight - supportingContent) / rows).coerceIn(64.dp, rowLimit)
+                CompositionLocalProvider(LocalOnboardingRowMinHeight provides rowHeight) {
+                    Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState())
+                        .heightIn(min = maxHeight).padding(horizontal = 20.dp, vertical = 12.dp), content = content)
+                }
+            }
+        }
+        Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(top = 6.dp, bottom = 12.dp)
+            .testTag("onboarding-footer")) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically) {
+                if (step != OnboardingStep.WELCOME && step != OnboardingStep.DONE) {
+                    OutlinedIconButton(onClick = onBack, modifier = Modifier.size(48.dp),
+                        shape = CircleShape, border = BorderStroke(1.dp, SalatOutlineVariant)) {
+                        Icon(painterResource(R.drawable.onboarding_back), stringResource(R.string.cd_back), Modifier.size(18.dp), tint = SalatOnSurfaceVariant)
+                    }
+                }
+                Button(onClick = onAction, enabled = enabled, modifier = Modifier.weight(1f).heightIn(min = 48.dp),
+                    shape = CircleShape, contentPadding = PaddingValues(horizontal = 14.dp, vertical = 10.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = SalatPrimary, contentColor = SalatOnPrimary,
+                        disabledContainerColor = SalatOutlineVariant, disabledContentColor = SalatOnSurfaceVariant)) {
+                    BodyText(action, size = 13, color = if (enabled) SalatOnPrimary else SalatOnSurfaceVariant, weight = FontWeight.SemiBold)
+                    if (step != OnboardingStep.DONE) {
+                        Spacer(Modifier.width(6.dp))
+                        Icon(painterResource(R.drawable.ic_arrow_forward), null, Modifier.size(15.dp))
+                    }
+                }
+            }
+            if (secondary != null) {
+                Spacer(Modifier.height(3.dp))
+                Box(Modifier.fillMaxWidth().heightIn(min = 36.dp).clickable(role = Role.Button, onClick = onSecondary).padding(3.dp),
+                    contentAlignment = Alignment.Center) {
+                    BodyText(secondary, size = 12, muted = true)
+                }
+            }
+        }
     }
-    val subtitle = if (option == CatchUpDuration.CUSTOM) {
-        null
-    } else {
-        pluralStringResource(R.plurals.onboarding_catch_up_prayer_count, option.days * 5, option.days * 5)
-    }
-    TitledOption(
-        icon = R.drawable.ic_pending_actions,
-        title = stringResource(titleRes),
-        subtitle = subtitle,
-        isSelected = option == selected,
-        onClick = { onSelect(option) },
-    )
 }
+
+@Composable
+private fun BodyText(text: String, modifier: Modifier = Modifier, size: Int = 14, muted: Boolean = false,
+    weight: FontWeight = FontWeight.Normal, color: Color = Color.Unspecified) {
+    val language = LocalConfiguration.current.locales[0].language
+    val font = when {
+        language == "ur" -> NastaliqUrduFamily
+        language == "ar" || text.any { it in '\u0600'..'\u06FF' } -> OnboardingArabicFont
+        else -> OnboardingBodyFont
+    }
+    Text(text, modifier, color = if (color != Color.Unspecified) color else if (muted) SalatOnSurfaceVariant else SalatOnSurface,
+        fontSize = size.sp, lineHeight = (size * 1.5f).sp, fontWeight = weight, fontFamily = font)
+}
+
+@Composable
+private fun SectionLabel(text: String) {
+    Spacer(Modifier.height(10.dp))
+    BodyText(text.uppercase(), size = 11, muted = true)
+    Spacer(Modifier.height(2.dp))
+}
+
+@Composable
+private fun OptionRow(label: String, description: String? = null, selected: Boolean, icon: Int? = null, onClick: () -> Unit) {
+    Row(Modifier.fillMaxWidth().selectable(selected, onClick = onClick, role = Role.RadioButton)
+        .heightIn(min = LocalOnboardingRowMinHeight.current).padding(vertical = 16.dp), verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Column(Modifier.weight(1f)) {
+            BodyText(label, size = 15, color = if (selected) SalatPrimary else SalatOnSurface)
+            if (description != null) BodyText(description, size = 12, muted = true)
+        }
+        if (icon != null) Icon(painterResource(icon), null, Modifier.size(20.dp), tint = SalatPrimary)
+        Surface(shape = CircleShape, color = SalatBackground, border = BorderStroke(if (selected) 5.dp else 1.dp,
+            if (selected) SalatPrimary else SalatOutlineVariant), modifier = Modifier.size(16.dp)) {}
+    }
+    HorizontalDivider(color = SalatOutlineVariant)
+}
+
+/** Reserve the action's width before measuring the content, including long method/city names. */
+@Composable
+private fun SummaryRow(value: String, label: String, icon: Int? = null, action: String? = null, onAction: () -> Unit = {}) {
+    Row(Modifier.fillMaxWidth().heightIn(min = maxOf(72.dp, LocalOnboardingRowMinHeight.current)).padding(vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        if (icon != null) Icon(painterResource(icon), null, Modifier.size(18.dp), tint = SalatPrimary)
+        Column(Modifier.weight(1f)) {
+            BodyText(label, size = 12, muted = true)
+            BodyText(value, size = 16, weight = FontWeight.SemiBold)
+        }
+        if (action != null) TextButton(onClick = onAction, contentPadding = PaddingValues(horizontal = 4.dp)) {
+            BodyText(action, size = 12, color = SalatPrimary, weight = FontWeight.SemiBold)
+        }
+    }
+    HorizontalDivider(color = SalatOutlineVariant)
+}
+
+@Composable
+private fun ReminderRow(label: String, description: String, icon: Int, checked: Boolean, onChange: (Boolean) -> Unit) {
+    Row(Modifier.fillMaxWidth().heightIn(min = maxOf(76.dp, LocalOnboardingRowMinHeight.current)).padding(vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Icon(painterResource(icon), null, Modifier.size(18.dp), tint = SalatPrimary)
+        Column(Modifier.weight(1f)) {
+            BodyText(label, size = 15, weight = FontWeight.SemiBold)
+            BodyText(description, size = 12, muted = true)
+        }
+        Switch(checked, onChange, colors = SwitchDefaults.colors(checkedTrackColor = SalatPrimary,
+            checkedThumbColor = SalatBackground, uncheckedTrackColor = SalatOutlineVariant))
+    }
+    HorizontalDivider(color = SalatOutlineVariant)
+}
+
+@Composable
+private fun CitySearchBody(s: OnboardingUiState, onQuery: (String) -> Unit, onSelect: (CityResult) -> Unit) {
+    TextField(value = s.cityQuery, onValueChange = onQuery, singleLine = true,
+        modifier = Modifier.fillMaxWidth(), placeholder = { BodyText(stringResource(R.string.onboarding_city_search_placeholder), size = 16, muted = true) },
+        leadingIcon = { Icon(painterResource(R.drawable.ic_search), null, Modifier.size(18.dp)) },
+        textStyle = LocalTextStyle.current.copy(fontFamily = OnboardingBodyFont, fontSize = 16.sp),
+        colors = TextFieldDefaults.colors(focusedContainerColor = Color.Transparent, unfocusedContainerColor = Color.Transparent,
+            focusedIndicatorColor = SalatPrimary, unfocusedIndicatorColor = SalatOutlineVariant))
+    Spacer(Modifier.height(12.dp))
+    when {
+        s.isSearchingCity -> Row(verticalAlignment = Alignment.CenterVertically) {
+            CircularProgressIndicator(Modifier.size(14.dp), color = SalatPrimary, strokeWidth = 2.dp)
+            Spacer(Modifier.width(8.dp))
+            BodyText(stringResource(R.string.onboarding_city_search_searching), muted = true)
+        }
+        s.cityQuery.isNotBlank() && s.cityResults.isEmpty() ->
+            BodyText(stringResource(R.string.onboarding_city_search_no_results, s.cityQuery))
+        else -> {
+            val results = if (s.cityQuery.isBlank()) suggestedCities else s.cityResults
+            if (s.cityQuery.isBlank()) SectionLabel(stringResource(R.string.onboarding_suggested_cities))
+            results.forEach { city ->
+                Row(Modifier.fillMaxWidth().clickable(role = Role.Button) { onSelect(city) }
+                    .heightIn(min = maxOf(72.dp, LocalOnboardingRowMinHeight.current)).padding(vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        BodyText(city.name, size = 15, weight = FontWeight.SemiBold)
+                        BodyText(city.displayLine, size = 12, muted = true)
+                    }
+                    if (s.confirmedCity == city) Icon(painterResource(R.drawable.ic_check_circle_filled), null, Modifier.size(18.dp), tint = SalatPrimary)
+                }
+                HorizontalDivider(color = SalatOutlineVariant)
+            }
+        }
+    }
+}
+
+private val suggestedCities = listOf(
+    CityResult("Karachi", "Sindh", "Pakistan", 24.8607, 67.0011, "PK"),
+    CityResult("Lahore", "Punjab", "Pakistan", 31.5204, 74.3587, "PK"),
+    CityResult("Islamabad", "Capital Territory", "Pakistan", 33.6844, 73.0479, "PK"),
+)
 
 @Composable
 private fun CustomRangePickers(from: LocalDate, to: LocalDate, onChanged: (LocalDate, LocalDate) -> Unit) {
-    var showFromPicker by remember { mutableStateOf(false) }
-    var showToPicker by remember { mutableStateOf(false) }
-    val dateFormatter = remember { DateTimeFormatter.ofPattern("MMM d") }
-
-    Row(modifier = Modifier.fillMaxWidth().padding(start = 16.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        OutlinedButton(onClick = { showFromPicker = true }, modifier = Modifier.weight(1f)) {
-            Icon(painterResource(R.drawable.ic_calendar_today), null, tint = SalatPrimary, modifier = Modifier.size(16.dp))
-            Spacer(Modifier.width(6.dp))
-            Text(stringResource(R.string.bulk_start, from.format(dateFormatter)), fontFamily = AppUiFontFamily, fontSize = 12.sp, color = SalatOnSurface)
-        }
-        OutlinedButton(onClick = { showToPicker = true }, modifier = Modifier.weight(1f)) {
-            Icon(painterResource(R.drawable.ic_calendar_today), null, tint = SalatPrimary, modifier = Modifier.size(16.dp))
-            Spacer(Modifier.width(6.dp))
-            Text(stringResource(R.string.bulk_end, to.format(dateFormatter)), fontFamily = AppUiFontFamily, fontSize = 12.sp, color = SalatOnSurface)
-        }
-    }
-
-    if (showFromPicker) {
-        DatePickerModal(initialDate = from, onDatePicked = { picked -> showFromPicker = false; onChanged(picked, to) }, onDismiss = { showFromPicker = false })
-    }
-    if (showToPicker) {
-        DatePickerModal(initialDate = to, onDatePicked = { picked -> showToPicker = false; onChanged(from, picked) }, onDismiss = { showToPicker = false })
-    }
-}
-
-// ── Done ─────────────────────────────────────────────────────────────────────
-
-@Composable
-private fun DoneStep(uiState: OnboardingUiState, onUndoCatchUp: () -> Unit, onFinish: () -> Unit) {
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.height(48.dp))
-        Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            Box(
-                modifier = Modifier.size(96.dp).clip(CircleShape).background(SalatPrimary),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(painterResource(R.drawable.ic_check_circle_filled), null, tint = SalatOnPrimary, modifier = Modifier.size(48.dp))
-            }
-            Spacer(Modifier.height(24.dp))
-            Text(stringResource(R.string.onboarding_done_title), color = SalatPrimary, fontSize = 26.sp, fontWeight = FontWeight.Bold, fontFamily = AppTitleFontFamily, textAlign = TextAlign.Center)
-            Spacer(Modifier.height(8.dp))
-            Text(stringResource(R.string.onboarding_done_subtitle), color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = AppUiFontFamily, textAlign = TextAlign.Center)
-        }
-
-        Spacer(Modifier.height(32.dp))
-
-        Surface(shape = RoundedCornerShape(16.dp), color = SalatSurfaceContainerLowest, modifier = Modifier.fillMaxWidth()) {
-            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                DoneSummaryLine(stringResource(R.string.onboarding_done_summary_language), uiState.language.displayName)
-                DoneSummaryLine(
-                    stringResource(R.string.onboarding_location_label),
-                    uiState.confirmedCity?.let { city ->
-                        city.name.takeIf { it.isNotBlank() }
-                            ?: stringResource(R.string.settings_coordinates_value, city.latitude, city.longitude)
-                    }.orEmpty(),
-                )
-                if (uiState.catchUpUndoAvailable) {
-                    TextButton(onClick = onUndoCatchUp) { Text(stringResource(R.string.action_undo), color = SalatPrimary) }
-                }
-                DoneSummaryLine(
-                    stringResource(R.string.onboarding_done_summary_reminders),
-                    stringResource(if (uiState.prayerRemindersEnabled) R.string.onboarding_done_reminders_on else R.string.onboarding_done_reminders_off),
-                )
-                DoneSummaryLine(
-                    stringResource(R.string.onboarding_done_summary_qaza),
-                    stringResource(if (uiState.catchUpAppliedCount != null) R.string.onboarding_done_qaza_added else R.string.onboarding_done_qaza_set_up_later),
-                )
-            }
-        }
-
-        Spacer(Modifier.weight(1f))
-        PrimaryButton(text = stringResource(R.string.onboarding_done_action), icon = R.drawable.ic_arrow_forward, onClick = onFinish, enabled = !uiState.isFinishing)
-        Spacer(Modifier.height(24.dp))
-    }
-}
-
-@Composable
-private fun DoneSummaryLine(label: String, value: String) {
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(label, color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = AppUiFontFamily)
-        Text(value, color = SalatOnSurface, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
-    }
-}
-
-// ── Shared pieces ──────────────────────────────────────────────────────────────
-
-/** Title, visible Back button, and five-stage progress used by every mid-flow step. */
-@Composable
-private fun StepHeader(stepIndex: Int, title: String, subtitle: String?) {
-    OnboardingNavigationHeader(OnboardingStep.values()[stepIndex])
-    Spacer(Modifier.height(18.dp))
-    Text(title, color = SalatPrimary, fontSize = 24.sp, fontWeight = FontWeight.Bold, fontFamily = AppTitleFontFamily, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
-    if (subtitle != null) {
-        Spacer(Modifier.height(8.dp))
-        Text(subtitle, color = SalatOnSurfaceVariant, fontSize = 14.sp, fontFamily = AppUiFontFamily, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
-    }
-}
-
-@Composable
-private fun OnboardingNavigationHeader(step: OnboardingStep) {
-    val progressStep = onboardingProgressStep(step)
-    Spacer(Modifier.height(48.dp))
-    Box(modifier = Modifier.fillMaxWidth()) {
-        IconButton(onClick = LocalOnboardingBack.current, modifier = Modifier.align(Alignment.CenterStart)) {
-            Icon(
-                painter = painterResource(R.drawable.ic_arrow_back),
-                contentDescription = stringResource(R.string.cd_back),
-                tint = SalatPrimary,
-            )
-        }
-        Column(modifier = Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
-            StepDots(current = progressStep, total = ONBOARDING_PROGRESS_STEPS)
-            Spacer(Modifier.height(6.dp))
-            Text(
-                text = stringResource(R.string.onboarding_step_progress, progressStep + 1, ONBOARDING_PROGRESS_STEPS),
-                color = SalatOnSurfaceVariant,
-                fontSize = 12.sp,
-                fontFamily = AppUiFontFamily,
-            )
-        }
-    }
-}
-
-private const val ONBOARDING_PROGRESS_STEPS = 5
-
-private fun onboardingProgressStep(step: OnboardingStep): Int = when (step) {
-    OnboardingStep.WELCOME -> 0
-    OnboardingStep.ABOUT_YOU -> 1
-    OnboardingStep.SCHOOL,
-    OnboardingStep.LOCATION_INTRO,
-    OnboardingStep.CITY_SEARCH,
-    OnboardingStep.LOCATION_CONFIRM -> 2
-    OnboardingStep.REMINDERS -> 3
-    OnboardingStep.CATCH_UP,
-    OnboardingStep.CATCH_UP_ADD,
-    OnboardingStep.DONE -> 4
-}
-
-@Composable
-private fun TitledOption(icon: Int, title: String, subtitle: String?, isSelected: Boolean, onClick: () -> Unit) {
-    Surface(
-        onClick  = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        shape    = RoundedCornerShape(16.dp),
-        color    = if (isSelected) SalatSecondaryContainer.copy(alpha = 0.4f) else SalatSurfaceContainerLowest,
-        border   = BorderStroke(if (isSelected) 2.dp else 1.dp, if (isSelected) SalatPrimary else SalatOutlineVariant),
-    ) {
-        Row(
-            modifier              = Modifier.fillMaxWidth().padding(16.dp),
-            verticalAlignment     = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            Box(
-                modifier = Modifier.size(48.dp).clip(RoundedCornerShape(12.dp)).background(SalatSurfaceContainerHigh),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(painterResource(icon), null, tint = SalatPrimary, modifier = Modifier.size(24.dp))
-            }
-            Column(modifier = Modifier.weight(1f)) {
-                Text(title, color = SalatOnSurface, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily)
-                if (subtitle != null) {
-                    Text(subtitle, color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
-                }
-            }
-            SelectionIndicator(isSelected)
-        }
-    }
-}
-
-@Composable
-private fun SelectableRow(icon: Int, label: String, isSelected: Boolean, onClick: () -> Unit) {
-    Surface(
-        onClick  = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        shape    = RoundedCornerShape(16.dp),
-        color    = SalatSurfaceContainerLowest,
-        border   = BorderStroke(if (isSelected) 2.dp else 1.dp, if (isSelected) SalatPrimary else SalatOutlineVariant),
-    ) {
-        Row(
-            modifier              = Modifier.fillMaxWidth().padding(16.dp),
-            verticalAlignment     = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            Box(
-                modifier = Modifier.size(40.dp).clip(CircleShape).background(SalatSecondaryContainer),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(painterResource(icon), null, tint = SalatOnSecondaryContainer, modifier = Modifier.size(20.dp))
-            }
-            Text(label, color = SalatOnSurface, fontSize = 16.sp, fontWeight = FontWeight.Medium, fontFamily = AppUiFontFamily, modifier = Modifier.weight(1f))
-            SelectionIndicator(isSelected)
-        }
-    }
-}
-
-@Composable
-private fun SelectionIndicator(isSelected: Boolean) {
-    if (isSelected) {
-        Box(
-            modifier = Modifier.size(24.dp).clip(CircleShape).background(SalatPrimary),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(painterResource(R.drawable.ic_check_circle_filled), null, tint = SalatOnPrimary, modifier = Modifier.size(16.dp))
-        }
-    } else {
-        Box(modifier = Modifier.size(24.dp).clip(CircleShape).background(SalatSurfaceContainerHigh)) {}
-    }
-}
-
-@Composable
-private fun ToggleRow(icon: Int, label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape    = RoundedCornerShape(16.dp),
-        color    = SalatSurfaceContainerLow,
-    ) {
-        Row(
-            modifier              = Modifier.fillMaxWidth().padding(16.dp),
-            verticalAlignment     = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Box(
-                    modifier = Modifier.size(40.dp).clip(CircleShape).background(SalatSecondaryContainer),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(painterResource(icon), null, tint = SalatOnSecondaryContainer, modifier = Modifier.size(20.dp))
-                }
-                Text(label, color = SalatOnSurface, fontSize = 16.sp, fontWeight = FontWeight.Medium, fontFamily = AppUiFontFamily)
-            }
-            Switch(
-                checked         = checked,
-                onCheckedChange = onCheckedChange,
-                colors          = salatSwitchColors(),
-            )
-        }
-    }
-}
-
-@Composable
-private fun StepDots(current: Int, total: Int) {
-    Row(
-        modifier              = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center,
-    ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-            repeat(total) { i ->
-                val active = i == current
-                Box(
-                    modifier = Modifier
-                        .height(6.dp)
-                        .width(if (active) 20.dp else 6.dp)
-                        .clip(RoundedCornerShape(50))
-                        .background(if (active) SalatPrimary else SalatOutlineVariant),
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun PrimaryButton(text: String, icon: Int? = null, enabled: Boolean = true, onClick: () -> Unit) {
-    SalatPrimaryButton(onClick = onClick, enabled = enabled) {
-        Text(text, fontFamily = AppTitleFontFamily, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-        if (icon != null) {
-            Spacer(Modifier.width(8.dp))
-            Icon(painterResource(icon), null, modifier = Modifier.size(20.dp))
-        }
-    }
-}
-
-@Composable
-private fun SecondaryLink(text: String, onClick: () -> Unit) {
-    TextButton(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
-        Text(text, color = SalatPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
-    }
-}
-
-// ── Preview ────────────────────────────────────────────────────────────────────
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun OnboardingWelcomePreview() {
-    OnboardingScreen(
-        uiState = OnboardingUiState(step = OnboardingStep.WELCOME),
-        onLanguageSelected = {}, onThemeSelected = {}, onWelcomeNext = {}, onRestoreFromBackup = {},
-        onGenderSelected = {}, onAboutYouNext = {}, onMadhabSelected = {}, onSchoolNext = {},
-        onAllowLocationClick = {}, onEnterCityInstead = {}, onCityQueryChanged = {}, onCitySelected = {},
-        onCitySearchContinue = {}, onUseMyLocationInstead = {}, onConfirmLocation = {}, onChangeLocationClick = {},
-        onCalculationMethodSheetOpen = {}, onCalculationMethodSheetDismiss = {}, onCalculationMethodSelected = {},
-        onPrayerRemindersChanged = {}, onFullScreenAlertChanged = {}, onRemindersSkip = {}, onRemindersNext = {},
-        onCatchUpAddClick = {}, onCatchUpSkip = {}, onCatchUpDurationChanged = {}, onCatchUpCustomRangeChanged = { _, _ -> },
-        onApplyCatchUp = {}, onUndoCatchUp = {}, onBack = {}, onFinish = {},
-    )
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun OnboardingDonePreview() {
-    OnboardingScreen(
-        uiState = OnboardingUiState(step = OnboardingStep.DONE),
-        onLanguageSelected = {}, onThemeSelected = {}, onWelcomeNext = {}, onRestoreFromBackup = {},
-        onGenderSelected = {}, onAboutYouNext = {}, onMadhabSelected = {}, onSchoolNext = {},
-        onAllowLocationClick = {}, onEnterCityInstead = {}, onCityQueryChanged = {}, onCitySelected = {},
-        onCitySearchContinue = {}, onUseMyLocationInstead = {}, onConfirmLocation = {}, onChangeLocationClick = {},
-        onCalculationMethodSheetOpen = {}, onCalculationMethodSheetDismiss = {}, onCalculationMethodSelected = {},
-        onPrayerRemindersChanged = {}, onFullScreenAlertChanged = {}, onRemindersSkip = {}, onRemindersNext = {},
-        onCatchUpAddClick = {}, onCatchUpSkip = {}, onCatchUpDurationChanged = {}, onCatchUpCustomRangeChanged = { _, _ -> },
-        onApplyCatchUp = {}, onUndoCatchUp = {}, onBack = {}, onFinish = {},
-    )
+    var pickFrom by remember { mutableStateOf(false) }
+    var pickTo by remember { mutableStateOf(false) }
+    val formatter = remember { DateTimeFormatter.ofPattern("MMM d") }
+    // Stacked fields remain legible for localized dates and enlarged fonts.
+    TextButton(onClick = { pickFrom = true }) { BodyText(stringResource(R.string.bulk_start, from.format(formatter)), color = SalatPrimary) }
+    TextButton(onClick = { pickTo = true }) { BodyText(stringResource(R.string.bulk_end, to.format(formatter)), color = SalatPrimary) }
+    if (pickFrom) DatePickerModal(initialDate = from, onDatePicked = { pickFrom = false; onChanged(it, to) }, onDismiss = { pickFrom = false })
+    if (pickTo) DatePickerModal(initialDate = to, onDatePicked = { pickTo = false; onChanged(from, it) }, onDismiss = { pickTo = false })
 }

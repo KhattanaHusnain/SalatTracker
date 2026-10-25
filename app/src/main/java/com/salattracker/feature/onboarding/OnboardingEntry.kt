@@ -63,8 +63,8 @@ fun OnboardingEntry(
             if (uiState.prayerRemindersEnabled) onRequestNotifications()
             viewModel.onRemindersNext()
         },
-        onCatchUpAddClick         = viewModel::onCatchUpAddClick,
         onCatchUpSkip             = viewModel::onCatchUpSkip,
+        onCatchUpNext             = viewModel::onCatchUpNext,
         onCatchUpDurationChanged  = viewModel::onCatchUpDurationChanged,
         onCatchUpCustomRangeChanged = viewModel::onCatchUpCustomRangeChanged,
         onApplyCatchUp            = viewModel::onApplyCatchUp,

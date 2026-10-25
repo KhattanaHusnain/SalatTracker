@@ -29,11 +29,11 @@ import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
 /** The first-run onboarding steps, in order a user moving straight forward sees them. [CITY_SEARCH]
- * and [CATCH_UP_ADD] are branches off [LOCATION_INTRO]/[LOCATION_CONFIRM] and [CATCH_UP] rather
- * than always-visited steps — see [OnboardingViewModel]'s back-stack for how "back" still returns
- * to wherever a screen was actually reached from. */
+ * is a branch off [LOCATION_INTRO]/[LOCATION_CONFIRM] rather than an always-visited step — see
+ * [OnboardingViewModel]'s back-stack for how "back" still returns to wherever a screen was
+ * actually reached from. */
 enum class OnboardingStep {
-    WELCOME, ABOUT_YOU, SCHOOL, LOCATION_INTRO, CITY_SEARCH, LOCATION_CONFIRM, REMINDERS, CATCH_UP, CATCH_UP_ADD, DONE
+    WELCOME, ABOUT_YOU, SCHOOL, LOCATION_INTRO, CITY_SEARCH, LOCATION_CONFIRM, REMINDERS, CATCH_UP, DONE, CATCH_UP_RANGE
 }
 
 /** How far back the Catch Up step looks for missed prayers. Kept separate from
@@ -312,8 +312,8 @@ class OnboardingViewModel @Inject constructor(
 
     // ── Catch up ──────────────────────────────────────────────────────────────
 
-    fun onCatchUpAddClick() = goTo(OnboardingStep.CATCH_UP_ADD)
     fun onCatchUpSkip() = goTo(OnboardingStep.DONE)
+    fun onCatchUpNext() = goTo(OnboardingStep.CATCH_UP_RANGE)
     fun onCatchUpDurationChanged(duration: CatchUpDuration) = updateState { it.copy(catchUpDuration = duration) }
 
     /** Mirrors feature/bulkupdate's own custom-range handling: swap if reversed, and never let

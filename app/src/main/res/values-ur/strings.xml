@@ -695,4 +695,20 @@
     <string name="tasbih_phrase_allahu_akbar">اللہ اکبر</string>
     <string name="tasbih_phrase_tahlil">لا الٰہ الا اللہ</string>
     <string name="tasbih_phrase_astaghfirullah">استغفر اللہ</string>
+    <string name="onboarding_add_missed">قضا نمازیں شامل کریں</string>
+    <string name="onboarding_restore_backup">بیک اپ بحال کریں</string>
+    <string name="onboarding_excused_explanation">اندراج میں حیض کی حالت بھی شامل ہوگی، تاکہ معذوری کے دن قضا شمار نہ ہوں۔</string>
+    <string name="onboarding_prayer_times">نماز کے اوقات</string>
+    <string name="onboarding_exact_city">آپ کے شہر کے مطابق حساب۔</string>
+    <string name="onboarding_region_date">آپ کے علاقے کے مطابق۔</string>
+    <string name="onboarding_each_adhan">ہر اذان کے وقت</string>
+    <string name="onboarding_sound">آواز</string>
+    <string name="onboarding_preview">سنیں</string>
+    <string name="onboarding_android_permissions">Android اطلاعات اور مقررہ وقت کے الارم کی اجازت مانگ سکتا ہے۔</string>
+    <string name="onboarding_catch_up_explanation">تاریخوں کا دورانیہ اور حالت ایک بار منتخب کریں۔ اجتماعی تبدیلی باقی کام کر دے گی۔</string>
+    <string name="onboarding_pick_dates">شروع اور اختتام کی تاریخ منتخب کریں</string>
+    <string name="onboarding_all_prayers">پانچوں نمازیں</string>
+    <string name="onboarding_prayers_included">شامل نمازیں</string>
+    <string name="onboarding_edit_calendar">بعد میں کیلنڈر میں کسی بھی دن میں تبدیلی کر سکتے ہیں۔</string>
+    <string name="onboarding_suggested_cities">تجویز کردہ شہر</string>
 </resources>

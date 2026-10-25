@@ -51,4 +51,22 @@ class OnboardingViewModelTest {
         FakeSettingsRepository(), FakeGeocodingRepository(), FakePrayerRepository(),
         FakePrayerReminderRescheduler(), handle,
     )
+
+    @Test
+    fun catchUpPeriodRestoresAndBackReturnsToOverview() {
+        val handle = SavedStateHandle()
+        val first = viewModel(handle)
+        first.onRemindersNext()
+        assertEquals(OnboardingStep.CATCH_UP, first.uiState.value.step)
+        first.onCatchUpNext()
+        first.onCatchUpDurationChanged(CatchUpDuration.WEEK)
+
+        val restored = viewModel(handle)
+        assertEquals(OnboardingStep.CATCH_UP_RANGE, restored.uiState.value.step)
+        assertEquals(CatchUpDuration.WEEK, restored.uiState.value.catchUpDuration)
+        restored.onBack()
+        assertEquals(OnboardingStep.CATCH_UP, restored.uiState.value.step)
+        restored.onCatchUpSkip()
+        assertEquals(OnboardingStep.DONE, restored.uiState.value.step)
+    }
 }
