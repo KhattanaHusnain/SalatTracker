@@ -17,6 +17,10 @@ import java.time.LocalDate
 fun HomeEntry(
     onQazaClick: () -> Unit,
     onDayClick: (LocalDate) -> Unit,
+    onMenuClick: () -> Unit = {},
+    onLocationClick: () -> Unit = {},
+    onDonateClick: () -> Unit = {},
+    onCatchUpClick: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -27,5 +31,14 @@ fun HomeEntry(
         onStatusSave      = viewModel::onStatusSave,
         onQazaClick       = onQazaClick,
         onDayClick        = onDayClick,
+        onQuickStatusSave = viewModel::onQuickStatusSave,
+        onPastStatusSave = viewModel::onPastStatusSave,
+        onReminderToggle = viewModel::onReminderToggle,
+        onAppearanceChanged = viewModel::onAppearanceChanged,
+        onErrorDismiss = viewModel::clearError,
+        onMenuClick = onMenuClick,
+        onLocationClick = onLocationClick,
+        onDonateClick = onDonateClick,
+        onCatchUpClick = onCatchUpClick,
     )
 }

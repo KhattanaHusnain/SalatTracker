@@ -10,6 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.salattracker.feature.home.HomeAppearanceSettingsViewModel
 
 /**
  * Nav entry-point for Settings, reached from the drawer. Every control live-applies, so there
@@ -19,8 +20,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 fun SettingsEntry(
     onEditLocationClick: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel(),
+    homeAppearanceViewModel: HomeAppearanceSettingsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val homeAppearance by homeAppearanceViewModel.appearance.collectAsState()
     val context = LocalContext.current
 
     val locationPermissionLauncher = rememberLauncherForActivityResult(
@@ -61,6 +64,8 @@ fun SettingsEntry(
         on24HourFormatChanged           = viewModel::on24HourFormatChanged,
         onLanguageChanged               = viewModel::onLanguageChanged,
         onThemeModeChanged              = viewModel::onThemeModeChanged,
+        homeAppearance                  = homeAppearance,
+        onHomeAppearanceChanged         = homeAppearanceViewModel::onAppearanceChanged,
         onGenderChanged                 = viewModel::onGenderChanged,
         onErrorDismiss                  = viewModel::clearError,
     )

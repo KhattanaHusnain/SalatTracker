@@ -21,6 +21,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -255,6 +260,17 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
 
     val shellViewModel: MainShellViewModel = hiltViewModel()
     val backupNeedsAttention by shellViewModel.backupNeedsAttention.collectAsState()
+    val qazaPendingTotal by shellViewModel.qazaPendingTotal.collectAsState()
+    val isHome = currentDest?.route == BottomNavRoute.Home.route
+    val view = LocalView.current
+    val background = SalatBackground
+    DisposableEffect(isHome, background) {
+        val window = (view.context as? android.app.Activity)?.window
+        val controller = window?.let { WindowCompat.getInsetsController(it, view) }
+        val previous = controller?.isAppearanceLightStatusBars
+        controller?.isAppearanceLightStatusBars = !isHome && background.luminance() > .5f
+        onDispose { previous?.let { controller?.isAppearanceLightStatusBars = it } }
+    }
 
     // Scoped here (not inside the NavHost's Calendar composable) so the exact same instance
     // backs both CalendarEntry's screen and the Today/Month controls in TopBar below — two
@@ -313,7 +329,9 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
     ) {
         Scaffold(
             containerColor = SalatBackground,
+            contentWindowInsets = if (isHome) WindowInsets(0, 0, 0, 0) else ScaffoldDefaults.contentWindowInsets,
             topBar = {
+                if (!isHome) {
                 TopBar(
                     title                = topBarTitle(currentDest?.route),
                     isTopLevel           = isTopLevel,
@@ -351,6 +369,7 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                     calendarAwayFromToday    = calendarUiState.awayFromToday,
                     onCalendarTodayClick     = calendarViewModel::onTodayClick,
                 )
+                }
             },
             bottomBar = {
                 AnimatedVisibility(
@@ -361,6 +380,7 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                     SalatBottomNavBar(
                         routes      = BottomNavRoute.all,
                         currentDest = currentDest,
+                        qazaPendingTotal = qazaPendingTotal,
                         onNavigate  = { route -> navController.navigateToTab(route.route) },
                     )
                 }
@@ -374,6 +394,10 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                 composable(BottomNavRoute.Home.route) {
                     HomeEntry(
                         onQazaClick = { navController.navigateToTab(BottomNavRoute.Qaza.route) },
+                        onMenuClick = { coroutineScope.launch { drawerState.open() } },
+                        onLocationClick = { navController.push(Routes.SETTINGS) },
+                        onDonateClick = { navController.push(Routes.DONATE) },
+                        onCatchUpClick = { navController.push(Routes.bulkUpdate()) },
                         onDayClick  = { date ->
                             calendarViewModel.onOpenDay(date)
                             navController.navigateToTab(BottomNavRoute.Calendar.route)
@@ -678,7 +702,39 @@ private fun SalatBottomNavBar(
     routes: List<BottomNavRoute>,
     currentDest: androidx.navigation.NavDestination?,
     onNavigate: (BottomNavRoute) -> Unit,
+    qazaPendingTotal: Int = 0,
 ) {
+    if (currentDest?.route == BottomNavRoute.Home.route) {
+        val dark = LocalSalatColors.current == DarkSalatColors
+        val surface = if (dark) Color(0xFF101C1D) else Color.White
+        val muted = if (dark) Color(0xFFB7C5C5) else Color(0xFF6B7270)
+        Surface(color = surface) {
+            Column {
+                HorizontalDivider(color = muted.copy(alpha = .2f))
+                Row(Modifier.fillMaxWidth().navigationBarsPadding().padding(top = 6.dp, bottom = 8.dp)) {
+                    routes.forEach { route ->
+                        val selected = route.route == BottomNavRoute.Home.route
+                        Column(Modifier.weight(1f).heightIn(min = 52.dp).clickable { onNavigate(route) },
+                            horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                            BadgedBox(badge = {
+                                if (route.route == BottomNavRoute.Qaza.route && qazaPendingTotal > 0)
+                                    Badge(containerColor = Color(0xFF8A9490), contentColor = Color.White) {
+                                        Text(if (qazaPendingTotal > 99) "99+" else "$qazaPendingTotal", fontSize = 10.sp)
+                                    }
+                            }) {
+                                Icon(painterResource(route.iconRes), null, Modifier.size(20.dp),
+                                    tint = if (selected) Color(0xFF087E83) else muted)
+                            }
+                            Text(stringResource(route.labelRes), fontFamily = com.salattracker.feature.home.HomeBodyFont,
+                                fontSize = 11.sp, color = if (selected) Color(0xFF087E83) else muted,
+                                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal)
+                        }
+                    }
+                }
+            }
+        }
+        return
+    }
     NavigationBar(
         containerColor = SalatSurface,
         tonalElevation = 0.dp,

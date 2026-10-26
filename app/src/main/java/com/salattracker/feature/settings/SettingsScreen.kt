@@ -31,6 +31,8 @@ import com.salattracker.domain.model.HighLatitudeRule
 import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.ThemeMode
+import com.salattracker.feature.home.HomeAppearance
+import com.salattracker.feature.home.HomeFeedbackSettingsCard
 
 // ── Settings Screen — a hub of 4 cards, every control live-applies ──────────────
 
@@ -49,6 +51,8 @@ fun SettingsScreen(
     on24HourFormatChanged: (Boolean) -> Unit,
     onLanguageChanged: (AppLanguage) -> Unit,
     onThemeModeChanged: (ThemeMode) -> Unit,
+    homeAppearance: HomeAppearance,
+    onHomeAppearanceChanged: (HomeAppearance) -> Unit,
     onGenderChanged: (Gender) -> Unit,
     onErrorDismiss: () -> Unit,
 ) {
@@ -110,6 +114,12 @@ fun SettingsScreen(
                 onLanguageChanged = onLanguageChanged,
                 onThemeChanged    = onThemeModeChanged,
                 on24HourChanged   = on24HourFormatChanged,
+            )
+
+            SettingsSectionLabel(stringResource(R.string.home_v27_appreciation))
+            HomeFeedbackSettingsCard(
+                value = homeAppearance,
+                onChange = onHomeAppearanceChanged,
             )
 
             // ── About You ─────────────────────────────────────────────────────
@@ -538,6 +548,8 @@ fun SettingsScreenPreview() {
         on24HourFormatChanged      = {},
         onLanguageChanged          = {},
         onThemeModeChanged         = {},
+        homeAppearance             = HomeAppearance(),
+        onHomeAppearanceChanged    = {},
         onGenderChanged            = {},
         onErrorDismiss             = {},
     )

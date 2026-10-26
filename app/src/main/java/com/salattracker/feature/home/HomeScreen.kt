@@ -1,723 +1,565 @@
 package com.salattracker.feature.home
 
+import android.animation.ValueAnimator
+import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.*
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.*
 import com.salattracker.R
 import com.salattracker.core.theme.*
 import com.salattracker.core.ui.*
-import com.salattracker.domain.model.Madhab
-import com.salattracker.domain.model.PrayerStatus
-import com.salattracker.domain.model.PrayerType
-import com.salattracker.domain.model.StreakInfo
-import com.salattracker.domain.model.VerseInfo
+import com.salattracker.domain.model.*
 import com.salattracker.domain.usecase.*
+import kotlinx.coroutines.delay
+import java.time.Duration
 import java.time.LocalDate
-import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-
-// ── Home Screen ───────────────────────────────────────────────────────────────
-// A today-focused dashboard: a next-prayer hero card (which also surfaces pending Qaza), a
-// compact timeline of today's five prayers, then a consistency card (streak + 7-day history),
-// then the verse card. Stats owns the deeper analytics and Goals owns goal management — this
-// screen never duplicates a trend chart, a breakdown, or goal setup, only "where do I stand
-// right now".
+import kotlin.math.*
 
 @Composable
-fun HomeScreen(
+private fun LegacyHomeScreen(
     uiState: HomeUiState,
     onPrayerCardClick: (PrayerType) -> Unit,
     onSheetDismiss: () -> Unit,
     onStatusSave: (PrayerStatus) -> Unit,
     onQazaClick: () -> Unit,
     onDayClick: (LocalDate) -> Unit,
+    onQuickStatusSave: (PrayerType, PrayerStatus) -> Unit = { type, _ -> onPrayerCardClick(type) },
+    onReminderToggle: (PrayerType) -> Unit = {},
+    onMenuClick: () -> Unit = {},
+    onLocationClick: () -> Unit = {},
+    onDonateClick: () -> Unit = {},
+    onCatchUpClick: () -> Unit = {},
+    onAppearanceChanged: (HomeAppearance) -> Unit = {},
+    onErrorDismiss: () -> Unit = {},
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(bottom = 100.dp)   // room for bottom nav
-        ) {
-            if (uiState.isLoading) {
-                HomeSkeleton(modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp))
-            } else {
-                HeroCard(
-                    todayDate        = uiState.todayDate,
-                    prayers          = uiState.prayers,
-                    nextPrayer       = uiState.nextPrayer,
-                    minutesUntilNext = uiState.minutesUntilNext,
-                    qazaPendingTotal = uiState.qazaPendingTotal,
-                    jumuahEnabled    = uiState.jumuahEnabled,
-                    madhab           = uiState.madhab,
-                    onQazaClick      = onQazaClick,
-                    modifier         = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp),
-                )
-
-                // Order: motivation (streak + history) first, then today's action, then the
-                // verse as a closing note. Pending Qaza lives in the hero now, next to the
-                // next-prayer countdown, since it's the other "where do I stand right now" fact.
-                ConsistencyCard(
-                    perfectStreak = remember(uiState.streaks) { perfectDayStreak(uiState.streaks) },
-                    streaks       = uiState.streaks,
-                    todayDate     = uiState.todayDate,
-                    lastSevenDays = uiState.lastSevenDays,
-                    onDayClick    = onDayClick,
-                    modifier      = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
-                )
-
-                SectionTitle(
-                    text     = stringResource(R.string.home_daily_stack),
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp).padding(top = 16.dp),
-                )
-                PrayerTimeline(
-                    todayDate     = uiState.todayDate,
-                    jumuahEnabled = uiState.jumuahEnabled,
-                    madhab        = uiState.madhab,
-                    prayers       = uiState.prayers,
-                    currentPrayer = uiState.currentPrayer,
-                    onClick       = onPrayerCardClick,
-                    modifier      = Modifier.fillMaxWidth(),
-                )
-
-                uiState.verse?.let { verse ->
-                    InspirationBanner(
-                        verse = verse,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp)
-                            .padding(top = 24.dp)
-                    )
-                }
-            }
-        }
+    var showStreaks by rememberSaveable { mutableStateOf(false) }
+    var showAppearance by rememberSaveable { mutableStateOf(false) }
+    var feedback by remember { mutableStateOf<HomeSaveFeedback?>(null) }
+    var handledFeedback by rememberSaveable { mutableStateOf<Long?>(null) }
+    val snackbar = remember { SnackbarHostState() }
+    val context = LocalContext.current
+    val feedbackEffects = rememberHomeFeedbackEffects(uiState.appearance, showAppearance)
+    LaunchedEffect(uiState.errorRes) {
+        uiState.errorRes?.let { snackbar.showSnackbar(context.getString(it)); onErrorDismiss() }
     }
-
-    uiState.sheetArgs?.let { args ->
-        PrayerStatusBottomSheet(
-            args      = args,
-            isSaving  = uiState.isSaving,
-            onDismiss = onSheetDismiss,
-            onSave    = onStatusSave,
-            gender    = uiState.gender,
-        )
+    LaunchedEffect(uiState.feedback?.id) {
+        val saved = uiState.feedback ?: return@LaunchedEffect
+        if (handledFeedback == saved.id) return@LaunchedEffect
+        handledFeedback = saved.id
+        feedback = saved
+        val celebrate = saved.onTime && saved.status in listOf(PrayerStatus.CONGREGATION, PrayerStatus.INDIVIDUAL)
+        feedbackEffects.play(context.getString(R.string.home_v8_well_done), celebrate)
+        delay(3600); feedback = null
     }
-}
-
-// ── Hero card ─────────────────────────────────────────────────────────────────
-
-@Composable
-private fun HeroCard(
-    todayDate: LocalDate,
-    prayers: List<PrayerEntryUi>,
-    nextPrayer: NextPrayer?,
-    minutesUntilNext: Long,
-    qazaPendingTotal: Int,
-    jumuahEnabled: Boolean,
-    madhab: Madhab,
-    onQazaClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val hijriAdjustment = LocalHijriAdjustmentDays.current
-    val hijri = remember(todayDate, hijriAdjustment) { todayDate.toHijriOrNull(hijriAdjustment) }
-    val islamicEvent = hijri?.islamicEventOrNull()
-    val hijriText = hijri?.fullLabel()
-    val dateFormatter = remember { DateTimeFormatter.ofPattern("EEE, d MMM") }
-    val use24HourFormat = LocalUse24HourFormat.current
-    val completed = remember(prayers) { completedCount(prayers.map { it.status }) }
-
-    val sweep = remember { Animatable(0f) }
-    LaunchedEffect(todayDate) { sweep.animateTo(1f, animationSpec = tween(700)) }
-
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(20.dp))
-            .background(Brush.linearGradient(listOf(SalatHeroGradientStart, SalatHeroGradientEnd)))
-            .padding(20.dp),
-    ) {
-        Column {
-            Text(
-                text = if (hijriText != null) "${todayDate.format(dateFormatter)} · $hijriText" else todayDate.format(dateFormatter),
-                color = SalatOnHero.copy(alpha = 0.85f),
-                fontSize = 13.sp,
-                fontFamily = AppUiFontFamily,
-            )
-            Spacer(modifier = Modifier.height(18.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Box(modifier = Modifier.size(96.dp), contentAlignment = Alignment.Center) {
-                    PrayerStatusRing(
-                        statuses       = prayers.associate { it.type to it.status },
-                        modifier       = Modifier.fillMaxSize(),
-                        emptyColor     = SalatOnHero.copy(alpha = 0.22f),
-                        strokeFraction = 0.14f,
-                        sweepFraction  = sweep.value,
-                    )
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = stringResource(R.string.home_ring_count, completed),
-                            color = SalatOnHero,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = AppTitleFontFamily,
-                        )
-                        Text(
-                            text = stringResource(R.string.home_ring_caption),
-                            color = SalatOnHero.copy(alpha = 0.75f),
-                             fontSize = 12.sp,
-                            fontFamily = AppUiFontFamily,
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.width(20.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.home_next_prayer).uppercase(),
-                            color = SalatOnHero.copy(alpha = 0.7f),
-                         fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        fontFamily = AppUiFontFamily,
-                        letterSpacing = 1.sp,
-                    )
-                    if (nextPrayer != null) {
-                        val nextPrayerDate = if (nextPrayer.isTomorrow) todayDate.plusDays(1) else todayDate
-                        Text(
-                            text = nextPrayer.type.label(nextPrayerDate, jumuahEnabled, madhab),
-                            color = SalatOnHero,
-                            fontSize = 22.sp,
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = AppTitleFontFamily,
-                        )
-                        Text(
-                            text = if (nextPrayer.isTomorrow)
-                                "${stringResource(R.string.home_tomorrow)} ${nextPrayer.time.formatAppTime(use24HourFormat)}"
-                            else
-                                nextPrayer.time.formatAppTime(use24HourFormat),
-                            color = SalatOnHero.copy(alpha = 0.85f),
-                            fontSize = 13.sp,
-                            fontFamily = AppUiFontFamily,
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = if (minutesUntilNext >= 60)
-                                stringResource(R.string.home_next_in_hours_minutes, (minutesUntilNext / 60).toInt(), (minutesUntilNext % 60).toInt())
-                            else
-                                stringResource(R.string.home_next_in_minutes, minutesUntilNext.toInt()),
-                            color = SalatOnHero,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            fontFamily = AppUiFontFamily,
-                        )
+    HomeDesign {
+        Box(Modifier.fillMaxSize().background(SalatBackground).testTag("home-screen")) {
+            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).testTag("home-scroll")) {
+                HomeHero(uiState, onMenuClick, onLocationClick, onQuickStatusSave,
+                    { showStreaks = true }, onAppearanceChanged)
+                if (!uiState.appearance.streakBadge)
+                    StreakDisplay(uiState, false, onAppearanceChanged) { showStreaks = true }
+                Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp)) {
+                    if (uiState.isLoading) {
+                        LinearProgressIndicator(Modifier.fillMaxWidth().padding(vertical = 20.dp), color = SalatPrimary)
+                        repeat(5) { Box(Modifier.fillMaxWidth().height(64.dp).padding(vertical = 8.dp)
+                            .background(SalatOutlineVariant.copy(alpha = .3f), RoundedCornerShape(8.dp))) }
                     } else {
-                        Text(
-                            text = stringResource(R.string.home_day_complete),
-                            color = SalatOnHero,
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            fontFamily = AppTitleFontFamily,
-                        )
+                        WeekHistory(uiState, onDayClick)
+                        if (uiState.lastSevenDays.count { (_, marks) ->
+                            marks.isEmpty() || marks.values.all { it == PrayerStatus.NOT_RECORDED } } >= 3) {
+                            TextButton(onClick = onCatchUpClick, contentPadding = PaddingValues(0.dp)) {
+                                HomeText(stringResource(R.string.home_v8_catch_up), size = 12, color = SalatPrimary)
+                            }
+                        }
+                        uiState.prayers.forEach { entry ->
+                            HomePrayerRow(entry, uiState, onQuickStatusSave, onReminderToggle,
+                                { onPrayerCardClick(entry.type) }, { showStreaks = true })
+                        }
+                        uiState.verse?.let { HomeVerse(it) }
+                        Row(Modifier.fillMaxWidth().heightIn(min = 52.dp).clickable(role = Role.Button, onClick = onDonateClick)
+                            .padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            Icon(painterResource(R.drawable.home_heart), null, tint = SalatPrimary, modifier = Modifier.size(18.dp))
+                            HomeText(stringResource(R.string.home_v8_donate), Modifier.weight(1f), size = 13, muted = true)
+                            Icon(painterResource(R.drawable.ic_chevron_right), null, tint = SalatOnSurfaceVariant, modifier = Modifier.size(16.dp))
+                        }
+                        HorizontalDivider(color = SalatOutlineVariant)
+                        Spacer(Modifier.height(12.dp))
                     }
-                    if (qazaPendingTotal > 0) {
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(SalatOnHero.copy(alpha = 0.25f)))
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Row(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .clickable(onClick = onQazaClick)
-                                .padding(vertical = 2.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Icon(painterResource(R.drawable.ic_history_edu), null, tint = SalatOnHero, modifier = Modifier.size(14.dp))
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = stringResource(R.string.home_qaza_count_pending, qazaPendingTotal),
-                                color = SalatOnHero,
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                fontFamily = AppUiFontFamily,
-                                modifier = Modifier.weight(1f),
-                            )
-                            Icon(
-                                painter = painterResource(R.drawable.ic_chevron_right),
-                                contentDescription = null,
-                                tint = SalatOnHero.copy(alpha = 0.8f),
-                                modifier = Modifier.size(14.dp),
-                            )
+                }
+            }
+            feedback?.let { saved ->
+                if (uiState.appearance.showAppreciation && saved.status != PrayerStatus.NOT_RECORDED) {
+                    Surface(Modifier.align(Alignment.TopCenter).statusBarsPadding()
+                        .padding(top = 12.dp, start = 64.dp, end = 28.dp).testTag("home-appreciation"),
+                        shape = RoundedCornerShape(14.dp), color = HomeCream, shadowElevation = 6.dp) {
+                        Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(painterResource(R.drawable.home_flame), null, tint = HomeGold, modifier = Modifier.size(20.dp))
+                            Spacer(Modifier.width(8.dp))
+                            val message = when {
+                                saved.status == PrayerStatus.MENSTRUATION -> R.string.home_v8_rest
+                                saved.status in listOf(PrayerStatus.CONGREGATION, PrayerStatus.INDIVIDUAL) && saved.onTime -> R.string.home_v8_well_done
+                                else -> R.string.home_v8_saved
+                            }
+                            HomeText(stringResource(message), size = 13, color = Color(0xFF0B4F53), weight = FontWeight.SemiBold)
                         }
                     }
                 }
+                if (uiState.appearance.confetti && saved.onTime &&
+                    saved.status in listOf(PrayerStatus.CONGREGATION, PrayerStatus.INDIVIDUAL) && ValueAnimator.areAnimatorsEnabled())
+                    HomeConfetti(saved.id)
             }
-            if (islamicEvent != null) {
-                Spacer(modifier = Modifier.height(14.dp))
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(SalatOnHero.copy(alpha = 0.18f))
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Icon(painterResource(R.drawable.ic_mosque), null, tint = SalatOnHero, modifier = Modifier.size(16.dp))
-                    Text(islamicEvent.label(), color = SalatOnHero, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
+            SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter))
+        }
+        if (showStreaks) StreakSheet(uiState, { showStreaks = false }) {
+            showStreaks = false; showAppearance = true
+        }
+        if (showAppearance) AppearanceSheet(uiState.appearance, onAppearanceChanged, feedbackEffects) { showAppearance = false }
+        uiState.sheetArgs?.let { args ->
+            PrayerStatusBottomSheet(args = args, isSaving = uiState.isSaving,
+                onDismiss = onSheetDismiss, onSave = onStatusSave, gender = uiState.gender)
+        }
+    }
+}
+
+@Composable private fun HomeHero(s: HomeUiState, onMenu: () -> Unit, onLocation: () -> Unit,
+    onSave: (PrayerType, PrayerStatus) -> Unit, onOpenStreaks: () -> Unit, onAppearanceChanged: (HomeAppearance) -> Unit) {
+    val locale = LocalConfiguration.current.locales[0]
+    val hijriAdjustment = LocalHijriAdjustmentDays.current
+    val date = s.now.toLocalDate()
+    val hijri = remember(date, hijriAdjustment) { date.toHijriOrNull(hijriAdjustment) }
+    val current = s.prayers.firstOrNull { it.type == s.currentPrayer }
+    val next = s.nextPrayer
+    val type = current?.type ?: next?.type
+    val name = type?.label(if (current != null) s.todayDate else date.plusDays(if (next?.isTomorrow == true) 1 else 0),
+        s.jumuahEnabled, s.madhab)
+    val remaining = current?.windowEnd?.let { Duration.between(s.now, it).toMinutes().coerceAtLeast(0) } ?: s.minutesUntilNext
+    val progress = current?.let { entry ->
+        val start = entry.time?.let(s.todayDate::atTime)
+        val end = entry.windowEnd
+        if (start != null && end != null) (Duration.between(s.now, end).seconds.toFloat() /
+            Duration.between(start, end).seconds.coerceAtLeast(1)).coerceIn(0f, 1f) else 0f
+    } ?: 0f
+    Box(Modifier.fillMaxWidth().testTag("home-hero")) {
+        Image(painterResource(R.drawable.home_mosque), null, Modifier.matchParentSize(),
+            contentScale = ContentScale.Crop, alignment = Alignment.TopCenter)
+        Box(Modifier.matchParentSize().background(Brush.verticalGradient(
+            0f to Color(0xB8064E52), .55f to Color(0x6B064E52), 1f to Color(0xDB053C40))))
+        Column(Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 20.dp).padding(top = 4.dp, bottom = 24.dp)) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onMenu) {
+                    Icon(painterResource(R.drawable.ic_menu), stringResource(R.string.home_v8_menu),
+                        tint = Color.White, modifier = Modifier.size(20.dp))
+                }
+                Spacer(Modifier.weight(1f))
+                if (s.appearance.streakBadge) StreakDisplay(s, true, onAppearanceChanged, onOpenStreaks)
+            }
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Column(Modifier.weight(1f)) {
+                    Text(hijri?.fullLabel() ?: date.format(DateTimeFormatter.ofPattern("d MMMM yyyy", locale)),
+                        color = Color.White, fontFamily = HomeTitleFont, fontWeight = FontWeight.SemiBold,
+                        fontSize = 27.sp, lineHeight = 30.sp)
+                    Spacer(Modifier.height(6.dp))
+                    HomeText(date.format(DateTimeFormatter.ofPattern("EEE, d MMM", locale)),
+                        size = 13, color = Color.White.copy(alpha = .8f))
+                    Row(Modifier.heightIn(min = 48.dp).clickable(role = Role.Button, onClick = onLocation),
+                        verticalAlignment = Alignment.CenterVertically) {
+                        Icon(painterResource(R.drawable.onboarding_pin), null, tint = HomeGold, modifier = Modifier.size(15.dp))
+                        Spacer(Modifier.width(5.dp))
+                        HomeText(s.locationLabel?.substringBefore(',') ?: stringResource(R.string.home_v8_choose_city),
+                            size = 12, color = Color.White.copy(alpha = .85f))
+                    }
+                }
+                Box(Modifier.width(150.dp).heightIn(min = 180.dp).testTag("home-countdown"), contentAlignment = Alignment.Center) {
+                    HomeArch(progress, Modifier.matchParentSize())
+                    Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 36.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally) {
+                        if (s.isLoading) CircularProgressIndicator(Modifier.size(26.dp), color = HomeGold, strokeWidth = 2.dp)
+                        else if (name != null) {
+                            if (current != null) Text(name, color = Color.White, fontFamily = HomeTitleFont,
+                                fontSize = 27.sp, lineHeight = 30.sp, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center)
+                            else HomeText(stringResource(R.string.home_v8_begins, name), size = 12, color = Color.White, align = TextAlign.Center)
+                            HomeText(stringResource(R.string.home_v8_remaining, (remaining / 60).toInt(), (remaining % 60).toInt()),
+                                size = 30, color = Color.White, align = TextAlign.Center)
+                            if (current != null) HomeText(stringResource(R.string.home_v8_left), size = 12, color = Color.White.copy(alpha = .8f))
+                        } else HomeText(stringResource(R.string.home_v8_times_unavailable), size = 13, color = Color.White, align = TextAlign.Center)
+                    }
+                }
+            }
+            Row(Modifier.fillMaxWidth().padding(top = 4.dp), verticalAlignment = Alignment.Bottom,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                PhotoInfo(s.appearance.showPhotoInfo, Modifier.weight(1f),
+                    { onAppearanceChanged(s.appearance.copy(showPhotoInfo = false)) },
+                    { onAppearanceChanged(s.appearance.copy(showPhotoInfo = true)) })
+                Box(Modifier.widthIn(min = 132.dp, max = 180.dp), contentAlignment = Alignment.Center) {
+                    if (current != null) StatusActions(current, s, hero = true, onSave = onSave)
+                    else if (name != null) HomeText(stringResource(R.string.home_v8_opens, name),
+                        size = 12, color = Color.White.copy(alpha = .85f), align = TextAlign.Center)
+                    else TextButton(onClick = onLocation) {
+                        HomeText(stringResource(R.string.home_v8_choose_city), color = Color.White)
+                    }
                 }
             }
         }
     }
 }
 
-// ── Prayer timeline ────────────────────────────────────────────────────────────
-
-@Composable
-private fun PrayerTimeline(
-    todayDate: LocalDate,
-    jumuahEnabled: Boolean,
-    madhab: Madhab,
-    prayers: List<PrayerEntryUi>,
-    currentPrayer: PrayerType?,
-    onClick: (PrayerType) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(modifier = modifier) {
-        prayers.forEachIndexed { index, entry ->
-            TimelineRow(
-                entry     = entry,
-                date      = todayDate,
-                jumuahEnabled = jumuahEnabled,
-                madhab    = madhab,
-                isLast    = index == prayers.lastIndex,
-                // Only call attention to the current prayer while it still needs marking — once
-                // it's recorded, highlighting it again would just be noise next to the hero's
-                // "next prayer" countdown.
-                needsMarking = entry.type == currentPrayer && entry.isMarkable && entry.status == PrayerStatus.NOT_RECORDED,
-                onClick   = { onClick(entry.type) },
-            )
+@Composable private fun PhotoInfo(shown: Boolean, modifier: Modifier, onHide: () -> Unit, onShow: () -> Unit) {
+    if (!shown) Box(modifier) {
+        IconButton(onClick = onShow, modifier = Modifier.size(48.dp).testTag("home-photo-show").background(Color(0x8804282B), CircleShape)) {
+            Icon(painterResource(R.drawable.onboarding_pin), stringResource(R.string.home_v8_about_photo),
+                tint = HomeGold, modifier = Modifier.size(17.dp))
+        }
+    } else {
+        var drag by remember { mutableStateOf(Offset.Zero) }
+        Row(modifier.offset { IntOffset(drag.x.roundToInt(), drag.y.roundToInt()) }
+            .pointerInput(Unit) {
+                detectDragGesturesAfterLongPress(onDrag = { change, delta -> change.consume(); drag += delta },
+                    onDragEnd = { if (drag.getDistance() > 64.dp.toPx()) onHide(); drag = Offset.Zero },
+                    onDragCancel = { drag = Offset.Zero })
+            }.background(Color(0x9904282B), RoundedCornerShape(10.dp))
+            .padding(start = 8.dp, top = 8.dp, bottom = 8.dp), verticalAlignment = Alignment.Top) {
+            Column(Modifier.weight(1f)) {
+                HomeText(stringResource(R.string.home_v8_photo_title), size = 11, color = Color.White, weight = FontWeight.SemiBold)
+                HomeText(stringResource(R.string.home_v8_photo_detail), size = 10, color = Color.White.copy(alpha = .85f))
+            }
+            IconButton(onClick = onHide, modifier = Modifier.size(32.dp).testTag("home-photo-hide")) {
+                Icon(painterResource(R.drawable.ic_close), stringResource(R.string.home_v8_hide_photo),
+                    tint = Color.White, modifier = Modifier.size(13.dp))
+            }
         }
     }
 }
 
-@Composable
-private fun TimelineRow(
-    entry: PrayerEntryUi,
-    date: LocalDate,
-    jumuahEnabled: Boolean,
-    madhab: Madhab,
-    isLast: Boolean,
-    needsMarking: Boolean,
-    onClick: () -> Unit,
-) {
-    val use24HourFormat = LocalUse24HourFormat.current
+@Composable private fun StreakDisplay(s: HomeUiState, badge: Boolean, onChange: (HomeAppearance) -> Unit, onOpen: () -> Unit) {
+    val top = s.streaks.maxByOrNull { it.value.currentStreak }
+    val count = top?.value?.currentStreak ?: 0
+    val text = if (count > 0 && top != null) stringResource(R.string.home_v8_streak_value,
+        top.key.label(s.todayDate, s.jumuahEnabled, s.madhab), count) else stringResource(R.string.home_v8_streak_start)
+    var drag by remember { mutableStateOf(Offset.Zero) }
+    val action = stringResource(if (badge) R.string.home_v8_move_band else R.string.home_v8_move_badge)
+    Row((if (badge) Modifier.widthIn(max = 220.dp) else Modifier.fillMaxWidth())
+        .offset { IntOffset(drag.x.roundToInt(), drag.y.roundToInt()) }
+        .semantics { customActions = listOf(CustomAccessibilityAction(action) {
+            onChange(s.appearance.copy(streakBadge = !badge)); true
+        }) }.pointerInput(badge) {
+            detectDragGesturesAfterLongPress(onDrag = { change, delta -> change.consume(); drag += delta },
+                onDragEnd = {
+                    if ((!badge && drag.y < -48.dp.toPx()) || (badge && drag.y > 48.dp.toPx()))
+                        onChange(s.appearance.copy(streakBadge = !badge))
+                    drag = Offset.Zero
+                }, onDragCancel = { drag = Offset.Zero })
+        }.clip(if (badge) CircleShape else RoundedCornerShape(0.dp)).background(HomeCream)
+        .clickable(role = Role.Button, onClick = onOpen).heightIn(min = 48.dp)
+        .padding(horizontal = if (badge) 12.dp else 20.dp, vertical = 8.dp).testTag("home-streak"),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Icon(painterResource(R.drawable.home_flame), null, tint = HomeGold, modifier = Modifier.size(18.dp))
+        HomeText(if (badge && count == 0) stringResource(R.string.home_v8_streaks) else text,
+            if (badge) Modifier else Modifier.weight(1f), size = if (badge) 12 else 13,
+            color = Color(0xFF111111), weight = FontWeight.Medium)
+        if (!badge) Icon(painterResource(R.drawable.ic_chevron_right), null,
+            tint = Color(0xFF6B7270), modifier = Modifier.size(16.dp))
+    }
+}
 
-    Surface(
-        onClick  = onClick,
-        enabled  = entry.isMarkable,
-        modifier = Modifier.fillMaxWidth(),
-        shape    = RoundedCornerShape(12.dp),
-        color    = if (needsMarking) SalatPrimaryFixed.copy(alpha = 0.18f) else Color.Transparent,
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 10.dp)
-                .alpha(if (entry.isMarkable) 1f else 0.6f),
-            verticalAlignment = Alignment.Top,
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(18.dp)) {
-                Box(
-                    modifier = Modifier
-                        .size(if (needsMarking) 14.dp else 10.dp)
-                        .clip(CircleShape)
-                        .background(statusRingColor(entry.status)),
-                )
-                if (!isLast) {
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Box(modifier = Modifier.width(2.dp).height(28.dp).background(SalatOutlineVariant))
+@Composable private fun WeekHistory(s: HomeUiState, onDay: (LocalDate) -> Unit) {
+    val locale = LocalConfiguration.current.locales[0]
+    val dates = (6 downTo 0).map { s.todayDate.minusDays(it.toLong()) }
+    HomeText(stringResource(R.string.home_v8_week).uppercase(locale) + " · " +
+        dates.first().format(DateTimeFormatter.ofPattern("d", locale)) + "–" +
+        s.todayDate.format(DateTimeFormatter.ofPattern("d MMM", locale)),
+        Modifier.padding(top = 12.dp, bottom = 4.dp), size = 11, muted = true, weight = FontWeight.SemiBold)
+    Row(Modifier.fillMaxWidth().padding(bottom = 6.dp)) {
+        dates.forEach { date ->
+            val dayDescription = date.format(DateTimeFormatter.ofPattern("EEEE, d MMMM", locale))
+            Column(Modifier.weight(1f).heightIn(min = 58.dp).clickable(role = Role.Button) { onDay(date) }
+                .semantics { contentDescription = dayDescription }.padding(vertical = 4.dp),
+                horizontalAlignment = Alignment.CenterHorizontally) {
+                Box(Modifier.size(34.dp).let {
+                    if (date == s.todayDate) it.border(1.dp, SalatPrimary, CircleShape) else it
+                }.padding(2.dp)) {
+                    PrayerStatusRing(if (date == s.todayDate) s.prayers.associate { it.type to it.status }
+                        else s.lastSevenDays[date].orEmpty(), Modifier.fillMaxSize())
+                }
+                HomeText(date.format(DateTimeFormatter.ofPattern("EEEEE", locale)), size = 11,
+                    color = if (date == s.todayDate) SalatPrimary else SalatOnSurfaceVariant)
+            }
+        }
+    }
+}
+
+@Composable private fun HomePrayerRow(entry: PrayerEntryUi, s: HomeUiState,
+    onSave: (PrayerType, PrayerStatus) -> Unit, onReminder: (PrayerType) -> Unit,
+    onDetails: () -> Unit, onOpenStreaks: () -> Unit) {
+    val name = entry.type.label(s.todayDate, s.jumuahEnabled, s.madhab)
+    val current = entry.type == s.currentPrayer
+    val fontScale = LocalDensity.current.fontScale
+    BoxWithConstraints(Modifier.fillMaxWidth().testTag("home-row-${entry.type}")) {
+        val stacked = maxWidth < 335.dp || fontScale > 1.15f
+        Column(Modifier.fillMaxWidth().let {
+            if (current) it.border(1.dp, SalatPrimary.copy(alpha = .3f), RoundedCornerShape(8.dp)) else it
+        }.padding(vertical = 7.dp).alpha(if (entry.isMarkable) 1f else .55f)) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Icon(painterResource(prayerIcon(entry.type)), null,
+                    tint = SalatOnSurfaceVariant, modifier = Modifier.size(18.dp))
+                Column(Modifier.weight(1f).heightIn(min = 48.dp)
+                    .clickable(enabled = entry.isMarkable, onClick = onDetails), verticalArrangement = Arrangement.Center) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        HomeText(name, Modifier.weight(1f, fill = false), size = 15, weight = FontWeight.Medium)
+                        val streak = s.streaks[entry.type]?.currentStreak ?: 0
+                        if (streak > 0) Row(Modifier.clickable(role = Role.Button, onClick = onOpenStreaks)
+                            .padding(start = 5.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(painterResource(R.drawable.home_flame), null,
+                                tint = HomeGold.copy(alpha = if (entry.loggedOnTime == true) 1f else .65f),
+                                modifier = Modifier.size(13.dp))
+                            HomeText("$streak", size = 12, muted = true)
+                        }
+                    }
+                    HomeText(entry.time?.formatAppTime(LocalUse24HourFormat.current) ?: "—", size = 12, muted = true)
+                    entry.loggedOnTime?.let { onTime ->
+                        HomeText(stringResource(if (onTime) R.string.home_v8_on_time else R.string.home_v8_late),
+                            size = 10, color = if (onTime) SalatPrimary else Color(0xFFB07F1E))
+                    }
+                }
+                if (!stacked) StatusActions(entry, s, onSave = onSave)
+                ReminderButton(entry, name, onReminder)
+            }
+            if (stacked) Row(Modifier.fillMaxWidth().padding(start = 26.dp), horizontalArrangement = Arrangement.End) {
+                StatusActions(entry, s, onSave = onSave)
+            }
+            if (entry.status == PrayerStatus.QAZA_PENDING) TextButton(
+                onClick = { onSave(entry.type, PrayerStatus.QAZA_COMPLETED) },
+                enabled = !s.isSaving && entry.isMarkable, contentPadding = PaddingValues(horizontal = 26.dp)) {
+                HomeText(stringResource(R.string.home_v8_make_up), size = 11, color = SalatPrimary)
+            }
+        }
+    }
+    HorizontalDivider(color = SalatOutlineVariant)
+}
+
+@Composable private fun ReminderButton(entry: PrayerEntryUi, name: String, onReminder: (PrayerType) -> Unit) {
+    IconButton(onClick = { onReminder(entry.type) }, modifier = Modifier.size(48.dp)) {
+        Box(Modifier.size(34.dp)
+            .background(if (entry.reminderEnabled) SalatPrimary.copy(alpha = .1f) else Color.Transparent, CircleShape)
+            .let { if (!entry.reminderEnabled) it.border(1.dp, SalatOutlineVariant, CircleShape) else it },
+            contentAlignment = Alignment.Center) {
+            Icon(painterResource(if (entry.reminderEnabled) R.drawable.onboarding_sound else R.drawable.home_speaker_off),
+                stringResource(if (entry.reminderEnabled) R.string.home_v8_reminder_on else R.string.home_v8_reminder_off, name),
+                tint = if (entry.reminderEnabled) SalatPrimary else SalatOnSurfaceVariant, modifier = Modifier.size(19.dp))
+        }
+    }
+}
+
+@Composable private fun StatusActions(entry: PrayerEntryUi, s: HomeUiState,
+    hero: Boolean = false, onSave: (PrayerType, PrayerStatus) -> Unit) {
+    val name = entry.type.label(s.todayDate, s.jumuahEnabled, s.madhab)
+    val enabled = entry.isMarkable && !s.isSaving
+    AnimatedContent(entry.status, label = "home-status-${entry.type}") { status ->
+        if (status != PrayerStatus.NOT_RECORDED) {
+            val label = contextStatusLabel(status, s.gender)
+            val clearLabel = stringResource(R.string.home_v8_clear_status, name)
+            Surface(onClick = { onSave(entry.type, PrayerStatus.NOT_RECORDED) }, enabled = enabled,
+                shape = CircleShape, color = homeStatusColor(status),
+                modifier = Modifier.heightIn(min = 48.dp).widthIn(max = 180.dp)
+                    .semantics { contentDescription = "$label. $clearLabel" }
+                    .testTag("home-status-${if (hero) "hero" else "row"}-${entry.type}")) {
+                Row(Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    val ink = if (status == PrayerStatus.QAZA_COMPLETED) Color(0xFF302408) else Color.White
+                    Icon(painterResource(statusIcon(status, s.gender)), null, tint = ink, modifier = Modifier.size(17.dp))
+                    HomeText(label, size = 12, color = ink)
                 }
             }
-            Spacer(modifier = Modifier.width(14.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text(
-                        text = entry.type.label(date, jumuahEnabled, madhab),
-                        color = SalatPrimary,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        fontFamily = AppTitleFontFamily,
-                    )
-                    if (needsMarking) {
-                        Box(
-                            modifier = Modifier.clip(RoundedCornerShape(50)).background(SalatPrimary).padding(horizontal = 8.dp, vertical = 2.dp),
-                        ) {
-                            Text(stringResource(R.string.home_now), color = SalatOnPrimary,  fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily, maxLines = 1)
+        } else Row {
+            val offered = if (s.gender == Gender.FEMALE)
+                listOf(PrayerStatus.INDIVIDUAL, PrayerStatus.MENSTRUATION, PrayerStatus.QAZA_PENDING)
+            else listOf(PrayerStatus.CONGREGATION, PrayerStatus.INDIVIDUAL, PrayerStatus.QAZA_PENDING)
+            offered.filter { !hero || it != PrayerStatus.QAZA_PENDING }.forEach { choice ->
+                val label = contextStatusLabel(choice, s.gender)
+                IconButton(onClick = { onSave(entry.type, choice) }, enabled = enabled,
+                    modifier = Modifier.size(48.dp)
+                        .testTag("home-pick-${if (hero) "hero" else "row"}-${entry.type}-$choice")) {
+                    Box(Modifier.size(if (hero) 40.dp else 34.dp)
+                        .background(if (hero) HomeCream else SalatSurface, CircleShape)
+                        .let { if (!hero) it.border(1.5.dp, SalatOutlineVariant, CircleShape) else it },
+                        contentAlignment = Alignment.Center) {
+                        Icon(painterResource(statusIcon(choice, s.gender)), "$name, $label",
+                            modifier = Modifier.size(19.dp), tint = if (enabled) homeStatusColor(choice) else SalatOnSurfaceVariant)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable private fun contextStatusLabel(status: PrayerStatus, gender: Gender?): String = when {
+    status == PrayerStatus.INDIVIDUAL && gender == Gender.FEMALE -> stringResource(R.string.home_v8_prayed)
+    status == PrayerStatus.MENSTRUATION -> stringResource(R.string.home_v8_excused)
+    status == PrayerStatus.QAZA_PENDING -> stringResource(R.string.home_v8_qaza)
+    status == PrayerStatus.QAZA_COMPLETED -> stringResource(R.string.home_v8_made_up)
+    else -> status.label()
+}
+
+private fun statusIcon(status: PrayerStatus, gender: Gender?) = when (status) {
+    PrayerStatus.CONGREGATION -> R.drawable.home_status_congregation
+    PrayerStatus.INDIVIDUAL -> if (gender == Gender.FEMALE) R.drawable.home_status_prayed else R.drawable.home_status_individual
+    PrayerStatus.MENSTRUATION -> R.drawable.home_status_excused
+    PrayerStatus.QAZA_PENDING -> R.drawable.home_status_qaza
+    PrayerStatus.QAZA_COMPLETED -> R.drawable.home_status_made_up
+    PrayerStatus.NOT_RECORDED -> R.drawable.home_status_qaza
+}
+private fun prayerIcon(type: PrayerType) = when (type) {
+    PrayerType.FAJR -> R.drawable.home_prayer_fajr
+    PrayerType.DHUHR -> R.drawable.home_prayer_dhuhr
+    PrayerType.ASR -> R.drawable.home_prayer_asr
+    PrayerType.MAGHRIB -> R.drawable.home_prayer_maghrib
+    PrayerType.ISHA -> R.drawable.home_prayer_isha
+}
+
+@Composable private fun HomeVerse(verse: VerseInfo) {
+    var translated by rememberSaveable(verse.citation) { mutableStateOf(false) }
+    Box(Modifier.fillMaxWidth().padding(top = 12.dp)) {
+        HomeFrieze(Modifier.align(Alignment.TopEnd).size(160.dp, 16.dp).alpha(.18f))
+        Column(Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            if (verse.arabic.isNotBlank()) Text(verse.arabic, color = SalatOnSurface,
+                fontFamily = AmiriQuranFamily, fontSize = 23.sp, lineHeight = 39.sp, textAlign = TextAlign.Center)
+            HomeText(verse.citation, size = 12, muted = true, align = TextAlign.Center)
+            if (verse.text.isNotBlank()) {
+                TextButton(onClick = { translated = !translated }, modifier = Modifier.testTag("home-translation-toggle")) {
+                    HomeText(stringResource(R.string.home_v8_translation) + if (translated) " ▴" else " ▾", size = 12, color = SalatPrimary)
+                }
+                AnimatedVisibility(translated) {
+                    HomeText(verse.text, Modifier.fillMaxWidth().testTag("home-translation-text"), size = 13, align = TextAlign.Center)
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable private fun StreakSheet(s: HomeUiState, onDismiss: () -> Unit, onAppearance: () -> Unit) {
+    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = SalatSurface) {
+        Column(Modifier.fillMaxWidth().testTag("home-streak-sheet").verticalScroll(rememberScrollState())
+            .padding(horizontal = 20.dp).padding(bottom = 24.dp)) {
+            HomeText(stringResource(R.string.home_v8_streaks), size = 20, weight = FontWeight.SemiBold)
+            PrayerType.values().forEach { type ->
+                val streak = s.streaks[type] ?: StreakInfo(0, 0)
+                Row(Modifier.fillMaxWidth().heightIn(min = 68.dp).padding(vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically) {
+                    Icon(painterResource(prayerIcon(type)), null, tint = SalatOnSurfaceVariant, modifier = Modifier.size(20.dp))
+                    HomeText(type.label(s.todayDate, s.jumuahEnabled, s.madhab),
+                        Modifier.weight(1f).padding(start = 12.dp), size = 15)
+                    Column(horizontalAlignment = Alignment.End) {
+                        HomeText("${streak.currentStreak}", size = 20, weight = FontWeight.SemiBold)
+                        HomeText(stringResource(R.string.home_v8_best, streak.highestStreak), size = 12, muted = true)
+                    }
+                }
+                HorizontalDivider(color = SalatOutlineVariant)
+            }
+            Row(Modifier.fillMaxWidth().padding(vertical = 14.dp)) {
+                HomeText(stringResource(R.string.home_v8_all_five), Modifier.weight(1f), size = 13)
+                HomeText("${perfectDayStreak(s.streaks)}", size = 13)
+            }
+            HomeText(stringResource(R.string.home_v8_streak_note), size = 12, muted = true)
+            TextButton(onClick = onAppearance, modifier = Modifier.testTag("home-appearance-open")) {
+                HomeText(stringResource(R.string.home_v8_appearance), color = SalatPrimary)
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable private fun AppearanceSheet(value: HomeAppearance, onChange: (HomeAppearance) -> Unit,
+    effects: HomeFeedbackEffects, onDismiss: () -> Unit) {
+    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = SalatSurface) {
+        Column(Modifier.fillMaxWidth().testTag("home-appearance-sheet").verticalScroll(rememberScrollState())
+            .padding(horizontal = 20.dp).padding(bottom = 24.dp)) {
+            HomeText(stringResource(R.string.home_v8_appearance), size = 20, weight = FontWeight.SemiBold)
+            listOf(Triple(R.string.home_v8_badge, value.streakBadge, { checked: Boolean -> onChange(value.copy(streakBadge = checked)) }),
+                Triple(R.string.home_v8_photo_info, value.showPhotoInfo, { checked: Boolean -> onChange(value.copy(showPhotoInfo = checked)) }),
+                Triple(R.string.home_v8_appreciation, value.showAppreciation, { checked: Boolean -> onChange(value.copy(showAppreciation = checked)) }),
+                Triple(R.string.home_v8_confetti, value.confetti, { checked: Boolean -> onChange(value.copy(confetti = checked)) }),
+                Triple(R.string.home_v8_voice, value.voice, { checked: Boolean -> onChange(value.copy(voice = checked)) }),
+                Triple(R.string.home_v8_chime, value.chime, { checked: Boolean -> onChange(value.copy(chime = checked)) }),
+                Triple(R.string.home_v8_vibration, value.vibration, { checked: Boolean -> onChange(value.copy(vibration = checked)) }))
+                .forEach { (label, checked, change) ->
+                    Row(Modifier.fillMaxWidth().heightIn(min = 60.dp), verticalAlignment = Alignment.CenterVertically) {
+                        HomeText(stringResource(label), Modifier.weight(1f).padding(end = 12.dp), size = 14)
+                        Switch(checked, change)
+                    }
+                }
+            if (value.voice) {
+                if (!effects.speechReady) HomeText(stringResource(R.string.home_v8_voice_unavailable), size = 12, muted = true)
+                else {
+                    var voiceMenu by remember { mutableStateOf(false) }
+                    Box {
+                        TextButton(onClick = { voiceMenu = true }) {
+                            HomeText(value.voiceName ?: stringResource(R.string.home_v8_voice_auto), size = 12, color = SalatPrimary)
+                        }
+                        DropdownMenu(voiceMenu, onDismissRequest = { voiceMenu = false }) {
+                            DropdownMenuItem(text = { HomeText(stringResource(R.string.home_v8_voice_auto)) },
+                                onClick = { onChange(value.copy(voiceName = null)); voiceMenu = false })
+                            effects.voices.forEach { (name, label) -> DropdownMenuItem(text = { HomeText(label) },
+                                onClick = { onChange(value.copy(voiceName = name)); voiceMenu = false }) }
                         }
                     }
                 }
-                if (entry.time != null) {
-                    Text(entry.time.formatAppTime(use24HourFormat), color = SalatOnSurfaceVariant, fontSize = 13.sp, fontFamily = AppUiFontFamily)
-                }
-                if (entry.reminderTime != null) {
-                    Text(
-                        text = stringResource(R.string.home_reminder_at, entry.reminderTime.formatAppTime(use24HourFormat)),
-                        color = SalatPrimary,
-                         fontSize = 12.sp,
-                        fontFamily = AppUiFontFamily,
-                    )
-                }
+                HomeText(stringResource(R.string.home_v8_speed), size = 12, muted = true)
+                Slider(value.speechRate, { onChange(value.copy(speechRate = it)) }, valueRange = .7f..1.2f, steps = 9)
             }
-            Spacer(modifier = Modifier.width(8.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                PrayerStatusChip(status = entry.status, isUpcoming = !entry.isMarkable)
-                if (entry.isMarkable) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_chevron_right),
-                        contentDescription = null,
-                        tint = SalatOnSurfaceVariant,
-                        modifier = Modifier.padding(start = 4.dp).size(16.dp),
-                    )
-                }
-            }
+            val preview = stringResource(R.string.home_v8_well_done)
+            TextButton(onClick = { effects.play(preview, true) }) { HomeText(stringResource(R.string.home_v8_preview), color = SalatPrimary) }
+            HomeText(stringResource(R.string.home_v8_drag_hint), size = 12, muted = true)
         }
     }
 }
 
-// ── Section title ─────────────────────────────────────────────────────────────
-
-@Composable
-private fun SectionTitle(text: String, modifier: Modifier = Modifier) {
-    Text(
-        text = text,
-        modifier = modifier,
-        color = SalatPrimary,
-        fontSize = 18.sp,
-        fontWeight = FontWeight.SemiBold,
-        fontFamily = AppTitleFontFamily,
-    )
-}
-
-// ── Consistency card (streak + last 7 days) ───────────────────────────────────
-
-@Composable
-private fun ConsistencyCard(
-    perfectStreak: Int,
-    streaks: Map<PrayerType, StreakInfo>,
-    todayDate: LocalDate,
-    lastSevenDays: Map<LocalDate, Map<PrayerType, PrayerStatus>>,
-    onDayClick: (LocalDate) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Surface(
-        modifier = modifier,
-        shape    = RoundedCornerShape(16.dp),
-        color    = SalatSurface,
-        border   = BorderStroke(1.dp, SalatSecondaryContainer),
-        shadowElevation = 2.dp,
-    ) {
-        Column(Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                Icon(painterResource(R.drawable.ic_local_fire_department), null, tint = Color(0xFFFF9939), modifier = Modifier.size(28.dp))
-                if (perfectStreak > 0) {
-                    Column {
-                        Text("$perfectStreak", color = SalatPrimary, fontSize = 24.sp, fontWeight = FontWeight.Bold, fontFamily = AppTitleFontFamily)
-                        Text(stringResource(R.string.home_streak_caption), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
-                    }
-                } else {
-                    Text(stringResource(R.string.home_streak_start), color = SalatPrimary, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily)
-                }
-            }
-            Spacer(modifier = Modifier.height(14.dp))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                PrayerType.values().forEach { type ->
-                    StreakChip(type = type, info = streaks[type] ?: StreakInfo(0, 0), modifier = Modifier.weight(1f))
-                }
-            }
-
-            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = SalatOutlineVariant.copy(alpha = 0.6f))
-
-            Text(
-                text = stringResource(R.string.home_last_7_days),
-                color = SalatOnSurfaceVariant,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold,
-                fontFamily = AppUiFontFamily,
-            )
-            Spacer(modifier = Modifier.height(10.dp))
-            WeekRings(todayDate = todayDate, lastSevenDays = lastSevenDays, onDayClick = onDayClick)
+@Composable private fun HomeConfetti(id: Long) {
+    val progress = remember(id) { Animatable(0f) }
+    LaunchedEffect(id) { progress.animateTo(1f, tween(1600)) }
+    Canvas(Modifier.fillMaxWidth().height(320.dp)) {
+        val t = progress.value
+        repeat(30) { i ->
+            val angle = (-165 + i * 5) * PI.toFloat() / 180
+            val distance = (60 + (i * 37) % 130).dp.toPx()
+            val x = size.width * .72f + cos(angle) * distance * t
+            val y = size.height * .25f + sin(angle) * distance * t + 150.dp.toPx() * t * t
+            drawRect(listOf(HomeGold, HomeCream, Color(0xFF3E9A95), Color.White)[i % 4].copy(alpha = 1f - t),
+                topLeft = Offset(x, y), size = androidx.compose.ui.geometry.Size(4.dp.toPx(), 7.dp.toPx()))
         }
     }
 }
 
-@Composable
-private fun StreakChip(type: PrayerType, info: StreakInfo, modifier: Modifier = Modifier) {
-    val fraction = if (info.highestStreak > 0) (info.currentStreak.toFloat() / info.highestStreak).coerceIn(0f, 1f) else 0f
-    Column(
-        modifier = modifier.clip(RoundedCornerShape(10.dp)).background(SalatSurfaceContainer).padding(vertical = 8.dp, horizontal = 2.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(type.shortLabel(), color = SalatOnSurfaceVariant,  fontSize = 12.sp, fontFamily = AppUiFontFamily, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        Spacer(modifier = Modifier.height(2.dp))
-        Text("${info.currentStreak}", color = SalatPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold, fontFamily = AppTitleFontFamily)
-        Spacer(modifier = Modifier.height(4.dp))
-        Box(modifier = Modifier.fillMaxWidth(0.8f).height(4.dp).clip(RoundedCornerShape(2.dp)).background(SalatSurfaceVariant)) {
-            Box(modifier = Modifier.fillMaxWidth(fraction).fillMaxHeight().clip(RoundedCornerShape(2.dp)).background(SalatPrimary))
-        }
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = stringResource(R.string.home_best_streak, info.highestStreak),
-            color = SalatOnSurfaceVariant,
-             fontSize = 12.sp,
-            fontFamily = AppUiFontFamily,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-    }
-}
-
-@Composable
-private fun WeekRings(
-    todayDate: LocalDate,
-    lastSevenDays: Map<LocalDate, Map<PrayerType, PrayerStatus>>,
-    onDayClick: (LocalDate) -> Unit,
-) {
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-        for (offset in 6 downTo 0) {
-            val date = todayDate.minusDays(offset.toLong())
-            val isToday = date == todayDate
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .heightIn(min = 48.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .clickable { onDayClick(date) }
-                    .padding(vertical = 4.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .let { if (isToday) it.border(1.5.dp, SalatPrimary, CircleShape) else it }
-                        .padding(3.dp),
-                ) {
-                    PrayerStatusRing(statuses = lastSevenDays[date].orEmpty(), modifier = Modifier.fillMaxSize())
-                }
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = stringResource(date.dayOfWeek.shortLabelRes),
-                    color = if (isToday) SalatPrimary else SalatOnSurfaceVariant,
-                     fontSize = 12.sp,
-                    fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
-                    fontFamily = AppUiFontFamily,
-                    maxLines = 1,
-                )
-            }
-        }
-    }
-}
-
-// ── Inspiration banner ────────────────────────────────────────────────────────
-
-@Composable
-private fun InspirationBanner(verse: VerseInfo, modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier
-            .heightIn(min = 160.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(
-                Brush.linearGradient(
-                    listOf(SalatHeroGradientStart, SalatHeroGradientEnd)
-                )
-            )
-            .padding(24.dp),
-        contentAlignment = Alignment.BottomStart,
-    ) {
-        Column {
-            if (verse.arabic.isNotBlank()) {
-                Text(
-                    text = verse.arabic,
-                    color = SalatOnHero,
-                    fontSize = 22.sp,
-                    fontFamily = AmiriQuranFamily,
-                    textAlign = TextAlign.End,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-            Text(
-                text = "“${verse.text}”",
-                color = SalatOnHero,
-                fontSize = 16.sp,
-                fontStyle = FontStyle.Italic,
-                fontFamily = AppUiFontFamily,
-                lineHeight = 22.sp,
-            )
-            if (verse.citation.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = verse.citation,
-                color = SalatOnHero.copy(alpha = 0.7f),
-                    fontSize = 12.sp,
-                    fontFamily = AppUiFontFamily,
-                )
-            }
-        }
-    }
-}
-
-// ── Skeleton placeholder ──────────────────────────────────────────────────────
-
-@Composable
-private fun ShimmerBlock(modifier: Modifier = Modifier, height: Dp = 76.dp) {
-    val shimmerAlpha by rememberInfiniteTransition(label = "shimmer")
-        .animateFloat(
-            initialValue = 0.3f, targetValue = 0.7f,
-            animationSpec = infiniteRepeatable(tween(800), RepeatMode.Reverse),
-            label = "alpha",
-        )
-    Box(
-        modifier = modifier
-            .height(height)
-            .clip(RoundedCornerShape(16.dp))
-            .background(SalatSurfaceContainerHigh.copy(alpha = shimmerAlpha))
-    )
-}
-
-@Composable
-private fun HomeSkeleton(modifier: Modifier = Modifier) {
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        ShimmerBlock(Modifier.fillMaxWidth(), height = 160.dp)
-        repeat(5) { ShimmerBlock(Modifier.fillMaxWidth(), height = 64.dp) }
-        ShimmerBlock(Modifier.fillMaxWidth(), height = 120.dp)
-        ShimmerBlock(Modifier.fillMaxWidth(), height = 90.dp)
-    }
-}
-
-// ── Preview ───────────────────────────────────────────────────────────────────
-
-private fun samplePrayers(statuses: List<PrayerStatus>, markable: List<Boolean>): List<PrayerEntryUi> =
-    PrayerType.values().mapIndexed { i, type ->
-        PrayerEntryUi(
-            type         = type,
-            time         = LocalTime.of((5 + i * 3) % 24, 30),
-            reminderTime = if (i == 1) LocalTime.of((5 + i * 3) % 24, 25) else null,
-            status       = statuses[i],
-            isMarkable   = markable[i],
-        )
-    }
-
-private fun sampleStreaks(values: List<Int>, best: List<Int>): Map<PrayerType, StreakInfo> =
-    PrayerType.values().mapIndexed { i, type -> type to StreakInfo(currentStreak = values[i], highestStreak = best[i]) }.toMap()
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun HomeScreenMiddayPreview() {
-    val today = LocalDate.now()
-    HomeScreen(
-        uiState = HomeUiState(
-            isLoading        = false,
-            todayDate        = today,
-            prayers          = samplePrayers(
-                statuses = listOf(PrayerStatus.CONGREGATION, PrayerStatus.INDIVIDUAL, PrayerStatus.NOT_RECORDED, PrayerStatus.NOT_RECORDED, PrayerStatus.NOT_RECORDED),
-                markable = listOf(true, true, true, false, false),
-            ),
-            nextPrayer       = NextPrayer(PrayerType.ASR, LocalTime.of(15, 45), isTomorrow = false),
-            minutesUntilNext = 84,
-            currentPrayer    = PrayerType.DHUHR,
-            streaks          = sampleStreaks(listOf(7, 12, 3, 0, 5), listOf(42, 20, 15, 8, 30)),
-            lastSevenDays    = (0..6).associate { offset ->
-                today.minusDays(offset.toLong()) to PrayerType.values().associateWith { PrayerStatus.CONGREGATION }
-            },
-            qazaPendingTotal = 3,
-            verse = VerseInfo(
-                text = "Verily, in the remembrance of Allah do hearts find rest.",
-                citation = "Ar-Ra'd 13:28",
-            ),
-        ),
-        onPrayerCardClick = {},
-        onSheetDismiss    = {},
-        onStatusSave      = {},
-        onQazaClick       = {},
-        onDayClick        = {},
-    )
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun HomeScreenAfterIshaPreview() {
-    val today = LocalDate.now()
-    HomeScreen(
-        uiState = HomeUiState(
-            isLoading        = false,
-            todayDate        = today,
-            prayers          = samplePrayers(
-                statuses = listOf(PrayerStatus.CONGREGATION, PrayerStatus.CONGREGATION, PrayerStatus.INDIVIDUAL, PrayerStatus.QAZA_PENDING, PrayerStatus.CONGREGATION),
-                markable = listOf(true, true, true, true, true),
-            ),
-            nextPrayer       = NextPrayer(PrayerType.FAJR, LocalTime.of(5, 31), isTomorrow = true),
-            minutesUntilNext = 345,
-            currentPrayer    = PrayerType.ISHA,
-            streaks          = sampleStreaks(listOf(0, 30, 15, 0, 22), listOf(42, 30, 15, 8, 30)),
-            lastSevenDays    = (0..6).associate { offset ->
-                today.minusDays(offset.toLong()) to PrayerType.values().associateWith { PrayerStatus.CONGREGATION }
-            },
-            qazaPendingTotal = 0,
-            verse = null,
-        ),
-        onPrayerCardClick = {},
-        onSheetDismiss    = {},
-        onStatusSave      = {},
-        onQazaClick       = {},
-        onDayClick        = {},
-    )
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun HomeScreenQazaPendingPreview() {
-    val today = LocalDate.now()
-    HomeScreen(
-        uiState = HomeUiState(
-            isLoading        = false,
-            todayDate        = today,
-            prayers          = samplePrayers(
-                statuses = listOf(PrayerStatus.NOT_RECORDED, PrayerStatus.NOT_RECORDED, PrayerStatus.NOT_RECORDED, PrayerStatus.NOT_RECORDED, PrayerStatus.NOT_RECORDED),
-                markable = listOf(true, true, true, false, false),
-            ),
-            nextPrayer       = NextPrayer(PrayerType.MAGHRIB, LocalTime.of(17, 32), isTomorrow = false),
-            minutesUntilNext = 5,
-            currentPrayer    = PrayerType.ASR,
-            streaks          = sampleStreaks(listOf(0, 0, 0, 0, 0), listOf(42, 20, 15, 8, 30)),
-            lastSevenDays    = (0..6).associate { offset ->
-                today.minusDays(offset.toLong()) to PrayerType.values().associateWith { PrayerStatus.QAZA_PENDING }
-            },
-            qazaPendingTotal = 456,
-            verse            = null,
-        ),
-        onPrayerCardClick = {},
-        onSheetDismiss    = {},
-        onStatusSave      = {},
-        onQazaClick       = {},
-        onDayClick        = {},
-    )
+@Composable internal fun HomeText(text: String, modifier: Modifier = Modifier, size: Int = 14,
+    muted: Boolean = false, color: Color = Color.Unspecified, weight: FontWeight = FontWeight.Normal,
+    align: TextAlign = TextAlign.Start) {
+    Text(text, modifier, color = if (color != Color.Unspecified) color else if (muted) SalatOnSurfaceVariant else SalatOnSurface,
+        fontFamily = HomeBodyFont, fontWeight = weight, fontSize = size.sp, lineHeight = (size * 1.5f).sp, textAlign = align)
 }
