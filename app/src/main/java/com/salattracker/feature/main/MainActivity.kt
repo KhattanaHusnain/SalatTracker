@@ -23,9 +23,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -41,7 +44,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -379,7 +381,7 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                 ) {
                     SalatBottomNavBar(
                         routes      = BottomNavRoute.all,
-                        currentDest = currentDest,
+                        currentRoute = currentDest?.route,
                         qazaPendingTotal = qazaPendingTotal,
                         onNavigate  = { route -> navController.navigateToTab(route.route) },
                     )
@@ -698,74 +700,44 @@ private fun CalendarViewMenu(
 // ── Bottom navigation bar ─────────────────────────────────────────────────────
 
 @Composable
-private fun SalatBottomNavBar(
+internal fun SalatBottomNavBar(
     routes: List<BottomNavRoute>,
-    currentDest: androidx.navigation.NavDestination?,
+    currentRoute: String?,
     onNavigate: (BottomNavRoute) -> Unit,
     qazaPendingTotal: Int = 0,
 ) {
-    if (currentDest?.route == BottomNavRoute.Home.route) {
-        val dark = LocalSalatColors.current == DarkSalatColors
-        val surface = if (dark) Color(0xFF101C1D) else Color.White
-        val muted = if (dark) Color(0xFFB7C5C5) else Color(0xFF6B7270)
-        Surface(color = surface) {
-            Column {
-                HorizontalDivider(color = muted.copy(alpha = .2f))
-                Row(Modifier.fillMaxWidth().navigationBarsPadding().padding(top = 6.dp, bottom = 8.dp)) {
-                    routes.forEach { route ->
-                        val selected = route.route == BottomNavRoute.Home.route
-                        Column(Modifier.weight(1f).heightIn(min = 52.dp).clickable { onNavigate(route) },
-                            horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                            BadgedBox(badge = {
-                                if (route.route == BottomNavRoute.Qaza.route && qazaPendingTotal > 0)
-                                    Badge(containerColor = Color(0xFF8A9490), contentColor = Color.White) {
-                                        Text(if (qazaPendingTotal > 99) "99+" else "$qazaPendingTotal", fontSize = 10.sp)
-                                    }
-                            }) {
-                                Icon(painterResource(route.iconRes), null, Modifier.size(20.dp),
-                                    tint = if (selected) Color(0xFF087E83) else muted)
-                            }
-                            Text(stringResource(route.labelRes), fontFamily = com.salattracker.feature.home.HomeBodyFont,
-                                fontSize = 11.sp, color = if (selected) Color(0xFF087E83) else muted,
-                                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal)
+    val dark = LocalSalatColors.current == DarkSalatColors
+    val surface = if (dark) Color(0xFF101C1D) else Color.White
+    val muted = if (dark) Color(0xFFB7C5C5) else Color(0xFF6B7270)
+    Surface(Modifier.testTag("bottom-navigation"), color = surface) {
+        Column {
+            HorizontalDivider(color = muted.copy(alpha = .2f))
+            Row(Modifier.fillMaxWidth().navigationBarsPadding().padding(top = 6.dp, bottom = 8.dp)) {
+                routes.forEach { route ->
+                    val selected = route.route == currentRoute
+                    val label = stringResource(route.labelRes)
+                    Column(Modifier.weight(1f).heightIn(min = 52.dp)
+                        .testTag("bottom-nav-${route.route}")
+                        .selectable(selected = selected, role = Role.Tab) { onNavigate(route) },
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center) {
+                        BadgedBox(badge = {
+                            if (route.route == BottomNavRoute.Qaza.route && qazaPendingTotal > 0)
+                                Badge(containerColor = Color(0xFF8A9490), contentColor = Color.White) {
+                                    Text(if (qazaPendingTotal > 99) "99+" else "$qazaPendingTotal", fontSize = 10.sp)
+                                }
+                        }) {
+                            Icon(painterResource(route.iconRes), label, Modifier.size(20.dp),
+                                tint = if (selected) Color(0xFF087E83) else muted)
                         }
+                        Text(label, Modifier.testTag("bottom-nav-label-${route.route}"),
+                            fontFamily = com.salattracker.feature.home.HomeBodyFont,
+                            fontSize = 11.sp, color = if (selected) Color(0xFF087E83) else muted,
+                            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                            maxLines = 1)
                     }
                 }
             }
-        }
-        return
-    }
-    NavigationBar(
-        containerColor = SalatSurface,
-        tonalElevation = 0.dp,
-    ) {
-        routes.forEach { route ->
-            val isSelected = currentDest?.hierarchy?.any { it.route == route.route } == true
-            NavigationBarItem(
-                selected = isSelected,
-                onClick  = { onNavigate(route) },
-                label = {
-                    Text(
-                        stringResource(route.labelRes),
-                           fontSize = 12.sp,
-                        fontFamily = AppUiFontFamily,
-                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                    )
-                },
-                icon = {
-                    Icon(
-                        painterResource(route.iconRes),
-                        stringResource(route.labelRes),
-                    )
-                },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor   = SalatOnSecondaryContainer,
-                    selectedTextColor   = SalatOnSecondaryContainer,
-                    indicatorColor      = SalatSecondaryContainer,
-                    unselectedIconColor = SalatOnSurfaceVariant,
-                    unselectedTextColor = SalatOnSurfaceVariant,
-                ),
-            )
         }
     }
 }
