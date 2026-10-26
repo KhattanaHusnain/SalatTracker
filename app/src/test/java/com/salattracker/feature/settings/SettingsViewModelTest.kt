@@ -9,6 +9,7 @@ import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.ThemeMode
 import com.salattracker.domain.repository.UserPrefs
 import com.salattracker.testutil.FakeLocaleApplier
+import com.salattracker.testutil.FakeGeocodingRepository
 import com.salattracker.testutil.FakeLocationProvider
 import com.salattracker.testutil.FakePrayerReminderRescheduler
 import com.salattracker.testutil.FakeSettingsRepository
@@ -27,10 +28,13 @@ class SettingsViewModelTest {
 
     private val repository = FakeSettingsRepository(UserPrefs(latitude = 24.4672, longitude = 39.6111, calculationMethodId = CalculationMethod.MWL.id))
     private val locationProvider = FakeLocationProvider()
+    private val geocodingRepository = FakeGeocodingRepository()
     private val rescheduler = FakePrayerReminderRescheduler()
     private val localeApplier = FakeLocaleApplier()
 
-    private fun createViewModel() = SettingsViewModel(repository, locationProvider, rescheduler, localeApplier)
+    private fun createViewModel() = SettingsViewModel(
+        repository, locationProvider, geocodingRepository, rescheduler, localeApplier,
+    )
 
     @Test
     fun `load reflects current prefs, mapping calculationMethodId to the right method`() {
@@ -57,11 +61,15 @@ class SettingsViewModelTest {
     @Test
     fun `fetchDeviceLocation persists the fix and reschedules`() {
         locationProvider.nextLocation = 1.5 to 2.5
+        geocodingRepository.nextReverseResult = com.salattracker.domain.model.CityResult(
+            "Karachi", "Sindh", "Pakistan", 1.5, 2.5, "PK",
+        )
         val viewModel = createViewModel()
 
         viewModel.fetchDeviceLocation()
 
         assertEquals(listOf(1.5 to 2.5), repository.locationCalls)
+        assertEquals(listOf("Karachi, Sindh, Pakistan"), repository.locationLabelCalls)
         assertEquals(1, rescheduler.rescheduleCount)
     }
 

@@ -264,8 +264,11 @@ class OnboardingViewModel @Inject constructor(
             }
             if (city.name.isNotBlank()) settingsRepository.setLocationLabel(city.fullLabel)
             settingsRepository.setCalculationMethodId(state.calculationMethod.id)
+            // Do not expose the remaining onboarding steps until the location label has been
+            // committed. Home observes this same settings stream, so completing onboarding can
+            // never race ahead and briefly render the generic "Choose city" fallback.
+            goTo(OnboardingStep.REMINDERS)
         }
-        goTo(OnboardingStep.REMINDERS)
     }
 
     fun onChangeLocationClick() = goTo(OnboardingStep.CITY_SEARCH)

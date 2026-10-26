@@ -10,6 +10,7 @@ import com.salattracker.domain.model.HighLatitudeRule
 import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.ThemeMode
+import com.salattracker.domain.repository.GeocodingRepository
 import com.salattracker.domain.repository.LocaleApplier
 import com.salattracker.domain.repository.LocationProvider
 import com.salattracker.domain.repository.PrayerReminderRescheduler
@@ -54,6 +55,7 @@ data class SettingsUiState(
 class SettingsViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val locationProvider: LocationProvider,
+    private val geocodingRepository: GeocodingRepository,
     private val prayerReminderRescheduler: PrayerReminderRescheduler,
     private val localeApplier: LocaleApplier,
 ) : ViewModel() {
@@ -108,9 +110,10 @@ class SettingsViewModel @Inject constructor(
     fun fetchDeviceLocation() {
         viewModelScope.launch {
             val (lat, lon) = locationProvider.getCurrentLocation() ?: return@launch
+            val city = runCatching { geocodingRepository.reverseGeocode(lat, lon) }.getOrNull()
             runCatching {
                 settingsRepository.setLocation(lat, lon)
-                settingsRepository.setLocationLabel(null)
+                settingsRepository.setLocationLabel(city?.fullLabel)
             }.onSuccess {
                 prayerReminderRescheduler.rescheduleAll()
             }.onFailure { _ -> _uiState.update { it.copy(errorRes = R.string.error_save_generic) } }

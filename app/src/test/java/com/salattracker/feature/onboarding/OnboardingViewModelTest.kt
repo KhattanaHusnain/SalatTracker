@@ -47,6 +47,23 @@ class OnboardingViewModelTest {
         assertEquals(CalculationMethod.MWL, viewModel.uiState.value.calculationMethod)
     }
 
+    @Test
+    fun `confirmed onboarding city is persisted before advancing to reminders`() {
+        val repository = FakeSettingsRepository()
+        val viewModel = OnboardingViewModel(
+            repository, FakeGeocodingRepository(), FakePrayerRepository(),
+            FakePrayerReminderRescheduler(), SavedStateHandle(),
+        )
+        val karachi = CityResult("Karachi", "Sindh", "Pakistan", 24.86, 67.01, "PK")
+
+        viewModel.onCitySelected(karachi)
+        viewModel.onConfirmLocation()
+
+        assertEquals(listOf(24.86 to 67.01), repository.locationCalls)
+        assertEquals(listOf("Karachi, Sindh, Pakistan"), repository.locationLabelCalls)
+        assertEquals(OnboardingStep.REMINDERS, viewModel.uiState.value.step)
+    }
+
     private fun viewModel(handle: SavedStateHandle) = OnboardingViewModel(
         FakeSettingsRepository(), FakeGeocodingRepository(), FakePrayerRepository(),
         FakePrayerReminderRescheduler(), handle,
