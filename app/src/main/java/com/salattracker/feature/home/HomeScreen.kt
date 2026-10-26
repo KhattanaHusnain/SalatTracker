@@ -4,29 +4,33 @@ import android.animation.ValueAnimator
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.*
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.platform.*
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.*
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.PlatformTextStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
 import com.salattracker.R
@@ -35,13 +39,19 @@ import com.salattracker.core.ui.*
 import com.salattracker.domain.model.*
 import com.salattracker.domain.usecase.*
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import kotlin.math.*
 
+private val V27HeroMuted = Color.White.copy(alpha = .78f)
+private val V27Divider = Color(0xFFE3E6E2)
+private val V27Muted = Color(0xFF6B7270)
+
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun LegacyHomeScreen(
+fun HomeScreen(
     uiState: HomeUiState,
     onPrayerCardClick: (PrayerType) -> Unit,
     onSheetDismiss: () -> Unit,
@@ -49,6 +59,7 @@ private fun LegacyHomeScreen(
     onQazaClick: () -> Unit,
     onDayClick: (LocalDate) -> Unit,
     onQuickStatusSave: (PrayerType, PrayerStatus) -> Unit = { type, _ -> onPrayerCardClick(type) },
+    onPastStatusSave: (LocalDate, PrayerType, PrayerStatus) -> Unit = { date, _, _ -> onDayClick(date) },
     onReminderToggle: (PrayerType) -> Unit = {},
     onMenuClick: () -> Unit = {},
     onLocationClick: () -> Unit = {},
@@ -58,12 +69,18 @@ private fun LegacyHomeScreen(
     onErrorDismiss: () -> Unit = {},
 ) {
     var showStreaks by rememberSaveable { mutableStateOf(false) }
-    var showAppearance by rememberSaveable { mutableStateOf(false) }
+    var selectedDay by rememberSaveable { mutableStateOf<LocalDate?>(null) }
+    var translated by rememberSaveable { mutableStateOf(false) }
     var feedback by remember { mutableStateOf<HomeSaveFeedback?>(null) }
     var handledFeedback by rememberSaveable { mutableStateOf<Long?>(null) }
+    var flashPrayer by remember { mutableStateOf<PrayerType?>(null) }
+    val rowRequesters = remember { PrayerType.values().associateWith { BringIntoViewRequester() } }
+    val scope = rememberCoroutineScope()
     val snackbar = remember { SnackbarHostState() }
     val context = LocalContext.current
-    val feedbackEffects = rememberHomeFeedbackEffects(uiState.appearance, showAppearance)
+    val feedbackEffects = rememberHomeFeedbackEffects(uiState.appearance, configureVoice = false)
+    val feedbackText = uiState.feedback?.let { v27AppreciationText(it, uiState) }
+
     LaunchedEffect(uiState.errorRes) {
         uiState.errorRes?.let { snackbar.showSnackbar(context.getString(it)); onErrorDismiss() }
     }
@@ -73,353 +90,723 @@ private fun LegacyHomeScreen(
         handledFeedback = saved.id
         feedback = saved
         val celebrate = saved.onTime && saved.status in listOf(PrayerStatus.CONGREGATION, PrayerStatus.INDIVIDUAL)
-        feedbackEffects.play(context.getString(R.string.home_v8_well_done), celebrate)
-        delay(3600); feedback = null
+        feedbackEffects.play(feedbackText.orEmpty(), celebrate)
+        delay(3600)
+        if (feedback?.id == saved.id) feedback = null
     }
+
     HomeDesign {
-        Box(Modifier.fillMaxSize().background(SalatBackground).testTag("home-screen")) {
+        Box(Modifier.fillMaxSize().background(Color.White).testTag("home-screen")) {
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).testTag("home-scroll")) {
-                HomeHero(uiState, onMenuClick, onLocationClick, onQuickStatusSave,
-                    { showStreaks = true }, onAppearanceChanged)
-                if (!uiState.appearance.streakBadge)
-                    StreakDisplay(uiState, false, onAppearanceChanged) { showStreaks = true }
+                V27Hero(
+                    uiState,
+                    onOpenMenu = onMenuClick,
+                    onLocation = onLocationClick,
+                    onSave = onQuickStatusSave,
+                    onOpenStreaks = { showStreaks = true },
+                    onAppearanceChanged = onAppearanceChanged,
+                    feedbackId = uiState.feedback?.id,
+                )
+                if (!uiState.appearance.streakBadge) {
+                    V27StreakDisplay(uiState, badge = false, onChange = onAppearanceChanged) { showStreaks = true }
+                }
                 Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp)) {
-                    if (uiState.isLoading) {
-                        LinearProgressIndicator(Modifier.fillMaxWidth().padding(vertical = 20.dp), color = SalatPrimary)
-                        repeat(5) { Box(Modifier.fillMaxWidth().height(64.dp).padding(vertical = 8.dp)
-                            .background(SalatOutlineVariant.copy(alpha = .3f), RoundedCornerShape(8.dp))) }
-                    } else {
-                        WeekHistory(uiState, onDayClick)
-                        if (uiState.lastSevenDays.count { (_, marks) ->
-                            marks.isEmpty() || marks.values.all { it == PrayerStatus.NOT_RECORDED } } >= 3) {
-                            TextButton(onClick = onCatchUpClick, contentPadding = PaddingValues(0.dp)) {
-                                HomeText(stringResource(R.string.home_v8_catch_up), size = 12, color = SalatPrimary)
+                    if (uiState.isLoading) V27Loading()
+                    else {
+                        V27WeekHistory(uiState) { date ->
+                            if (date == uiState.todayDate) {
+                                val target = uiState.currentPrayer ?: uiState.nextPrayer?.type
+                                if (target != null) scope.launch {
+                                    rowRequesters.getValue(target).bringIntoView()
+                                    flashPrayer = target
+                                    delay(1500)
+                                    if (flashPrayer == target) flashPrayer = null
+                                }
+                            } else selectedDay = date
+                        }
+                        V27TodayHeading(uiState)
+                        if (v27RecentUnrecordedDays(uiState) >= 3) {
+                            Row(Modifier.fillMaxWidth().clickable(role = Role.Button, onClick = onCatchUpClick)
+                                .padding(bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                                HomeText(stringResource(R.string.home_v8_catch_up), size = 13, color = HomeTeal)
                             }
                         }
                         uiState.prayers.forEach { entry ->
-                            HomePrayerRow(entry, uiState, onQuickStatusSave, onReminderToggle,
-                                { onPrayerCardClick(entry.type) }, { showStreaks = true })
+                            V27PrayerRow(
+                                entry = entry,
+                                state = uiState,
+                                flash = flashPrayer == entry.type,
+                                modifier = Modifier.bringIntoViewRequester(rowRequesters.getValue(entry.type)),
+                                onSave = onQuickStatusSave,
+                                onReminder = onReminderToggle,
+                                onDetails = { onPrayerCardClick(entry.type) },
+                                onOpenStreaks = { showStreaks = true },
+                            )
                         }
-                        uiState.verse?.let { HomeVerse(it) }
-                        Row(Modifier.fillMaxWidth().heightIn(min = 52.dp).clickable(role = Role.Button, onClick = onDonateClick)
-                            .padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                            Icon(painterResource(R.drawable.home_heart), null, tint = SalatPrimary, modifier = Modifier.size(18.dp))
-                            HomeText(stringResource(R.string.home_v8_donate), Modifier.weight(1f), size = 13, muted = true)
-                            Icon(painterResource(R.drawable.ic_chevron_right), null, tint = SalatOnSurfaceVariant, modifier = Modifier.size(16.dp))
-                        }
-                        HorizontalDivider(color = SalatOutlineVariant)
-                        Spacer(Modifier.height(12.dp))
+                        uiState.verse?.let { V27Verse(it, translated) { translated = !translated } }
+                        V27DonateRow(onDonateClick)
                     }
                 }
             }
             feedback?.let { saved ->
                 if (uiState.appearance.showAppreciation && saved.status != PrayerStatus.NOT_RECORDED) {
-                    Surface(Modifier.align(Alignment.TopCenter).statusBarsPadding()
-                        .padding(top = 12.dp, start = 64.dp, end = 28.dp).testTag("home-appreciation"),
-                        shape = RoundedCornerShape(14.dp), color = HomeCream, shadowElevation = 6.dp) {
-                        Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Icon(painterResource(R.drawable.home_flame), null, tint = HomeGold, modifier = Modifier.size(20.dp))
-                            Spacer(Modifier.width(8.dp))
-                            val message = when {
-                                saved.status == PrayerStatus.MENSTRUATION -> R.string.home_v8_rest
-                                saved.status in listOf(PrayerStatus.CONGREGATION, PrayerStatus.INDIVIDUAL) && saved.onTime -> R.string.home_v8_well_done
-                                else -> R.string.home_v8_saved
-                            }
-                            HomeText(stringResource(message), size = 13, color = Color(0xFF0B4F53), weight = FontWeight.SemiBold)
-                        }
-                    }
+                    V27AppreciationToast(v27AppreciationText(saved, uiState), saved.status == PrayerStatus.MENSTRUATION)
                 }
                 if (uiState.appearance.confetti && saved.onTime &&
-                    saved.status in listOf(PrayerStatus.CONGREGATION, PrayerStatus.INDIVIDUAL) && ValueAnimator.areAnimatorsEnabled())
-                    HomeConfetti(saved.id)
+                    saved.status in listOf(PrayerStatus.CONGREGATION, PrayerStatus.INDIVIDUAL) &&
+                    ValueAnimator.areAnimatorsEnabled()) V27Confetti(saved.id)
             }
             SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter))
         }
-        if (showStreaks) StreakSheet(uiState, { showStreaks = false }) {
-            showStreaks = false; showAppearance = true
-        }
-        if (showAppearance) AppearanceSheet(uiState.appearance, onAppearanceChanged, feedbackEffects) { showAppearance = false }
+        if (showStreaks) V27StreakSheet(uiState) { showStreaks = false }
+        selectedDay?.let { day -> V27DaySheet(day, uiState, onPastStatusSave) { selectedDay = null } }
         uiState.sheetArgs?.let { args ->
-            PrayerStatusBottomSheet(args = args, isSaving = uiState.isSaving,
-                onDismiss = onSheetDismiss, onSave = onStatusSave, gender = uiState.gender)
+            PrayerStatusBottomSheet(
+                args = args, isSaving = uiState.isSaving, onDismiss = onSheetDismiss,
+                onSave = onStatusSave, gender = uiState.gender,
+            )
         }
     }
 }
 
-@Composable private fun HomeHero(s: HomeUiState, onMenu: () -> Unit, onLocation: () -> Unit,
-    onSave: (PrayerType, PrayerStatus) -> Unit, onOpenStreaks: () -> Unit, onAppearanceChanged: (HomeAppearance) -> Unit) {
+@Composable
+private fun V27Hero(
+    state: HomeUiState,
+    onOpenMenu: () -> Unit,
+    onLocation: () -> Unit,
+    onSave: (PrayerType, PrayerStatus) -> Unit,
+    onOpenStreaks: () -> Unit,
+    onAppearanceChanged: (HomeAppearance) -> Unit,
+    feedbackId: Long?,
+) {
     val locale = LocalConfiguration.current.locales[0]
+    val date = state.now.toLocalDate()
     val hijriAdjustment = LocalHijriAdjustmentDays.current
-    val date = s.now.toLocalDate()
     val hijri = remember(date, hijriAdjustment) { date.toHijriOrNull(hijriAdjustment) }
-    val current = s.prayers.firstOrNull { it.type == s.currentPrayer }
-    val next = s.nextPrayer
+    val current = state.prayers.firstOrNull { it.type == state.currentPrayer }
+    val next = state.nextPrayer
     val type = current?.type ?: next?.type
-    val name = type?.label(if (current != null) s.todayDate else date.plusDays(if (next?.isTomorrow == true) 1 else 0),
-        s.jumuahEnabled, s.madhab)
-    val remaining = current?.windowEnd?.let { Duration.between(s.now, it).toMinutes().coerceAtLeast(0) } ?: s.minutesUntilNext
+    val displayDate = state.todayDate.plusDays(if (current == null && next?.isTomorrow == true) 1 else 0)
+    val name = type?.label(displayDate, state.jumuahEnabled, state.madhab)
+    val remaining = current?.windowEnd?.let { Duration.between(state.now, it).toMinutes().coerceAtLeast(0) }
+        ?: state.minutesUntilNext
     val progress = current?.let { entry ->
-        val start = entry.time?.let(s.todayDate::atTime)
+        val start = entry.time?.let(state.todayDate::atTime)
         val end = entry.windowEnd
-        if (start != null && end != null) (Duration.between(s.now, end).seconds.toFloat() /
-            Duration.between(start, end).seconds.coerceAtLeast(1)).coerceIn(0f, 1f) else 0f
+        if (start != null && end != null) {
+            val full = Duration.between(start, end).seconds.coerceAtLeast(1)
+            (Duration.between(start, state.now).seconds.toFloat() / full).coerceIn(0f, 1f)
+        } else 0f
     } ?: 0f
+    val status = current?.status ?: PrayerStatus.NOT_RECORDED
+    val filled = status != PrayerStatus.NOT_RECORDED && status != PrayerStatus.QAZA_PENDING
+
     Box(Modifier.fillMaxWidth().testTag("home-hero")) {
         Image(painterResource(R.drawable.home_mosque), null, Modifier.matchParentSize(),
-            contentScale = ContentScale.Crop, alignment = Alignment.TopCenter)
+            contentScale = ContentScale.Crop, alignment = BiasAlignment(0f, -.72f))
         Box(Modifier.matchParentSize().background(Brush.verticalGradient(
-            0f to Color(0xB8064E52), .55f to Color(0x6B064E52), 1f to Color(0xDB053C40))))
-        Column(Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 20.dp).padding(top = 4.dp, bottom = 24.dp)) {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onMenu) {
+            0f to Color(0xB8064E52), .55f to Color(0x6B064E52), 1f to Color(0xDB053C40),
+        )))
+        Column(Modifier.fillMaxWidth().statusBarsPadding().padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 26.dp)) {
+            Row(Modifier.fillMaxWidth().height(30.dp), verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onOpenMenu, modifier = Modifier.size(40.dp).offset(x = (-10).dp)
+                    .testTag("home-menu-open")) {
                     Icon(painterResource(R.drawable.ic_menu), stringResource(R.string.home_v8_menu),
                         tint = Color.White, modifier = Modifier.size(20.dp))
                 }
                 Spacer(Modifier.weight(1f))
-                if (s.appearance.streakBadge) StreakDisplay(s, true, onAppearanceChanged, onOpenStreaks)
+                if (state.appearance.streakBadge) V27StreakDisplay(state, true, onAppearanceChanged, onOpenStreaks)
             }
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Column(Modifier.weight(1f)) {
-                    Text(hijri?.fullLabel() ?: date.format(DateTimeFormatter.ofPattern("d MMMM yyyy", locale)),
-                        color = Color.White, fontFamily = HomeTitleFont, fontWeight = FontWeight.SemiBold,
-                        fontSize = 27.sp, lineHeight = 30.sp)
-                    Spacer(Modifier.height(6.dp))
-                    HomeText(date.format(DateTimeFormatter.ofPattern("EEE, d MMM", locale)),
-                        size = 13, color = Color.White.copy(alpha = .8f))
-                    Row(Modifier.heightIn(min = 48.dp).clickable(role = Role.Button, onClick = onLocation),
+            val enlarged = LocalDensity.current.fontScale > 1.15f
+            BoxWithConstraints(Modifier.fillMaxWidth().heightIn(min = 196.dp)) {
+                val tallHero = enlarged || maxWidth < 340.dp
+                val heroLanguage = locale.language
+                val heroHeight = when {
+                    heroLanguage == "ur" && enlarged -> 294.dp
+                    heroLanguage in setOf("ar", "fr") && enlarged -> 244.dp
+                    maxWidth < 340.dp -> 260.dp
+                    tallHero -> 226.dp
+                    else -> 204.dp
+                }
+                val captionWidth = (maxWidth - 162.dp).coerceIn(104.dp, 168.dp)
+                Spacer(Modifier.height(heroHeight))
+                Column(Modifier.align(Alignment.TopStart).padding(top = 24.dp).width(captionWidth)
+                    .testTag("home-date-block")) {
+                    V27FixedText(hijri?.fullLabel() ?: date.format(DateTimeFormatter.ofPattern("d MMMM yyyy", locale)),
+                        size = 27, line = 32, color = Color.White, fontFamily = HomeTitleFont,
+                        weight = FontWeight.SemiBold)
+                    V27FixedText(date.format(DateTimeFormatter.ofPattern("EEE, d MMM", locale)),
+                        Modifier.padding(top = 4.dp), size = 13, line = 18, color = V27HeroMuted)
+                    Row(Modifier.heightIn(min = 40.dp).clickable(role = Role.Button, onClick = onLocation),
                         verticalAlignment = Alignment.CenterVertically) {
-                        Icon(painterResource(R.drawable.onboarding_pin), null, tint = HomeGold, modifier = Modifier.size(15.dp))
+                        Icon(painterResource(R.drawable.onboarding_pin), null, tint = HomeGold, modifier = Modifier.size(14.dp))
                         Spacer(Modifier.width(5.dp))
-                        HomeText(s.locationLabel?.substringBefore(',') ?: stringResource(R.string.home_v8_choose_city),
-                            size = 12, color = Color.White.copy(alpha = .85f))
+                        V27FixedText(state.locationLabel?.substringBefore(',') ?: stringResource(R.string.home_v8_choose_city),
+                            Modifier.testTag("home-location-city"), size = 12, line = 17,
+                            color = V27HeroMuted, maxLines = 2)
                     }
                 }
-                Box(Modifier.width(150.dp).heightIn(min = 180.dp).testTag("home-countdown"), contentAlignment = Alignment.Center) {
-                    HomeArch(progress, Modifier.matchParentSize())
-                    Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 36.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally) {
-                        if (s.isLoading) CircularProgressIndicator(Modifier.size(26.dp), color = HomeGold, strokeWidth = 2.dp)
-                        else if (name != null) {
-                            if (current != null) Text(name, color = Color.White, fontFamily = HomeTitleFont,
-                                fontSize = 27.sp, lineHeight = 30.sp, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center)
-                            else HomeText(stringResource(R.string.home_v8_begins, name), size = 12, color = Color.White, align = TextAlign.Center)
-                            HomeText(stringResource(R.string.home_v8_remaining, (remaining / 60).toInt(), (remaining % 60).toInt()),
-                                size = 30, color = Color.White, align = TextAlign.Center)
-                            if (current != null) HomeText(stringResource(R.string.home_v8_left), size = 12, color = Color.White.copy(alpha = .8f))
-                        } else HomeText(stringResource(R.string.home_v8_times_unavailable), size = 13, color = Color.White, align = TextAlign.Center)
+                Box(Modifier.align(Alignment.TopEnd)
+                    .size(150.dp, if (tallHero) 226.dp else 196.dp)
+                    .testTag("home-countdown")) {
+                    HomeArch(if (filled) 1f else progress, Modifier.matchParentSize(), filled,
+                        status == PrayerStatus.MENSTRUATION, status == PrayerStatus.CONGREGATION)
+                    V27HeroCenter(state, current, name, remaining, filled)
+                    when {
+                        current == null && name != null -> HomeText(stringResource(R.string.home_v8_opens, name),
+                            Modifier.align(Alignment.BottomCenter).padding(horizontal = 20.dp, vertical = 18.dp),
+                            size = 11, color = V27HeroMuted, align = TextAlign.Center)
+                        current != null && status == PrayerStatus.NOT_RECORDED -> V27HeroPickActions(current, state, onSave)
+                        current != null && v27HeroFigure(status, state.gender) != null -> V27HeroFigure(
+                            current, status, state.gender, feedbackId, onSave)
+                        current != null -> V27HeroUndoStatement(current, status, state.gender, onSave)
                     }
                 }
-            }
-            Row(Modifier.fillMaxWidth().padding(top = 4.dp), verticalAlignment = Alignment.Bottom,
-                horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                PhotoInfo(s.appearance.showPhotoInfo, Modifier.weight(1f),
-                    { onAppearanceChanged(s.appearance.copy(showPhotoInfo = false)) },
-                    { onAppearanceChanged(s.appearance.copy(showPhotoInfo = true)) })
-                Box(Modifier.widthIn(min = 132.dp, max = 180.dp), contentAlignment = Alignment.Center) {
-                    if (current != null) StatusActions(current, s, hero = true, onSave = onSave)
-                    else if (name != null) HomeText(stringResource(R.string.home_v8_opens, name),
-                        size = 12, color = Color.White.copy(alpha = .85f), align = TextAlign.Center)
-                    else TextButton(onClick = onLocation) {
-                        HomeText(stringResource(R.string.home_v8_choose_city), color = Color.White)
-                    }
-                }
+                V27PhotoInfo(state.appearance.showPhotoInfo, Modifier.align(Alignment.BottomStart).width(captionWidth),
+                    { onAppearanceChanged(state.appearance.copy(showPhotoInfo = false)) },
+                    { onAppearanceChanged(state.appearance.copy(showPhotoInfo = true)) })
             }
         }
     }
 }
 
-@Composable private fun PhotoInfo(shown: Boolean, modifier: Modifier, onHide: () -> Unit, onShow: () -> Unit) {
-    if (!shown) Box(modifier) {
-        IconButton(onClick = onShow, modifier = Modifier.size(48.dp).testTag("home-photo-show").background(Color(0x8804282B), CircleShape)) {
+@Composable
+private fun BoxScope.V27HeroCenter(state: HomeUiState, current: PrayerEntryUi?, name: String?, remaining: Long, filled: Boolean) {
+    val isUrdu = LocalConfiguration.current.locales[0].language == "ur"
+    Column(Modifier.align(Alignment.TopCenter).fillMaxWidth()
+        .padding(top = if (filled) 42.dp else 52.dp),
+        horizontalAlignment = Alignment.CenterHorizontally) {
+        if (state.isLoading) CircularProgressIndicator(Modifier.size(26.dp), color = HomeGold, strokeWidth = 2.dp)
+        else if (name == null) HomeText(stringResource(R.string.home_v8_times_unavailable), size = 12,
+            color = Color.White, align = TextAlign.Center)
+        else if (current == null) {
+            HomeText(stringResource(R.string.home_v8_begins, name), size = 11, color = V27HeroMuted, align = TextAlign.Center)
+            V27FixedText(v27Remaining(remaining), Modifier.testTag("home-countdown-value"),
+                size = when (LocalConfiguration.current.locales[0].language) { "ar" -> 26; "ur" -> 20; else -> 34 },
+                line = when (LocalConfiguration.current.locales[0].language) { "ur" -> 34; else -> 40 },
+                color = Color.White, align = TextAlign.Center, maxLines = 1, softWrap = false)
+        } else if (!filled) {
+            V27FixedText(name, size = 26, line = 29, color = Color.White,
+                fontFamily = HomeTitleFont, weight = FontWeight.SemiBold, align = TextAlign.Center)
+            V27FixedText(v27Remaining(remaining), Modifier.testTag("home-countdown-value"),
+                size = when (LocalConfiguration.current.locales[0].language) { "ar" -> 26; "ur" -> 20; else -> 34 },
+                line = when (LocalConfiguration.current.locales[0].language) { "ur" -> 34; else -> 40 },
+                color = Color.White, align = TextAlign.Center, maxLines = 1, softWrap = false)
+            V27FixedText(stringResource(R.string.home_v8_left),
+                Modifier.heightIn(min = if (isUrdu) 32.dp else 0.dp), size = 12,
+                line = if (isUrdu) 28 else 18,
+                color = V27HeroMuted, softWrap = false,
+                includeFontPadding = isUrdu)
+        } else {
+            V27FixedText(name, size = 25, line = 28, color = Color.White,
+                fontFamily = HomeTitleFont, weight = FontWeight.SemiBold, align = TextAlign.Center)
+            HomeText(v27StatusLabel(current.status, state.gender),
+                size = if (current.status == PrayerStatus.CONGREGATION) 15 else 19,
+                color = if (current.status == PrayerStatus.MENSTRUATION) Color(0xFFF7A6D6) else Color(0xFFF2C86B),
+                weight = FontWeight.SemiBold, align = TextAlign.Center)
+            if (current.type.ordinal > 0 && state.nextPrayer != null) {
+                val nextName = state.nextPrayer.type.label(state.todayDate, state.jumuahEnabled, state.madhab)
+                V27FixedText(stringResource(R.string.home_v27_next_in, nextName, v27Remaining(state.minutesUntilNext)),
+                    Modifier.padding(top = 2.dp, start = 8.dp, end = 8.dp), size = 10,
+                    line = if (LocalConfiguration.current.locales[0].language == "ur") 18 else 14,
+                    color = V27HeroMuted, align = TextAlign.Center, maxLines = 2)
+            }
+        }
+    }
+}
+
+@Composable
+private fun BoxScope.V27HeroPickActions(entry: PrayerEntryUi, state: HomeUiState,
+    onSave: (PrayerType, PrayerStatus) -> Unit) {
+    val scope = rememberCoroutineScope()
+    var pending by remember(entry.type, entry.status) { mutableStateOf<PrayerStatus?>(null) }
+    val choices = if (state.gender == Gender.FEMALE) listOf(PrayerStatus.INDIVIDUAL, PrayerStatus.MENSTRUATION)
+        else listOf(PrayerStatus.CONGREGATION, PrayerStatus.INDIVIDUAL)
+    Row(Modifier.align(Alignment.BottomCenter).height(56.dp), horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.Bottom) {
+        choices.forEach { choice ->
+            val chosen = pending == choice
+            val hidden = pending != null && !chosen
+            val description = v27StatusLabel(choice, state.gender)
+            Box(Modifier.size(48.dp).graphicsLayer {
+                alpha = if (hidden) 0f else 1f
+                scaleX = if (chosen) 1.35f else if (hidden) .55f else 1f
+                scaleY = scaleX
+            }.testTag("home-pick-hero-${entry.type}-$choice")
+                .semantics { role = Role.Button; contentDescription = description }
+                .clickable(enabled = entry.isMarkable && !state.isSaving && pending == null) {
+                    pending = choice
+                    scope.launch { delay(340); onSave(entry.type, choice) }
+                }, contentAlignment = Alignment.Center) {
+                V27StatusArtwork(choice, state.gender, false, true, Modifier.size(36.dp))
+            }
+        }
+    }
+}
+
+@Composable
+private fun BoxScope.V27HeroFigure(entry: PrayerEntryUi, status: PrayerStatus, gender: Gender?, feedbackId: Long?,
+    onSave: (PrayerType, PrayerStatus) -> Unit) {
+    val resource = v27HeroFigure(status, gender) ?: return
+    val width = when (resource) {
+        R.drawable.home_status_cg_full -> 39.dp
+        R.drawable.home_status_ci_full -> 28.dp
+        else -> 26.dp
+    }
+    val scale = remember(resource, feedbackId) { Animatable(if (feedbackId == null) 1f else .02f) }
+    var hint by remember(resource, feedbackId) { mutableStateOf(feedbackId != null) }
+    LaunchedEffect(resource, feedbackId) {
+        if (feedbackId != null) {
+            scale.animateTo(1f, tween(800, easing = CubicBezierEasing(.22f, 1f, .36f, 1f)))
+            delay(2400)
+            hint = false
+        }
+    }
+    Box(Modifier.align(Alignment.BottomCenter).height(56.dp).wrapContentWidth()
+        .testTag("home-status-hero-${entry.type}"), contentAlignment = Alignment.BottomCenter) {
+        Image(painterResource(resource), v27StatusLabel(status, gender), Modifier.width(width).height(56.dp)
+            .testTag("home-figure-${entry.type}-$status")
+            .semantics { stateDescription = if (scale.value < .99f) "figure-grow" else "figure-settled" }
+            .graphicsLayer { scaleY = scale.value; transformOrigin = TransformOrigin(.5f, 1f) }
+            .clickable(role = Role.Button) { onSave(entry.type, PrayerStatus.NOT_RECORDED) })
+        AnimatedVisibility(hint, Modifier.align(Alignment.BottomEnd).offset(x = 22.dp, y = (-3).dp),
+            enter = fadeIn(tween(500, 900)) + scaleIn(tween(500, 900)), exit = fadeOut(tween(450))) {
+            Surface(shape = CircleShape, color = Color(0x9904282B), border = BorderStroke(1.dp, Color(0xBFF2C86B)),
+                modifier = Modifier.size(20.dp).testTag("home-undo-hint")) {
+                Icon(painterResource(R.drawable.home_undo), null, tint = Color.White, modifier = Modifier.padding(4.dp))
+            }
+        }
+    }
+}
+
+@Composable
+private fun BoxScope.V27HeroUndoStatement(entry: PrayerEntryUi, status: PrayerStatus, gender: Gender?,
+    onSave: (PrayerType, PrayerStatus) -> Unit) {
+    Row(Modifier.align(Alignment.BottomCenter).height(42.dp).clickable(role = Role.Button) {
+        onSave(entry.type, PrayerStatus.NOT_RECORDED)
+    }.testTag("home-status-hero-${entry.type}"), verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+        V27StatusArtwork(status, gender, true, false, Modifier.size(16.dp))
+        if (status == PrayerStatus.QAZA_PENDING) HomeText(v27StatusLabel(status, gender) + " · ",
+            size = 12, color = Color.White, weight = FontWeight.SemiBold)
+        Icon(painterResource(R.drawable.home_undo), null, tint = Color.White, modifier = Modifier.size(14.dp))
+        HomeText(stringResource(R.string.home_v27_undo), size = 12, color = Color.White)
+    }
+}
+
+@Composable
+private fun V27PhotoInfo(shown: Boolean, modifier: Modifier, onHide: () -> Unit, onShow: () -> Unit) {
+    if (!shown) Box(modifier.height(48.dp), contentAlignment = Alignment.BottomStart) {
+        IconButton(onClick = onShow, modifier = Modifier.size(30.dp).testTag("home-photo-show")
+            .background(Color(0x9904282B), CircleShape)) {
             Icon(painterResource(R.drawable.onboarding_pin), stringResource(R.string.home_v8_about_photo),
-                tint = HomeGold, modifier = Modifier.size(17.dp))
+                tint = HomeGold, modifier = Modifier.size(15.dp))
         }
     } else {
         var drag by remember { mutableStateOf(Offset.Zero) }
-        Row(modifier.offset { IntOffset(drag.x.roundToInt(), drag.y.roundToInt()) }
-            .pointerInput(Unit) {
-                detectDragGesturesAfterLongPress(onDrag = { change, delta -> change.consume(); drag += delta },
-                    onDragEnd = { if (drag.getDistance() > 64.dp.toPx()) onHide(); drag = Offset.Zero },
-                    onDragCancel = { drag = Offset.Zero })
-            }.background(Color(0x9904282B), RoundedCornerShape(10.dp))
-            .padding(start = 8.dp, top = 8.dp, bottom = 8.dp), verticalAlignment = Alignment.Top) {
+        Row(modifier.testTag("home-photo-info").offset { IntOffset(drag.x.roundToInt(), drag.y.roundToInt()) }
+            .pointerInput(Unit) { detectDragGestures(
+                onDrag = { change, delta -> change.consume(); drag += delta },
+                onDragEnd = { if (drag.getDistance() > 60.dp.toPx()) onHide(); drag = Offset.Zero },
+                onDragCancel = { drag = Offset.Zero },
+            ) }.background(Color(0x9904282B), RoundedCornerShape(10.dp))
+            .padding(start = 8.dp, top = 6.dp, bottom = 6.dp), verticalAlignment = Alignment.Top) {
+            Icon(painterResource(R.drawable.onboarding_pin), null, tint = HomeGold,
+                modifier = Modifier.size(13.dp).padding(top = 1.dp))
+            Spacer(Modifier.width(5.dp))
             Column(Modifier.weight(1f)) {
-                HomeText(stringResource(R.string.home_v8_photo_title), size = 11, color = Color.White, weight = FontWeight.SemiBold)
-                HomeText(stringResource(R.string.home_v8_photo_detail), size = 10, color = Color.White.copy(alpha = .85f))
+                V27FixedText(stringResource(R.string.home_v8_photo_title), size = 11, line = 16,
+                    color = Color.White, weight = FontWeight.SemiBold)
+                V27FixedText(stringResource(R.string.home_v8_photo_detail), size = 10, line = 15,
+                    color = Color.White.copy(alpha = .85f))
             }
-            IconButton(onClick = onHide, modifier = Modifier.size(32.dp).testTag("home-photo-hide")) {
+            IconButton(onClick = onHide, modifier = Modifier.size(28.dp).testTag("home-photo-hide")) {
                 Icon(painterResource(R.drawable.ic_close), stringResource(R.string.home_v8_hide_photo),
-                    tint = Color.White, modifier = Modifier.size(13.dp))
+                    tint = Color.White, modifier = Modifier.size(11.dp))
             }
         }
     }
 }
 
-@Composable private fun StreakDisplay(s: HomeUiState, badge: Boolean, onChange: (HomeAppearance) -> Unit, onOpen: () -> Unit) {
-    val top = s.streaks.maxByOrNull { it.value.currentStreak }
+@Composable
+private fun V27StreakDisplay(state: HomeUiState, badge: Boolean, onChange: (HomeAppearance) -> Unit, onOpen: () -> Unit) {
+    val top = state.streaks.maxByOrNull { it.value.currentStreak }
     val count = top?.value?.currentStreak ?: 0
-    val text = if (count > 0 && top != null) stringResource(R.string.home_v8_streak_value,
-        top.key.label(s.todayDate, s.jumuahEnabled, s.madhab), count) else stringResource(R.string.home_v8_streak_start)
+    val prayer = top?.key?.label(state.todayDate, state.jumuahEnabled, state.madhab)
     var drag by remember { mutableStateOf(Offset.Zero) }
     val action = stringResource(if (badge) R.string.home_v8_move_band else R.string.home_v8_move_badge)
-    Row((if (badge) Modifier.widthIn(max = 220.dp) else Modifier.fillMaxWidth())
-        .offset { IntOffset(drag.x.roundToInt(), drag.y.roundToInt()) }
+    val interaction = remember { MutableInteractionSource() }
+    val base = Modifier.offset { IntOffset(drag.x.roundToInt(), drag.y.roundToInt()) }
         .semantics { customActions = listOf(CustomAccessibilityAction(action) {
-            onChange(s.appearance.copy(streakBadge = !badge)); true
-        }) }.pointerInput(badge) {
-            detectDragGesturesAfterLongPress(onDrag = { change, delta -> change.consume(); drag += delta },
-                onDragEnd = {
-                    if ((!badge && drag.y < -48.dp.toPx()) || (badge && drag.y > 48.dp.toPx()))
-                        onChange(s.appearance.copy(streakBadge = !badge))
-                    drag = Offset.Zero
-                }, onDragCancel = { drag = Offset.Zero })
-        }.clip(if (badge) CircleShape else RoundedCornerShape(0.dp)).background(HomeCream)
-        .clickable(role = Role.Button, onClick = onOpen).heightIn(min = 48.dp)
-        .padding(horizontal = if (badge) 12.dp else 20.dp, vertical = 8.dp).testTag("home-streak"),
-        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        Icon(painterResource(R.drawable.home_flame), null, tint = HomeGold, modifier = Modifier.size(18.dp))
-        HomeText(if (badge && count == 0) stringResource(R.string.home_v8_streaks) else text,
-            if (badge) Modifier else Modifier.weight(1f), size = if (badge) 12 else 13,
-            color = Color(0xFF111111), weight = FontWeight.Medium)
-        if (!badge) Icon(painterResource(R.drawable.ic_chevron_right), null,
-            tint = Color(0xFF6B7270), modifier = Modifier.size(16.dp))
+            onChange(state.appearance.copy(streakBadge = !badge)); true
+        }) }.pointerInput(badge) { detectDragGestures(
+            onDrag = { change, delta -> change.consume(); drag += delta },
+            onDragEnd = {
+                if ((!badge && drag.y < -36.dp.toPx()) || (badge && drag.y > 36.dp.toPx()))
+                    onChange(state.appearance.copy(streakBadge = !badge))
+                drag = Offset.Zero
+            }, onDragCancel = { drag = Offset.Zero },
+        ) }.clickable(interactionSource = interaction, indication = null, role = Role.Button, onClick = onOpen)
+        .testTag("home-streak")
+
+    if (badge) {
+        HomePlaque(base.size(42.dp, 52.dp)) {
+            val density = LocalDensity.current
+            val countSize = with(density) { 18.dp.toSp() }
+            val countLine = with(density) { 28.dp.toSp() }
+            val daySize = with(density) { 7.dp.toSp() }
+            val dayLine = with(density) { 12.dp.toSp() }
+            Icon(painterResource(R.drawable.home_flame), null, tint = HomeCream,
+                modifier = Modifier.align(Alignment.TopCenter).offset(y = 8.dp).size(10.dp))
+            Text("$count", Modifier.align(Alignment.TopCenter).offset(y = 12.dp),
+                fontFamily = HomeSerif, fontSize = countSize, lineHeight = countLine,
+                fontWeight = FontWeight.Bold, color = Color(0xFF0B4F53), maxLines = 1,
+                style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)))
+            Text(stringResource(R.string.home_v27_day), Modifier.align(Alignment.TopCenter).offset(y = 37.dp),
+                color = Color(0xFF0B4F53), fontFamily = HomeBodyFont, fontSize = daySize,
+                lineHeight = dayLine, fontWeight = FontWeight.SemiBold, maxLines = 1,
+                style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)))
+        }
+    } else {
+        Row(base.fillMaxWidth().background(HomeCream).padding(horizontal = 20.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            V27GripDots()
+            HomePlaque(Modifier.size(24.dp, 30.dp)) {
+                Icon(painterResource(R.drawable.home_flame), null, tint = HomeCream,
+                    modifier = Modifier.padding(top = 7.dp).size(11.dp))
+            }
+            HomeText(if (count > 0 && prayer != null) stringResource(R.string.home_v27_streak_band, prayer, count)
+                else stringResource(R.string.home_v8_streak_start), Modifier.weight(1f), size = 13,
+                color = Color(0xFF111111), weight = FontWeight.Medium)
+            Icon(painterResource(R.drawable.ic_chevron_right), null, tint = V27Muted, modifier = Modifier.size(16.dp))
+        }
     }
 }
 
-@Composable private fun WeekHistory(s: HomeUiState, onDay: (LocalDate) -> Unit) {
+@Composable private fun V27GripDots() = Canvas(Modifier.size(8.dp, 18.dp)) {
+    for (y in listOf(2f, 8f, 14f)) drawCircle(Color(0xFFB9A06A), 1.3.dp.toPx(), Offset(size.width / 2, y.dp.toPx()))
+}
+
+@Composable
+private fun V27WeekHistory(state: HomeUiState, onDay: (LocalDate) -> Unit) {
     val locale = LocalConfiguration.current.locales[0]
-    val dates = (6 downTo 0).map { s.todayDate.minusDays(it.toLong()) }
-    HomeText(stringResource(R.string.home_v8_week).uppercase(locale) + " · " +
-        dates.first().format(DateTimeFormatter.ofPattern("d", locale)) + "–" +
-        s.todayDate.format(DateTimeFormatter.ofPattern("d MMM", locale)),
-        Modifier.padding(top = 12.dp, bottom = 4.dp), size = 11, muted = true, weight = FontWeight.SemiBold)
-    Row(Modifier.fillMaxWidth().padding(bottom = 6.dp)) {
+    val dates = (6 downTo 0).map { state.todayDate.minusDays(it.toLong()) }
+    Row(Modifier.fillMaxWidth().padding(top = 10.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+        HomeText(stringResource(R.string.home_v8_week).uppercase(locale), size = 11, muted = true, weight = FontWeight.SemiBold)
+        HomeText(" · ${dates.first().format(DateTimeFormatter.ofPattern("d", locale))}–${state.todayDate.format(DateTimeFormatter.ofPattern("d MMM", locale))}",
+            size = 11, muted = true, weight = FontWeight.Medium)
+    }
+    Row(Modifier.fillMaxWidth().padding(bottom = 12.dp)) {
         dates.forEach { date ->
-            val dayDescription = date.format(DateTimeFormatter.ofPattern("EEEE, d MMMM", locale))
-            Column(Modifier.weight(1f).heightIn(min = 58.dp).clickable(role = Role.Button) { onDay(date) }
-                .semantics { contentDescription = dayDescription }.padding(vertical = 4.dp),
+            val today = date == state.todayDate
+            val marks = if (today) state.prayers.associate { it.type to it.status } else state.lastSevenDays[date].orEmpty()
+            Column(Modifier.weight(1f).testTag("home-day-$date").clickable(role = Role.Button) { onDay(date) }
+                .padding(vertical = 3.dp),
                 horizontalAlignment = Alignment.CenterHorizontally) {
-                Box(Modifier.size(34.dp).let {
-                    if (date == s.todayDate) it.border(1.dp, SalatPrimary, CircleShape) else it
-                }.padding(2.dp)) {
-                    PrayerStatusRing(if (date == s.todayDate) s.prayers.associate { it.type to it.status }
-                        else s.lastSevenDays[date].orEmpty(), Modifier.fillMaxSize())
+                Box(Modifier.size(38.dp, 42.dp), contentAlignment = Alignment.TopCenter) {
+                    V27WeekRing(marks, today, Modifier.size(34.dp))
+                    if (today) Box(Modifier.align(Alignment.BottomCenter).offset(y = (-1).dp).size(9.dp)
+                        .rotate(45f).background(Color.White).border(1.dp, V27Divider))
                 }
                 HomeText(date.format(DateTimeFormatter.ofPattern("EEEEE", locale)), size = 11,
-                    color = if (date == s.todayDate) SalatPrimary else SalatOnSurfaceVariant)
+                    color = if (today) HomeTeal else V27Muted,
+                    weight = if (today) FontWeight.SemiBold else FontWeight.Normal)
             }
         }
     }
 }
 
-@Composable private fun HomePrayerRow(entry: PrayerEntryUi, s: HomeUiState,
+@Composable private fun V27WeekRing(marks: Map<PrayerType, PrayerStatus>, today: Boolean, modifier: Modifier) = Canvas(modifier) {
+    val stroke = 4.5.dp.toPx()
+    PrayerType.values().forEachIndexed { index, type ->
+        drawArc(homeStatusColor(marks[type] ?: PrayerStatus.NOT_RECORDED), -88f + index * 72f, 58.8f, false,
+            Offset(stroke / 2, stroke / 2), androidx.compose.ui.geometry.Size(size.width - stroke, size.height - stroke),
+            style = Stroke(stroke))
+    }
+    if (today) drawCircle(HomeTeal, size.minDimension / 2 - .5.dp.toPx(), style = Stroke(1.dp.toPx()))
+}
+
+@Composable private fun V27TodayHeading(state: HomeUiState) {
+    val completed = state.prayers.count { it.status != PrayerStatus.NOT_RECORDED && it.status != PrayerStatus.QAZA_PENDING }
+    Row(Modifier.fillMaxWidth().drawBehind { drawLine(V27Divider, Offset.Zero, Offset(size.width, 0f), 1.dp.toPx()) }
+        .padding(top = 11.dp, bottom = 3.dp), verticalAlignment = Alignment.Bottom) {
+        Text(stringResource(R.string.home_v27_today), fontFamily = HomeTitleFont, fontSize = 22.sp,
+            lineHeight = 24.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF111111), modifier = Modifier.weight(1f))
+        HomeText(stringResource(R.string.home_v27_prayed_count, completed), size = 12, muted = true)
+    }
+}
+
+@Composable
+private fun V27PrayerRow(entry: PrayerEntryUi, state: HomeUiState, flash: Boolean, modifier: Modifier,
     onSave: (PrayerType, PrayerStatus) -> Unit, onReminder: (PrayerType) -> Unit,
     onDetails: () -> Unit, onOpenStreaks: () -> Unit) {
-    val name = entry.type.label(s.todayDate, s.jumuahEnabled, s.madhab)
-    val current = entry.type == s.currentPrayer
-    val fontScale = LocalDensity.current.fontScale
-    BoxWithConstraints(Modifier.fillMaxWidth().testTag("home-row-${entry.type}")) {
-        val stacked = maxWidth < 335.dp || fontScale > 1.15f
-        Column(Modifier.fillMaxWidth().let {
-            if (current) it.border(1.dp, SalatPrimary.copy(alpha = .3f), RoundedCornerShape(8.dp)) else it
-        }.padding(vertical = 7.dp).alpha(if (entry.isMarkable) 1f else .55f)) {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Icon(painterResource(prayerIcon(entry.type)), null,
-                    tint = SalatOnSurfaceVariant, modifier = Modifier.size(18.dp))
-                Column(Modifier.weight(1f).heightIn(min = 48.dp)
-                    .clickable(enabled = entry.isMarkable, onClick = onDetails), verticalArrangement = Arrangement.Center) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        HomeText(name, Modifier.weight(1f, fill = false), size = 15, weight = FontWeight.Medium)
-                        val streak = s.streaks[entry.type]?.currentStreak ?: 0
-                        if (streak > 0) Row(Modifier.clickable(role = Role.Button, onClick = onOpenStreaks)
-                            .padding(start = 5.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Icon(painterResource(R.drawable.home_flame), null,
-                                tint = HomeGold.copy(alpha = if (entry.loggedOnTime == true) 1f else .65f),
-                                modifier = Modifier.size(13.dp))
-                            HomeText("$streak", size = 12, muted = true)
-                        }
-                    }
+    val current = entry.type == state.currentPrayer
+    val stacked = LocalDensity.current.fontScale > 1.18f || LocalConfiguration.current.screenWidthDp < 340
+    val flashAlpha by animateFloatAsState(if (flash) .28f else 0f, tween(if (flash) 120 else 900), label = "row-flash")
+    Column(modifier.fillMaxWidth().testTag("home-row-${entry.type}").drawBehind {
+        if (current) drawRect(HomeTeal, size = androidx.compose.ui.geometry.Size(3.dp.toPx(), size.height))
+        if (flashAlpha > 0f) drawRect(HomeGold.copy(alpha = flashAlpha))
+    }.alpha(if (entry.isMarkable) 1f else .55f).padding(start = if (current) 8.dp else 0.dp, top = 7.dp, bottom = 7.dp)) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Icon(painterResource(v27PrayerIcon(entry.type)), null, tint = V27Muted, modifier = Modifier.size(18.dp))
+            Column(Modifier.weight(1f).clickable(enabled = entry.isMarkable, onClick = onDetails)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    HomeText(entry.type.label(state.todayDate, state.jumuahEnabled, state.madhab),
+                        Modifier.weight(1f, fill = false), size = 15, weight = FontWeight.Medium)
+                    V27PrayerStreak(entry, state, onOpenStreaks)
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     HomeText(entry.time?.formatAppTime(LocalUse24HourFormat.current) ?: "—", size = 12, muted = true)
                     entry.loggedOnTime?.let { onTime ->
-                        HomeText(stringResource(if (onTime) R.string.home_v8_on_time else R.string.home_v8_late),
-                            size = 10, color = if (onTime) SalatPrimary else Color(0xFFB07F1E))
+                        HomeText(" · " + stringResource(if (onTime) R.string.home_v8_on_time else R.string.home_v8_late),
+                            size = 11, color = if (onTime) HomeTeal else Color(0xFFB07F1E))
                     }
                 }
-                if (!stacked) StatusActions(entry, s, onSave = onSave)
-                ReminderButton(entry, name, onReminder)
+                if (entry.status == PrayerStatus.QAZA_PENDING) TextButton(
+                    onClick = { onSave(entry.type, PrayerStatus.QAZA_COMPLETED) },
+                    enabled = !state.isSaving && entry.isMarkable,
+                    modifier = Modifier.height(30.dp), contentPadding = PaddingValues(horizontal = 8.dp)) {
+                    HomeText(stringResource(R.string.home_v8_make_up), size = 11, color = HomeTeal)
+                }
             }
-            if (stacked) Row(Modifier.fillMaxWidth().padding(start = 26.dp), horizontalArrangement = Arrangement.End) {
-                StatusActions(entry, s, onSave = onSave)
-            }
-            if (entry.status == PrayerStatus.QAZA_PENDING) TextButton(
-                onClick = { onSave(entry.type, PrayerStatus.QAZA_COMPLETED) },
-                enabled = !s.isSaving && entry.isMarkable, contentPadding = PaddingValues(horizontal = 26.dp)) {
-                HomeText(stringResource(R.string.home_v8_make_up), size = 11, color = SalatPrimary)
-            }
+            if (!stacked) V27RowStatusActions(entry, state, onSave)
+            V27ReminderButton(entry, state, onReminder)
+        }
+        if (stacked) Row(Modifier.fillMaxWidth().padding(start = 26.dp), horizontalArrangement = Arrangement.End) {
+            V27RowStatusActions(entry, state, onSave)
         }
     }
-    HorizontalDivider(color = SalatOutlineVariant)
+    HorizontalDivider(color = V27Divider)
 }
 
-@Composable private fun ReminderButton(entry: PrayerEntryUi, name: String, onReminder: (PrayerType) -> Unit) {
-    IconButton(onClick = { onReminder(entry.type) }, modifier = Modifier.size(48.dp)) {
-        Box(Modifier.size(34.dp)
-            .background(if (entry.reminderEnabled) SalatPrimary.copy(alpha = .1f) else Color.Transparent, CircleShape)
-            .let { if (!entry.reminderEnabled) it.border(1.dp, SalatOutlineVariant, CircleShape) else it },
-            contentAlignment = Alignment.Center) {
-            Icon(painterResource(if (entry.reminderEnabled) R.drawable.onboarding_sound else R.drawable.home_speaker_off),
-                stringResource(if (entry.reminderEnabled) R.string.home_v8_reminder_on else R.string.home_v8_reminder_off, name),
-                tint = if (entry.reminderEnabled) SalatPrimary else SalatOnSurfaceVariant, modifier = Modifier.size(19.dp))
-        }
+@Composable private fun V27PrayerStreak(entry: PrayerEntryUi, state: HomeUiState, onOpen: () -> Unit) {
+    val count = state.streaks[entry.type]?.currentStreak ?: 0
+    if (count > 0) Row(Modifier.clickable(role = Role.Button, onClick = onOpen).padding(start = 5.dp),
+        verticalAlignment = Alignment.CenterVertically) {
+        Icon(painterResource(R.drawable.home_flame), null, tint = HomeGold,
+            modifier = Modifier.size(13.dp).alpha(if (entry.loggedOnTime == true) 1f else .65f))
+        HomeText("$count", size = 12, muted = true)
     }
 }
 
-@Composable private fun StatusActions(entry: PrayerEntryUi, s: HomeUiState,
-    hero: Boolean = false, onSave: (PrayerType, PrayerStatus) -> Unit) {
-    val name = entry.type.label(s.todayDate, s.jumuahEnabled, s.madhab)
-    val enabled = entry.isMarkable && !s.isSaving
-    AnimatedContent(entry.status, label = "home-status-${entry.type}") { status ->
+@Composable private fun V27RowStatusActions(entry: PrayerEntryUi, state: HomeUiState,
+    onSave: (PrayerType, PrayerStatus) -> Unit) {
+    val enabled = entry.isMarkable && !state.isSaving
+    AnimatedContent(entry.status, label = "status-${entry.type}") { status ->
         if (status != PrayerStatus.NOT_RECORDED) {
-            val label = contextStatusLabel(status, s.gender)
-            val clearLabel = stringResource(R.string.home_v8_clear_status, name)
-            Surface(onClick = { onSave(entry.type, PrayerStatus.NOT_RECORDED) }, enabled = enabled,
-                shape = CircleShape, color = homeStatusColor(status),
-                modifier = Modifier.heightIn(min = 48.dp).widthIn(max = 180.dp)
-                    .semantics { contentDescription = "$label. $clearLabel" }
-                    .testTag("home-status-${if (hero) "hero" else "row"}-${entry.type}")) {
-                Row(Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    val ink = if (status == PrayerStatus.QAZA_COMPLETED) Color(0xFF302408) else Color.White
-                    Icon(painterResource(statusIcon(status, s.gender)), null, tint = ink, modifier = Modifier.size(17.dp))
-                    HomeText(label, size = 12, color = ink)
-                }
+            val ink = if (status == PrayerStatus.QAZA_COMPLETED) Color(0xFF302408) else Color.White
+            Row(Modifier.height(34.dp).clip(CircleShape).background(homeStatusColor(status))
+                .clickable(enabled = enabled, role = Role.Button) {
+                    onSave(entry.type, if (status == PrayerStatus.QAZA_COMPLETED)
+                        PrayerStatus.QAZA_PENDING else PrayerStatus.NOT_RECORDED)
+                }.padding(horizontal = 10.dp).testTag("home-status-row-${entry.type}"),
+                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                V27StatusArtwork(status, state.gender, true, false, Modifier.size(22.dp), ink)
+                V27FixedText(v27StatusLabel(status, state.gender), size = 12,
+                    line = if (LocalConfiguration.current.locales[0].language == "ur") 23 else 18,
+                    color = ink, weight = FontWeight.Medium, maxLines = 1)
             }
-        } else Row {
-            val offered = if (s.gender == Gender.FEMALE)
-                listOf(PrayerStatus.INDIVIDUAL, PrayerStatus.MENSTRUATION, PrayerStatus.QAZA_PENDING)
-            else listOf(PrayerStatus.CONGREGATION, PrayerStatus.INDIVIDUAL, PrayerStatus.QAZA_PENDING)
-            offered.filter { !hero || it != PrayerStatus.QAZA_PENDING }.forEach { choice ->
-                val label = contextStatusLabel(choice, s.gender)
-                IconButton(onClick = { onSave(entry.type, choice) }, enabled = enabled,
-                    modifier = Modifier.size(48.dp)
-                        .testTag("home-pick-${if (hero) "hero" else "row"}-${entry.type}-$choice")) {
-                    Box(Modifier.size(if (hero) 40.dp else 34.dp)
-                        .background(if (hero) HomeCream else SalatSurface, CircleShape)
-                        .let { if (!hero) it.border(1.5.dp, SalatOutlineVariant, CircleShape) else it },
-                        contentAlignment = Alignment.Center) {
-                        Icon(painterResource(statusIcon(choice, s.gender)), "$name, $label",
-                            modifier = Modifier.size(19.dp), tint = if (enabled) homeStatusColor(choice) else SalatOnSurfaceVariant)
-                    }
+        } else Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            v27OfferedStatuses(state.gender).forEach { choice ->
+                val description = v27StatusLabel(choice, state.gender)
+                Box(Modifier.size(34.dp).border(1.5.dp, V27Divider, CircleShape)
+                    .testTag("home-pick-row-${entry.type}-$choice")
+                    .semantics { contentDescription = description; if (!enabled) disabled() }
+                    .clickable(enabled = enabled, role = Role.Button) { onSave(entry.type, choice) },
+                    contentAlignment = Alignment.Center) {
+                    V27StatusArtwork(choice, state.gender, false, false, Modifier.size(26.dp))
                 }
             }
         }
     }
 }
 
-@Composable private fun contextStatusLabel(status: PrayerStatus, gender: Gender?): String = when {
+@Composable private fun V27ReminderButton(entry: PrayerEntryUi, state: HomeUiState, onReminder: (PrayerType) -> Unit) {
+    val name = entry.type.label(state.todayDate, state.jumuahEnabled, state.madhab)
+    Box(Modifier.size(34.dp).clip(CircleShape)
+        .background(if (entry.reminderEnabled) HomeTeal.copy(alpha = .1f) else Color.Transparent)
+        .then(if (!entry.reminderEnabled) Modifier.border(1.5.dp, V27Divider, CircleShape) else Modifier)
+        .clickable(role = Role.Button) { onReminder(entry.type) }, contentAlignment = Alignment.Center) {
+        Icon(painterResource(if (entry.reminderEnabled) R.drawable.onboarding_sound else R.drawable.home_speaker_off),
+            stringResource(if (entry.reminderEnabled) R.string.home_v8_reminder_on else R.string.home_v8_reminder_off, name),
+            tint = if (entry.reminderEnabled) HomeTeal else V27Muted, modifier = Modifier.size(19.dp))
+    }
+}
+
+@Composable private fun V27StatusArtwork(status: PrayerStatus, gender: Gender?, selected: Boolean, hero: Boolean,
+    modifier: Modifier, vectorTint: Color = homeStatusColor(status)) {
+    val raster = v27StatusRaster(status, gender, selected)
+    if (raster != null) Image(painterResource(raster), null, modifier,
+        colorFilter = if (hero && !selected) ColorFilter.tint(Color.White) else null)
+    else Icon(painterResource(v27StatusIcon(status, gender)), null,
+        tint = if (hero) Color.White else vectorTint, modifier = modifier)
+}
+
+private fun v27StatusRaster(status: PrayerStatus, gender: Gender?, selected: Boolean): Int? = when (status) {
+    PrayerStatus.CONGREGATION -> if (selected) R.drawable.home_status_cg_selected else R.drawable.home_status_cg_outline
+    PrayerStatus.INDIVIDUAL -> if (gender == Gender.FEMALE) {
+        if (selected) R.drawable.home_status_prayed_selected else R.drawable.home_status_prayed_outline
+    } else if (selected) R.drawable.home_status_ci_selected else R.drawable.home_status_ci_outline
+    else -> null
+}
+
+private fun v27HeroFigure(status: PrayerStatus, gender: Gender?): Int? = when (status) {
+    PrayerStatus.CONGREGATION -> R.drawable.home_status_cg_full
+    PrayerStatus.INDIVIDUAL -> if (gender == Gender.FEMALE) R.drawable.home_status_prayed_full else R.drawable.home_status_ci_full
+    else -> null
+}
+
+@Composable private fun V27Verse(verse: VerseInfo, translated: Boolean, onToggle: () -> Unit) {
+    Box(Modifier.fillMaxWidth().padding(top = 8.dp)) {
+        HomeFrieze(Modifier.align(Alignment.TopEnd).size(160.dp, 16.dp).alpha(.18f))
+        Column(Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            if (verse.arabic.isNotBlank()) Text(verse.arabic, color = Color(0xFF111111), fontFamily = AmiriQuranFamily,
+                fontSize = 22.sp, lineHeight = 37.sp, textAlign = TextAlign.Center)
+            HomeText(verse.citation, size = 12, muted = true, align = TextAlign.Center)
+            if (verse.text.isNotBlank()) {
+                HomeText(stringResource(R.string.home_v8_translation) + if (translated) " ▴" else " ▾",
+                    Modifier.padding(start = 8.dp).clickable(role = Role.Button, onClick = onToggle)
+                        .testTag("home-translation-toggle"), size = 12, color = HomeTeal)
+                AnimatedVisibility(translated) {
+                    HomeText(verse.text, Modifier.fillMaxWidth().padding(top = 4.dp).testTag("home-translation-text"),
+                        size = 13, align = TextAlign.Center)
+                }
+            }
+        }
+    }
+}
+
+@Composable private fun V27DonateRow(onDonate: () -> Unit) {
+    Row(Modifier.fillMaxWidth().clickable(role = Role.Button, onClick = onDonate).padding(vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Icon(painterResource(R.drawable.home_heart), null, tint = HomeTeal, modifier = Modifier.size(18.dp))
+        HomeText(stringResource(R.string.home_v8_donate), Modifier.weight(1f), size = 13, muted = true)
+        Icon(painterResource(R.drawable.ic_chevron_right), null, tint = V27Muted, modifier = Modifier.size(16.dp))
+    }
+    HorizontalDivider(color = V27Divider)
+    Spacer(Modifier.height(8.dp))
+}
+
+@Composable private fun V27Loading() {
+    LinearProgressIndicator(Modifier.fillMaxWidth().padding(vertical = 20.dp), color = HomeTeal)
+    repeat(5) { Box(Modifier.fillMaxWidth().height(58.dp).padding(vertical = 7.dp)
+        .background(V27Divider.copy(alpha = .45f), RoundedCornerShape(8.dp))) }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable private fun V27DaySheet(date: LocalDate, state: HomeUiState,
+    onSave: (LocalDate, PrayerType, PrayerStatus) -> Unit, onDismiss: () -> Unit) {
+    val locale = LocalConfiguration.current.locales[0]
+    val marks = state.lastSevenDays[date].orEmpty()
+    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = Color.White) {
+        Column(Modifier.fillMaxWidth().testTag("home-day-sheet").padding(horizontal = 20.dp).padding(bottom = 18.dp)) {
+            HomeText(date.format(DateTimeFormatter.ofPattern("EEE · d MMM", locale)), size = 16, weight = FontWeight.SemiBold)
+            PrayerType.values().forEach { type ->
+                val status = marks[type] ?: PrayerStatus.NOT_RECORDED
+                Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Icon(painterResource(v27PrayerIcon(type)), null, tint = V27Muted, modifier = Modifier.size(18.dp))
+                    Column(Modifier.weight(1f)) {
+                        HomeText(type.label(date, state.jumuahEnabled, state.madhab), size = 15, weight = FontWeight.Medium)
+                        if (status == PrayerStatus.NOT_RECORDED) HomeText(stringResource(R.string.home_v27_not_recorded), size = 12, muted = true)
+                    }
+                    if (status == PrayerStatus.NOT_RECORDED) Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                        v27OfferedStatuses(state.gender).forEach { choice ->
+                            Box(Modifier.size(34.dp).border(1.5.dp, V27Divider, CircleShape)
+                                .clickable { onSave(date, type, choice) }, contentAlignment = Alignment.Center) {
+                                V27StatusArtwork(choice, state.gender, false, false, Modifier.size(26.dp))
+                            }
+                        }
+                    } else Column(horizontalAlignment = Alignment.End) {
+                        Row(Modifier.height(34.dp).clip(CircleShape).background(homeStatusColor(status))
+                            .clickable { onSave(date, type, if (status == PrayerStatus.QAZA_COMPLETED)
+                                PrayerStatus.QAZA_PENDING else PrayerStatus.NOT_RECORDED) }.padding(horizontal = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically) {
+                            V27StatusArtwork(status, state.gender, true, false, Modifier.size(22.dp), Color.White)
+                            Spacer(Modifier.width(4.dp))
+                            V27FixedText(v27StatusLabel(status, state.gender), size = 12,
+                                line = if (LocalConfiguration.current.locales[0].language == "ur") 23 else 18,
+                                color = Color.White, maxLines = 1)
+                        }
+                        if (status == PrayerStatus.QAZA_PENDING) TextButton(
+                            onClick = { onSave(date, type, PrayerStatus.QAZA_COMPLETED) },
+                            contentPadding = PaddingValues(horizontal = 8.dp), modifier = Modifier.height(30.dp)) {
+                            HomeText(stringResource(R.string.home_v8_make_up), size = 11, color = HomeTeal)
+                        }
+                    }
+                }
+                HorizontalDivider(color = V27Divider)
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable private fun V27StreakSheet(state: HomeUiState, onDismiss: () -> Unit) {
+    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = Color.White) {
+        Column(Modifier.fillMaxWidth().testTag("home-streak-sheet").verticalScroll(rememberScrollState())
+            .padding(horizontal = 20.dp).padding(bottom = 24.dp)) {
+            HomeText(stringResource(R.string.home_v8_streaks), size = 16, weight = FontWeight.SemiBold)
+            PrayerType.values().forEach { type ->
+                val streak = state.streaks[type] ?: StreakInfo(0, 0)
+                Row(Modifier.fillMaxWidth().padding(vertical = 9.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(painterResource(v27PrayerIcon(type)), null, tint = V27Muted, modifier = Modifier.size(18.dp))
+                    Column(Modifier.weight(1f).padding(start = 10.dp)) {
+                        HomeText(type.label(state.todayDate, state.jumuahEnabled, state.madhab), size = 15)
+                        if (state.gender != Gender.FEMALE) HomeText(
+                            stringResource(R.string.home_v27_in_congregation, v27CongregationRun(state, type), v27CongregationRun(state, type)),
+                            size = 12, muted = true)
+                    }
+                    Column(horizontalAlignment = Alignment.End) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(painterResource(R.drawable.home_flame), null, tint = HomeGold, modifier = Modifier.size(16.dp))
+                            HomeText("${streak.currentStreak}", size = 18, weight = FontWeight.SemiBold)
+                        }
+                        HomeText(stringResource(R.string.home_v8_best, streak.highestStreak), size = 12, muted = true)
+                    }
+                }
+                HorizontalDivider(color = V27Divider)
+            }
+            Row(Modifier.fillMaxWidth().padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+                Icon(painterResource(R.drawable.home_flame), null, tint = HomeGold, modifier = Modifier.size(18.dp))
+                HomeText(stringResource(R.string.home_v8_all_five), Modifier.weight(1f).padding(start = 8.dp), size = 13)
+                HomeText("${perfectDayStreak(state.streaks)} · ${stringResource(R.string.home_v8_best, perfectDayStreak(state.streaks))}", size = 12)
+            }
+            HomeText(stringResource(R.string.home_v27_streak_rule), size = 11, muted = true)
+        }
+    }
+}
+
+@Composable private fun BoxScope.V27AppreciationToast(message: String, excused: Boolean) {
+    Surface(Modifier.align(Alignment.TopCenter).statusBarsPadding().padding(top = 12.dp).widthIn(max = 250.dp)
+        .testTag("home-appreciation"), shape = RoundedCornerShape(14.dp),
+        color = Color(0x9904282B), shadowElevation = 6.dp) {
+        Row(Modifier.padding(horizontal = 13.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(painterResource(R.drawable.home_flame), null,
+                tint = if (excused) Color(0xFFE873BC) else HomeGold, modifier = Modifier.size(16.dp))
+            HomeText(message, Modifier.padding(start = 7.dp), size = 12, color = Color.White, weight = FontWeight.SemiBold)
+        }
+    }
+}
+
+@Composable private fun BoxScope.V27Confetti(id: Long) {
+    val progress = remember(id) { Animatable(0f) }
+    LaunchedEffect(id) { progress.animateTo(1f, tween(1600, easing = CubicBezierEasing(.2f, .7f, .4f, 1f))) }
+    val colors = listOf(HomeGold, HomeCream, Color(0xFF3E9A95), Color(0xFFF2C86B), Color.White, HomeTeal)
+    Canvas(Modifier.fillMaxWidth().height(330.dp).align(Alignment.TopCenter)) {
+        val t = progress.value
+        repeat(30) { i ->
+            val angle = (-165f + ((i * 47) % 150)) * PI.toFloat() / 180f
+            val distance = (70 + (i * 37) % 120).dp.toPx()
+            val x = size.width * .72f + cos(angle) * distance * t
+            val y = size.height * .27f + sin(angle) * distance * t + 150.dp.toPx() * t * t
+            drawRect(colors[i % colors.size].copy(alpha = 1f - t), Offset(x, y),
+                androidx.compose.ui.geometry.Size(7.dp.toPx(), 11.dp.toPx()))
+        }
+    }
+}
+
+@Composable private fun v27StatusLabel(status: PrayerStatus, gender: Gender?): String = when {
     status == PrayerStatus.INDIVIDUAL && gender == Gender.FEMALE -> stringResource(R.string.home_v8_prayed)
     status == PrayerStatus.MENSTRUATION -> stringResource(R.string.home_v8_excused)
     status == PrayerStatus.QAZA_PENDING -> stringResource(R.string.home_v8_qaza)
@@ -427,7 +814,11 @@ private fun LegacyHomeScreen(
     else -> status.label()
 }
 
-private fun statusIcon(status: PrayerStatus, gender: Gender?) = when (status) {
+private fun v27OfferedStatuses(gender: Gender?) = if (gender == Gender.FEMALE)
+    listOf(PrayerStatus.INDIVIDUAL, PrayerStatus.MENSTRUATION, PrayerStatus.QAZA_PENDING)
+else listOf(PrayerStatus.CONGREGATION, PrayerStatus.INDIVIDUAL, PrayerStatus.QAZA_PENDING)
+
+private fun v27StatusIcon(status: PrayerStatus, gender: Gender?) = when (status) {
     PrayerStatus.CONGREGATION -> R.drawable.home_status_congregation
     PrayerStatus.INDIVIDUAL -> if (gender == Gender.FEMALE) R.drawable.home_status_prayed else R.drawable.home_status_individual
     PrayerStatus.MENSTRUATION -> R.drawable.home_status_excused
@@ -435,7 +826,8 @@ private fun statusIcon(status: PrayerStatus, gender: Gender?) = when (status) {
     PrayerStatus.QAZA_COMPLETED -> R.drawable.home_status_made_up
     PrayerStatus.NOT_RECORDED -> R.drawable.home_status_qaza
 }
-private fun prayerIcon(type: PrayerType) = when (type) {
+
+private fun v27PrayerIcon(type: PrayerType) = when (type) {
     PrayerType.FAJR -> R.drawable.home_prayer_fajr
     PrayerType.DHUHR -> R.drawable.home_prayer_dhuhr
     PrayerType.ASR -> R.drawable.home_prayer_asr
@@ -443,123 +835,87 @@ private fun prayerIcon(type: PrayerType) = when (type) {
     PrayerType.ISHA -> R.drawable.home_prayer_isha
 }
 
-@Composable private fun HomeVerse(verse: VerseInfo) {
-    var translated by rememberSaveable(verse.citation) { mutableStateOf(false) }
-    Box(Modifier.fillMaxWidth().padding(top = 12.dp)) {
-        HomeFrieze(Modifier.align(Alignment.TopEnd).size(160.dp, 16.dp).alpha(.18f))
-        Column(Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            if (verse.arabic.isNotBlank()) Text(verse.arabic, color = SalatOnSurface,
-                fontFamily = AmiriQuranFamily, fontSize = 23.sp, lineHeight = 39.sp, textAlign = TextAlign.Center)
-            HomeText(verse.citation, size = 12, muted = true, align = TextAlign.Center)
-            if (verse.text.isNotBlank()) {
-                TextButton(onClick = { translated = !translated }, modifier = Modifier.testTag("home-translation-toggle")) {
-                    HomeText(stringResource(R.string.home_v8_translation) + if (translated) " ▴" else " ▾", size = 12, color = SalatPrimary)
-                }
-                AnimatedVisibility(translated) {
-                    HomeText(verse.text, Modifier.fillMaxWidth().testTag("home-translation-text"), size = 13, align = TextAlign.Center)
-                }
-            }
-        }
+@Composable private fun v27AppreciationText(saved: HomeSaveFeedback, state: HomeUiState): String {
+    val prayer = saved.type.label(state.todayDate, state.jumuahEnabled, state.madhab)
+    return when {
+        saved.status == PrayerStatus.MENSTRUATION -> stringResource(R.string.home_v8_rest)
+        !saved.onTime -> stringResource(R.string.home_v27_late_message)
+        saved.status == PrayerStatus.CONGREGATION -> stringResource(R.string.home_v27_congregation_message, prayer)
+        saved.status == PrayerStatus.INDIVIDUAL && state.gender == Gender.FEMALE -> stringResource(R.string.home_v27_prayed_message, prayer)
+        saved.status == PrayerStatus.INDIVIDUAL -> stringResource(R.string.home_v27_individual_message, prayer)
+        else -> stringResource(R.string.home_v8_saved)
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable private fun StreakSheet(s: HomeUiState, onDismiss: () -> Unit, onAppearance: () -> Unit) {
-    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = SalatSurface) {
-        Column(Modifier.fillMaxWidth().testTag("home-streak-sheet").verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp).padding(bottom = 24.dp)) {
-            HomeText(stringResource(R.string.home_v8_streaks), size = 20, weight = FontWeight.SemiBold)
-            PrayerType.values().forEach { type ->
-                val streak = s.streaks[type] ?: StreakInfo(0, 0)
-                Row(Modifier.fillMaxWidth().heightIn(min = 68.dp).padding(vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically) {
-                    Icon(painterResource(prayerIcon(type)), null, tint = SalatOnSurfaceVariant, modifier = Modifier.size(20.dp))
-                    HomeText(type.label(s.todayDate, s.jumuahEnabled, s.madhab),
-                        Modifier.weight(1f).padding(start = 12.dp), size = 15)
-                    Column(horizontalAlignment = Alignment.End) {
-                        HomeText("${streak.currentStreak}", size = 20, weight = FontWeight.SemiBold)
-                        HomeText(stringResource(R.string.home_v8_best, streak.highestStreak), size = 12, muted = true)
-                    }
-                }
-                HorizontalDivider(color = SalatOutlineVariant)
-            }
-            Row(Modifier.fillMaxWidth().padding(vertical = 14.dp)) {
-                HomeText(stringResource(R.string.home_v8_all_five), Modifier.weight(1f), size = 13)
-                HomeText("${perfectDayStreak(s.streaks)}", size = 13)
-            }
-            HomeText(stringResource(R.string.home_v8_streak_note), size = 12, muted = true)
-            TextButton(onClick = onAppearance, modifier = Modifier.testTag("home-appearance-open")) {
-                HomeText(stringResource(R.string.home_v8_appearance), color = SalatPrimary)
-            }
-        }
-    }
+private fun v27RecentUnrecordedDays(state: HomeUiState): Int = (0L..6L).count { offset ->
+    val day = state.todayDate.minusDays(offset)
+    val marks = if (offset == 0L) state.prayers.associate { it.type to it.status } else state.lastSevenDays[day].orEmpty()
+    marks.isEmpty() || PrayerType.values().all { marks[it] == null || marks[it] == PrayerStatus.NOT_RECORDED }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable private fun AppearanceSheet(value: HomeAppearance, onChange: (HomeAppearance) -> Unit,
-    effects: HomeFeedbackEffects, onDismiss: () -> Unit) {
-    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = SalatSurface) {
-        Column(Modifier.fillMaxWidth().testTag("home-appearance-sheet").verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp).padding(bottom = 24.dp)) {
-            HomeText(stringResource(R.string.home_v8_appearance), size = 20, weight = FontWeight.SemiBold)
-            listOf(Triple(R.string.home_v8_badge, value.streakBadge, { checked: Boolean -> onChange(value.copy(streakBadge = checked)) }),
-                Triple(R.string.home_v8_photo_info, value.showPhotoInfo, { checked: Boolean -> onChange(value.copy(showPhotoInfo = checked)) }),
-                Triple(R.string.home_v8_appreciation, value.showAppreciation, { checked: Boolean -> onChange(value.copy(showAppreciation = checked)) }),
-                Triple(R.string.home_v8_confetti, value.confetti, { checked: Boolean -> onChange(value.copy(confetti = checked)) }),
-                Triple(R.string.home_v8_voice, value.voice, { checked: Boolean -> onChange(value.copy(voice = checked)) }),
-                Triple(R.string.home_v8_chime, value.chime, { checked: Boolean -> onChange(value.copy(chime = checked)) }),
-                Triple(R.string.home_v8_vibration, value.vibration, { checked: Boolean -> onChange(value.copy(vibration = checked)) }))
-                .forEach { (label, checked, change) ->
-                    Row(Modifier.fillMaxWidth().heightIn(min = 60.dp), verticalAlignment = Alignment.CenterVertically) {
-                        HomeText(stringResource(label), Modifier.weight(1f).padding(end = 12.dp), size = 14)
-                        Switch(checked, change)
-                    }
-                }
-            if (value.voice) {
-                if (!effects.speechReady) HomeText(stringResource(R.string.home_v8_voice_unavailable), size = 12, muted = true)
-                else {
-                    var voiceMenu by remember { mutableStateOf(false) }
-                    Box {
-                        TextButton(onClick = { voiceMenu = true }) {
-                            HomeText(value.voiceName ?: stringResource(R.string.home_v8_voice_auto), size = 12, color = SalatPrimary)
-                        }
-                        DropdownMenu(voiceMenu, onDismissRequest = { voiceMenu = false }) {
-                            DropdownMenuItem(text = { HomeText(stringResource(R.string.home_v8_voice_auto)) },
-                                onClick = { onChange(value.copy(voiceName = null)); voiceMenu = false })
-                            effects.voices.forEach { (name, label) -> DropdownMenuItem(text = { HomeText(label) },
-                                onClick = { onChange(value.copy(voiceName = name)); voiceMenu = false }) }
-                        }
-                    }
-                }
-                HomeText(stringResource(R.string.home_v8_speed), size = 12, muted = true)
-                Slider(value.speechRate, { onChange(value.copy(speechRate = it)) }, valueRange = .7f..1.2f, steps = 9)
-            }
-            val preview = stringResource(R.string.home_v8_well_done)
-            TextButton(onClick = { effects.play(preview, true) }) { HomeText(stringResource(R.string.home_v8_preview), color = SalatPrimary) }
-            HomeText(stringResource(R.string.home_v8_drag_hint), size = 12, muted = true)
-        }
+private fun v27CongregationRun(state: HomeUiState, type: PrayerType): Int {
+    var count = 0
+    for (offset in 0L..6L) {
+        val status = if (offset == 0L) state.prayers.firstOrNull { it.type == type }?.status
+        else state.lastSevenDays[state.todayDate.minusDays(offset)]?.get(type)
+        if (status == PrayerStatus.MENSTRUATION) continue
+        if (status != PrayerStatus.CONGREGATION) break
+        count++
     }
+    return count
 }
 
-@Composable private fun HomeConfetti(id: Long) {
-    val progress = remember(id) { Animatable(0f) }
-    LaunchedEffect(id) { progress.animateTo(1f, tween(1600)) }
-    Canvas(Modifier.fillMaxWidth().height(320.dp)) {
-        val t = progress.value
-        repeat(30) { i ->
-            val angle = (-165 + i * 5) * PI.toFloat() / 180
-            val distance = (60 + (i * 37) % 130).dp.toPx()
-            val x = size.width * .72f + cos(angle) * distance * t
-            val y = size.height * .25f + sin(angle) * distance * t + 150.dp.toPx() * t * t
-            drawRect(listOf(HomeGold, HomeCream, Color(0xFF3E9A95), Color.White)[i % 4].copy(alpha = 1f - t),
-                topLeft = Offset(x, y), size = androidx.compose.ui.geometry.Size(4.dp.toPx(), 7.dp.toPx()))
-        }
-    }
+@Composable private fun v27Remaining(minutes: Long): String = stringResource(
+    R.string.home_v8_remaining, (minutes / 60).toInt(), (minutes % 60).toInt(),
+)
+
+@Composable private fun V27FixedText(
+    text: String,
+    modifier: Modifier = Modifier,
+    size: Int,
+    line: Int,
+    color: Color,
+    weight: FontWeight = FontWeight.Normal,
+    align: TextAlign = TextAlign.Start,
+    maxLines: Int = Int.MAX_VALUE,
+    softWrap: Boolean = true,
+    includeFontPadding: Boolean = false,
+    fontFamily: FontFamily = HomeBodyFont,
+) {
+    val density = LocalDensity.current
+    Text(
+        text = text,
+        modifier = modifier,
+        color = color,
+        fontFamily = fontFamily,
+        fontWeight = weight,
+        fontSize = with(density) { size.dp.toSp() },
+        lineHeight = with(density) { line.dp.toSp() },
+        textAlign = align,
+        maxLines = maxLines,
+        softWrap = softWrap,
+        style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = includeFontPadding)),
+    )
 }
 
-@Composable internal fun HomeText(text: String, modifier: Modifier = Modifier, size: Int = 14,
-    muted: Boolean = false, color: Color = Color.Unspecified, weight: FontWeight = FontWeight.Normal,
-    align: TextAlign = TextAlign.Start) {
-    Text(text, modifier, color = if (color != Color.Unspecified) color else if (muted) SalatOnSurfaceVariant else SalatOnSurface,
-        fontFamily = HomeBodyFont, fontWeight = weight, fontSize = size.sp, lineHeight = (size * 1.5f).sp, textAlign = align)
+@Composable
+internal fun HomeText(
+    text: String,
+    modifier: Modifier = Modifier,
+    size: Int = 14,
+    muted: Boolean = false,
+    color: Color = Color.Unspecified,
+    weight: FontWeight = FontWeight.Normal,
+    align: TextAlign = TextAlign.Start,
+) {
+    Text(
+        text = text,
+        modifier = modifier,
+        color = if (color != Color.Unspecified) color else if (muted) SalatOnSurfaceVariant else SalatOnSurface,
+        fontFamily = HomeBodyFont,
+        fontWeight = weight,
+        fontSize = size.sp,
+        lineHeight = (size * 1.5f).sp,
+        textAlign = align,
+    )
 }
