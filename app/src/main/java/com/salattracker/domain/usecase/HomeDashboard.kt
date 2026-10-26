@@ -8,6 +8,24 @@ import java.time.LocalTime
 
 private const val MINUTES_PER_DAY = 24 * 60
 
+/** Date-aware display windows: Fajr ends at sunrise, Isha at the following Fajr. */
+fun homePrayerWindows(date: LocalDate, times: Map<PrayerType, LocalTime>?, sunrise: LocalTime?,
+    tomorrowFajr: LocalTime?): Map<PrayerType, Pair<LocalDateTime, LocalDateTime>> {
+    if (times == null) return emptyMap()
+    return PrayerType.values().mapNotNull { type ->
+        val start = times[type]?.let(date::atTime) ?: return@mapNotNull null
+        val end = when (type) {
+            PrayerType.FAJR -> sunrise?.let(date::atTime)
+            PrayerType.ISHA -> tomorrowFajr?.let { date.plusDays(1).atTime(it) }
+            else -> times[PrayerType.values()[type.ordinal + 1]]?.let(date::atTime)
+        } ?: return@mapNotNull null
+        if (!end.isAfter(start)) null else type to (start to end)
+    }.toMap()
+}
+
+fun activeHomePrayer(windows: Map<PrayerType, Pair<LocalDateTime, LocalDateTime>>, now: LocalDateTime): PrayerType? =
+    windows.entries.firstOrNull { (_, window) -> !now.isBefore(window.first) && now.isBefore(window.second) }?.key
+
 /** The next prayer Home's hero card counts down to. [isTomorrow] is true once every one of
  * today's prayers has passed and this points at tomorrow's Fajr instead. */
 data class NextPrayer(

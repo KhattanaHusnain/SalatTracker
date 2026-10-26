@@ -20,6 +20,8 @@ import com.salattracker.domain.repository.VerseRepository
 import com.salattracker.domain.usecase.CalculateStreakUseCase
 import com.salattracker.domain.usecase.NextPrayer
 import com.salattracker.domain.usecase.currentPrayerOf
+import com.salattracker.domain.usecase.homePrayerWindows
+import com.salattracker.domain.usecase.activeHomePrayer
 import com.salattracker.domain.usecase.isPrayerMarkable
 import com.salattracker.domain.usecase.minutesUntil
 import com.salattracker.domain.usecase.nextPrayerOf
@@ -33,6 +35,9 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.Duration
+import java.time.Instant
+import java.time.ZoneId
 import javax.inject.Inject
 
 data class HomeUiState(
@@ -53,7 +58,12 @@ data class HomeUiState(
     val sheetArgs: PrayerStatusSheetArgs? = null,   // null = sheet hidden
     val isSaving: Boolean = false,
     val errorRes: Int? = null,
+    val locationLabel: String? = null,
+    val appearance: HomeAppearance = HomeAppearance(),
+    val feedback: HomeSaveFeedback? = null,
 )
+
+data class HomeSaveFeedback(val type: PrayerType, val status: PrayerStatus, val id: Long, val onTime: Boolean = false)
 
 data class PrayerEntryUi(
     val type: PrayerType,
@@ -61,6 +71,9 @@ data class PrayerEntryUi(
     val reminderTime: LocalTime?,   // prayer time adjusted by the reminder offset; null if no offset/reminder disabled
     val status: PrayerStatus,
     val isMarkable: Boolean,        // false once it's a prayer later today that hasn't happened yet
+    val windowEnd: LocalDateTime? = null,
+    val reminderEnabled: Boolean = true,
+    val loggedOnTime: Boolean? = null,
 )
 
 /** Everything the hero card and timeline need for one tick, built off the suspend
@@ -75,6 +88,7 @@ private data class TodaySnapshot(
     val jumuahEnabled: Boolean,
     val madhab: Madhab,
     val gender: Gender?,
+    val locationLabel: String?,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class) // flatMapLatest below
@@ -86,6 +100,7 @@ class HomeViewModel @Inject constructor(
     private val verseRepository: VerseRepository,
     private val workManager: WorkManager,
     private val reminderNotifications: ReminderNotifications,
+    private val appearanceStore: HomeAppearanceStore,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -119,6 +134,7 @@ class HomeViewModel @Inject constructor(
         observeQazaBalance()
         loadStreak()
         loadVerse()
+        viewModelScope.launch { appearanceStore.state.collect { value -> _uiState.update { it.copy(appearance = value) } } }
         PrayerReminderWorker.enqueueOneTime(workManager)
     }
 
@@ -147,6 +163,7 @@ class HomeViewModel @Inject constructor(
                             jumuahEnabled    = snapshot.jumuahEnabled,
                             madhab           = snapshot.madhab,
                             gender           = snapshot.gender,
+                            locationLabel    = snapshot.locationLabel,
                         )
                     }
                 }
@@ -161,40 +178,48 @@ class HomeViewModel @Inject constructor(
     ): TodaySnapshot {
         val times = prayerRepository.getPrayerTimes(date)
         val tomorrowFajr = prayerRepository.getPrayerTimes(date.plusDays(1))?.get(PrayerType.FAJR)
-        val nowTime = now.toLocalTime()
+        val sunrise = prayerRepository.getSunriseTime(date)
+        val windows = homePrayerWindows(date, times, sunrise, tomorrowFajr)
 
         val prayers = PrayerType.values().map { type ->
             val prayerTime = times?.get(type)
             val offsetMinutes = prefs.reminderOffsetMinutes[type] ?: 0
             val reminderEnabled = prefs.reminderEnabled[type] ?: true
+            val recorded = entries.find { it.prayerType == type }
+            val window = windows[type]
             PrayerEntryUi(
                 type = type,
                 time = prayerTime,
                 reminderTime = if (reminderEnabled && offsetMinutes != 0) prayerTime?.plusMinutes(offsetMinutes.toLong()) else null,
-                status = entries.find { it.prayerType == type }?.status ?: PrayerStatus.NOT_RECORDED,
-                isMarkable = isPrayerMarkable(date, prayerTime, today = date, now = nowTime),
+                status = recorded?.status ?: PrayerStatus.NOT_RECORDED,
+                isMarkable = window?.first?.let { !now.isBefore(it) } ?: false,
+                windowEnd = window?.second,
+                reminderEnabled = reminderEnabled,
+                loggedOnTime = recorded?.takeIf { it.updatedAt > 0 && it.status in listOf(PrayerStatus.CONGREGATION, PrayerStatus.INDIVIDUAL) }
+                    ?.let { entry -> window?.let { (start, end) ->
+                        val logged = Instant.ofEpochMilli(entry.updatedAt).atZone(ZoneId.systemDefault()).toLocalDateTime()
+                        !logged.isBefore(start) && logged.isBefore(end)
+                    } },
             )
         }
 
-        val nextPrayer = nextPrayerOf(times, tomorrowFajr, nowTime)?.let { next ->
-            // When [date] is yesterday during the pre-Fajr period, "tomorrow" is actually
-            // the current civil date. Its Fajr is still ahead today, not a day away.
-            if (date.isBefore(now.toLocalDate()) && next.type == PrayerType.FAJR && next.isTomorrow) {
-                next.copy(isTomorrow = false)
-            } else next
-        }
+        val nextStart = (windows.map { (type, window) -> type to window.first } +
+            listOfNotNull(tomorrowFajr?.let { PrayerType.FAJR to date.plusDays(1).atTime(it) }))
+            .filter { it.second.isAfter(now) }.minByOrNull { it.second }
+        val nextPrayer = nextStart?.let { (type, start) -> NextPrayer(type, start.toLocalTime(), start.toLocalDate().isAfter(now.toLocalDate())) }
         return TodaySnapshot(
             prayerDate       = date,
             now              = now,
             prayers          = prayers,
             nextPrayer       = nextPrayer,
-            minutesUntilNext = nextPrayer?.let { minutesUntil(it, nowTime) } ?: 0,
-            currentPrayer    = currentPrayerOf(times, nowTime),
+            minutesUntilNext = nextStart?.let { Duration.between(now, it.second).toMinutes().coerceAtLeast(0) } ?: 0,
+            currentPrayer    = activeHomePrayer(windows, now),
             // Women aren't obliged to attend Jumu'ah, so Friday Dhuhr never relabels to
             // "Jumu'ah" for them, regardless of the (possibly stale) stored toggle.
             jumuahEnabled    = prefs.jumuahEnabled && prefs.gender != Gender.FEMALE,
             madhab           = prefs.madhab,
             gender           = prefs.gender,
+            locationLabel    = prefs.locationLabel,
         )
     }
 
@@ -250,6 +275,30 @@ class HomeViewModel @Inject constructor(
 
     fun onStatusSave(newStatus: PrayerStatus) {
         val args = _uiState.value.sheetArgs ?: return
+        saveStatus(args, newStatus)
+    }
+
+    fun onQuickStatusSave(type: PrayerType, status: PrayerStatus) {
+        val state = _uiState.value
+        if (state.isSaving || state.prayers.none { it.type == type && it.isMarkable }) return
+        if ((status == PrayerStatus.CONGREGATION && state.gender == Gender.FEMALE) ||
+            (status == PrayerStatus.MENSTRUATION && state.gender == Gender.MALE)) return
+        saveStatus(PrayerStatusSheetArgs(type, state.todayDate, state.prayers.first { it.type == type }.status), status)
+    }
+
+    /** The v27 week strip edits a past day in-place instead of navigating away from Home. */
+    fun onPastStatusSave(date: LocalDate, type: PrayerType, status: PrayerStatus) {
+        if (_uiState.value.isSaving || !date.isBefore(_uiState.value.todayDate)) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSaving = true) }
+            runCatching { prayerRepository.upsertPrayerStatus(date, type, status) }
+                .onSuccess { _uiState.update { it.copy(isSaving = false) } }
+                .onFailure { _uiState.update { it.copy(isSaving = false, errorRes = R.string.error_save_generic) } }
+        }
+    }
+
+    private fun saveStatus(args: PrayerStatusSheetArgs, newStatus: PrayerStatus) {
+        if (_uiState.value.isSaving) return
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true) }
             runCatching {
@@ -260,12 +309,26 @@ class HomeViewModel @Inject constructor(
                 if (args.date == _uiState.value.todayDate) reminderNotifications.dismiss(args.prayerType)
                 // Streak tiles refresh on their own — loadStreak()'s Flow collector
                 // re-emits automatically once upsertPrayerStatus's write commits.
-                _uiState.update { it.copy(isSaving = false, sheetArgs = null) }
+                _uiState.update { it.copy(isSaving = false, sheetArgs = null,
+                    feedback = HomeSaveFeedback(args.prayerType, newStatus, System.nanoTime(),
+                        it.prayers.firstOrNull { row -> row.type == args.prayerType }?.windowEnd
+                            ?.let { end -> LocalDateTime.now().isBefore(end) } == true)) }
             }.onFailure {
                 _uiState.update { it.copy(isSaving = false, errorRes = R.string.error_save_generic) }
             }
         }
     }
+
+    fun onReminderToggle(type: PrayerType) {
+        val entry = _uiState.value.prayers.firstOrNull { it.type == type } ?: return
+        viewModelScope.launch {
+            runCatching { settingsRepository.setReminderEnabled(type, !entry.reminderEnabled)
+                PrayerReminderWorker.enqueueOneTime(workManager) }
+                .onFailure { _uiState.update { it.copy(errorRes = R.string.error_save_generic) } }
+        }
+    }
+
+    fun onAppearanceChanged(value: HomeAppearance) = appearanceStore.save(value)
 
     fun clearError() = _uiState.update { it.copy(errorRes = null) }
 }

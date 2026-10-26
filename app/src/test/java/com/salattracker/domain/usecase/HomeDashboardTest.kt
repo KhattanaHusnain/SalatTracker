@@ -19,6 +19,40 @@ private val TODAY_TIMES = mapOf(
 
 class HomeDashboardTest {
 
+    @Test fun `Fajr window closes at sunrise leaving a gap until Dhuhr`() {
+        val date = LocalDate.of(2026, 10, 26)
+        val windows = homePrayerWindows(date, TODAY_TIMES, LocalTime.of(6, 40), LocalTime.of(5, 31))
+        assertEquals(PrayerType.FAJR, activeHomePrayer(windows, date.atTime(6, 39)))
+        assertNull(activeHomePrayer(windows, date.atTime(6, 40)))
+        assertNull(activeHomePrayer(windows, date.atTime(10, 0)))
+        assertEquals(PrayerType.DHUHR, activeHomePrayer(windows, date.atTime(12, 15)))
+    }
+
+    @Test fun `Isha remains current after civil midnight until following Fajr`() {
+        val date = LocalDate.of(2026, 10, 26)
+        val windows = homePrayerWindows(date, TODAY_TIMES, LocalTime.of(6, 40), LocalTime.of(5, 31))
+        assertEquals(PrayerType.ISHA, activeHomePrayer(windows, date.plusDays(1).atTime(0, 30)))
+        assertEquals(PrayerType.ISHA, activeHomePrayer(windows, date.plusDays(1).atTime(5, 30)))
+        assertNull(activeHomePrayer(windows, date.plusDays(1).atTime(5, 31)))
+    }
+
+    @Test fun `each prayer switches at its exact next boundary`() {
+        val date = LocalDate.of(2026, 10, 26)
+        val windows = homePrayerWindows(date, TODAY_TIMES, LocalTime.of(6, 40), LocalTime.of(5, 31))
+        assertEquals(PrayerType.DHUHR, activeHomePrayer(windows, date.atTime(15, 44)))
+        assertEquals(PrayerType.ASR, activeHomePrayer(windows, date.atTime(15, 45)))
+        assertEquals(PrayerType.MAGHRIB, activeHomePrayer(windows, date.atTime(18, 20)))
+        assertEquals(PrayerType.ISHA, activeHomePrayer(windows, date.atTime(19, 45)))
+    }
+
+    @Test fun `unknown and invalid windows are not made actionable`() {
+        val date = LocalDate.of(2026, 10, 26)
+        assertEquals(emptyMap<PrayerType, Pair<LocalDateTime, LocalDateTime>>(), homePrayerWindows(date, null, null, null))
+        val windows = homePrayerWindows(date, TODAY_TIMES, LocalTime.of(4, 0), null)
+        assertNull(windows[PrayerType.FAJR])
+        assertNull(windows[PrayerType.ISHA])
+    }
+
     @Test
     fun `Home keeps the previous prayer day before Fajr`() {
         val date = LocalDate.of(2026, 10, 25)
