@@ -1,16 +1,14 @@
 package com.salattracker.core.ui
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -36,6 +34,7 @@ data class DayDetailPrayerRow(
     val timeLabel: String,          // e.g. "05:42 AM"
     val status: PrayerStatus,
     val isMarkable: Boolean = true,
+    val isActive: Boolean = false,
 )
 
 // ── Header ────────────────────────────────────────────────────────────────────
@@ -120,60 +119,33 @@ internal fun DayDetailPrayerRowItem(
     row: DayDetailPrayerRow,
     onClick: () -> Unit,
 ) {
-    Surface(
-        onClick      = onClick,
-        enabled      = row.isMarkable,
-        shape        = RoundedCornerShape(12.dp),
-        color        = SalatSurface,
-        border       = BorderStroke(1.dp, SalatSecondaryContainer),
-        shadowElevation = 1.dp,
-        modifier     = Modifier.fillMaxWidth().alpha(if (row.isMarkable) 1f else 0.6f),
-    ) {
-        Row(
-            modifier          = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            // Icon circle
-            Box(
-                modifier         = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(SalatSecondaryFixed),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    painter         = painterResource(row.type.iconRes),
-                    contentDescription = null,
-                    tint            = SalatOnSecondaryFixedVariant,
-                    modifier        = Modifier.size(24.dp),
-                )
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            // Name + time
-            Column(modifier = Modifier.weight(1f)) {
+    CompactPrayerRow(
+        prayerType = row.type,
+        enabled = row.isMarkable,
+        isActive = row.isActive,
+        accentColor = SalatPrimary,
+        dividerColor = SalatOutlineVariant,
+        iconTint = SalatOnSurfaceVariant,
+        modifier = Modifier.clickable(enabled = row.isMarkable, onClick = onClick),
+        content = {
                 Text(
                     text       = row.type.label(),
-                    color      = SalatPrimary,
-                    fontSize   = 20.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = AppTitleFontFamily,
+                    color      = SalatOnSurface,
+                    fontSize   = 15.sp,
+                    fontWeight = FontWeight.Medium,
+                    fontFamily = AppUiFontFamily,
                 )
                 Text(
                     text     = row.timeLabel,
                     color    = SalatOnSurfaceVariant,
-                     fontSize = 12.sp,
+                    fontSize = 12.sp,
                     fontFamily = AppUiFontFamily,
                 )
-            }
-
-            // Status chip
+        },
+        actions = {
             PrayerStatusChip(status = row.status, isUpcoming = !row.isMarkable)
-        }
-    }
+        },
+    )
 }
 
 // ── Richer status chip (matches the HTML design tokens exactly) ───────────────
@@ -248,11 +220,11 @@ private data class StatusChipStyle(
 // ── Extension helpers ─────────────────────────────────────────────────────────
 
 internal val PrayerType.iconRes get() = when (this) {
-    PrayerType.FAJR    -> R.drawable.ic_wb_twilight
-    PrayerType.DHUHR   -> R.drawable.ic_light_mode
-    PrayerType.ASR     -> R.drawable.ic_wb_sunny
-    PrayerType.MAGHRIB -> R.drawable.ic_wb_twilight
-    PrayerType.ISHA    -> R.drawable.ic_dark_mode
+    PrayerType.FAJR    -> R.drawable.home_prayer_fajr
+    PrayerType.DHUHR   -> R.drawable.home_prayer_dhuhr
+    PrayerType.ASR     -> R.drawable.home_prayer_asr
+    PrayerType.MAGHRIB -> R.drawable.home_prayer_maghrib
+    PrayerType.ISHA    -> R.drawable.home_prayer_isha
 }
 
 internal val GoalCategory.iconRes get() = when (this) {

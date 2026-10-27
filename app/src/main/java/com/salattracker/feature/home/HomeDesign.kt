@@ -1,62 +1,32 @@
-@file:OptIn(androidx.compose.ui.text.ExperimentalTextApi::class)
-
 package com.salattracker.feature.home
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.*
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.text.font.*
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.PathParser
-import com.salattracker.R
 import com.salattracker.core.theme.*
+import com.salattracker.core.ui.ArchitecturalFrieze
 import com.salattracker.domain.model.PrayerStatus
 
 internal val HomeTeal = Color(0xFF087E83)
 internal val HomeGold = Color(0xFFD9A441)
 internal val HomeCream = Color(0xFFFFF8E8)
-internal val HomeLatin = FontFamily(Font(R.font.onboarding_outfit,
-    variationSettings = FontVariation.Settings(FontVariation.weight(400))),
-    Font(R.font.onboarding_outfit, FontWeight.SemiBold,
-        variationSettings = FontVariation.Settings(FontVariation.weight(600))))
-internal val HomeSerif = FontFamily(Font(R.font.onboarding_cormorant, FontWeight.SemiBold,
-    variationSettings = FontVariation.Settings(FontVariation.weight(600))))
-internal val HomeBodyFont: FontFamily @Composable get() = when (LocalConfiguration.current.locales[0].language) {
-    "ur" -> NastaliqUrduFamily
-    "ar" -> FontFamily(Font(R.font.onboarding_scheherazade))
-    else -> HomeLatin
-}
-internal val HomeTitleFont: FontFamily @Composable get() =
-    if (LocalConfiguration.current.locales[0].language in listOf("ur", "ar")) HomeBodyFont else HomeSerif
+internal val HomeLatin: FontFamily = OutfitFamily
+internal val HomeSerif: FontFamily = CormorantFamily
+internal val HomeBodyFont: FontFamily @Composable get() = AppUiFontFamily
+internal val HomeTitleFont: FontFamily @Composable get() = AppTitleFontFamily
 
 @Composable internal fun HomeDesign(content: @Composable () -> Unit) {
-    // The v27 phone canvas is intentionally a white editorial surface in both host
-    // themes. Only the surrounding prototype page changes in dark mode.
-    val colors = LightSalatColors.copy(
-        primary = HomeTeal,
-        background = Color.White,
-        surface = Color.White,
-        onSurface = Color(0xFF111111),
-        onSurfaceVariant = Color(0xFF6B7270),
-        outlineVariant = Color(0xFFE3E6E2),
-        statusCongregation = HomeTeal, statusIndividual = Color(0xFF6DBBB6),
-        statusQazaPending = Color(0xFFD9603B), statusQazaCompleted = HomeGold,
-        statusExcused = Color(0xFFC9338E), statusNotRecorded = Color(0xFFDADFDA),
-    )
-    CompositionLocalProvider(LocalSalatColors provides colors) {
-        MaterialTheme(colorScheme = MaterialTheme.colorScheme.copy(primary = colors.primary,
-            background = colors.background, surface = colors.surface, onSurface = colors.onSurface,
-            onSurfaceVariant = colors.onSurfaceVariant, outlineVariant = colors.outlineVariant), content = content)
-    }
+    content()
 }
 
 internal fun homeStatusColor(status: PrayerStatus) = when (status) {
@@ -121,14 +91,5 @@ internal fun homeStatusColor(status: PrayerStatus) = when (status) {
 
 /** Small repeating arch ornament, taken from the export's --pt-w/--pt-t SVG. */
 @Composable internal fun HomeFrieze(modifier: Modifier = Modifier, color: Color = HomeTeal) {
-    val path = remember { PathParser.createPathFromPathData("M3 16V9.5C3 6 11 5 14 0C17 5 25 6 25 9.5V16 M14 7.5V10.5").asComposePath() }
-    Canvas(modifier) {
-        val unit = 1.dp.toPx()
-        for (column in 0..(size.width / (28 * unit)).toInt()) {
-            translate(column * 28 * unit) { scale(unit, unit, Offset.Zero) {
-                drawPath(path, color.copy(alpha = .55f), style = Stroke(1f, cap = StrokeCap.Round))
-                drawCircle(color.copy(alpha = .55f), 1.3f, Offset(14f, 12.6f))
-            } }
-        }
-    }
+    ArchitecturalFrieze(modifier = modifier, color = color)
 }

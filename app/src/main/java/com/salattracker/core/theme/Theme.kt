@@ -1,6 +1,9 @@
+@file:OptIn(androidx.compose.ui.text.ExperimentalTextApi::class)
+
 package com.salattracker.core.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -8,6 +11,8 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontVariation
+import androidx.compose.ui.unit.dp
 import com.salattracker.R
 
 // ── Font families ────────────────────────────────────────────────────────────
@@ -22,6 +27,45 @@ val InterFamily = FontFamily(
     Font(R.font.inter_medium,    FontWeight.Medium),
     Font(R.font.inter_semibold,  FontWeight.SemiBold)
 )
+
+/** Home v27's editorial type system, shared by every app screen. */
+val OutfitFamily = FontFamily(
+    Font(
+        R.font.onboarding_outfit,
+        FontWeight.Normal,
+        variationSettings = FontVariation.Settings(FontVariation.weight(400)),
+    ),
+    Font(
+        R.font.onboarding_outfit,
+        FontWeight.Medium,
+        variationSettings = FontVariation.Settings(FontVariation.weight(500)),
+    ),
+    Font(
+        R.font.onboarding_outfit,
+        FontWeight.SemiBold,
+        variationSettings = FontVariation.Settings(FontVariation.weight(600)),
+    ),
+    Font(
+        R.font.onboarding_outfit,
+        FontWeight.Bold,
+        variationSettings = FontVariation.Settings(FontVariation.weight(700)),
+    ),
+)
+
+val CormorantFamily = FontFamily(
+    Font(
+        R.font.onboarding_cormorant,
+        FontWeight.SemiBold,
+        variationSettings = FontVariation.Settings(FontVariation.weight(600)),
+    ),
+    Font(
+        R.font.onboarding_cormorant,
+        FontWeight.Bold,
+        variationSettings = FontVariation.Settings(FontVariation.weight(700)),
+    ),
+)
+
+val ScheherazadeFamily = FontFamily(Font(R.font.onboarding_scheherazade))
 
 // Quran-specific display faces — not used for app chrome, only the reader screens. Both are
 // SIL Open Font License (OFL-1.1), credited in QURAN_CONTENT_SOURCES.md and QuranCreditsScreen.
@@ -41,14 +85,49 @@ val NastaliqUrduFamily = FontFamily(Font(R.font.noto_nastaliq_urdu, FontWeight.N
  * Arabic Quran font above.
  */
 val AppUiFontFamily: FontFamily
-    @Composable get() = if (LocalConfiguration.current.locales[0]?.language == "ur") {
-        NastaliqUrduFamily
-    } else {
-        InterFamily
+    @Composable get() = when (LocalConfiguration.current.locales[0]?.language) {
+        "ur" -> NastaliqUrduFamily
+        "ar" -> ScheherazadeFamily
+        else -> OutfitFamily
     }
 
 val AppTitleFontFamily: FontFamily
-    @Composable get() = AppUiFontFamily
+    @Composable get() = when (LocalConfiguration.current.locales[0]?.language) {
+        "ur", "ar" -> AppUiFontFamily
+        else -> CormorantFamily
+    }
+
+private val AppShapes = Shapes(
+    extraSmall = RoundedCornerShape(8.dp),
+    small = RoundedCornerShape(10.dp),
+    medium = RoundedCornerShape(14.dp),
+    large = RoundedCornerShape(18.dp),
+    extraLarge = RoundedCornerShape(24.dp),
+)
+
+@Composable
+private fun appTypography(): Typography {
+    val body = AppUiFontFamily
+    val title = AppTitleFontFamily
+    val base = Typography()
+    return base.copy(
+        displayLarge = base.displayLarge.copy(fontFamily = title),
+        displayMedium = base.displayMedium.copy(fontFamily = title),
+        displaySmall = base.displaySmall.copy(fontFamily = title),
+        headlineLarge = base.headlineLarge.copy(fontFamily = title),
+        headlineMedium = base.headlineMedium.copy(fontFamily = title),
+        headlineSmall = base.headlineSmall.copy(fontFamily = title),
+        titleLarge = base.titleLarge.copy(fontFamily = title),
+        titleMedium = base.titleMedium.copy(fontFamily = body),
+        titleSmall = base.titleSmall.copy(fontFamily = body),
+        bodyLarge = base.bodyLarge.copy(fontFamily = body),
+        bodyMedium = base.bodyMedium.copy(fontFamily = body),
+        bodySmall = base.bodySmall.copy(fontFamily = body),
+        labelLarge = base.labelLarge.copy(fontFamily = body),
+        labelMedium = base.labelMedium.copy(fontFamily = body),
+        labelSmall = base.labelSmall.copy(fontFamily = body),
+    )
+}
 
 // ── Material 3 color schemes ──────────────────────────────────────────────────
 
@@ -130,6 +209,8 @@ fun SalatTrackerTheme(
     CompositionLocalProvider(LocalSalatColors provides salatColors) {
         MaterialTheme(
             colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme,
+            typography  = appTypography(),
+            shapes      = AppShapes,
             content     = content,
         )
     }

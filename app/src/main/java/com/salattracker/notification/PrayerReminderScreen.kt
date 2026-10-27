@@ -41,6 +41,7 @@ import com.salattracker.core.theme.SalatPrimaryFixed
 import com.salattracker.core.theme.SalatPrimaryFixedDim
 import com.salattracker.core.ui.label
 import com.salattracker.core.ui.formatAppTime
+import com.salattracker.core.ui.iconRes
 import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerStatus
@@ -134,7 +135,7 @@ fun PrayerReminderScreen(
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
-                    painter  = painterResource(R.drawable.ic_mosque),
+                    painter  = painterResource(prayerType.iconRes),
                     contentDescription = null,
                     tint     = SalatOnHero,
                     modifier = Modifier.size(88.dp),

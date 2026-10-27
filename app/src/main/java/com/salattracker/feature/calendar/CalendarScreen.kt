@@ -221,6 +221,9 @@ private fun buildDayDetailRows(
     times: Map<PrayerType, LocalTime>?,
 ): List<DayDetailPrayerRow> {
     val use24HourFormat = LocalUse24HourFormat.current
+    val activePrayer = remember(date, today, times) {
+        if (date == today) currentPrayerOf(times, LocalTime.now()) else null
+    }
     return PrayerType.values().map { type ->
         val time = times?.get(type)
         DayDetailPrayerRow(
@@ -228,6 +231,7 @@ private fun buildDayDetailRows(
             timeLabel  = time?.formatAppTime(use24HourFormat) ?: "--:--",
             status     = statuses[type] ?: PrayerStatus.NOT_RECORDED,
             isMarkable = isPrayerMarkable(date, time, today),
+            isActive   = type == activePrayer,
         )
     }
 }
@@ -804,8 +808,8 @@ private fun SelectedDayPanel(
             Spacer(modifier = Modifier.height(10.dp))
             IslamicEventBanner(islamicEvent)
         }
-        Spacer(modifier = Modifier.height(16.dp))
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Spacer(modifier = Modifier.height(8.dp))
+        Column {
             rows.forEach { row ->
                 DayDetailPrayerRowItem(row = row, onClick = { if (row.isMarkable) onPrayerClick(row.type) })
             }
