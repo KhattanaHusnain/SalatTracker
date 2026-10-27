@@ -22,6 +22,7 @@ import com.salattracker.core.theme.*
 import com.salattracker.core.ui.SettingsCard
 import com.salattracker.core.ui.SettingsSectionLabel
 import com.salattracker.core.ui.CalculationMethodSheet
+import com.salattracker.core.ui.iconRes
 import com.salattracker.core.ui.label
 import com.salattracker.core.ui.salatSwitchColors
 import com.salattracker.domain.model.AppLanguage
@@ -369,7 +370,18 @@ private fun AdjustPrayerTimesCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(type.label(), color = SalatOnSurface, fontSize = 15.sp, fontFamily = AppUiFontFamily)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Icon(
+                        painter = painterResource(type.iconRes),
+                        contentDescription = null,
+                        tint = SalatPrimary,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    Text(type.label(), color = SalatOnSurface, fontSize = 15.sp, fontFamily = AppUiFontFamily)
+                }
                 MinuteStepper(
                     prayerLabel = type.label(),
                     minutes = adjustMinutes[type] ?: 0,

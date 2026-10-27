@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.*
+import com.salattracker.core.ui.iconRes
 import com.salattracker.core.ui.label
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.usecase.QazaDay
@@ -63,7 +64,8 @@ fun MissedPrayersScreen(
                 PrayerType.values().forEach { type ->
                     FilterChip(
                         label = type.label(), count = uiState.countsByPrayer[type] ?: 0,
-                        isSelected = uiState.filter == type, onClick = { onFilterSelected(type) },
+                        iconRes = type.iconRes, isSelected = uiState.filter == type,
+                        onClick = { onFilterSelected(type) },
                     )
                 }
             }
@@ -194,7 +196,13 @@ fun MissedPrayersScreen(
 // ── Filter chip ───────────────────────────────────────────────────────────────
 
 @Composable
-private fun FilterChip(label: String, count: Int, isSelected: Boolean, onClick: () -> Unit) {
+private fun FilterChip(
+    label: String,
+    count: Int,
+    isSelected: Boolean,
+    iconRes: Int? = null,
+    onClick: () -> Unit,
+) {
     Surface(
         onClick = onClick,
         shape   = RoundedCornerShape(50),
@@ -206,6 +214,14 @@ private fun FilterChip(label: String, count: Int, isSelected: Boolean, onClick: 
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp),
         ) {
+            iconRes?.let {
+                Icon(
+                    painter = painterResource(it),
+                    contentDescription = null,
+                    tint = if (isSelected) SalatOnPrimaryContainer else SalatOnSurfaceVariant,
+                    modifier = Modifier.size(16.dp),
+                )
+            }
             Text(
                 text = label, color = if (isSelected) SalatOnPrimaryContainer else SalatOnSurfaceVariant,
                 fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily,

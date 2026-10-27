@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.salattracker.R
 import com.salattracker.core.theme.*
+import com.salattracker.core.ui.iconRes
 import com.salattracker.core.ui.label
 import com.salattracker.core.ui.LocalUse24HourFormat
 import com.salattracker.core.ui.formatAppTime
@@ -172,6 +173,12 @@ private fun ReminderCard(
                         checked         = setting.enabled,
                         onCheckedChange = onEnabledChanged,
                         colors          = salatSwitchColors(),
+                    )
+                    Icon(
+                        painter = painterResource(setting.prayerType.iconRes),
+                        contentDescription = null,
+                        tint = if (setting.enabled) SalatPrimary else SalatOnSurfaceVariant,
+                        modifier = Modifier.size(20.dp),
                     )
                     Column {
                         Text(

@@ -30,6 +30,7 @@ import com.salattracker.core.theme.*
 import com.salattracker.core.ui.CalculationMethodSheet
 import com.salattracker.core.ui.DatePickerModal
 import com.salattracker.core.ui.fullLabel
+import com.salattracker.core.ui.iconRes
 import com.salattracker.core.ui.rememberAzanPreviewPlayer
 import com.salattracker.domain.model.*
 import com.salattracker.domain.usecase.toHijriOrNull
@@ -236,6 +237,13 @@ fun OnboardingScreen(
                     PrayerType.values().forEachIndexed { index, prayer ->
                         Row(Modifier.fillMaxWidth().heightIn(min = LocalOnboardingRowMinHeight.current).padding(vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                painter = painterResource(prayer.iconRes),
+                                contentDescription = null,
+                                tint = SalatPrimary,
+                                modifier = Modifier.size(18.dp),
+                            )
+                            Spacer(Modifier.width(10.dp))
                             BodyText(prayer.name.lowercase().replaceFirstChar { it.titlecase() }, Modifier.weight(1f), size = 15)
                             Text(arabic[index], color = SalatOnSurfaceVariant, fontFamily = OnboardingArabicFont, fontSize = 20.sp)
                             Spacer(Modifier.width(14.dp))

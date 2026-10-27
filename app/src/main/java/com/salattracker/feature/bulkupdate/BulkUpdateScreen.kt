@@ -576,16 +576,6 @@ private fun BulkUpdateConfirmDialog(
     )
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-private val PrayerType.iconRes get() = when (this) {
-    PrayerType.FAJR    -> R.drawable.ic_wb_twilight
-    PrayerType.DHUHR   -> R.drawable.ic_light_mode
-    PrayerType.ASR     -> R.drawable.ic_wb_sunny
-    PrayerType.MAGHRIB -> R.drawable.ic_wb_twilight
-    PrayerType.ISHA    -> R.drawable.ic_dark_mode
-}
-
 // ── Preview ───────────────────────────────────────────────────────────────────
 
 @Preview(showBackground = true, showSystemUi = true)

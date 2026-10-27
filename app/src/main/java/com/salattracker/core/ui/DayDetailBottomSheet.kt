@@ -248,11 +248,11 @@ private data class StatusChipStyle(
 // ── Extension helpers ─────────────────────────────────────────────────────────
 
 internal val PrayerType.iconRes get() = when (this) {
-    PrayerType.FAJR    -> R.drawable.ic_wb_twilight
-    PrayerType.DHUHR   -> R.drawable.ic_light_mode
-    PrayerType.ASR     -> R.drawable.ic_wb_sunny
-    PrayerType.MAGHRIB -> R.drawable.ic_wb_twilight
-    PrayerType.ISHA    -> R.drawable.ic_dark_mode
+    PrayerType.FAJR    -> R.drawable.home_prayer_fajr
+    PrayerType.DHUHR   -> R.drawable.home_prayer_dhuhr
+    PrayerType.ASR     -> R.drawable.home_prayer_asr
+    PrayerType.MAGHRIB -> R.drawable.home_prayer_maghrib
+    PrayerType.ISHA    -> R.drawable.home_prayer_isha
 }
 
 internal val GoalCategory.iconRes get() = when (this) {

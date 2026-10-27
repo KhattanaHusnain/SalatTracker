@@ -548,7 +548,7 @@ private fun V27PrayerRow(entry: PrayerEntryUi, state: HomeUiState, flash: Boolea
         if (flashAlpha > 0f) drawRect(HomeGold.copy(alpha = flashAlpha))
     }.alpha(if (entry.isMarkable) 1f else .55f).padding(start = if (current) 8.dp else 0.dp, top = 7.dp, bottom = 7.dp)) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Icon(painterResource(v27PrayerIcon(entry.type)), null, tint = V27Muted, modifier = Modifier.size(18.dp))
+            Icon(painterResource(entry.type.iconRes), null, tint = V27Muted, modifier = Modifier.size(18.dp))
             Column(Modifier.weight(1f).clickable(enabled = entry.isMarkable, onClick = onDetails)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     HomeText(entry.type.label(state.todayDate, state.jumuahEnabled, state.madhab),
@@ -705,7 +705,7 @@ private fun v27HeroFigure(status: PrayerStatus, gender: Gender?): Int? = when (s
                 val status = marks[type] ?: PrayerStatus.NOT_RECORDED
                 Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Icon(painterResource(v27PrayerIcon(type)), null, tint = V27Muted, modifier = Modifier.size(18.dp))
+                    Icon(painterResource(type.iconRes), null, tint = V27Muted, modifier = Modifier.size(18.dp))
                     Column(Modifier.weight(1f)) {
                         HomeText(type.label(date, state.jumuahEnabled, state.madhab), size = 15, weight = FontWeight.Medium)
                         if (status == PrayerStatus.NOT_RECORDED) HomeText(stringResource(R.string.home_v27_not_recorded), size = 12, muted = true)
@@ -750,7 +750,7 @@ private fun v27HeroFigure(status: PrayerStatus, gender: Gender?): Int? = when (s
             PrayerType.values().forEach { type ->
                 val streak = state.streaks[type] ?: StreakInfo(0, 0)
                 Row(Modifier.fillMaxWidth().padding(vertical = 9.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Icon(painterResource(v27PrayerIcon(type)), null, tint = V27Muted, modifier = Modifier.size(18.dp))
+                    Icon(painterResource(type.iconRes), null, tint = V27Muted, modifier = Modifier.size(18.dp))
                     Column(Modifier.weight(1f).padding(start = 10.dp)) {
                         HomeText(type.label(state.todayDate, state.jumuahEnabled, state.madhab), size = 15)
                         if (state.gender != Gender.FEMALE) HomeText(
@@ -825,14 +825,6 @@ private fun v27StatusIcon(status: PrayerStatus, gender: Gender?) = when (status)
     PrayerStatus.QAZA_PENDING -> R.drawable.home_status_qaza
     PrayerStatus.QAZA_COMPLETED -> R.drawable.home_status_made_up
     PrayerStatus.NOT_RECORDED -> R.drawable.home_status_qaza
-}
-
-private fun v27PrayerIcon(type: PrayerType) = when (type) {
-    PrayerType.FAJR -> R.drawable.home_prayer_fajr
-    PrayerType.DHUHR -> R.drawable.home_prayer_dhuhr
-    PrayerType.ASR -> R.drawable.home_prayer_asr
-    PrayerType.MAGHRIB -> R.drawable.home_prayer_maghrib
-    PrayerType.ISHA -> R.drawable.home_prayer_isha
 }
 
 @Composable private fun v27AppreciationText(saved: HomeSaveFeedback, state: HomeUiState): String {
