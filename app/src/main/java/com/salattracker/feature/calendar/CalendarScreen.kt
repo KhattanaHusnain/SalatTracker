@@ -48,6 +48,7 @@ fun CalendarScreen(
     onMonthTileClick: (YearMonth) -> Unit,
     onBackFromYearDrillDown: () -> Unit,
     onPrayerClick: (LocalDate, PrayerType) -> Unit,
+    onQuickStatusSave: (LocalDate, PrayerType, PrayerStatus) -> Unit,
     onStatusSheetDismiss: () -> Unit,
     onStatusSave: (PrayerStatus) -> Unit,
     onErrorDismiss: () -> Unit,
@@ -98,7 +99,12 @@ fun CalendarScreen(
                         today         = uiState.today,
                         statuses      = uiState.selectedDayStatuses,
                         times         = uiState.selectedTimes,
+                        gender        = uiState.gender,
+                        isSaving      = uiState.isSaving,
                         onPrayerClick = { type -> onPrayerClick(uiState.selectedDate, type) },
+                        onStatusSave  = { type, status ->
+                            onQuickStatusSave(uiState.selectedDate, type, status)
+                        },
                     )
 
                     uiState.verse?.let { verse ->
@@ -790,7 +796,10 @@ private fun SelectedDayPanel(
     today: LocalDate,
     statuses: Map<PrayerType, PrayerStatus>,
     times: Map<PrayerType, LocalTime>?,
+    gender: Gender?,
+    isSaving: Boolean,
     onPrayerClick: (PrayerType) -> Unit,
+    onStatusSave: (PrayerType, PrayerStatus) -> Unit,
 ) {
     val adjustment = LocalHijriAdjustmentDays.current
     val hijri = remember(date, adjustment) { date.toHijriOrNull(adjustment) }
@@ -811,7 +820,13 @@ private fun SelectedDayPanel(
         Spacer(modifier = Modifier.height(8.dp))
         Column {
             rows.forEach { row ->
-                DayDetailPrayerRowItem(row = row, onClick = { if (row.isMarkable) onPrayerClick(row.type) })
+                DayDetailPrayerRowItem(
+                    row = row,
+                    gender = gender,
+                    isSaving = isSaving,
+                    onStatusSelected = { status -> onStatusSave(row.type, status) },
+                    onClick = { if (row.isMarkable) onPrayerClick(row.type) },
+                )
             }
         }
     }
@@ -885,6 +900,7 @@ private fun PreviewCalendarScreen(uiState: CalendarUiState) {
         onMonthTileClick        = {},
         onBackFromYearDrillDown = {},
         onPrayerClick           = { _, _ -> },
+        onQuickStatusSave       = { _, _, _ -> },
         onStatusSheetDismiss    = {},
         onStatusSave            = {},
         onErrorDismiss          = {},

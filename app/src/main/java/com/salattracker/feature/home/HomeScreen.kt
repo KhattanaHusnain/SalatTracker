@@ -598,34 +598,14 @@ private fun V27PrayerRow(entry: PrayerEntryUi, state: HomeUiState, flash: Boolea
 
 @Composable private fun V27RowStatusActions(entry: PrayerEntryUi, state: HomeUiState,
     onSave: (PrayerType, PrayerStatus) -> Unit) {
-    val enabled = entry.isMarkable && !state.isSaving
-    AnimatedContent(entry.status, label = "status-${entry.type}") { status ->
-        if (status != PrayerStatus.NOT_RECORDED) {
-            val ink = if (status == PrayerStatus.QAZA_COMPLETED) Color(0xFF302408) else Color.White
-            Row(Modifier.height(34.dp).clip(CircleShape).background(homeStatusColor(status))
-                .clickable(enabled = enabled, role = Role.Button) {
-                    onSave(entry.type, if (status == PrayerStatus.QAZA_COMPLETED)
-                        PrayerStatus.QAZA_PENDING else PrayerStatus.NOT_RECORDED)
-                }.padding(horizontal = 10.dp).testTag("home-status-row-${entry.type}"),
-                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                V27StatusArtwork(status, state.gender, true, false, Modifier.size(22.dp), ink)
-                V27FixedText(v27StatusLabel(status, state.gender), size = 12,
-                    line = if (LocalConfiguration.current.locales[0].language == "ur") 23 else 18,
-                    color = ink, weight = FontWeight.Medium, maxLines = 1)
-            }
-        } else Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            v27OfferedStatuses(state.gender).forEach { choice ->
-                val description = v27StatusLabel(choice, state.gender)
-                Box(Modifier.size(34.dp).border(1.5.dp, V27Divider, CircleShape)
-                    .testTag("home-pick-row-${entry.type}-$choice")
-                    .semantics { contentDescription = description; if (!enabled) disabled() }
-                    .clickable(enabled = enabled, role = Role.Button) { onSave(entry.type, choice) },
-                    contentAlignment = Alignment.Center) {
-                    V27StatusArtwork(choice, state.gender, false, false, Modifier.size(26.dp))
-                }
-            }
-        }
-    }
+    CompactPrayerStatusActions(
+        prayerType = entry.type,
+        status = entry.status,
+        gender = state.gender,
+        enabled = entry.isMarkable && !state.isSaving,
+        tagPrefix = "home",
+        onStatusSelected = { status -> onSave(entry.type, status) },
+    )
 }
 
 @Composable private fun V27ReminderButton(entry: PrayerEntryUi, state: HomeUiState, onReminder: (PrayerType) -> Unit) {

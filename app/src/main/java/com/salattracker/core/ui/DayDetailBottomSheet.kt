@@ -11,6 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -18,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.*
+import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.GoalCategory
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
@@ -117,8 +120,12 @@ internal fun DayDetailHeader(
 @Composable
 internal fun DayDetailPrayerRowItem(
     row: DayDetailPrayerRow,
+    gender: Gender?,
+    isSaving: Boolean,
+    onStatusSelected: (PrayerStatus) -> Unit,
     onClick: () -> Unit,
 ) {
+    val stacked = LocalDensity.current.fontScale > 1.18f || LocalConfiguration.current.screenWidthDp < 340
     CompactPrayerRow(
         prayerType = row.type,
         enabled = row.isMarkable,
@@ -128,22 +135,63 @@ internal fun DayDetailPrayerRowItem(
         iconTint = SalatOnSurfaceVariant,
         modifier = Modifier.clickable(enabled = row.isMarkable, onClick = onClick),
         content = {
-                Text(
-                    text       = row.type.label(),
-                    color      = SalatOnSurface,
-                    fontSize   = 15.sp,
-                    fontWeight = FontWeight.Medium,
-                    fontFamily = AppUiFontFamily,
-                )
-                Text(
-                    text     = row.timeLabel,
-                    color    = SalatOnSurfaceVariant,
-                    fontSize = 12.sp,
-                    fontFamily = AppUiFontFamily,
-                )
+            Text(
+                text = row.type.label(),
+                color = SalatOnSurface,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Medium,
+                fontFamily = AppUiFontFamily,
+            )
+            Text(
+                text = row.timeLabel,
+                color = SalatOnSurfaceVariant,
+                fontSize = 12.sp,
+                fontFamily = AppUiFontFamily,
+            )
+            if (row.status == PrayerStatus.QAZA_PENDING) {
+                TextButton(
+                    onClick = { onStatusSelected(PrayerStatus.QAZA_COMPLETED) },
+                    enabled = row.isMarkable && !isSaving,
+                    modifier = Modifier.height(30.dp),
+                    contentPadding = PaddingValues(horizontal = 8.dp),
+                ) {
+                    Text(
+                        text = stringResource(R.string.home_v8_make_up),
+                        color = SalatPrimary,
+                        fontSize = 11.sp,
+                        fontFamily = AppUiFontFamily,
+                    )
+                }
+            }
         },
         actions = {
-            PrayerStatusChip(status = row.status, isUpcoming = !row.isMarkable)
+            if (!stacked) {
+                CompactPrayerStatusActions(
+                    prayerType = row.type,
+                    status = row.status,
+                    gender = gender,
+                    enabled = row.isMarkable && !isSaving,
+                    tagPrefix = "calendar",
+                    onStatusSelected = onStatusSelected,
+                )
+            }
+        },
+        footer = {
+            if (stacked) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(start = 26.dp),
+                    horizontalArrangement = Arrangement.End,
+                ) {
+                    CompactPrayerStatusActions(
+                        prayerType = row.type,
+                        status = row.status,
+                        gender = gender,
+                        enabled = row.isMarkable && !isSaving,
+                        tagPrefix = "calendar",
+                        onStatusSelected = onStatusSelected,
+                    )
+                }
+            }
         },
     )
 }
