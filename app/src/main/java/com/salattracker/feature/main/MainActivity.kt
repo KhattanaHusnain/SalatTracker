@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.luminance
@@ -54,6 +53,7 @@ import com.salattracker.core.theme.*
 import com.salattracker.core.ui.label
 import com.salattracker.core.ui.LocalUse24HourFormat
 import com.salattracker.core.ui.LocalHijriAdjustmentDays
+import com.salattracker.core.ui.ArchitecturalFrieze
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.QuranReadHistoryEntry as QuranReadingPosition
 import com.salattracker.domain.model.isDark
@@ -577,13 +577,19 @@ private fun TopBar(
 ) {
     TopAppBar(
         title = {
-            Text(
-                text       = title,
-                color      = SalatPrimary,
-                fontSize   = 20.sp,
-                fontWeight = FontWeight.SemiBold,
-                fontFamily = AppTitleFontFamily,
-            )
+            Box(Modifier.fillMaxWidth()) {
+                ArchitecturalFrieze(
+                    modifier = Modifier.align(Alignment.CenterEnd).size(112.dp, 18.dp),
+                    alpha = .16f,
+                )
+                Text(
+                    text       = title,
+                    color      = SalatPrimary,
+                    fontSize   = 22.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    fontFamily = AppTitleFontFamily,
+                )
+            }
         },
         navigationIcon = {
             // The five tabs show the menu icon (with an attention dot when backup needs it);
@@ -706,9 +712,8 @@ internal fun SalatBottomNavBar(
     onNavigate: (BottomNavRoute) -> Unit,
     qazaPendingTotal: Int = 0,
 ) {
-    val dark = LocalSalatColors.current == DarkSalatColors
-    val surface = if (dark) Color(0xFF101C1D) else Color.White
-    val muted = if (dark) Color(0xFFB7C5C5) else Color(0xFF6B7270)
+    val surface = SalatSurface
+    val muted = SalatOnSurfaceVariant
     Surface(Modifier.testTag("bottom-navigation"), color = surface) {
         Column {
             HorizontalDivider(color = muted.copy(alpha = .2f))
@@ -723,16 +728,16 @@ internal fun SalatBottomNavBar(
                         verticalArrangement = Arrangement.Center) {
                         BadgedBox(badge = {
                             if (route.route == BottomNavRoute.Qaza.route && qazaPendingTotal > 0)
-                                Badge(containerColor = Color(0xFF8A9490), contentColor = Color.White) {
+                                Badge(containerColor = SalatOutline, contentColor = SalatOnPrimary) {
                                     Text(if (qazaPendingTotal > 99) "99+" else "$qazaPendingTotal", fontSize = 10.sp)
                                 }
                         }) {
                             Icon(painterResource(route.iconRes), label, Modifier.size(20.dp),
-                                tint = if (selected) Color(0xFF087E83) else muted)
+                                tint = if (selected) SalatPrimary else muted)
                         }
                         Text(label, Modifier.testTag("bottom-nav-label-${route.route}"),
-                            fontFamily = com.salattracker.feature.home.HomeBodyFont,
-                            fontSize = 11.sp, color = if (selected) Color(0xFF087E83) else muted,
+                            fontFamily = AppUiFontFamily,
+                            fontSize = 11.sp, color = if (selected) SalatPrimary else muted,
                             fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
                             maxLines = 1)
                     }

@@ -96,7 +96,7 @@ fun HomeScreen(
     }
 
     HomeDesign {
-        Box(Modifier.fillMaxSize().background(Color.White).testTag("home-screen")) {
+        Box(Modifier.fillMaxSize().background(SalatBackground).testTag("home-screen")) {
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).testTag("home-scroll")) {
                 V27Hero(
                     uiState,
@@ -698,7 +698,7 @@ private fun v27HeroFigure(status: PrayerStatus, gender: Gender?): Int? = when (s
     onSave: (LocalDate, PrayerType, PrayerStatus) -> Unit, onDismiss: () -> Unit) {
     val locale = LocalConfiguration.current.locales[0]
     val marks = state.lastSevenDays[date].orEmpty()
-    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = Color.White) {
+    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = SalatSurface) {
         Column(Modifier.fillMaxWidth().testTag("home-day-sheet").padding(horizontal = 20.dp).padding(bottom = 18.dp)) {
             HomeText(date.format(DateTimeFormatter.ofPattern("EEE · d MMM", locale)), size = 16, weight = FontWeight.SemiBold)
             PrayerType.values().forEach { type ->
@@ -743,7 +743,7 @@ private fun v27HeroFigure(status: PrayerStatus, gender: Gender?): Int? = when (s
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable private fun V27StreakSheet(state: HomeUiState, onDismiss: () -> Unit) {
-    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = Color.White) {
+    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = SalatSurface) {
         Column(Modifier.fillMaxWidth().testTag("home-streak-sheet").verticalScroll(rememberScrollState())
             .padding(horizontal = 20.dp).padding(bottom = 24.dp)) {
             HomeText(stringResource(R.string.home_v8_streaks), size = 16, weight = FontWeight.SemiBold)
