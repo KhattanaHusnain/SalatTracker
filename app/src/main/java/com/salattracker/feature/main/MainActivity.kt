@@ -53,7 +53,6 @@ import com.salattracker.core.theme.*
 import com.salattracker.core.ui.LocalUse24HourFormat
 import com.salattracker.core.ui.LocalHijriAdjustmentDays
 import com.salattracker.core.ui.ArchitecturalFrieze
-import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.QuranReadHistoryEntry as QuranReadingPosition
 import com.salattracker.domain.model.isDark
 import com.salattracker.feature.backup.BackupEntry
@@ -72,7 +71,6 @@ import com.salattracker.feature.mosque.MosqueModeEntry
 import com.salattracker.core.ui.MadhabPromptDialog
 import com.salattracker.feature.onboarding.OnboardingEntry
 import com.salattracker.feature.settings.EditCoordinatesEntry
-import com.salattracker.feature.qaza.MissedPrayersEntry
 import com.salattracker.feature.qaza.QazaEntry
 import com.salattracker.feature.quran.QuranBookmarksEntry
 import com.salattracker.feature.quran.QuranChapterInfoEntry
@@ -261,6 +259,7 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
     val shellViewModel: MainShellViewModel = hiltViewModel()
     val backupNeedsAttention by shellViewModel.backupNeedsAttention.collectAsState()
     val qazaPendingTotal by shellViewModel.qazaPendingTotal.collectAsState()
+    val hideQazaBadge by shellViewModel.hideQazaBadge.collectAsState()
     val isHome = currentDest?.route == BottomNavRoute.Home.route
     val view = LocalView.current
     val background = SalatBackground
@@ -376,7 +375,7 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                     SalatBottomNavBar(
                         routes      = BottomNavRoute.all,
                         currentRoute = currentDest?.route,
-                        qazaPendingTotal = qazaPendingTotal,
+                        qazaPendingTotal = if (hideQazaBadge) 0 else qazaPendingTotal,
                         onNavigate  = { route -> navController.navigateToTab(route.route) },
                     )
                 }
@@ -449,15 +448,7 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                     CalendarEntry(calendarViewModel) { navController.navigateToTab(BottomNavRoute.Qaza.route) }
                 }
                 composable(BottomNavRoute.Qaza.route) {
-                    QazaEntry(
-                        onViewAllClick   = { navController.push(Routes.missedPrayers()) },
-                        onPrayerClick    = { prayer -> navController.push(Routes.missedPrayers(prayer)) },
-                        onOpenDay        = { date ->
-                            calendarViewModel.onOpenDay(date)
-                            navController.navigateToTab(BottomNavRoute.Calendar.route)
-                        },
-                        onAddMissedClick = { navController.push(Routes.bulkUpdate(PrayerStatus.QAZA_PENDING)) },
-                    )
+                    QazaEntry()
                 }
                 composable(BottomNavRoute.Goals.route) {
                     GoalsEntry(
@@ -522,18 +513,6 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                     arguments = listOf(navArgument("goalId") { type = NavType.LongType }),
                 ) {
                     EditGoalEntry(onSaved = { navController.popBackStack() })
-                }
-                composable(
-                    Routes.MISSED_PRAYERS,
-                    arguments = listOf(navArgument("prayer") { type = NavType.StringType; nullable = true; defaultValue = null }),
-                ) {
-                    MissedPrayersEntry(
-                        onBackToDashboard = { navController.popBackStack() },
-                        onOpenDay         = { date ->
-                            calendarViewModel.onOpenDay(date)
-                            navController.navigateToTab(BottomNavRoute.Calendar.route)
-                        },
-                    )
                 }
             }
         }
@@ -713,7 +692,6 @@ private fun topBarTitle(route: String?): String = stringResource(
         Routes.STATS                  -> R.string.topbar_stats
         Routes.TASBIH                 -> R.string.tasbih_title
         Routes.ADD_GOAL               -> R.string.topbar_new_goal
-        Routes.MISSED_PRAYERS         -> R.string.topbar_missed_prayers
         Routes.QURAN_READER           -> R.string.topbar_quran
         Routes.QURAN_CHAPTER_INFO     -> R.string.topbar_quran
         Routes.QURAN_MUSHAF           -> R.string.topbar_quran

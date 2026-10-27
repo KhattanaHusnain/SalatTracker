@@ -743,4 +743,34 @@
     <string name="onboarding_prayers_included">الصلوات المشمولة</string>
     <string name="onboarding_edit_calendar">يمكنك تعديل أي يوم لاحقًا في التقويم.</string>
     <string name="onboarding_suggested_cities">مدن مقترحة</string>
+    <string name="qaza_v10_left">صلوات متبقية للقضاء</string>
+    <string name="qaza_v10_made_up">تم قضاء %1$d · %2$d%%</string>
+    <string name="qaza_v10_daily_goal">الهدف اليومي</string>
+    <string name="qaza_v10_per_day">%1$d يوميًا</string>
+    <string name="qaza_v10_today_goal">هدف اليوم</string>
+    <string name="qaza_v10_today_progress">تم قضاء %1$d من %2$d اليوم</string>
+    <string name="qaza_v10_tap_plus">اضغط + بعد إتمام صلاة قضاء.</string>
+    <string name="qaza_v10_recent">النشاط الأخير</string>
+    <string name="qaza_v10_nothing_recent">لم يُسجل شيء بعد.</string>
+    <string name="qaza_v10_daily_goals">الأهداف اليومية</string>
+    <string name="qaza_v10_pace">وتيرتك</string>
+    <string name="qaza_v10_weekly">الفائت والمقضي هذا الأسبوع</string>
+    <string name="qaza_v10_new">جديد</string><string name="qaza_v10_out">مقضي</string>
+    <string name="qaza_v10_insights">من أين يأتي الفائت</string>
+    <string name="qaza_v10_milestones">المراحل</string><string name="qaza_v10_first_made_up">أول صلاة مقضية</string>
+    <string name="qaza_v10_add">إضافة صلوات فائتة</string><string name="qaza_v10_log">تسجيل عدة صلوات مقضية</string>
+    <string name="qaza_v10_older">صلوات فائتة أقدم</string><string name="qaza_v10_by_dates">بالتواريخ</string><string name="qaza_v10_by_count">بالعدد</string>
+    <string name="qaza_v10_from">من</string><string name="qaza_v10_to">إلى</string><string name="qaza_v10_which">أي الصلوات؟</string>
+    <string name="qaza_v10_reason">السبب؟ اختياري وخاص.</string><string name="qaza_v10_preview">معاينة</string>
+    <string name="qaza_v10_add_count">إضافة %1$d صلوات</string><string name="qaza_v10_preview_summary">ستُضاف %1$d · تم تخطي %2$d مواضع محفوظة</string>
+    <string name="qaza_v10_order">الترتيب</string><string name="qaza_v10_oldest_first">الأقدم أولًا</string><string name="qaza_v10_newest_first">الأحدث أولًا</string>
+    <string name="qaza_v10_log_count">تسجيل %1$d صلوات</string><string name="qaza_v10_how_long">ما مدة الصلوات الفائتة؟</string><string name="qaza_v10_years">%1$d سنوات</string>
+    <string name="qaza_v10_excused">أيام العذر التقريبية شهريًا</string><string name="qaza_v10_estimate_note">تُحفظ التواريخ التقريبية بخصوصية ولا تستبدل صلوات محفوظة.</string>
+    <string name="qaza_v10_privacy">إخفاء عدد القضاء في التنقل</string><string name="qaza_v10_sound">صوت الإنجاز</string><string name="qaza_v10_reduce_motion">تقليل الحركة</string>
+    <string name="qaza_v10_history_empty">يبدأ السجل المفصل مع هذا التحديث. تظل الإجماليات السابقة متاحة.</string>
+    <string name="qaza_v10_goal_hit">تحقق الهدف في %1$d من آخر %2$d أيام</string><string name="qaza_v10_back">العودة إلى القضاء</string><string name="qaza_v10_loading">جارٍ الحفظ…</string><string name="qaza_v10_undo">تراجع</string><string name="qaza_v10_days_at_goal">%1$d أيام عند الهدف</string>
+    <string name="qaza_v10_what_if">ماذا لو زدت؟</string><string name="qaza_v10_finish_days">بمعدل %1$d يوميًا: نحو %2$d يومًا</string>
+    <string name="qaza_v10_reason_overslept">نوم</string><string name="qaza_v10_reason_work">عمل</string><string name="qaza_v10_reason_travel">سفر</string><string name="qaza_v10_reason_forgot">نسيان</string><string name="qaza_v10_reason_illness">مرض</string>
+    <string name="qaza_v10_reason_older_estimate">تقدير أقدم</string>
+    <string name="qaza_v10_added_result">تمت إضافة %1$d صلوات، وتخطي %2$d مواضع محفوظة.</string><string name="qaza_v10_added_estimated_result">تمت إضافة %1$d صلوات تقديرية.</string>
 </resources>

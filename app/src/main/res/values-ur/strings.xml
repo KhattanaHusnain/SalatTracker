@@ -735,4 +735,21 @@
     <string name="onboarding_prayers_included">شامل نمازیں</string>
     <string name="onboarding_edit_calendar">بعد میں کیلنڈر میں کسی بھی دن میں تبدیلی کر سکتے ہیں۔</string>
     <string name="onboarding_suggested_cities">تجویز کردہ شہر</string>
+    <string name="qaza_v10_left">قضا کے لیے باقی نمازیں</string><string name="qaza_v10_made_up">%1$d ادا ہوئیں · %2$d%%</string>
+    <string name="qaza_v10_daily_goal">روزانہ ہدف</string><string name="qaza_v10_per_day">روزانہ %1$d</string><string name="qaza_v10_today_goal">آج کا ہدف</string><string name="qaza_v10_today_progress">آج %2$d میں سے %1$d ادا</string>
+    <string name="qaza_v10_tap_plus">ہر قضا نماز کے بعد + دبائیں۔</string><string name="qaza_v10_recent">حالیہ سرگرمی</string><string name="qaza_v10_nothing_recent">ابھی کچھ درج نہیں۔</string>
+    <string name="qaza_v10_daily_goals">روزانہ اہداف</string><string name="qaza_v10_pace">آپ کی رفتار</string><string name="qaza_v10_weekly">اس ہفتے نئی قضا اور ادا شدہ</string><string name="qaza_v10_new">نئی</string><string name="qaza_v10_out">ادا</string>
+    <string name="qaza_v10_insights">نئی قضا نمازیں کہاں سے آتی ہیں</string><string name="qaza_v10_milestones">سنگِ میل</string><string name="qaza_v10_first_made_up">پہلی قضا ادا</string>
+    <string name="qaza_v10_add">قضا نمازیں شامل کریں</string><string name="qaza_v10_log">کئی ادا شدہ نمازیں درج کریں</string><string name="qaza_v10_older">پرانی قضا نمازیں</string>
+    <string name="qaza_v10_by_dates">تاریخ سے</string><string name="qaza_v10_by_count">تعداد سے</string><string name="qaza_v10_from">سے</string><string name="qaza_v10_to">تک</string><string name="qaza_v10_which">کون سی نمازیں؟</string>
+    <string name="qaza_v10_reason">وجہ؟ اختیاری اور نجی۔</string><string name="qaza_v10_preview">پیش نظارہ</string><string name="qaza_v10_add_count">%1$d نمازیں شامل کریں</string><string name="qaza_v10_preview_summary">%1$d شامل ہوں گی · %2$d محفوظ خانے چھوڑے گئے</string>
+    <string name="qaza_v10_order">ترتیب</string><string name="qaza_v10_oldest_first">پرانی پہلے</string><string name="qaza_v10_newest_first">نئی پہلے</string><string name="qaza_v10_log_count">%1$d نمازیں درج کریں</string>
+    <string name="qaza_v10_how_long">نمازیں کتنی مدت قضا رہیں؟</string><string name="qaza_v10_years">%1$d سال</string><string name="qaza_v10_excused">ہر ماہ تقریبی معاف دن</string><string name="qaza_v10_estimate_note">اندازے کی تاریخیں نجی رہتی ہیں اور محفوظ نماز کو نہیں بدلتیں۔</string>
+    <string name="qaza_v10_privacy">نیویگیشن پر قضا کی تعداد چھپائیں</string><string name="qaza_v10_sound">مکمل ہونے کی آواز</string><string name="qaza_v10_reduce_motion">حرکت کم کریں</string>
+    <string name="qaza_v10_history_empty">تفصیلی تاریخ اس اپ ڈیٹ سے شروع ہوتی ہے۔ پرانے کل اعداد موجود رہیں گے۔</string><string name="qaza_v10_goal_hit">پچھلے %2$d دنوں میں %1$d دن ہدف پورا ہوا</string>
+    <string name="qaza_v10_back">قضا پر واپس</string><string name="qaza_v10_loading">نمازیں محفوظ ہو رہی ہیں…</string><string name="qaza_v10_undo">واپس</string><string name="qaza_v10_days_at_goal">%1$d دن ہدف پر</string>
+    <string name="qaza_v10_what_if">اگر زیادہ کریں؟</string><string name="qaza_v10_finish_days">روزانہ %1$d: تقریباً %2$d دن</string>
+    <string name="qaza_v10_reason_overslept">نیند</string><string name="qaza_v10_reason_work">کام</string><string name="qaza_v10_reason_travel">سفر</string><string name="qaza_v10_reason_forgot">بھول</string><string name="qaza_v10_reason_illness">بیماری</string>
+    <string name="qaza_v10_reason_older_estimate">پرانا اندازہ</string>
+    <string name="qaza_v10_added_result">%1$d نمازیں شامل ہوئیں؛ %2$d محفوظ خانے چھوڑے گئے۔</string><string name="qaza_v10_added_estimated_result">%1$d اندازے کی نمازیں شامل ہوئیں۔</string>
 </resources>
