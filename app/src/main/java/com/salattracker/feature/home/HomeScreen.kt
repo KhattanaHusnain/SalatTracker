@@ -543,13 +543,18 @@ private fun V27PrayerRow(entry: PrayerEntryUi, state: HomeUiState, flash: Boolea
     val current = entry.type == state.currentPrayer
     val stacked = LocalDensity.current.fontScale > 1.18f || LocalConfiguration.current.screenWidthDp < 340
     val flashAlpha by animateFloatAsState(if (flash) .28f else 0f, tween(if (flash) 120 else 900), label = "row-flash")
-    Column(modifier.fillMaxWidth().testTag("home-row-${entry.type}").drawBehind {
-        if (current) drawRect(HomeTeal, size = androidx.compose.ui.geometry.Size(3.dp.toPx(), size.height))
-        if (flashAlpha > 0f) drawRect(HomeGold.copy(alpha = flashAlpha))
-    }.alpha(if (entry.isMarkable) 1f else .55f).padding(start = if (current) 8.dp else 0.dp, top = 7.dp, bottom = 7.dp)) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Icon(painterResource(entry.type.iconRes), null, tint = V27Muted, modifier = Modifier.size(18.dp))
-            Column(Modifier.weight(1f).clickable(enabled = entry.isMarkable, onClick = onDetails)) {
+    CompactPrayerRow(
+        prayerType = entry.type,
+        enabled = entry.isMarkable,
+        isActive = current,
+        highlightAlpha = flashAlpha,
+        highlightColor = HomeGold,
+        accentColor = HomeTeal,
+        dividerColor = V27Divider,
+        iconTint = V27Muted,
+        modifier = modifier.testTag("home-row-${entry.type}"),
+        contentModifier = Modifier.clickable(enabled = entry.isMarkable, onClick = onDetails),
+        content = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     HomeText(entry.type.label(state.todayDate, state.jumuahEnabled, state.madhab),
                         Modifier.weight(1f, fill = false), size = 15, weight = FontWeight.Medium)
@@ -568,15 +573,17 @@ private fun V27PrayerRow(entry: PrayerEntryUi, state: HomeUiState, flash: Boolea
                     modifier = Modifier.height(30.dp), contentPadding = PaddingValues(horizontal = 8.dp)) {
                     HomeText(stringResource(R.string.home_v8_make_up), size = 11, color = HomeTeal)
                 }
-            }
+        },
+        actions = {
             if (!stacked) V27RowStatusActions(entry, state, onSave)
             V27ReminderButton(entry, state, onReminder)
-        }
-        if (stacked) Row(Modifier.fillMaxWidth().padding(start = 26.dp), horizontalArrangement = Arrangement.End) {
-            V27RowStatusActions(entry, state, onSave)
-        }
-    }
-    HorizontalDivider(color = V27Divider)
+        },
+        footer = {
+            if (stacked) Row(Modifier.fillMaxWidth().padding(start = 26.dp), horizontalArrangement = Arrangement.End) {
+                V27RowStatusActions(entry, state, onSave)
+            }
+        },
+    )
 }
 
 @Composable private fun V27PrayerStreak(entry: PrayerEntryUi, state: HomeUiState, onOpen: () -> Unit) {
