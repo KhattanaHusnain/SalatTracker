@@ -34,7 +34,7 @@ import com.salattracker.core.theme.SalatSurface
 import com.salattracker.core.ui.ArchitecturalFrieze
 
 /** Stateless drawer content: Bulk Update, Prayer Reminders, Mosque Mode, Backup & Restore (with an
- * attention line when [backupNeedsAttention]), Stats, Quran Sources, Donate, Developers, Settings.
+ * attention line when [backupNeedsAttention]), Stats, Tasbih, Developers, Quran Sources, Settings.
  * Fixed-width so the dimmed scrim area next to it stays tappable (to close the drawer) even on
  * small phones. */
 @Composable
@@ -44,7 +44,6 @@ fun AppDrawer(
     onPrayerRemindersClick: () -> Unit,
     onMosqueModeClick: () -> Unit,
     onBackupClick: () -> Unit,
-    onDonateClick: () -> Unit,
     onDevelopersClick: () -> Unit,
     onStatsClick: () -> Unit,
     onTasbihClick: () -> Unit,
@@ -104,11 +103,6 @@ fun AppDrawer(
                 onClick = onTasbihClick,
             )
             DrawerItem(
-                iconRes = R.drawable.ic_heart,
-                label = stringResource(R.string.action_donate),
-                onClick = onDonateClick,
-            )
-            DrawerItem(
                 iconRes = R.drawable.ic_code,
                 label = stringResource(R.string.action_developers),
                 onClick = onDevelopersClick,
@@ -160,7 +154,6 @@ fun AppDrawerPreview() {
         onPrayerRemindersClick = {},
         onMosqueModeClick = {},
         onBackupClick = {},
-        onDonateClick = {},
         onDevelopersClick = {},
         onStatsClick = {},
         onTasbihClick = {},

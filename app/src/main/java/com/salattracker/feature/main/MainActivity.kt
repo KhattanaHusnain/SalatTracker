@@ -320,7 +320,6 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                 onPrayerRemindersClick = { navController.push(Routes.PRAYER_REMINDERS) },
                 onMosqueModeClick = { navController.push(Routes.MOSQUE_MODE) },
                 onBackupClick          = { navController.push(Routes.BACKUP) },
-                onDonateClick          = { navController.push(Routes.DONATE) },
                 onDevelopersClick      = { navController.push(Routes.DEVELOPERS) },
                 onStatsClick           = { navController.push(Routes.STATS) },
                 onTasbihClick          = { navController.push(Routes.tasbih()) },
