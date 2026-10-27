@@ -6,6 +6,7 @@ import com.salattracker.R
 import com.salattracker.core.ui.PrayerStatusSheetArgs
 import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.PrayerStatus
+import com.salattracker.domain.model.QazaActivitySource
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.VerseInfo
 import com.salattracker.domain.repository.PrayerRepository
@@ -186,7 +187,11 @@ class CalendarViewModel @Inject constructor(
         if (_uiState.value.isSaving) return
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true) }
-            runCatching { prayerRepository.upsertPrayerStatus(date, type, status, loggedLate = true) }
+            runCatching {
+                prayerRepository.upsertPrayerStatus(
+                    date, type, status, loggedLate = true, source = QazaActivitySource.CALENDAR,
+                )
+            }
                 .onSuccess { _uiState.update { it.copy(isSaving = false) } }
                 .onFailure { _uiState.update { it.copy(isSaving = false, errorRes = R.string.error_save_generic) } }
         }

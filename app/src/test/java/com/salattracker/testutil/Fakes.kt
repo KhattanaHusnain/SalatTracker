@@ -16,6 +16,8 @@ import com.salattracker.domain.model.AppLanguage
 import com.salattracker.domain.model.HighLatitudeRule
 import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.ThemeMode
+import com.salattracker.domain.model.QazaActivity
+import com.salattracker.domain.model.QazaActivitySource
 import com.salattracker.domain.repository.DayStatusCounts
 import com.salattracker.domain.repository.GoalReminderScheduler
 import com.salattracker.domain.repository.GoalRepository
@@ -57,6 +59,7 @@ class FakePrayerRepository : PrayerRepository {
     private val cachedTimes = mutableMapOf<LocalDate, Map<PrayerType, LocalTime>>()
     private val cachedSunrises = mutableMapOf<LocalDate, LocalTime>()
     private val streaksFlow = MutableStateFlow<Map<PrayerType, StreakInfo>>(emptyMap())
+    private val qazaActivities = MutableStateFlow<List<QazaActivity>>(emptyList())
 
     /** Fake "now" used to stamp updatedAt on writes made through [markQazaCompleted] /
      * [bulkUpsertPrayerStatus] — tests control it directly to exercise pace-window filtering. */
@@ -127,7 +130,7 @@ class FakePrayerRepository : PrayerRepository {
 
     override suspend fun getSunriseTime(date: LocalDate): LocalTime? = cachedSunrises[date]
 
-    override suspend fun upsertPrayerStatus(date: LocalDate, prayerType: PrayerType, status: PrayerStatus, loggedLate: Boolean) {
+    override suspend fun upsertPrayerStatus(date: LocalDate, prayerType: PrayerType, status: PrayerStatus, loggedLate: Boolean, qazaReason: String?, source: QazaActivitySource) {
         upserts += Triple(date, prayerType, status)
         setStatus(date, prayerType, status)
     }
@@ -145,21 +148,23 @@ class FakePrayerRepository : PrayerRepository {
     override suspend fun getDailyStreakEligibleStatusCounts(from: LocalDate, to: LocalDate): List<DayStatusCounts> =
         getDailyStatusCounts(from, to)
 
-    override suspend fun getFirstRecordedPrayerDate(): LocalDate? = dailyCounts.keys.minOrNull()
+    override suspend fun getFirstRecordedPrayerDate(): LocalDate? = (dailyCounts.keys + entries.value.keys).minOrNull()
 
     override suspend fun getPrayerBreakdown(from: LocalDate, to: LocalDate): List<PrayerBreakdown> {
         prayerBreakdownCalls += from to to
         return prayerBreakdown
     }
 
-    override suspend fun getPrayerEntriesForDate(date: LocalDate): List<PrayerEntry> = notUsed()
+    override suspend fun getPrayerEntriesForDate(date: LocalDate): List<PrayerEntry> = entries.value[date].orEmpty().map { (type, status) ->
+        PrayerEntry(0, "local", date, type, status, updatedAtMap[date to type] ?: 0L)
+    }
 
-    override suspend fun bulkUpsertPrayerStatus(entries: List<Pair<LocalDate, PrayerType>>, status: PrayerStatus) {
+    override suspend fun bulkUpsertPrayerStatus(entries: List<Pair<LocalDate, PrayerType>>, status: PrayerStatus, qazaReason: String?, source: QazaActivitySource) {
         bulkUpserts += entries to status
         entries.forEach { (date, type) -> setStatus(date, type, status) }
     }
 
-    override suspend fun applyPrayerBatch(updates: Map<PrayerSlot, PrayerStatus>): PrayerBatchUndo {
+    override suspend fun applyPrayerBatch(updates: Map<PrayerSlot, PrayerStatus>, source: QazaActivitySource): PrayerBatchUndo {
         batchApplies += updates
         val previous = updates.keys.mapNotNull { slot ->
             entries.value[slot.date]?.get(slot.prayerType)?.let { status ->
@@ -216,6 +221,15 @@ class FakePrayerRepository : PrayerRepository {
 
     override suspend fun getQazaHistory(): List<PrayerEntry> =
         (allEntriesWithStatus(PrayerStatus.QAZA_PENDING) + allEntriesWithStatus(PrayerStatus.QAZA_COMPLETED)).sortedBy { it.date }
+
+    override fun observeQazaActivities(): Flow<List<QazaActivity>> = qazaActivities
+
+    override suspend fun undoQazaActivity(activityId: Long): Boolean {
+        val activity = qazaActivities.value.firstOrNull { it.id == activityId } ?: return false
+        activity.previousStatus?.let { setStatus(activity.prayerDate, activity.prayerType, it) }
+        qazaActivities.value = qazaActivities.value.filterNot { it.id == activityId }
+        return true
+    }
 
     override suspend fun recalculateStreaks() = notUsed()
     override fun observeTodayPrayers(date: LocalDate): Flow<List<PrayerEntry>> = notUsed()

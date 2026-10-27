@@ -7,6 +7,7 @@ import com.salattracker.R
 import com.salattracker.core.ui.isOfferedFor
 import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.PrayerStatus
+import com.salattracker.domain.model.QazaActivitySource
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.repository.PrayerRepository
 import com.salattracker.domain.repository.SettingsRepository
@@ -192,7 +193,11 @@ class BulkUpdateViewModel @Inject constructor(
                 val (markable, skipped) = allPairs.partition { (date, type) ->
                     isPrayerMarkable(date, todayTimes?.get(type), today)
                 }
-                prayerRepository.bulkUpsertPrayerStatus(markable, state.selectedStatus)
+                prayerRepository.bulkUpsertPrayerStatus(
+                    markable,
+                    state.selectedStatus,
+                    source = QazaActivitySource.BULK_UPDATE,
+                )
                 skipped.size
             }.onSuccess { skippedCount ->
                 _uiState.update {

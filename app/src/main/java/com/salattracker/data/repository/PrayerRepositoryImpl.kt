@@ -1,6 +1,8 @@
 package com.salattracker.data.repository
 
+import androidx.room.withTransaction
 import com.salattracker.data.local.dao.*
+import com.salattracker.data.local.db.SalatDatabase
 import com.salattracker.data.local.entity.*
 import com.salattracker.data.local.preferences.DataStoreSettingsRepository
 import com.salattracker.domain.model.*
@@ -22,6 +24,8 @@ class PrayerRepositoryImpl @Inject constructor(
     private val streakDao: StreakDao,
     private val prayerTimeCalculator: PrayerTimeCalculator,
     private val settingsRepo: DataStoreSettingsRepository,
+    private val qazaDao: QazaDao,
+    private val database: SalatDatabase,
 ) : PrayerRepository {
 
     private val userId: String get() = LOCAL_USER_ID
@@ -39,66 +43,116 @@ class PrayerRepositoryImpl @Inject constructor(
         prayerType: PrayerType,
         status: PrayerStatus,
         loggedLate: Boolean,
+        qazaReason: String?,
+        source: QazaActivitySource,
     ) {
-        val existing = prayerDao.getEntry(userId, date, prayerType)
-        val entity = PrayerEntryEntity(
-            id         = existing?.id ?: 0,
-            userId     = userId,
-            date       = date,
-            prayerType = prayerType,
-            status     = status,
-            updatedAt  = System.currentTimeMillis(),
-            loggedLate = loggedLate,
-        )
-        prayerDao.upsertEntry(entity)
+        database.withTransaction {
+            val existing = prayerDao.getEntry(userId, date, prayerType)
+            val now = System.currentTimeMillis()
+            val entity = PrayerEntryEntity(
+                id         = existing?.id ?: 0,
+                userId     = userId,
+                date       = date,
+                prayerType = prayerType,
+                status     = status,
+                updatedAt  = now,
+                loggedLate = loggedLate,
+                qazaReason = qazaReason ?: existing?.qazaReason,
+            )
+            prayerDao.upsertEntry(entity)
+            qazaActivityFor(existing, entity, source, now)?.let { qazaDao.insertActivity(it) }
+        }
         recalculateAndCacheStreak()
     }
 
-    override suspend fun applyPrayerBatch(updates: Map<PrayerSlot, PrayerStatus>): PrayerBatchUndo {
+    override suspend fun applyPrayerBatch(
+        updates: Map<PrayerSlot, PrayerStatus>,
+        source: QazaActivitySource,
+    ): PrayerBatchUndo {
         if (updates.isEmpty()) return PrayerBatchUndo(emptySet(), emptyList())
         val now = System.currentTimeMillis()
         val today = LocalDate.now()
-        val entities = updates.map { (slot, status) ->
-            val existing = prayerDao.getEntry(userId, slot.date, slot.prayerType)
-            PrayerEntryEntity(
-                id = existing?.id ?: 0,
-                userId = userId,
-                date = slot.date,
-                prayerType = slot.prayerType,
-                status = status,
-                updatedAt = now,
-                loggedLate = slot.date.isBefore(today),
+        val batchId = java.util.UUID.randomUUID().toString()
+        val result = database.withTransaction {
+            val previousBySlot = updates.keys.associateWith { slot ->
+                prayerDao.getEntry(userId, slot.date, slot.prayerType)
+            }
+            val entities = updates.map { (slot, status) ->
+                val existing = previousBySlot[slot]
+                PrayerEntryEntity(
+                    id = existing?.id ?: 0,
+                    userId = userId,
+                    date = slot.date,
+                    prayerType = slot.prayerType,
+                    status = status,
+                    updatedAt = now,
+                    loggedLate = slot.date.isBefore(today),
+                    qazaReason = existing?.qazaReason,
+                )
+            }
+            prayerDao.upsertEntries(entities)
+            val activityIds = qazaDao.insertActivities(
+                entities.mapNotNull { entity ->
+                    qazaActivityFor(
+                        previousBySlot[PrayerSlot(entity.date, entity.prayerType)],
+                        entity,
+                        source,
+                        now,
+                        batchId,
+                    )
+                }
+            )
+            PrayerBatchUndo(
+                updates.keys,
+                previousBySlot.values.filterNotNull().map { it.toDomain() },
+                activityIds,
             )
         }
-        val previous = prayerDao.captureAndUpsertEntries(userId, entities)
         recalculateAndCacheStreak()
-        return PrayerBatchUndo(updates.keys, previous.map { it.toDomain() })
+        return result
     }
 
     override suspend fun restorePrayerBatch(undo: PrayerBatchUndo) {
-        prayerDao.replaceEntries(
-            userId,
-            undo.slots.map { it.date to it.prayerType },
-            undo.previousEntries.map { it.toEntity() },
-        )
+        database.withTransaction {
+            prayerDao.replaceEntries(
+                userId,
+                undo.slots.map { it.date to it.prayerType },
+                undo.previousEntries.map { it.toEntity() },
+            )
+            if (undo.activityIds.isNotEmpty()) qazaDao.deleteActivities(undo.activityIds)
+        }
         recalculateAndCacheStreak()
     }
 
     override suspend fun bulkUpsertPrayerStatus(
         entries: List<Pair<LocalDate, PrayerType>>,
         status: PrayerStatus,
+        qazaReason: String?,
+        source: QazaActivitySource,
     ) {
         val now = System.currentTimeMillis()
-        val entities = entries.map { (date, type) ->
-            PrayerEntryEntity(
-                userId     = userId,
-                date       = date,
-                prayerType = type,
-                status     = status,
-                updatedAt  = now,
-            )
+        database.withTransaction {
+            val previous = entries.associate { (date, type) ->
+                PrayerSlot(date, type) to prayerDao.getEntry(userId, date, type)
+            }
+            val entities = entries.map { (date, type) ->
+                val existing = previous[PrayerSlot(date, type)]
+                PrayerEntryEntity(
+                    id = existing?.id ?: 0,
+                    userId = userId,
+                    date = date,
+                    prayerType = type,
+                    status = status,
+                    updatedAt = now,
+                    loggedLate = existing?.loggedLate ?: false,
+                    qazaReason = qazaReason ?: existing?.qazaReason,
+                )
+            }
+            prayerDao.upsertEntries(entities)
+            qazaDao.insertActivities(entities.mapNotNull { entity ->
+                qazaActivityFor(previous[PrayerSlot(entity.date, entity.prayerType)], entity, source, now)
+            })
         }
-        prayerDao.upsertEntries(entities)
         recalculateAndCacheStreak()
     }
 
@@ -166,6 +220,33 @@ class PrayerRepositoryImpl @Inject constructor(
 
     override suspend fun getQazaHistory(): List<PrayerEntry> =
         prayerDao.getQazaHistory(userId).map { it.toDomain() }
+
+    override fun observeQazaActivities(): Flow<List<QazaActivity>> =
+        qazaDao.observeActivities(userId).map { rows -> rows.map { it.toDomain() } }
+
+    override suspend fun undoQazaActivity(activityId: Long): Boolean {
+        val changed = database.withTransaction {
+            val activity = qazaDao.getActivity(userId, activityId) ?: return@withTransaction false
+            val current = prayerDao.getEntry(userId, activity.prayerDate, activity.prayerType)
+            if (current?.status?.name != activity.newStatus) return@withTransaction false
+            val previous = activity.previousStatus?.let { runCatching { PrayerStatus.valueOf(it) }.getOrNull() }
+            if (previous == null) {
+                prayerDao.deleteEntry(userId, activity.prayerDate, activity.prayerType)
+            } else {
+                prayerDao.upsertEntry(
+                    current.copy(
+                        status = previous,
+                        updatedAt = System.currentTimeMillis(),
+                        qazaReason = if (previous == PrayerStatus.QAZA_PENDING) activity.reasonTag else null,
+                    )
+                )
+            }
+            qazaDao.deleteActivities(listOf(activity.id))
+            true
+        }
+        if (changed) recalculateAndCacheStreak()
+        return changed
+    }
 
     // ── Analytics ──────────────────────────────────────────────────────────────
 
@@ -314,12 +395,49 @@ private fun PrayerBreakdownRow.toCounts() = StatusCounts(
 private fun PrayerEntryEntity.toDomain() = PrayerEntry(
     id = id, userId = userId, date = date,
     prayerType = prayerType, status = status, updatedAt = updatedAt, loggedLate = loggedLate,
+    qazaReason = qazaReason,
 )
 
 private fun PrayerEntry.toEntity() = PrayerEntryEntity(
     id = id, userId = userId, date = date, prayerType = prayerType,
-    status = status, updatedAt = updatedAt, loggedLate = loggedLate,
+    status = status, updatedAt = updatedAt, loggedLate = loggedLate, qazaReason = qazaReason,
 )
+
+private fun QazaActivityEntity.toDomain() = QazaActivity(
+    id = id,
+    prayerDate = prayerDate,
+    prayerType = prayerType,
+    previousStatus = previousStatus?.let { runCatching { PrayerStatus.valueOf(it) }.getOrNull() },
+    newStatus = PrayerStatus.valueOf(newStatus),
+    reasonTag = reasonTag,
+    source = runCatching { QazaActivitySource.valueOf(source) }.getOrDefault(QazaActivitySource.OTHER),
+    recordedAt = recordedAt,
+    batchId = batchId,
+)
+
+private fun qazaActivityFor(
+    previous: PrayerEntryEntity?,
+    next: PrayerEntryEntity,
+    source: QazaActivitySource,
+    recordedAt: Long,
+    batchId: String? = null,
+): QazaActivityEntity? {
+    if (previous?.status == next.status) return null
+    val involvesQaza = previous?.status in setOf(PrayerStatus.QAZA_PENDING, PrayerStatus.QAZA_COMPLETED) ||
+        next.status in setOf(PrayerStatus.QAZA_PENDING, PrayerStatus.QAZA_COMPLETED)
+    if (!involvesQaza) return null
+    return QazaActivityEntity(
+        userId = next.userId,
+        prayerDate = next.date,
+        prayerType = next.prayerType,
+        previousStatus = previous?.status?.name,
+        newStatus = next.status.name,
+        reasonTag = next.qazaReason ?: previous?.qazaReason,
+        source = source.name,
+        recordedAt = recordedAt,
+        batchId = batchId,
+    )
+}
 
 /** A prayed status earns streak credit only when its last save happened on its prayer date. */
 private fun PrayerEntryEntity.streakStatus(): PrayerStatus {

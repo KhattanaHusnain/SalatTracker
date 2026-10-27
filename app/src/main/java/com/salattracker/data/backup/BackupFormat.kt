@@ -10,6 +10,8 @@ import com.salattracker.domain.model.Mosque
 import com.salattracker.domain.model.MosqueMode
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
+import com.salattracker.domain.model.QazaActivitySource
+import com.salattracker.domain.repository.QazaPreferences
 import com.salattracker.domain.repository.UserPrefs
 import java.io.ByteArrayOutputStream
 import java.security.MessageDigest
@@ -39,6 +41,19 @@ data class BackupPrayerEntry(
     val status: PrayerStatus,
     val updatedAt: Long,
     val loggedLate: Boolean = false,
+    val qazaReason: String? = null,
+)
+
+data class BackupQazaActivity(
+    val id: Long,
+    val prayerDate: LocalDate,
+    val prayerType: PrayerType,
+    val previousStatus: PrayerStatus?,
+    val newStatus: PrayerStatus,
+    val reasonTag: String? = null,
+    val source: QazaActivitySource = QazaActivitySource.OTHER,
+    val recordedAt: Long,
+    val batchId: String? = null,
 )
 
 data class BackupGoal(
@@ -76,6 +91,8 @@ data class BackupSnapshot(
     val settings: UserPrefs,
     /** Saved Mosque Mode places. The on/off switch is deliberately not backed up: permissions don't transfer to a new phone. */
     val mosques: List<Mosque> = emptyList(),
+    val qazaActivities: List<BackupQazaActivity> = emptyList(),
+    val qazaPreferences: QazaPreferences = QazaPreferences(),
 )
 
 /** Everything needed to decide whether a remote backup is safe to overwrite, without downloading it. */
@@ -99,6 +116,27 @@ private data class PrayerEntryDto(
     @SerializedName("status") val status: String?,
     @SerializedName("updatedAt") val updatedAt: Long?,
     @SerializedName("loggedLate") val loggedLate: Boolean?,
+    @SerializedName("qazaReason") val qazaReason: String?,
+)
+
+private data class QazaActivityDto(
+    @SerializedName("id") val id: Long?,
+    @SerializedName("prayerDate") val prayerDate: String?,
+    @SerializedName("prayerType") val prayerType: String?,
+    @SerializedName("previousStatus") val previousStatus: String?,
+    @SerializedName("newStatus") val newStatus: String?,
+    @SerializedName("reasonTag") val reasonTag: String?,
+    @SerializedName("source") val source: String?,
+    @SerializedName("recordedAt") val recordedAt: Long?,
+    @SerializedName("batchId") val batchId: String?,
+)
+
+private data class QazaPreferencesDto(
+    @SerializedName("dailyGoal") val dailyGoal: Int?,
+    @SerializedName("oldestFirst") val oldestFirst: Boolean?,
+    @SerializedName("soundEnabled") val soundEnabled: Boolean?,
+    @SerializedName("hideNavigationBadge") val hideNavigationBadge: Boolean?,
+    @SerializedName("reducedMotion") val reducedMotion: Boolean?,
 )
 
 private data class GoalDto(
@@ -175,6 +213,8 @@ private data class PayloadDto(
     @SerializedName("settings") val settingsDto: SettingsDto?,
     // Added after format v1; absent in older backups, which then restore with no saved mosques.
     @SerializedName("mosques") val mosques: List<MosqueDto>?,
+    @SerializedName("qazaActivities") val qazaActivities: List<QazaActivityDto>?,
+    @SerializedName("qazaPreferences") val qazaPreferences: QazaPreferencesDto?,
 )
 
 private data class MetaDto(
@@ -303,6 +343,7 @@ object BackupCodec {
                 status     = it.status.name,
                 updatedAt  = it.updatedAt,
                 loggedLate = it.loggedLate,
+                qazaReason = it.qazaReason,
             )
         },
         goals = goals.map {
@@ -359,6 +400,26 @@ object BackupCodec {
         mosques = mosques.map {
             MosqueDto(id = it.id, name = it.name, latitude = it.latitude, longitude = it.longitude, radiusMeters = it.radiusMeters)
         },
+        qazaActivities = qazaActivities.map {
+            QazaActivityDto(
+                id = it.id,
+                prayerDate = it.prayerDate.toString(),
+                prayerType = it.prayerType.name,
+                previousStatus = it.previousStatus?.name,
+                newStatus = it.newStatus.name,
+                reasonTag = it.reasonTag,
+                source = it.source.name,
+                recordedAt = it.recordedAt,
+                batchId = it.batchId,
+            )
+        },
+        qazaPreferences = QazaPreferencesDto(
+            dailyGoal = qazaPreferences.dailyGoal,
+            oldestFirst = qazaPreferences.oldestFirst,
+            soundEnabled = qazaPreferences.soundEnabled,
+            hideNavigationBadge = qazaPreferences.hideNavigationBadge,
+            reducedMotion = qazaPreferences.reducedMotion,
+        ),
     )
 
     private fun PayloadDto.toSnapshot(): BackupSnapshot {
@@ -379,6 +440,8 @@ object BackupCodec {
             },
             settings = (settingsDto ?: throw BackupFormatException("Backup file has no settings")).toDomain(),
             mosques  = (mosques ?: emptyList()).map { it.toDomain() },
+            qazaActivities = (qazaActivities ?: emptyList()).map { it.toDomain() },
+            qazaPreferences = qazaPreferences?.toDomain() ?: QazaPreferences(),
         )
     }
 
@@ -388,6 +451,27 @@ object BackupCodec {
         status     = PrayerStatus.valueOf(status ?: throw BackupFormatException("Prayer entry missing status")),
         updatedAt  = updatedAt ?: throw BackupFormatException("Prayer entry missing updatedAt"),
         loggedLate = loggedLate ?: false,
+        qazaReason = qazaReason,
+    )
+
+    private fun QazaActivityDto.toDomain() = BackupQazaActivity(
+        id = id ?: 0L,
+        prayerDate = LocalDate.parse(prayerDate ?: throw BackupFormatException("Qaza activity missing prayerDate")),
+        prayerType = PrayerType.valueOf(prayerType ?: throw BackupFormatException("Qaza activity missing prayerType")),
+        previousStatus = previousStatus?.let(PrayerStatus::valueOf),
+        newStatus = PrayerStatus.valueOf(newStatus ?: throw BackupFormatException("Qaza activity missing newStatus")),
+        reasonTag = reasonTag,
+        source = source?.let { runCatching { QazaActivitySource.valueOf(it) }.getOrNull() } ?: QazaActivitySource.OTHER,
+        recordedAt = recordedAt ?: 0L,
+        batchId = batchId,
+    )
+
+    private fun QazaPreferencesDto.toDomain() = QazaPreferences(
+        dailyGoal = dailyGoal?.takeIf { it in setOf(5, 10, 15) } ?: 5,
+        oldestFirst = oldestFirst ?: true,
+        soundEnabled = soundEnabled ?: true,
+        hideNavigationBadge = hideNavigationBadge ?: false,
+        reducedMotion = reducedMotion ?: false,
     )
 
     private fun GoalDto.toDomain() = BackupGoal(

@@ -19,8 +19,9 @@ import com.salattracker.data.local.entity.*
         QuranSearchHistoryEntity::class,
         QuranContentPackEntity::class,
         TasbihSessionEntity::class,
+        QazaActivityEntity::class,
     ],
-    version  = 13,
+    version  = 14,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -35,4 +36,5 @@ abstract class SalatDatabase : RoomDatabase() {
     abstract fun quranSearchHistoryDao(): QuranSearchHistoryDao
     abstract fun quranContentPackDao(): QuranContentPackDao
     abstract fun tasbihDao(): TasbihDao
+    abstract fun qazaDao(): QazaDao
 }

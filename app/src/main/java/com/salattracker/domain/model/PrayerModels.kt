@@ -29,6 +29,21 @@ data class PrayerEntry(
     val status: PrayerStatus,
     val updatedAt: Long,
     val loggedLate: Boolean = false,
+    val qazaReason: String? = null,
+)
+
+enum class QazaActivitySource { QAZA, HOME, CALENDAR, BULK_UPDATE, AUTOMATIC, ONBOARDING, REMINDER, OTHER }
+
+data class QazaActivity(
+    val id: Long,
+    val prayerDate: LocalDate,
+    val prayerType: PrayerType,
+    val previousStatus: PrayerStatus?,
+    val newStatus: PrayerStatus,
+    val reasonTag: String? = null,
+    val source: QazaActivitySource = QazaActivitySource.OTHER,
+    val recordedAt: Long,
+    val batchId: String? = null,
 )
 
 // ── Streak ────────────────────────────────────────────────────────────────────

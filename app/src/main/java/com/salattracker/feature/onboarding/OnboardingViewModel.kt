@@ -10,6 +10,7 @@ import com.salattracker.domain.model.CityResult
 import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerStatus
+import com.salattracker.domain.model.QazaActivitySource
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.ThemeMode
 import com.salattracker.domain.repository.GeocodingRepository
@@ -343,7 +344,9 @@ class OnboardingViewModel @Inject constructor(
                 val entries = dates
                     .flatMap { date -> PrayerType.values().map { date to it } }
                     .filter { (date, type) -> isPrayerMarkable(date, todayTimes?.get(type), today) }
-                prayerRepository.bulkUpsertPrayerStatus(entries, PrayerStatus.QAZA_PENDING)
+                prayerRepository.bulkUpsertPrayerStatus(
+                    entries, PrayerStatus.QAZA_PENDING, source = QazaActivitySource.ONBOARDING,
+                )
                 entries.size to entries
             }.onSuccess { count ->
                 catchUpUndoEntries = count.second

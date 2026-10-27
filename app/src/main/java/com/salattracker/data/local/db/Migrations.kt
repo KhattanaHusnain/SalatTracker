@@ -103,3 +103,19 @@ val MIGRATION_12_13 = object : Migration(12, 13) {
         db.execSQL("ALTER TABLE prayer_entries ADD COLUMN logged_late INTEGER NOT NULL DEFAULT 0")
     }
 }
+
+/** v13 -> v14: private Qaza reasons plus the append-only activity ledger used by Qaza v10. */
+val MIGRATION_13_14 = object : Migration(13, 14) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE prayer_entries ADD COLUMN qaza_reason TEXT")
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS qaza_activity (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "user_id TEXT NOT NULL, prayer_date TEXT NOT NULL, prayer_type TEXT NOT NULL, " +
+                "previous_status TEXT, new_status TEXT NOT NULL, reason_tag TEXT, source TEXT NOT NULL, " +
+                "recorded_at INTEGER NOT NULL, batch_id TEXT)"
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_qaza_activity_user_id_recorded_at ON qaza_activity (user_id, recorded_at)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_qaza_activity_user_id_prayer_date_prayer_type ON qaza_activity (user_id, prayer_date, prayer_type)")
+    }
+}

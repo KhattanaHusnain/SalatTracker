@@ -6,6 +6,7 @@ import com.salattracker.domain.model.BackupAttention
 import com.salattracker.domain.repository.BackupRepository
 import com.salattracker.domain.repository.MosqueModeSyncScheduler
 import com.salattracker.domain.repository.PrayerRepository
+import com.salattracker.domain.repository.QazaPreferencesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -20,6 +21,7 @@ class MainShellViewModel @Inject constructor(
     backupRepository: BackupRepository,
     mosqueModeSyncScheduler: MosqueModeSyncScheduler,
     prayerRepository: PrayerRepository,
+    qazaPreferencesRepository: QazaPreferencesRepository,
 ) : ViewModel() {
 
     // Once per app launch: catches location having been switched off and on, which drops geofences.
@@ -31,4 +33,7 @@ class MainShellViewModel @Inject constructor(
 
     val qazaPendingTotal = prayerRepository.observeQazaBalance().map { it.values.sum() }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
+
+    val hideQazaBadge = qazaPreferencesRepository.observe().map { it.hideNavigationBadge }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 }
