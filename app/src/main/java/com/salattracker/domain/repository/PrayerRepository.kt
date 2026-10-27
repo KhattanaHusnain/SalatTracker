@@ -20,6 +20,7 @@ interface PrayerRepository {
         date: LocalDate,
         prayerType: PrayerType,
         status: PrayerStatus,
+        loggedLate: Boolean = false,
     )
 
     /** Sets [status] for every listed (date, prayer type) pair in one write, recalculating streaks once at the end. */
@@ -27,6 +28,12 @@ interface PrayerRepository {
         entries: List<Pair<LocalDate, PrayerType>>,
         status: PrayerStatus,
     )
+
+    /** Atomically applies per-slot statuses and returns the exact rows needed for a lossless undo. */
+    suspend fun applyPrayerBatch(updates: Map<PrayerSlot, PrayerStatus>): PrayerBatchUndo
+
+    /** Atomically restores a batch result, including deleting rows which did not exist before it. */
+    suspend fun restorePrayerBatch(undo: PrayerBatchUndo)
 
     // ── Month range ───────────────────────────────────────────────────────────
 
@@ -84,6 +91,9 @@ interface PrayerRepository {
      */
     suspend fun getDailyStatusCounts(from: LocalDate, to: LocalDate): List<DayStatusCounts>
 
+    /** Daily counts eligible for streak/perfect-day credit; retrospective edits are omitted. */
+    suspend fun getDailyStreakEligibleStatusCounts(from: LocalDate, to: LocalDate): List<DayStatusCounts>
+
     /** Earliest date with a prayer entry, or null before anything has been logged. */
     suspend fun getFirstRecordedPrayerDate(): LocalDate?
 
@@ -99,6 +109,13 @@ interface PrayerRepository {
      */
     suspend fun recalculateStreaks()
 }
+
+data class PrayerSlot(val date: LocalDate, val prayerType: PrayerType)
+
+data class PrayerBatchUndo(
+    val slots: Set<PrayerSlot>,
+    val previousEntries: List<PrayerEntry>,
+)
 
 // ── Domain result types (no feature-layer imports) ────────────────────────────
 

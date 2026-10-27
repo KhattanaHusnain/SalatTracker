@@ -139,13 +139,14 @@ class StatsViewModel @Inject constructor(
                 val today = LocalDate.now(clock)
                 val (from, to) = period.dateRange(today)
                 val currentDays = repository.getDailyStatusCounts(from, to)
+                val eligibleDays = repository.getDailyStreakEligibleStatusCounts(from, to)
                 val previousDays = repository.getDailyStatusCounts(from.minusDays(period.days.toLong()), from.minusDays(1))
                 val challengeDays = repository.getDailyStatusCounts(today.minusDays(40), today.minusDays(1))
                 val firstRecorded = repository.getFirstRecordedPrayerDate()
                 val todayTimes = repository.getPrayerTimes(today)
                 val qazaHistory = repository.getQazaHistory()
-                OverviewLoad(currentDays, previousDays, challengeDays, firstRecorded, todayTimes, qazaHistory, from, to)
-            }.onSuccess { (currentDays, previousDays, challengeDays, firstRecorded, todayTimes, qazaHistory, from, to) ->
+                OverviewLoad(currentDays, previousDays, challengeDays, firstRecorded, todayTimes, qazaHistory, from, to, eligibleDays)
+            }.onSuccess { (currentDays, previousDays, challengeDays, firstRecorded, todayTimes, qazaHistory, from, to, eligibleDays) ->
                 val counts = currentDays.fold(StatusCounts()) { acc, d -> acc + d.counts }
                 val prevCounts = previousDays.fold(StatusCounts()) { acc, d -> acc + d.counts }
                 val pct = completionPercent(counts)
@@ -161,7 +162,7 @@ class StatsViewModel @Inject constructor(
                             counts          = counts,
                             completionPct   = pct,
                             completionDelta = if (pct != null && prevPct != null) pct - prevPct else null,
-                            perfectDays     = perfectDays(currentDays, to),
+                            perfectDays     = perfectDays(eligibleDays, to),
                             congregationPercent = congregationPct,
                             congregationDelta = if (congregationPct != null && previousCongregationPct != null) congregationPct - previousCongregationPct else null,
                             congregationChallenge = congregationChallenge(challengeDays, to),
@@ -225,6 +226,7 @@ private data class OverviewLoad(
     val qazaHistory: List<com.salattracker.domain.model.PrayerEntry>,
     val from: LocalDate,
     val to: LocalDate,
+    val eligibleDays: List<com.salattracker.domain.repository.DayStatusCounts>,
 )
 
 // ── Period helpers ────────────────────────────────────────────────────────────

@@ -20,7 +20,7 @@ import com.salattracker.data.local.entity.*
         QuranContentPackEntity::class,
         TasbihSessionEntity::class,
     ],
-    version  = 12,
+    version  = 13,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)

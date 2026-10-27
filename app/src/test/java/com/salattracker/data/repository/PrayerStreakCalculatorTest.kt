@@ -4,6 +4,7 @@ import com.salattracker.data.local.entity.PrayerEntryEntity
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
 import java.time.LocalDate
+import java.time.ZoneId
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -39,11 +40,25 @@ class PrayerStreakCalculatorTest {
         assertEquals(2, highest.getValue(PrayerType.FAJR))
     }
 
+    @Test
+    fun `retrospective prayed edit does not earn highest streak credit`() {
+        val prayerDate = start
+        val entry = PrayerEntryEntity(
+            userId = LOCAL_USER_ID,
+            date = prayerDate,
+            prayerType = PrayerType.FAJR,
+            status = PrayerStatus.INDIVIDUAL,
+            updatedAt = prayerDate.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli(),
+        )
+
+        assertEquals(0, calculateHighestStreaks(listOf(entry), prayerDate.plusDays(1)).getValue(PrayerType.FAJR))
+    }
+
     private fun entry(dayOffset: Long, status: PrayerStatus) = PrayerEntryEntity(
         userId = LOCAL_USER_ID,
         date = start.plusDays(dayOffset),
         prayerType = PrayerType.FAJR,
         status = status,
-        updatedAt = 0,
+        updatedAt = start.plusDays(dayOffset).atTime(12, 0).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
     )
 }

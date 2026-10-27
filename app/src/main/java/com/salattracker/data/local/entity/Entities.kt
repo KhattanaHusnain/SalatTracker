@@ -48,6 +48,7 @@ data class PrayerEntryEntity(
     @ColumnInfo(name = "prayer_type") val prayerType: PrayerType,
     @ColumnInfo(name = "status")      val status: PrayerStatus,
     @ColumnInfo(name = "updated_at")  val updatedAt: Long = System.currentTimeMillis(),
+    @ColumnInfo(name = "logged_late") val loggedLate: Boolean = false,
 )
 
 // ── Streak snapshot entity ────────────────────────────────────────────────────

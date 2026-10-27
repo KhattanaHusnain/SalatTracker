@@ -182,6 +182,16 @@ class CalendarViewModel @Inject constructor(
 
     fun onStatusSheetDismiss() = _uiState.update { it.copy(statusSheet = null) }
 
+    fun onQuickStatusSave(date: LocalDate, type: PrayerType, status: PrayerStatus) {
+        if (_uiState.value.isSaving) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSaving = true) }
+            runCatching { prayerRepository.upsertPrayerStatus(date, type, status, loggedLate = true) }
+                .onSuccess { _uiState.update { it.copy(isSaving = false) } }
+                .onFailure { _uiState.update { it.copy(isSaving = false, errorRes = R.string.error_save_generic) } }
+        }
+    }
+
     fun onStatusSave(newStatus: PrayerStatus) {
         val args = _uiState.value.statusSheet ?: return
         viewModelScope.launch {

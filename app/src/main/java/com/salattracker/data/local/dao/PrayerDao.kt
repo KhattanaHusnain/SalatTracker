@@ -75,6 +75,29 @@ interface PrayerDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertEntries(entries: List<PrayerEntryEntity>)
 
+    @Query("DELETE FROM prayer_entries WHERE user_id = :userId AND date = :date AND prayer_type = :prayerType")
+    suspend fun deleteEntry(userId: String, date: LocalDate, prayerType: PrayerType)
+
+    @Transaction
+    suspend fun replaceEntries(
+        userId: String,
+        slots: List<Pair<LocalDate, PrayerType>>,
+        entries: List<PrayerEntryEntity>,
+    ) {
+        slots.forEach { (date, type) -> deleteEntry(userId, date, type) }
+        if (entries.isNotEmpty()) upsertEntries(entries)
+    }
+
+    @Transaction
+    suspend fun captureAndUpsertEntries(
+        userId: String,
+        entries: List<PrayerEntryEntity>,
+    ): List<PrayerEntryEntity> {
+        val previous = entries.mapNotNull { getEntry(userId, it.date, it.prayerType) }
+        if (entries.isNotEmpty()) upsertEntries(entries)
+        return previous
+    }
+
     // ── Qaza ──────────────────────────────────────────────────────────────────
 
     @Query("""

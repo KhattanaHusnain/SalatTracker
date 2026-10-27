@@ -38,6 +38,7 @@ data class BackupPrayerEntry(
     val prayerType: PrayerType,
     val status: PrayerStatus,
     val updatedAt: Long,
+    val loggedLate: Boolean = false,
 )
 
 data class BackupGoal(
@@ -97,6 +98,7 @@ private data class PrayerEntryDto(
     @SerializedName("prayerType") val prayerType: String?,
     @SerializedName("status") val status: String?,
     @SerializedName("updatedAt") val updatedAt: Long?,
+    @SerializedName("loggedLate") val loggedLate: Boolean?,
 )
 
 private data class GoalDto(
@@ -300,6 +302,7 @@ object BackupCodec {
                 prayerType = it.prayerType.name,
                 status     = it.status.name,
                 updatedAt  = it.updatedAt,
+                loggedLate = it.loggedLate,
             )
         },
         goals = goals.map {
@@ -384,6 +387,7 @@ object BackupCodec {
         prayerType = PrayerType.valueOf(prayerType ?: throw BackupFormatException("Prayer entry missing prayerType")),
         status     = PrayerStatus.valueOf(status ?: throw BackupFormatException("Prayer entry missing status")),
         updatedAt  = updatedAt ?: throw BackupFormatException("Prayer entry missing updatedAt"),
+        loggedLate = loggedLate ?: false,
     )
 
     private fun GoalDto.toDomain() = BackupGoal(

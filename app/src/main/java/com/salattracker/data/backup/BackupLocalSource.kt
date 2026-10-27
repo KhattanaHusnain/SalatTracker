@@ -60,7 +60,7 @@ class RoomBackupLocalSource @Inject constructor(
 
     override suspend fun readSnapshot(): BackupSnapshot = database.withTransaction {
         val prayerEntries = backupDao.getAllPrayerEntries(userId).map {
-            BackupPrayerEntry(date = it.date, prayerType = it.prayerType, status = it.status, updatedAt = it.updatedAt)
+            BackupPrayerEntry(date = it.date, prayerType = it.prayerType, status = it.status, updatedAt = it.updatedAt, loggedLate = it.loggedLate)
         }
         val goals = backupDao.getAllGoals().map {
             BackupGoal(
@@ -107,7 +107,7 @@ class RoomBackupLocalSource @Inject constructor(
 
             backupDao.insertPrayerEntries(
                 snapshot.prayerEntries.map {
-                    PrayerEntryEntity(userId = userId, date = it.date, prayerType = it.prayerType, status = it.status, updatedAt = it.updatedAt)
+                    PrayerEntryEntity(userId = userId, date = it.date, prayerType = it.prayerType, status = it.status, updatedAt = it.updatedAt, loggedLate = it.loggedLate)
                 }
             )
             backupDao.insertGoals(

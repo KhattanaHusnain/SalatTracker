@@ -8,6 +8,8 @@ import com.salattracker.domain.repository.*
 import kotlinx.coroutines.flow.*
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.Instant
+import java.time.ZoneId
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -36,6 +38,7 @@ class PrayerRepositoryImpl @Inject constructor(
         date: LocalDate,
         prayerType: PrayerType,
         status: PrayerStatus,
+        loggedLate: Boolean,
     ) {
         val existing = prayerDao.getEntry(userId, date, prayerType)
         val entity = PrayerEntryEntity(
@@ -45,8 +48,39 @@ class PrayerRepositoryImpl @Inject constructor(
             prayerType = prayerType,
             status     = status,
             updatedAt  = System.currentTimeMillis(),
+            loggedLate = loggedLate,
         )
         prayerDao.upsertEntry(entity)
+        recalculateAndCacheStreak()
+    }
+
+    override suspend fun applyPrayerBatch(updates: Map<PrayerSlot, PrayerStatus>): PrayerBatchUndo {
+        if (updates.isEmpty()) return PrayerBatchUndo(emptySet(), emptyList())
+        val now = System.currentTimeMillis()
+        val today = LocalDate.now()
+        val entities = updates.map { (slot, status) ->
+            val existing = prayerDao.getEntry(userId, slot.date, slot.prayerType)
+            PrayerEntryEntity(
+                id = existing?.id ?: 0,
+                userId = userId,
+                date = slot.date,
+                prayerType = slot.prayerType,
+                status = status,
+                updatedAt = now,
+                loggedLate = slot.date.isBefore(today),
+            )
+        }
+        val previous = prayerDao.captureAndUpsertEntries(userId, entities)
+        recalculateAndCacheStreak()
+        return PrayerBatchUndo(updates.keys, previous.map { it.toDomain() })
+    }
+
+    override suspend fun restorePrayerBatch(undo: PrayerBatchUndo) {
+        prayerDao.replaceEntries(
+            userId,
+            undo.slots.map { it.date to it.prayerType },
+            undo.previousEntries.map { it.toEntity() },
+        )
         recalculateAndCacheStreak()
     }
 
@@ -140,6 +174,16 @@ class PrayerRepositoryImpl @Inject constructor(
             DayStatusCounts(date = row.date, counts = row.toCounts())
         }
 
+    override suspend fun getDailyStreakEligibleStatusCounts(from: LocalDate, to: LocalDate): List<DayStatusCounts> =
+        prayerDao.getEntriesForRange(userId, from, to)
+            .groupBy { it.date }
+            .map { (date, entries) ->
+                DayStatusCounts(date, entries.fold(StatusCounts()) { total, entry ->
+                    total + entry.eligibleStatusCounts()
+                })
+            }
+            .sortedBy { it.date }
+
     override suspend fun getFirstRecordedPrayerDate(): LocalDate? =
         prayerDao.getFirstRecordedPrayerDate(userId)
 
@@ -185,7 +229,7 @@ class PrayerRepositoryImpl @Inject constructor(
                 val track = tracks.getValue(type)
                 if (!track.active) return@forEach
 
-                when (entries.find { it.prayerType == type }?.status ?: PrayerStatus.NOT_RECORDED) {
+                when (entries.find { it.prayerType == type }?.streakStatus() ?: PrayerStatus.NOT_RECORDED) {
                     PrayerStatus.CONGREGATION, PrayerStatus.INDIVIDUAL -> {
                         track.current++
                     }
@@ -233,7 +277,7 @@ internal fun calculateHighestStreaks(
     val firstDate = entries.minOfOrNull { it.date }
         ?: return PrayerType.values().associateWith { 0 }
     val statusesByDate = entries.groupBy { it.date }.mapValues { (_, entriesForDate) ->
-        entriesForDate.associate { it.prayerType to it.status }
+        entriesForDate.associate { it.prayerType to it.streakStatus() }
     }
 
     return PrayerType.values().associateWith { type ->
@@ -269,5 +313,26 @@ private fun PrayerBreakdownRow.toCounts() = StatusCounts(
 
 private fun PrayerEntryEntity.toDomain() = PrayerEntry(
     id = id, userId = userId, date = date,
-    prayerType = prayerType, status = status, updatedAt = updatedAt,
+    prayerType = prayerType, status = status, updatedAt = updatedAt, loggedLate = loggedLate,
 )
+
+private fun PrayerEntry.toEntity() = PrayerEntryEntity(
+    id = id, userId = userId, date = date, prayerType = prayerType,
+    status = status, updatedAt = updatedAt, loggedLate = loggedLate,
+)
+
+/** A prayed status earns streak credit only when its last save happened on its prayer date. */
+private fun PrayerEntryEntity.streakStatus(): PrayerStatus {
+    if (status !in listOf(PrayerStatus.CONGREGATION, PrayerStatus.INDIVIDUAL)) return status
+    val savedDate = Instant.ofEpochMilli(updatedAt).atZone(ZoneId.systemDefault()).toLocalDate()
+    return if (savedDate == date) status else PrayerStatus.NOT_RECORDED
+}
+
+private fun PrayerEntryEntity.eligibleStatusCounts(): StatusCounts = when (streakStatus()) {
+    PrayerStatus.CONGREGATION -> StatusCounts(congregation = 1)
+    PrayerStatus.INDIVIDUAL -> StatusCounts(individual = 1)
+    PrayerStatus.QAZA_PENDING -> StatusCounts(qazaPending = 1)
+    PrayerStatus.QAZA_COMPLETED -> StatusCounts(qazaCompleted = 1)
+    PrayerStatus.MENSTRUATION -> StatusCounts(excused = 1)
+    PrayerStatus.NOT_RECORDED -> StatusCounts()
+}

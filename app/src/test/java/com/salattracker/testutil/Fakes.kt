@@ -31,6 +31,8 @@ import com.salattracker.domain.repository.PrayerBreakdown
 import com.salattracker.domain.repository.PrayerReminderRescheduler
 import com.salattracker.domain.repository.ReminderNotifications
 import com.salattracker.domain.repository.PrayerRepository
+import com.salattracker.domain.repository.PrayerSlot
+import com.salattracker.domain.repository.PrayerBatchUndo
 import com.salattracker.domain.repository.SettingsRepository
 import com.salattracker.domain.repository.StatusCounts
 import com.salattracker.domain.repository.UserPrefs
@@ -64,6 +66,7 @@ class FakePrayerRepository : PrayerRepository {
         private set
     val upserts = mutableListOf<Triple<LocalDate, PrayerType, PrayerStatus>>()
     val bulkUpserts = mutableListOf<Pair<List<Pair<LocalDate, PrayerType>>, PrayerStatus>>()
+    val batchApplies = mutableListOf<Map<PrayerSlot, PrayerStatus>>()
 
     // ── Stats seeding ───────────────────────────────────────────────────────
     var dailyCounts: Map<LocalDate, StatusCounts> = emptyMap()
@@ -124,7 +127,7 @@ class FakePrayerRepository : PrayerRepository {
 
     override suspend fun getSunriseTime(date: LocalDate): LocalTime? = cachedSunrises[date]
 
-    override suspend fun upsertPrayerStatus(date: LocalDate, prayerType: PrayerType, status: PrayerStatus) {
+    override suspend fun upsertPrayerStatus(date: LocalDate, prayerType: PrayerType, status: PrayerStatus, loggedLate: Boolean) {
         upserts += Triple(date, prayerType, status)
         setStatus(date, prayerType, status)
     }
@@ -139,6 +142,9 @@ class FakePrayerRepository : PrayerRepository {
             .map { (date, counts) -> DayStatusCounts(date, counts) }
     }
 
+    override suspend fun getDailyStreakEligibleStatusCounts(from: LocalDate, to: LocalDate): List<DayStatusCounts> =
+        getDailyStatusCounts(from, to)
+
     override suspend fun getFirstRecordedPrayerDate(): LocalDate? = dailyCounts.keys.minOrNull()
 
     override suspend fun getPrayerBreakdown(from: LocalDate, to: LocalDate): List<PrayerBreakdown> {
@@ -151,6 +157,29 @@ class FakePrayerRepository : PrayerRepository {
     override suspend fun bulkUpsertPrayerStatus(entries: List<Pair<LocalDate, PrayerType>>, status: PrayerStatus) {
         bulkUpserts += entries to status
         entries.forEach { (date, type) -> setStatus(date, type, status) }
+    }
+
+    override suspend fun applyPrayerBatch(updates: Map<PrayerSlot, PrayerStatus>): PrayerBatchUndo {
+        batchApplies += updates
+        val previous = updates.keys.mapNotNull { slot ->
+            entries.value[slot.date]?.get(slot.prayerType)?.let { status ->
+                PrayerEntry(0, "local", slot.date, slot.prayerType, status, updatedAtMap[slot.date to slot.prayerType] ?: 0L)
+            }
+        }
+        updates.forEach { (slot, status) -> setStatus(slot.date, slot.prayerType, status) }
+        return PrayerBatchUndo(updates.keys, previous)
+    }
+
+    override suspend fun restorePrayerBatch(undo: PrayerBatchUndo) {
+        val old = undo.previousEntries.associateBy { PrayerSlot(it.date, it.prayerType) }
+        entries.value = entries.value.toMutableMap().apply {
+            undo.slots.forEach { slot ->
+                val day = this[slot.date].orEmpty().toMutableMap()
+                val prior = old[slot]
+                if (prior == null) day.remove(slot.prayerType) else day[slot.prayerType] = prior.status
+                if (day.isEmpty()) remove(slot.date) else this[slot.date] = day
+            }
+        }
     }
 
     override suspend fun getStreakSnapshot(): Map<PrayerType, StreakInfo> = notUsed()

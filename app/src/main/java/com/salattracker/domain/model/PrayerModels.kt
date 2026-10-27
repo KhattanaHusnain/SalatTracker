@@ -28,6 +28,7 @@ data class PrayerEntry(
     val prayerType: PrayerType,
     val status: PrayerStatus,
     val updatedAt: Long,
+    val loggedLate: Boolean = false,
 )
 
 // ── Streak ────────────────────────────────────────────────────────────────────
