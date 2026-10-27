@@ -411,8 +411,6 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                         onJuzClick = { juzNumber, pageNumber ->
                             navController.push(Routes.quranMushaf(pageNumber, juzNumber))
                         },
-                        onBookmarksClick = { navController.push(Routes.QURAN_BOOKMARKS) },
-                        onHistoryClick = { navController.push(Routes.QURAN_READ_HISTORY) },
                         searchRequest = quranSearchRequest,
                         onSearchRequestConsumed = { quranSearchRequest = 0 },
                         onLastReadChanged = { lastRead -> quranLastRead = lastRead },

@@ -11,8 +11,6 @@ import com.salattracker.domain.model.QuranReadHistoryEntry
 fun QuranChapterListEntry(
     onChapterClick: (Int) -> Unit,
     onJuzClick: (juzNumber: Int, pageNumber: Int) -> Unit,
-    onBookmarksClick: () -> Unit,
-    onHistoryClick: () -> Unit,
     onLastReadChanged: (QuranReadHistoryEntry?) -> Unit,
     searchRequest: Int,
     onSearchRequestConsumed: () -> Unit,
@@ -35,8 +33,6 @@ fun QuranChapterListEntry(
         uiState = uiState,
         onChapterClick = onChapterClick,
         onJuzClick = onJuzClick,
-        onBookmarksClick = onBookmarksClick,
-        onHistoryClick = onHistoryClick,
         onTabSelected = viewModel::onTabSelected,
         onSearchDialogDismiss = viewModel::onSearchDialogDismiss,
     )
