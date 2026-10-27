@@ -32,6 +32,30 @@
     <string name="cd_back">Back</string>
     <string name="action_add_goal">Add Goal</string>
     <string name="action_bulk_update">Bulk Update</string>
+    <string name="calendar_v4_qaza_only">Qaza only</string>
+    <string name="calendar_v4_all">All</string>
+    <string name="calendar_v4_edit">Edit calendar</string>
+    <string name="calendar_v4_done">Done</string>
+    <string name="calendar_v4_select_range">Select range</string>
+    <string name="calendar_v4_clear">Clear</string>
+    <string name="calendar_v4_selected">%1$d selected</string>
+    <string name="calendar_v4_tap_days">Tap days to select prayers</string>
+    <string name="calendar_v4_preview">Preview changes</string>
+    <string name="calendar_v4_overwrite">%1$d existing entries will be replaced</string>
+    <string name="calendar_v4_fill_empty">Fill empty slots only</string>
+    <string name="calendar_v4_apply">Apply %1$d changes</string>
+    <string name="calendar_v4_updated">%1$d prayers updated</string>
+    <string name="calendar_v4_undo">Undo</string>
+    <string name="calendar_v4_not_recorded_summary">%1$d not recorded</string>
+    <string name="calendar_v4_catch_up">Catch up</string>
+    <string name="calendar_v4_owed_summary">%1$d prayers owed</string>
+    <string name="calendar_v4_make_up_qaza">Make up in Qaza</string>
+    <string name="calendar_v4_logged_late">Logged late</string>
+    <string name="calendar_v4_on_time">On time</string>
+    <string name="calendar_v4_not_yet">Not yet</string>
+    <string name="calendar_v4_range_title">Select date range</string>
+    <string name="calendar_v4_from">From: %1$s</string>
+    <string name="calendar_v4_to">To: %1$s</string>
 
     <!-- Quran -->
     <string name="quran_continue_reading">Continue reading</string>

@@ -10,26 +10,37 @@ import androidx.hilt.navigation.compose.hiltViewModel
  *
  * [viewModel] defaults to a fresh [hiltViewModel] lookup, but MainScaffold passes its own
  * Activity-scoped instance explicitly instead — the same one feeds the shared top bar's Today
- * icon and Month/Week/Year dropdown (see MainActivity's TopBar), so both need to observe and
+ * and edit actions (see MainActivity's TopBar), so both need to observe and
  * act on one ViewModel, not two independent copies.
  *
  * Wire into MainActivity NavHost:
  *   composable(BottomNavRoute.Calendar.route) { CalendarEntry(calendarViewModel) }
  */
 @Composable
-fun CalendarEntry(viewModel: CalendarViewModel = hiltViewModel()) {
+fun CalendarEntry(
+    viewModel: CalendarV4ViewModel = hiltViewModel(),
+    onOpenQaza: () -> Unit = {},
+) {
     val uiState by viewModel.uiState.collectAsState()
-    CalendarScreen(
-        uiState              = uiState,
-        onPreviousPeriod     = viewModel::onPreviousPeriod,
-        onNextPeriod         = viewModel::onNextPeriod,
-        onDatePicked         = viewModel::onDatePicked,
-        onDaySelected        = viewModel::onDaySelected,
-        onMonthTileClick     = viewModel::onMonthTileClick,
-        onBackFromYearDrillDown = viewModel::onBackFromMonthDrillDown,
-        onPrayerClick        = viewModel::onPrayerClick,
-        onStatusSheetDismiss = viewModel::onStatusSheetDismiss,
-        onStatusSave         = viewModel::onStatusSave,
-        onErrorDismiss       = viewModel::clearError,
+    CalendarV4Screen(
+        state = uiState,
+        onPreviousMonth = viewModel::onPreviousMonth,
+        onNextMonth = viewModel::onNextMonth,
+        onDayTapped = viewModel::onDayTapped,
+        onQazaOnly = viewModel::toggleQazaOnly,
+        onPrayerFilter = viewModel::setPrayerFilter,
+        onEditToggle = viewModel::toggleEditMode,
+        onClearSelection = viewModel::clearSelection,
+        onSelectRange = viewModel::selectRange,
+        onCatchUp = viewModel::selectCatchUp,
+        onPrepareBatch = viewModel::prepareBatch,
+        onFillEmptyOnly = viewModel::setFillEmptyOnly,
+        onDismissPreview = viewModel::dismissPreview,
+        onApplyPreview = viewModel::applyPreview,
+        onUndo = viewModel::undoBatch,
+        onDismissDay = viewModel::dismissDaySheet,
+        onSaveDayStatus = viewModel::saveDayStatus,
+        onErrorDismiss = viewModel::clearError,
+        onOpenQaza = onOpenQaza,
     )
 }

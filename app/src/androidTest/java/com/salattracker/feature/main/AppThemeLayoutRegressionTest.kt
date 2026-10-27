@@ -88,13 +88,11 @@ class AppThemeLayoutRegressionTest(
 
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val labels = listOf(
-            R.string.action_bulk_update,
             R.string.prayer_reminders,
             R.string.mosque_mode,
             R.string.backup_title,
             R.string.nav_stats,
             R.string.tasbih_title,
-            R.string.action_donate,
             R.string.action_developers,
             R.string.topbar_quran_credits,
             R.string.nav_settings,
@@ -142,11 +140,9 @@ class AppThemeLayoutRegressionTest(
                         ) {
                             AppDrawer(
                                 backupNeedsAttention = true,
-                                onBulkUpdateClick = {},
                                 onPrayerRemindersClick = {},
                                 onMosqueModeClick = {},
                                 onBackupClick = {},
-                                onDonateClick = {},
                                 onDevelopersClick = {},
                                 onStatsClick = {},
                                 onTasbihClick = {},

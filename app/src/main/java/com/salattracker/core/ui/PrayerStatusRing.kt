@@ -53,7 +53,7 @@ fun PrayerStatusRing(
                 useCenter = false,
                 topLeft = topLeft,
                 size = arcSize,
-                style = Stroke(width = strokeWidth, cap = StrokeCap.Round),
+                style = Stroke(width = strokeWidth, cap = StrokeCap.Butt),
             )
         }
     }

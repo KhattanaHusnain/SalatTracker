@@ -50,20 +50,18 @@ import androidx.navigation.compose.*
 import androidx.navigation.navArgument
 import com.salattracker.R
 import com.salattracker.core.theme.*
-import com.salattracker.core.ui.label
 import com.salattracker.core.ui.LocalUse24HourFormat
 import com.salattracker.core.ui.LocalHijriAdjustmentDays
 import com.salattracker.core.ui.ArchitecturalFrieze
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.QuranReadHistoryEntry as QuranReadingPosition
 import com.salattracker.domain.model.isDark
-import com.salattracker.domain.usecase.CalendarViewType
 import com.salattracker.feature.backup.BackupEntry
 import com.salattracker.feature.developers.DevelopersEntry
 import com.salattracker.feature.donate.DonateEntry
 import com.salattracker.feature.bulkupdate.BulkUpdateEntry
 import com.salattracker.feature.calendar.CalendarEntry
-import com.salattracker.feature.calendar.CalendarViewModel
+import com.salattracker.feature.calendar.CalendarV4ViewModel
 import com.salattracker.feature.goals.AddGoalEntry
 import com.salattracker.feature.goals.EditGoalEntry
 import com.salattracker.feature.goals.GoalDetailsEntry
@@ -278,7 +276,7 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
     // backs both CalendarEntry's screen and the Today/Month controls in TopBar below — two
     // independent hiltViewModel() calls at those different scopes would otherwise create two
     // unrelated ViewModels with their own separate state.
-    val calendarViewModel: CalendarViewModel = hiltViewModel()
+    val calendarViewModel: CalendarV4ViewModel = hiltViewModel()
     val calendarUiState by calendarViewModel.uiState.collectAsState()
 
     // Mirrors QuranReaderScreen's currently-loaded chapter's first page, so the top bar's Mushaf
@@ -316,7 +314,6 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
         drawerContent = {
             AppDrawer(
                 backupNeedsAttention   = backupNeedsAttention,
-                onBulkUpdateClick      = { navController.push(Routes.bulkUpdate()) },
                 onPrayerRemindersClick = { navController.push(Routes.PRAYER_REMINDERS) },
                 onMosqueModeClick = { navController.push(Routes.MOSQUE_MODE) },
                 onBackupClick          = { navController.push(Routes.BACKUP) },
@@ -341,8 +338,8 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                     onBackClick          = { backDispatcher?.onBackPressed() },
                     showAddGoal          = currentDest?.route == BottomNavRoute.Goals.route,
                     onAddGoalClick       = { navController.push(Routes.ADD_GOAL) },
-                    showBulkUpdate       = currentDest?.route == BottomNavRoute.Calendar.route,
-                    onBulkUpdateClick    = { navController.push(Routes.bulkUpdate()) },
+                    showCalendarEdit     = currentDest?.route == BottomNavRoute.Calendar.route,
+                    onCalendarEditClick  = calendarViewModel::toggleEditMode,
                     showQuranSearch      = currentDest?.route == BottomNavRoute.Quran.route,
                     onQuranSearchClick   = { quranSearchRequest++ },
                     showQuranResume      = currentDest?.route == BottomNavRoute.Quran.route,
@@ -365,8 +362,6 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                             ?: navController.push(Routes.quranMushaf(quranReaderPageNumber))
                     },
                     quranPageControls    = if (isQuranPageRoute) quranPageControls else null,
-                    calendarView             = calendarUiState.view,
-                    onCalendarViewChanged    = calendarViewModel::onViewChanged,
                     calendarAwayFromToday    = calendarUiState.awayFromToday,
                     onCalendarTodayClick     = calendarViewModel::onTodayClick,
                 )
@@ -374,7 +369,7 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
             },
             bottomBar = {
                 AnimatedVisibility(
-                    visible = isTopLevel,
+                    visible = isTopLevel && !(currentDest?.route == BottomNavRoute.Calendar.route && calendarUiState.isEditMode),
                     enter   = slideInVertically(initialOffsetY = { it }),
                     exit    = slideOutVertically(targetOffsetY = { it }),
                 ) {
@@ -451,7 +446,7 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                     QuranReadHistoryEntry(onEntryClick = { number -> navController.push(Routes.quranReader(number)) })
                 }
                 composable(BottomNavRoute.Calendar.route) {
-                    CalendarEntry(calendarViewModel)
+                    CalendarEntry(calendarViewModel) { navController.navigateToTab(BottomNavRoute.Qaza.route) }
                 }
                 composable(BottomNavRoute.Qaza.route) {
                     QazaEntry(
@@ -557,8 +552,8 @@ private fun TopBar(
     onBackClick: () -> Unit,
     showAddGoal: Boolean,
     onAddGoalClick: () -> Unit,
-    showBulkUpdate: Boolean,
-    onBulkUpdateClick: () -> Unit,
+    showCalendarEdit: Boolean,
+    onCalendarEditClick: () -> Unit,
     showQuranSearch: Boolean,
     onQuranSearchClick: () -> Unit,
     showQuranResume: Boolean,
@@ -567,8 +562,6 @@ private fun TopBar(
     showMushafButton: Boolean,
     onMushafButtonClick: () -> Unit,
     quranPageControls: QuranPageControls?,
-    calendarView: CalendarViewType,
-    onCalendarViewChanged: (CalendarViewType) -> Unit,
     calendarAwayFromToday: Boolean,
     onCalendarTodayClick: () -> Unit,
 ) {
@@ -625,15 +618,14 @@ private fun TopBar(
                     Icon(painterResource(R.drawable.ic_add), stringResource(R.string.action_add_goal), tint = SalatPrimary)
                 }
             }
-            if (showBulkUpdate) {
+            if (showCalendarEdit) {
                 if (calendarAwayFromToday) {
                     IconButton(onClick = onCalendarTodayClick) {
                         Icon(painterResource(R.drawable.ic_calendar_today), stringResource(R.string.calendar_today), tint = SalatPrimary)
                     }
                 }
-                CalendarViewMenu(currentView = calendarView, onViewChanged = onCalendarViewChanged)
-                IconButton(onClick = onBulkUpdateClick) {
-                    Icon(painterResource(R.drawable.ic_edit_square), stringResource(R.string.action_bulk_update), tint = SalatPrimary)
+                IconButton(onClick = onCalendarEditClick) {
+                    Icon(painterResource(R.drawable.ic_edit_square), stringResource(R.string.calendar_v4_edit), tint = SalatPrimary)
                 }
             }
             if (showQuranSearch) {
@@ -654,50 +646,6 @@ private fun TopBar(
         },
         colors = TopAppBarDefaults.topAppBarColors(containerColor = SalatBackground),
     )
-}
-
-/** All three calendar views are enabled; grows automatically if CalendarViewType ever does. */
-private val ENABLED_CALENDAR_VIEWS = CalendarViewType.values().toList()
-
-/** Compact "Month ▾" dropdown chip for the top bar's actions row — switches between
- * Calendar's Month/Week/Year views. Lives here (not in feature.calendar) since this is now
- * the only place it's used. */
-@Composable
-private fun CalendarViewMenu(
-    currentView: CalendarViewType,
-    onViewChanged: (CalendarViewType) -> Unit,
-) {
-    var expanded by remember { mutableStateOf(false) }
-    Box {
-        Surface(
-            onClick = { expanded = true },
-            shape   = RoundedCornerShape(50),
-            color   = SalatSurfaceContainerLow,
-            border  = BorderStroke(1.dp, SalatOutlineVariant),
-        ) {
-            Row(
-                modifier              = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
-                verticalAlignment     = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(2.dp),
-            ) {
-                Text(currentView.label(), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
-                Icon(
-                    painter            = painterResource(R.drawable.ic_expand_more),
-                    contentDescription = stringResource(R.string.cd_change_view),
-                    tint               = SalatOnSurfaceVariant,
-                    modifier           = Modifier.size(14.dp),
-                )
-            }
-        }
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            ENABLED_CALENDAR_VIEWS.forEach { view ->
-                DropdownMenuItem(
-                    text    = { Text(view.label()) },
-                    onClick = { onViewChanged(view); expanded = false },
-                )
-            }
-        }
-    }
 }
 
 // ── Bottom navigation bar ─────────────────────────────────────────────────────

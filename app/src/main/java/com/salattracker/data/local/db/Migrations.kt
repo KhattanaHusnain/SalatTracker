@@ -96,3 +96,10 @@ val MIGRATION_11_12 = object : Migration(11, 12) {
         )
     }
 }
+
+/** v12 -> v13: records Calendar day-sheet edits as late so the label survives relaunch/backup. */
+val MIGRATION_12_13 = object : Migration(12, 13) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE prayer_entries ADD COLUMN logged_late INTEGER NOT NULL DEFAULT 0")
+    }
+}
