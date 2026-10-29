@@ -83,7 +83,7 @@ fun StreakBadge(count: Int, modifier: Modifier = Modifier) {
         horizontalArrangement = Arrangement.spacedBy(3.dp),
     ) {
         Icon(
-            painterResource(R.drawable.ic_local_fire_department),
+            painterResource(R.drawable.home_flame),
             contentDescription = null,
             tint = GoalGold,
             modifier = Modifier.size(13.dp),

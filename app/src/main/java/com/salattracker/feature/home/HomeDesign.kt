@@ -29,13 +29,14 @@ internal val HomeTitleFont: FontFamily @Composable get() = AppTitleFontFamily
     content()
 }
 
-internal fun homeStatusColor(status: PrayerStatus) = when (status) {
-    PrayerStatus.CONGREGATION -> HomeTeal
-    PrayerStatus.INDIVIDUAL -> Color(0xFF6DBBB6)
-    PrayerStatus.QAZA_PENDING -> Color(0xFFD9603B)
-    PrayerStatus.QAZA_COMPLETED -> HomeGold
-    PrayerStatus.MENSTRUATION -> Color(0xFFC9338E)
-    PrayerStatus.NOT_RECORDED -> Color(0xFFDADFDA)
+@Composable
+internal fun homeStatusColor(status: PrayerStatus): Color = when (status) {
+    PrayerStatus.CONGREGATION -> SalatStatusCongregation
+    PrayerStatus.INDIVIDUAL -> SalatStatusIndividual
+    PrayerStatus.QAZA_PENDING -> SalatStatusQazaPending
+    PrayerStatus.QAZA_COMPLETED -> SalatStatusQazaCompleted
+    PrayerStatus.MENSTRUATION -> SalatStatusExcused
+    PrayerStatus.NOT_RECORDED -> SalatStatusNotRecorded
 }
 
 /** The exported v27 mihrab, including its earned fill and congregation inset. */
@@ -90,6 +91,6 @@ internal fun homeStatusColor(status: PrayerStatus) = when (status) {
 }
 
 /** Small repeating arch ornament, taken from the export's --pt-w/--pt-t SVG. */
-@Composable internal fun HomeFrieze(modifier: Modifier = Modifier, color: Color = HomeTeal) {
+@Composable internal fun HomeFrieze(modifier: Modifier = Modifier, color: Color = SalatPrimary) {
     ArchitecturalFrieze(modifier = modifier, color = color)
 }

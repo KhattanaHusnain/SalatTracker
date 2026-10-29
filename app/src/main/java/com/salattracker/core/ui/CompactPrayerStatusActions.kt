@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -32,13 +33,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.AppUiFontFamily
+import com.salattracker.core.theme.SalatOutlineVariant
+import com.salattracker.core.theme.SalatStatusCongregation
+import com.salattracker.core.theme.SalatStatusExcused
+import com.salattracker.core.theme.SalatStatusIndividual
+import com.salattracker.core.theme.SalatStatusNotRecorded
+import com.salattracker.core.theme.SalatStatusQazaCompleted
+import com.salattracker.core.theme.SalatStatusQazaPending
 import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
 
-private val CompactTeal = Color(0xFF087E83)
-private val CompactGold = Color(0xFFD9A441)
-private val CompactDivider = Color(0xFFE3E6E2)
+private val CompactDivider: Color @Composable get() = SalatOutlineVariant
 
 /** Home's inline prayer-status control, shared with Calendar's selected-day rows. */
 @Composable
@@ -52,7 +58,7 @@ internal fun CompactPrayerStatusActions(
 ) {
     AnimatedContent(targetState = status, label = "$tagPrefix-status-$prayerType") { current ->
         if (current != PrayerStatus.NOT_RECORDED) {
-            val ink = if (current == PrayerStatus.QAZA_COMPLETED) Color(0xFF302408) else Color.White
+            val ink = compactPrayerStatusContentColor(current)
             Row(
                 modifier = Modifier
                     .height(34.dp)
@@ -130,14 +136,23 @@ internal fun compactPrayerStatusLabel(status: PrayerStatus, gender: Gender?): St
     else -> status.label()
 }
 
+@Composable
 internal fun compactPrayerStatusColor(status: PrayerStatus): Color = when (status) {
-    PrayerStatus.CONGREGATION -> CompactTeal
-    PrayerStatus.INDIVIDUAL -> Color(0xFF6DBBB6)
-    PrayerStatus.QAZA_PENDING -> Color(0xFFD9603B)
-    PrayerStatus.QAZA_COMPLETED -> CompactGold
-    PrayerStatus.MENSTRUATION -> Color(0xFFC9338E)
-    PrayerStatus.NOT_RECORDED -> Color(0xFFDADFDA)
+    PrayerStatus.CONGREGATION -> SalatStatusCongregation
+    PrayerStatus.INDIVIDUAL -> SalatStatusIndividual
+    PrayerStatus.QAZA_PENDING -> SalatStatusQazaPending
+    PrayerStatus.QAZA_COMPLETED -> SalatStatusQazaCompleted
+    PrayerStatus.MENSTRUATION -> SalatStatusExcused
+    PrayerStatus.NOT_RECORDED -> SalatStatusNotRecorded
 }
+
+/** Chooses the higher-contrast neutral foreground for theme-dependent status fills. */
+@Composable
+internal fun compactPrayerStatusContentColor(status: PrayerStatus): Color =
+    readableStatusContentColor(compactPrayerStatusColor(status))
+
+internal fun readableStatusContentColor(background: Color): Color =
+    if (background.luminance() > 0.179f) Color(0xFF111111) else Color.White
 
 private fun compactOfferedStatuses(gender: Gender?): List<PrayerStatus> =
     if (gender == Gender.FEMALE) {

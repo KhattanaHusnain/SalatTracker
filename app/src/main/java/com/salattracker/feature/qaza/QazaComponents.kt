@@ -270,7 +270,13 @@ private fun QuickLogRow(row: QuickLogRowUi, onCountChanged: (Int) -> Unit) {
             onClick = { onCountChanged((row.count - 1).coerceAtLeast(0)) },
             enabled = row.count > 0,
             modifier = Modifier.size(30.dp),
-        ) { Text("−", fontSize = 16.sp) }
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_remove),
+                contentDescription = "−",
+                modifier = Modifier.size(16.dp),
+            )
+        }
         Text(
             "${row.count}", color = if (row.count > 0) SalatPrimary else SalatOutline, fontSize = 17.sp,
             fontWeight = FontWeight.SemiBold, fontFamily = AppTitleFontFamily,
@@ -280,7 +286,13 @@ private fun QuickLogRow(row: QuickLogRowUi, onCountChanged: (Int) -> Unit) {
             onClick = { onCountChanged((row.count + 1).coerceAtMost(row.outstanding)) },
             enabled = row.count < row.outstanding,
             modifier = Modifier.size(30.dp),
-        ) { Text("+", fontSize = 16.sp) }
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_add),
+                contentDescription = "+",
+                modifier = Modifier.size(16.dp),
+            )
+        }
     }
 }
 
