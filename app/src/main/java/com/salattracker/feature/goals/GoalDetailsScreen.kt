@@ -145,7 +145,7 @@ private fun GoalStatsRow(goal: SpiritualGoal, state: GoalDetailsUiState) {
         GoalStat(
             value = stringResource(R.string.goals_v2_streak_value, state.streak.current),
             label = stringResource(R.string.goals_v2_streak_best, state.streak.best),
-            icon = R.drawable.ic_local_fire_department,
+            icon = R.drawable.home_flame,
             modifier = Modifier.weight(1f),
         )
         GoalStat(

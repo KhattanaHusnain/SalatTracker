@@ -307,12 +307,18 @@ private fun GoalStepper(value: Int, onMinus: () -> Unit, onPlus: () -> Unit) {
 
 @Composable
 internal fun StepButton(text: String, onClick: () -> Unit, enabled: Boolean) {
+    val iconRes = if (text == "+") R.drawable.ic_add else R.drawable.ic_remove
     Box(
         Modifier.size(44.dp).clip(CircleShape).background(if (enabled) SalatPrimary.copy(alpha = .16f) else SalatOutlineVariant.copy(alpha = .35f))
             .clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text, color = if (enabled) SalatPrimary else SalatOnSurfaceVariant, fontSize = 22.sp, fontFamily = AppUiFontFamily)
+        Icon(
+            painter = painterResource(iconRes),
+            contentDescription = text,
+            tint = if (enabled) SalatPrimary else SalatOnSurfaceVariant,
+            modifier = Modifier.size(20.dp),
+        )
     }
 }
 

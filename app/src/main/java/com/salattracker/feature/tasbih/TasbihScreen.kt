@@ -1,5 +1,6 @@
 package com.salattracker.feature.tasbih
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -52,6 +53,7 @@ import com.salattracker.core.theme.AppUiFontFamily
 import com.salattracker.core.theme.SalatBackground
 import com.salattracker.core.theme.SalatOnPrimary
 import com.salattracker.core.theme.SalatOnPrimaryContainer
+import com.salattracker.core.theme.SalatOnSecondaryContainer
 import com.salattracker.core.theme.SalatOnSurface
 import com.salattracker.core.theme.SalatOnSurfaceVariant
 import com.salattracker.core.theme.SalatOutlineVariant
@@ -93,7 +95,7 @@ fun TasbihScreen(
             ) {
                 uiState.goalName?.let {
                     Surface(shape = RoundedCornerShape(50), color = SalatSecondaryContainer) {
-                        Text(stringResource(R.string.tasbih_counting_for, it), modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp), color = SalatOnPrimaryContainer, fontFamily = AppUiFontFamily, fontSize = 12.sp)
+                        Text(stringResource(R.string.tasbih_counting_for, it), modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp), color = SalatOnSecondaryContainer, fontFamily = AppUiFontFamily, fontSize = 12.sp)
                     }
                     Spacer(Modifier.height(16.dp))
                 }
@@ -123,11 +125,15 @@ fun TasbihScreen(
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         if (session.target > 0) {
+                            val animatedProgress by animateFloatAsState(
+                                targetValue = (session.count.toFloat() / session.target).coerceIn(0f, 1f),
+                                label = "tasbih-progress",
+                            )
                             CircularProgressIndicator(
                                 progress = { 1f }, modifier = Modifier.size(224.dp), color = SalatSecondaryContainer, strokeWidth = 10.dp,
                             )
                             CircularProgressIndicator(
-                                progress = { session.count.toFloat() / session.target }, modifier = Modifier.size(224.dp), color = SalatPrimary, strokeWidth = 10.dp,
+                                progress = { animatedProgress }, modifier = Modifier.size(224.dp), color = SalatPrimary, strokeWidth = 10.dp,
                             )
                         }
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -164,7 +170,7 @@ fun TasbihScreen(
                             Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.tasbih_undo), fontFamily = AppUiFontFamily)
                         }
                         OutlinedButton(onClick = { if (session.count > 0) showResetConfirmation = true else onReset() }) {
-                            Icon(painterResource(R.drawable.ic_history), null, modifier = Modifier.size(18.dp))
+                            Icon(painterResource(R.drawable.home_undo), null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.tasbih_reset), fontFamily = AppUiFontFamily)
                         }
                     }
