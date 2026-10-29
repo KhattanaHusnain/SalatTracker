@@ -64,6 +64,9 @@ import com.salattracker.feature.calendar.CalendarV4ViewModel
 import com.salattracker.feature.goals.AddGoalEntry
 import com.salattracker.feature.goals.EditGoalEntry
 import com.salattracker.feature.goals.GoalDetailsEntry
+import com.salattracker.feature.goals.GoalDetailsTopBarControls
+import com.salattracker.feature.goals.GoalLogDayEntry
+import com.salattracker.feature.goals.GoalTemplate
 import com.salattracker.feature.goals.GoalsEntry
 import com.salattracker.feature.tasbih.TasbihEntry
 import com.salattracker.feature.home.HomeEntry
@@ -285,6 +288,7 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
     var quranPageControls by remember { mutableStateOf<QuranPageControls?>(null) }
     var quranSearchRequest by remember { mutableStateOf(0) }
     var quranLastRead by remember { mutableStateOf<QuranReadingPosition?>(null) }
+    var goalDetailsControls by remember { mutableStateOf<GoalDetailsTopBarControls?>(null) }
     val isQuranPageRoute = currentDest?.route == Routes.QURAN_READER || currentDest?.route == Routes.QURAN_MUSHAF
 
     // A notification's deep link, delivered after this scaffold (and its NavHost) already
@@ -330,13 +334,14 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
             topBar = {
                 if (!isHome) {
                 TopBar(
-                    title                = topBarTitle(currentDest?.route),
+                    title                = if (currentDest?.route == Routes.GOAL_DETAILS) goalDetailsControls?.title ?: topBarTitle(currentDest?.route) else topBarTitle(currentDest?.route),
                     isTopLevel           = isTopLevel,
                     backupNeedsAttention = backupNeedsAttention,
                     onMenuClick          = { coroutineScope.launch { drawerState.open() } },
                     onBackClick          = { backDispatcher?.onBackPressed() },
                     showAddGoal          = currentDest?.route == BottomNavRoute.Goals.route,
-                    onAddGoalClick       = { navController.push(Routes.ADD_GOAL) },
+                    onAddGoalClick       = { navController.push(Routes.addGoal()) },
+                    goalDetailsControls  = if (currentDest?.route == Routes.GOAL_DETAILS) goalDetailsControls else null,
                     showCalendarEdit     = currentDest?.route == BottomNavRoute.Calendar.route,
                     onCalendarEditClick  = calendarViewModel::toggleEditMode,
                     showQuranSearch      = currentDest?.route == BottomNavRoute.Quran.route,
@@ -453,7 +458,8 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                 composable(BottomNavRoute.Goals.route) {
                     GoalsEntry(
                         onGoalClick    = { goalId -> navController.push(Routes.goalDetails(goalId)) },
-                        onAddGoalClick = { navController.push(Routes.ADD_GOAL) },
+                        onAddGoalClick = { template -> navController.push(Routes.addGoal(template?.name)) },
+                        onDayClick = { goalId, date -> navController.push(Routes.goalLogDay(goalId, date.toString())) },
                         onTasbihClick = { goalId -> navController.push(Routes.tasbih(goalId)) },
                     )
                 }
@@ -496,8 +502,12 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                 ) {
                     BulkUpdateEntry()
                 }
-                composable(Routes.ADD_GOAL) {
-                    AddGoalEntry(onSaved = { navController.popBackStack() })
+                composable(
+                    Routes.ADD_GOAL,
+                    arguments = listOf(navArgument("template") { type = NavType.StringType; nullable = true; defaultValue = null }),
+                ) { entry ->
+                    val template = entry.arguments?.getString("template")?.takeIf(String::isNotBlank)?.let { runCatching { GoalTemplate.valueOf(it) }.getOrNull() }
+                    AddGoalEntry(onSaved = { navController.popBackStack() }, initialTemplate = template)
                 }
                 composable(
                     Routes.GOAL_DETAILS,
@@ -505,8 +515,19 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                 ) {
                     GoalDetailsEntry(
                         onEdit    = { goalId -> navController.push(Routes.editGoal(goalId)) },
+                        onLogDay = { goalId, date -> navController.push(Routes.goalLogDay(goalId, date.toString())) },
                         onDeleted = { navController.popBackStack() },
+                        onTopBarControls = { goalDetailsControls = it },
                     )
+                }
+                composable(
+                    Routes.GOAL_LOG_DAY,
+                    arguments = listOf(
+                        navArgument("goalId") { type = NavType.LongType },
+                        navArgument("date") { type = NavType.StringType },
+                    ),
+                ) {
+                    GoalLogDayEntry(onDone = { navController.popBackStack() })
                 }
                 composable(
                     Routes.EDIT_GOAL,
@@ -531,6 +552,7 @@ private fun TopBar(
     onBackClick: () -> Unit,
     showAddGoal: Boolean,
     onAddGoalClick: () -> Unit,
+    goalDetailsControls: GoalDetailsTopBarControls?,
     showCalendarEdit: Boolean,
     onCalendarEditClick: () -> Unit,
     showQuranSearch: Boolean,
@@ -595,6 +617,29 @@ private fun TopBar(
             if (showAddGoal) {
                 IconButton(onClick = onAddGoalClick) {
                     Icon(painterResource(R.drawable.ic_add), stringResource(R.string.action_add_goal), tint = SalatPrimary)
+                }
+            }
+            goalDetailsControls?.let { controls ->
+                var expanded by remember { mutableStateOf(false) }
+                IconButton(onClick = controls.onEdit) {
+                    Icon(painterResource(R.drawable.ic_edit_square), stringResource(R.string.goal_action_edit), tint = SalatPrimary)
+                }
+                Box {
+                    IconButton(onClick = { expanded = true }) {
+                        Icon(painterResource(R.drawable.ic_more_vert), stringResource(R.string.goals_v2_more_options), tint = SalatPrimary)
+                    }
+                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                        if (controls.status != com.salattracker.domain.usecase.GoalStatus.COMPLETED) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(if (controls.status == com.salattracker.domain.usecase.GoalStatus.ARCHIVED) R.string.goal_action_restore else R.string.goal_action_archive)) },
+                                onClick = { expanded = false; controls.onArchiveToggle() },
+                            )
+                        }
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.action_delete), color = SalatError) },
+                            onClick = { expanded = false; controls.onDelete() },
+                        )
+                    }
                 }
             }
             if (showCalendarEdit) {
@@ -692,6 +737,7 @@ private fun topBarTitle(route: String?): String = stringResource(
         Routes.STATS                  -> R.string.topbar_stats
         Routes.TASBIH                 -> R.string.tasbih_title
         Routes.ADD_GOAL               -> R.string.topbar_new_goal
+        Routes.GOAL_LOG_DAY            -> R.string.goals_v2_log_day
         Routes.QURAN_READER           -> R.string.topbar_quran
         Routes.QURAN_CHAPTER_INFO     -> R.string.topbar_quran
         Routes.QURAN_MUSHAF           -> R.string.topbar_quran

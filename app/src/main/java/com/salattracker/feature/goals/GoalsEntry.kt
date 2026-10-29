@@ -14,7 +14,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 @Composable
 fun GoalsEntry(
     onGoalClick: (Long) -> Unit,
-    onAddGoalClick: () -> Unit,
+    onAddGoalClick: (GoalTemplate?) -> Unit,
+    onDayClick: (Long, java.time.LocalDate) -> Unit,
     onTasbihClick: (Long) -> Unit,
     viewModel: GoalsViewModel = hiltViewModel(),
 ) {
@@ -25,17 +26,11 @@ fun GoalsEntry(
 
     GoalsScreen(
         uiState             = uiState,
-        onDayTap            = viewModel::onDayTap,
-        onDayLongPress      = viewModel::onDayLongPress,
         onGoalClick         = onGoalClick,
         onAddGoalClick      = onAddGoalClick,
+        onDayClick          = onDayClick,
+        onQuickAdd          = viewModel::onQuickAdd,
         onTasbihClick        = onTasbihClick,
-        onLogAmountChanged  = viewModel::onLogAmountChanged,
-        onLogSkippedChanged = viewModel::onLogSkippedChanged,
-        onLogMarkDone       = viewModel::onLogMarkDone,
-        onLogSave           = viewModel::onLogSave,
-        onLogClear          = viewModel::onLogClear,
-        onLogDismiss        = viewModel::onLogDismiss,
         onErrorDismiss      = viewModel::clearError,
     )
 }

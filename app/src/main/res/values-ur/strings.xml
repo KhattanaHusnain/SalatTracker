@@ -406,6 +406,40 @@
     <string name="goal_month_progress">اس مہینے %1$d/%2$d %3$s</string>
     <string name="goal_not_due_today">آج مقرر نہیں</string>
     <string name="goals_archived">محفوظ شدہ (%1$d)</string>
+    <string name="goals_v2_empty_intro">ابھی کوئی ہدف نہیں۔ شروع کرنے کے لیے ایک منتخب کریں۔</string>
+    <string name="goals_v2_custom_goal">اپنا ہدف</string>
+    <string name="goals_v2_preset_quran_summary">ایک صفحہ · ہر روز</string>
+    <string name="goals_v2_preset_daily_once">ایک بار · ہر روز</string>
+    <string name="goals_v2_preset_tahajjud_summary">دو رکعت · ہر روز</string>
+    <string name="goals_v2_preset_fast_summary">ایک بار · پیر، جمعرات</string>
+    <string name="goals_v2_preset_weekly_once">ایک بار · ہر ہفتہ</string>
+    <string name="goals_v2_add">شامل کریں</string>
+    <string name="goals_v2_done_count">%2$d میں سے %1$d</string>
+    <string name="goals_v2_done_today">آج مکمل</string>
+    <string name="goals_v2_add_progress">پیش رفت شامل کریں</string>
+    <string name="goals_v2_target">ہدف</string>
+    <string name="goals_v2_how_often">کتنی بار</string>
+    <string name="goals_v2_on_days">ان دنوں میں</string>
+    <string name="goals_v2_remind_me">مجھے یاد دلائیں</string>
+    <string name="goals_v2_stop_after">چند دنوں کے بعد روک دیں</string>
+    <string name="goals_v2_more_options">مزید اختیارات</string>
+    <string name="goals_v2_advanced_presets">مزید پیش نمونے</string>
+    <string name="goals_v2_every_day">ہر روز</string>
+    <string name="goals_v2_every_week">ہر ہفتہ</string>
+    <string name="goals_v2_every_month">ہر ماہ</string>
+    <string name="goals_v2_calendar_hint">اندراج کے لیے دن پر دبائیں۔ آرکائیو اور حذف مزید میں ہیں۔</string>
+    <string name="goals_v2_reminder_at">یاد دہانی %1$s</string>
+    <string name="goals_v2_since">%1$s سے</string>
+    <string name="goals_v2_streak_value">%1$d دن</string>
+    <string name="goals_v2_streak_best">تسلسل · بہترین %1$d</string>
+    <string name="goals_v2_days_done_value">%2$d میں سے %1$d</string>
+    <string name="goals_v2_days_done">مکمل دن</string>
+    <string name="goals_v2_total">کل</string>
+    <string name="goals_v2_of_target">%1$d %2$s میں سے</string>
+    <string name="goals_v2_done">مکمل</string>
+    <string name="goals_v2_skip_day">یہ دن چھوڑ دیں</string>
+    <string name="goals_v2_auto_save_hint">تبدیلیاں دباتے ہی محفوظ ہوتی ہیں۔ 1 کے ہدف پر صرف مکمل دکھایا جاتا ہے۔</string>
+    <string name="goals_v2_log_day">دن کا اندراج</string>
     <string name="goal_delete_title">ہدف حذف کریں؟</string>
     <string name="goal_delete_desc">اس سے اس ہدف کی آپ کی پیش رفت اور تسلسل مستقل طور پر حذف ہو جائیں گے۔ یہ عمل واپس نہیں ہو سکتا۔</string>
     <string name="goal_deleting">ہدف حذف ہو رہا ہے</string>
@@ -433,6 +467,7 @@
     <string name="unit_times">بار</string>
     <string name="unit_minutes">منٹ</string>
     <string name="unit_pages">صفحات</string>
+    <string name="unit_rakahs">رکعتیں</string>
     <plurals name="goal_amount_times"><item quantity="one">%1$d بار</item><item quantity="other">%1$d بار</item></plurals>
     <plurals name="goal_amount_minutes"><item quantity="one">%1$d منٹ</item><item quantity="other">%1$d منٹ</item></plurals>
     <plurals name="goal_amount_pages"><item quantity="one">%1$d صفحہ</item><item quantity="other">%1$d صفحات</item></plurals>

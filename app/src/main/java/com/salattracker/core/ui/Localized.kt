@@ -211,5 +211,6 @@ fun goalUnitLabel(unit: String): String = when (unit) {
     "Time(s)" -> stringResource(R.string.unit_times)
     "Minutes" -> stringResource(R.string.unit_minutes)
     "Pages"   -> stringResource(R.string.unit_pages)
+    "Rak'ahs" -> stringResource(R.string.unit_rakahs)
     else      -> unit
 }
