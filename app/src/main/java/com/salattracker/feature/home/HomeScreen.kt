@@ -48,6 +48,7 @@ import kotlin.math.*
 private val V27HeroMuted = Color.White.copy(alpha = .78f)
 private val V27Divider: Color @Composable get() = SalatOutlineVariant
 private val V27Muted: Color @Composable get() = SalatOnSurfaceVariant
+private val SharedTopBarHeight = 64.dp
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -213,9 +214,12 @@ private fun V27Hero(
         Column(
             Modifier
                 .fillMaxWidth()
-                .then(if (hostedBelowSharedTopBar) Modifier else Modifier.statusBarsPadding())
+                .statusBarsPadding()
                 .padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 26.dp),
         ) {
+            if (hostedBelowSharedTopBar) {
+                Spacer(Modifier.height(SharedTopBarHeight).testTag("home-shared-top-bar-space"))
+            }
             if (!hostedBelowSharedTopBar || state.appearance.streakBadge) {
                 Row(Modifier.fillMaxWidth().height(30.dp), verticalAlignment = Alignment.CenterVertically) {
                     if (!hostedBelowSharedTopBar) {

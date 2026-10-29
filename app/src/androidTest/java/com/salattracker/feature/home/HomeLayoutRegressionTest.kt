@@ -19,6 +19,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.salattracker.core.theme.SalatTrackerTheme
 import com.salattracker.domain.model.*
 import com.salattracker.domain.usecase.NextPrayer
+import com.salattracker.feature.main.TopBar
 import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
@@ -155,10 +156,18 @@ class HomeLayoutRegressionTest(private val width: Int, private val height: Int, 
         screenshot("app-settings-home-feedback", "settings-test-root")
     }
 
-    @Test fun shellHostedHome_usesOnlyTheSharedMenu() {
+    @Test fun shellHostedHome_placesContentBelowTransparentSharedBar() {
         render(hostedBelowSharedTopBar = true)
         compose.onNodeWithTag("home-screen").assertIsDisplayed()
         compose.onNodeWithTag("home-menu-open").assertDoesNotExist()
+        compose.onNodeWithTag("app-top-bar").assertIsDisplayed()
+        compose.onNodeWithTag("home-shared-top-bar-space").assertIsDisplayed()
+        val hero = compose.onNodeWithTag("home-hero").fetchSemanticsNode().boundsInRoot
+        val bar = compose.onNodeWithTag("app-top-bar").fetchSemanticsNode().boundsInRoot
+        val date = compose.onNodeWithTag("home-date-block").fetchSemanticsNode().boundsInRoot
+        assertTrue("Hero must paint behind the shared bar: hero=$hero bar=$bar", hero.top < bar.bottom)
+        assertTrue("Hero content must remain below the shared bar: date=$date bar=$bar", date.top >= bar.bottom)
+        screenshot("shell-hosted-transparent-bar")
     }
 
     private fun render(hostedBelowSharedTopBar: Boolean = false) {
@@ -182,6 +191,31 @@ class HomeLayoutRegressionTest(private val width: Int, private val height: Int, 
                                     if (it.type == type) it.copy(status = status) else it }) },
                                 onReminderToggle = { type -> state.value = state.value.copy(prayers = state.value.prayers.map {
                                     if (it.type == type) it.copy(reminderEnabled = !it.reminderEnabled) else it }) })
+                            if (hostedBelowSharedTopBar) {
+                                TopBar(
+                                    title = "Today",
+                                    isTopLevel = true,
+                                    backupNeedsAttention = false,
+                                    onMenuClick = {},
+                                    onBackClick = {},
+                                    showAddGoal = false,
+                                    onAddGoalClick = {},
+                                    goalDetailsControls = null,
+                                    showCalendarEdit = false,
+                                    onCalendarEditClick = {},
+                                    showQuranSearch = false,
+                                    onQuranSearchClick = {},
+                                    showQuranResume = false,
+                                    quranResumeEnabled = false,
+                                    onQuranResumeClick = {},
+                                    showMushafButton = false,
+                                    onMushafButtonClick = {},
+                                    quranPageControls = null,
+                                    calendarAwayFromToday = false,
+                                    onCalendarTodayClick = {},
+                                    overlaysHomeHero = true,
+                                )
+                            }
                         }
                     }
                 }
