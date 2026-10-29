@@ -263,14 +263,13 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
     val backupNeedsAttention by shellViewModel.backupNeedsAttention.collectAsState()
     val qazaPendingTotal by shellViewModel.qazaPendingTotal.collectAsState()
     val hideQazaBadge by shellViewModel.hideQazaBadge.collectAsState()
-    val isHome = currentDest?.route == BottomNavRoute.Home.route
     val view = LocalView.current
     val background = SalatBackground
-    DisposableEffect(isHome, background) {
+    DisposableEffect(background) {
         val window = (view.context as? android.app.Activity)?.window
         val controller = window?.let { WindowCompat.getInsetsController(it, view) }
         val previous = controller?.isAppearanceLightStatusBars
-        controller?.isAppearanceLightStatusBars = !isHome && background.luminance() > .5f
+        controller?.isAppearanceLightStatusBars = background.luminance() > .5f
         onDispose { previous?.let { controller?.isAppearanceLightStatusBars = it } }
     }
 
@@ -330,9 +329,8 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
     ) {
         Scaffold(
             containerColor = SalatBackground,
-            contentWindowInsets = if (isHome) WindowInsets(0, 0, 0, 0) else ScaffoldDefaults.contentWindowInsets,
+            contentWindowInsets = ScaffoldDefaults.contentWindowInsets,
             topBar = {
-                if (!isHome) {
                 TopBar(
                     title                = if (currentDest?.route == Routes.GOAL_DETAILS) goalDetailsControls?.title ?: topBarTitle(currentDest?.route) else topBarTitle(currentDest?.route),
                     isTopLevel           = isTopLevel,
@@ -369,7 +367,6 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                     calendarAwayFromToday    = calendarUiState.awayFromToday,
                     onCalendarTodayClick     = calendarViewModel::onTodayClick,
                 )
-                }
             },
             bottomBar = {
                 AnimatedVisibility(
@@ -395,6 +392,7 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                     HomeEntry(
                         onQazaClick = { navController.navigateToTab(BottomNavRoute.Qaza.route) },
                         onMenuClick = { coroutineScope.launch { drawerState.open() } },
+                        hostedBelowSharedTopBar = true,
                         onLocationClick = { navController.push(Routes.SETTINGS) },
                         onDonateClick = { navController.push(Routes.DONATE) },
                         onCatchUpClick = { navController.push(Routes.bulkUpdate()) },
@@ -544,7 +542,7 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TopBar(
+internal fun TopBar(
     title: String,
     isTopLevel: Boolean,
     backupNeedsAttention: Boolean,
@@ -567,6 +565,7 @@ private fun TopBar(
     onCalendarTodayClick: () -> Unit,
 ) {
     TopAppBar(
+        modifier = Modifier.testTag("app-top-bar"),
         title = {
             Box(Modifier.fillMaxWidth()) {
                 ArchitecturalFrieze(

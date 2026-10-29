@@ -155,7 +155,13 @@ class HomeLayoutRegressionTest(private val width: Int, private val height: Int, 
         screenshot("app-settings-home-feedback", "settings-test-root")
     }
 
-    private fun render() {
+    @Test fun shellHostedHome_usesOnlyTheSharedMenu() {
+        render(hostedBelowSharedTopBar = true)
+        compose.onNodeWithTag("home-screen").assertIsDisplayed()
+        compose.onNodeWithTag("home-menu-open").assertDoesNotExist()
+    }
+
+    private fun render(hostedBelowSharedTopBar: Boolean = false) {
         compose.activityRule.scenario.onActivity { WindowCompat.setDecorFitsSystemWindows(it.window, false) }
         compose.setContent {
             BoxWithConstraints(Modifier.fillMaxSize()) {
@@ -171,6 +177,7 @@ class HomeLayoutRegressionTest(private val width: Int, private val height: Int, 
                             HomeScreen(state.value, onPrayerCardClick = {}, onSheetDismiss = {}, onStatusSave = {},
                                 onQazaClick = {}, onDayClick = {}, onAppearanceChanged = { state.value = state.value.copy(appearance = it) },
                                 onMenuClick = { menuOpenCount++ },
+                                hostedBelowSharedTopBar = hostedBelowSharedTopBar,
                                 onQuickStatusSave = { type, status -> state.value = state.value.copy(prayers = state.value.prayers.map {
                                     if (it.type == type) it.copy(status = status) else it }) },
                                 onReminderToggle = { type -> state.value = state.value.copy(prayers = state.value.prayers.map {
