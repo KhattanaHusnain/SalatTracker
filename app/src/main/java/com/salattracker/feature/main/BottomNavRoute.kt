@@ -36,9 +36,10 @@ object Routes {
     const val DEVELOPERS       = "developers"
     const val STATS            = "stats"
     const val TASBIH           = "tasbih?goalId={goalId}"
-    const val ADD_GOAL         = "add_goal"
+    const val ADD_GOAL         = "add_goal?template={template}"
     const val EDIT_GOAL        = "edit_goal/{goalId}"
     const val GOAL_DETAILS     = "goal_details/{goalId}"
+    const val GOAL_LOG_DAY     = "goal_log_day/{goalId}/{date}"
     const val QURAN_READER     = "quran_reader/{chapterNumber}?verseNumber={verseNumber}"
     const val QURAN_CHAPTER_INFO = "quran_chapter_info/{chapterNumber}"
     const val QURAN_MUSHAF     = "quran_mushaf/{pageNumber}?juzNumber={juzNumber}"
@@ -48,6 +49,8 @@ object Routes {
 
     fun editGoal(goalId: Long) = "edit_goal/$goalId"
     fun goalDetails(goalId: Long) = "goal_details/$goalId"
+    fun addGoal(template: String? = null) = "add_goal?template=${template.orEmpty()}"
+    fun goalLogDay(goalId: Long, date: String) = "goal_log_day/$goalId/$date"
     fun quranReader(chapterNumber: Int, verseNumber: Int? = null) =
         "quran_reader/$chapterNumber" + verseNumber?.let { "?verseNumber=$it" }.orEmpty()
     fun quranChapterInfo(chapterNumber: Int) = "quran_chapter_info/$chapterNumber"
