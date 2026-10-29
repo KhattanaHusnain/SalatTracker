@@ -26,6 +26,7 @@
     <string name="home_v8_translation">ترجمہ</string>
     <string name="home_v8_photo_title">مسجد نصیر الملک</string>
     <string name="home_v8_photo_detail">شیراز، ایران · قاجار دور کی کاشی کاری</string>
+    <string name="home_v8_photo_address_tooltip">یہ پتہ ہوم ہیرو کے پس منظر میں دکھائی گئی مسجد کا ہے۔</string>
     <string name="home_v8_hide_photo">تصویر کی معلومات چھپائیں</string>
     <string name="home_v8_about_photo">اس تصویر کے بارے میں</string>
     <string name="home_v8_donate">استقامت کی مدد کریں</string>

@@ -425,6 +425,7 @@ private fun BoxScope.V27HeroUndoStatement(entry: PrayerEntryUi, status: PrayerSt
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun V27PhotoInfo(shown: Boolean, modifier: Modifier, onHide: () -> Unit, onShow: () -> Unit) {
     if (!shown) Box(modifier.height(48.dp), contentAlignment = Alignment.BottomStart) {
@@ -435,6 +436,8 @@ private fun V27PhotoInfo(shown: Boolean, modifier: Modifier, onHide: () -> Unit,
         }
     } else {
         var drag by remember { mutableStateOf(Offset.Zero) }
+        val addressTooltip = rememberTooltipState(isPersistent = true)
+        val scope = rememberCoroutineScope()
         Row(modifier.testTag("home-photo-info").offset { IntOffset(drag.x.roundToInt(), drag.y.roundToInt()) }
             .pointerInput(Unit) { detectDragGestures(
                 onDrag = { change, delta -> change.consume(); drag += delta },
@@ -442,9 +445,33 @@ private fun V27PhotoInfo(shown: Boolean, modifier: Modifier, onHide: () -> Unit,
                 onDragCancel = { drag = Offset.Zero },
             ) }.background(Color(0x9904282B), RoundedCornerShape(10.dp))
             .padding(start = 8.dp, top = 6.dp, bottom = 6.dp), verticalAlignment = Alignment.Top) {
-            Icon(painterResource(R.drawable.onboarding_pin), null, tint = HomeGold,
-                modifier = Modifier.size(13.dp).padding(top = 1.dp))
-            Spacer(Modifier.width(5.dp))
+            TooltipBox(
+                positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                tooltip = {
+                    PlainTooltip {
+                        Text(
+                            stringResource(R.string.home_v8_photo_address_tooltip),
+                            modifier = Modifier.testTag("home-photo-address-tooltip"),
+                            fontFamily = HomeBodyFont,
+                            fontSize = 12.sp,
+                        )
+                    }
+                },
+                state = addressTooltip,
+            ) {
+                IconButton(
+                    onClick = { scope.launch { addressTooltip.show() } },
+                    modifier = Modifier.size(20.dp).testTag("home-photo-address-info"),
+                ) {
+                    Icon(
+                        painterResource(R.drawable.ic_info_circle),
+                        stringResource(R.string.home_v8_about_photo),
+                        tint = HomeGold,
+                        modifier = Modifier.size(15.dp),
+                    )
+                }
+            }
+            Spacer(Modifier.width(3.dp))
             Column(Modifier.weight(1f)) {
                 V27FixedText(stringResource(R.string.home_v8_photo_title), size = 11, line = 16,
                     color = Color.White, weight = FontWeight.SemiBold)

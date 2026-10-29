@@ -26,6 +26,7 @@
     <string name="home_v8_translation">Traduction</string>
     <string name="home_v8_photo_title">Mosquée Nasir al-Molk</string>
     <string name="home_v8_photo_detail">Chiraz, Iran · faïences d’époque qajare</string>
+    <string name="home_v8_photo_address_tooltip">Cette adresse correspond à la mosquée affichée dans l’image d’en-tête de l’accueil.</string>
     <string name="home_v8_hide_photo">Masquer les informations photo</string>
     <string name="home_v8_about_photo">À propos de cette photo</string>
     <string name="home_v8_donate">Soutenir Istiqamah</string>

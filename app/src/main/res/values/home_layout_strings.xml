@@ -26,6 +26,7 @@
     <string name="home_v8_translation">Translation</string>
     <string name="home_v8_photo_title">Nasir al-Mulk Mosque</string>
     <string name="home_v8_photo_detail">Shiraz, Iran · Qajar-era tilework</string>
+    <string name="home_v8_photo_address_tooltip">This address belongs to the mosque shown in the Home hero background.</string>
     <string name="home_v8_hide_photo">Hide photo information</string>
     <string name="home_v8_about_photo">About this photo</string>
     <string name="home_v8_donate">Support Istiqamah</string>
