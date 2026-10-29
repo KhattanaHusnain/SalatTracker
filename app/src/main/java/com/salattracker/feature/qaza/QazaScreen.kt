@@ -1,5 +1,7 @@
 package com.salattracker.feature.qaza
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -164,7 +166,11 @@ private fun ProgressCard(uiState: QazaUiState, onLogClick: () -> Unit, onAddMiss
             }
 
             Spacer(Modifier.height(10.dp))
-            val fraction = (progress.madeUpPercent ?: 100) / 100f
+            val fraction by animateFloatAsState(
+                targetValue = (progress.madeUpPercent ?: 100) / 100f,
+                animationSpec = tween(durationMillis = 300),
+                label = "qazaProgressFraction",
+            )
             LinearProgressIndicator(
                 progress = { fraction },
                 modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
@@ -343,6 +349,11 @@ private fun RecentlyMadeUpSection(
     onExpandToggle: () -> Unit,
     onUndo: (RecentMadeUpUi) -> Unit,
 ) {
+    val chevronRotation by animateFloatAsState(
+        targetValue = if (expanded) 180f else 0f,
+        animationSpec = tween(durationMillis = 220),
+        label = "recentMadeUpChevron",
+    )
     Column {
         Row(
             modifier = Modifier
@@ -359,7 +370,7 @@ private fun RecentlyMadeUpSection(
             )
             Icon(
                 painterResource(R.drawable.ic_expand_more), null, tint = SalatOnSurfaceVariant,
-                modifier = Modifier.rotate(if (expanded) 180f else 0f),
+                modifier = Modifier.rotate(chevronRotation),
             )
         }
         if (expanded) {

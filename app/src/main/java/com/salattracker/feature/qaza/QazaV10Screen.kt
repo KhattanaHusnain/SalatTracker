@@ -1,5 +1,6 @@
 package com.salattracker.feature.qaza
 
+import android.animation.ValueAnimator
 import android.media.AudioManager
 import android.media.ToneGenerator
 import androidx.compose.animation.core.animateFloatAsState
@@ -239,7 +240,8 @@ private fun HeroCard(state: QazaV10State, onDailyGoal: (Int) -> Unit, onSound: (
 @Composable
 private fun ArchGoalGauge(outstanding: Int, done: Int, target: Int, reducedMotion: Boolean) {
     val raw = if (target == 0) 1f else (done.toFloat() / target).coerceIn(0f, 1f)
-    val progress by animateFloatAsState(raw, animationSpec = if (reducedMotion) snap() else tween(650), label = "qaza-arch")
+    val skipAnim = reducedMotion || !ValueAnimator.areAnimatorsEnabled()
+    val progress by animateFloatAsState(raw, animationSpec = if (skipAnim) snap() else tween(650), label = "qaza-arch")
     val trackColor = SalatSecondaryContainer
     val progressColor = SalatPrimary
     val beadColor = SalatSecondary
@@ -349,36 +351,46 @@ private fun MiniArch(day: Int, progress: Float) {
 
 @Composable
 private fun PaceCard(state: QazaV10State) {
-    var whatIf by remember { mutableFloatStateOf((state.preferences.dailyGoal / 5).toFloat()) }
+    var whatIf by remember { mutableFloatStateOf((state.preferences.dailyGoal / 5).coerceIn(1, 5).toFloat()) }
+    val perDay = whatIf.roundToInt() * 5
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         SectionTitle(stringResource(R.string.qaza_v10_pace))
         V10Card {
             Text(stringResource(R.string.qaza_v10_left), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
-            PaceChart(state.outstanding)
+            PaceChart(state.outstanding, perDay, state.preferences.reducedMotion)
             Text(state.progress.eta?.let { "${it.value} ${it.unit.name.lowercase()}" } ?: stringResource(R.string.qaza_pace_start), color = SalatPrimary, fontWeight = FontWeight.SemiBold, fontFamily = AppUiFontFamily)
             Text(stringResource(R.string.qaza_v10_what_if), color = SalatOnSurface, fontWeight = FontWeight.Medium, fontFamily = AppUiFontFamily)
             Slider(value = whatIf, onValueChange = { whatIf = it }, valueRange = 1f..5f, steps = 3)
-            val perDay = whatIf.roundToInt() * 5
             Text(stringResource(R.string.qaza_v10_finish_days, perDay, (state.outstanding + perDay - 1) / perDay), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
         }
     }
 }
 
 @Composable
-private fun PaceChart(outstanding: Int) {
+private fun PaceChart(outstanding: Int, perDay: Int, reducedMotion: Boolean) {
     val gridColor = SalatOutline.copy(alpha = .25f)
     val lineColor = SalatPrimary
+    val skipAnim = reducedMotion || !ValueAnimator.areAnimatorsEnabled()
+    val targetDrop = if (outstanding <= 0) 0f else (perDay / 25f).coerceIn(0.28f, 1f)
+    val dropFraction by animateFloatAsState(
+        targetValue = targetDrop,
+        animationSpec = if (skipAnim) snap() else tween(350),
+        label = "qaza-pace-drop",
+    )
     Canvas(Modifier.fillMaxWidth().height(120.dp).testTag("qaza-pace-chart")) {
         drawLine(gridColor, Offset(0f, 12f), Offset(size.width, 12f))
         drawLine(gridColor, Offset(0f, size.height - 12f), Offset(size.width, size.height - 12f))
         val path = Path()
+        val startY = if (outstanding <= 0) size.height - 18f else 18f
+        val endY = if (outstanding <= 0) size.height - 18f else 18f + (size.height - 36f) * dropFraction
         repeat(8) { index ->
-            val x = size.width * index / 7f
-            val y = 18f + (size.height - 36f) * index / 9f
+            val t = index / 7f
+            val x = size.width * t
+            val y = startY + (endY - startY) * t
             if (index == 0) path.moveTo(x, y) else path.lineTo(x, y)
         }
         drawPath(path, lineColor, style = Stroke(3.dp.toPx(), cap = StrokeCap.Round))
-        drawCircle(lineColor, 4.dp.toPx(), Offset(size.width, size.height * .78f))
+        drawCircle(lineColor, 4.dp.toPx(), Offset(size.width, endY))
     }
 }
 
@@ -583,13 +595,14 @@ private fun DateAdjustRow(label: String, value: LocalDate, onChange: (LocalDate)
 private fun PrayerSelector(selected: Set<PrayerType>, onToggle: (PrayerType) -> Unit) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
         PrayerType.values().forEach { prayer ->
+            val isSelected = prayer in selected
             Column(
-                Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(if (prayer in selected) SalatPrimaryContainer else SalatSurface)
-                    .border(1.dp, SalatSecondaryContainer, RoundedCornerShape(12.dp)).clickable { onToggle(prayer) }.padding(vertical = 10.dp),
+                Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(if (isSelected) SalatPrimary.copy(alpha = 0.14f) else SalatSurface)
+                    .border(1.dp, if (isSelected) SalatPrimary else SalatSecondaryContainer, RoundedCornerShape(12.dp)).clickable { onToggle(prayer) }.padding(vertical = 10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Icon(painterResource(prayer.iconRes), null, tint = SalatPrimary, modifier = Modifier.size(20.dp))
-                Text(prayer.label(), fontSize = 10.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, fontFamily = AppUiFontFamily)
+                Text(prayer.label(), fontSize = 10.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, color = if (isSelected) SalatPrimary else SalatOnSurface, fontFamily = AppUiFontFamily)
             }
         }
     }
@@ -626,7 +639,7 @@ private fun ChoiceChip(label: String, selected: Boolean, modifier: Modifier = Mo
         onClick = onClick,
         modifier = modifier,
         shape = RoundedCornerShape(50),
-        color = if (selected) SalatPrimaryContainer else SalatSurface,
+        color = if (selected) SalatPrimary.copy(alpha = 0.14f) else SalatSurface,
         border = androidx.compose.foundation.BorderStroke(1.dp, if (selected) SalatPrimary else SalatSecondaryContainer),
     ) { Text(label, Modifier.padding(horizontal = 12.dp, vertical = 8.dp), textAlign = TextAlign.Center, color = if (selected) SalatPrimary else SalatOnSurface, fontSize = 12.sp, fontFamily = AppUiFontFamily, maxLines = 1) }
 }
