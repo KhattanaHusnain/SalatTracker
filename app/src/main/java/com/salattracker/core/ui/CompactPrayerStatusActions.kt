@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -57,7 +58,7 @@ internal fun CompactPrayerStatusActions(
 ) {
     AnimatedContent(targetState = status, label = "$tagPrefix-status-$prayerType") { current ->
         if (current != PrayerStatus.NOT_RECORDED) {
-            val ink = if (current == PrayerStatus.QAZA_COMPLETED) Color(0xFF302408) else Color.White
+            val ink = compactPrayerStatusContentColor(current)
             Row(
                 modifier = Modifier
                     .height(34.dp)
@@ -144,6 +145,14 @@ internal fun compactPrayerStatusColor(status: PrayerStatus): Color = when (statu
     PrayerStatus.MENSTRUATION -> SalatStatusExcused
     PrayerStatus.NOT_RECORDED -> SalatStatusNotRecorded
 }
+
+/** Chooses the higher-contrast neutral foreground for theme-dependent status fills. */
+@Composable
+internal fun compactPrayerStatusContentColor(status: PrayerStatus): Color =
+    readableStatusContentColor(compactPrayerStatusColor(status))
+
+internal fun readableStatusContentColor(background: Color): Color =
+    if (background.luminance() > 0.179f) Color(0xFF111111) else Color.White
 
 private fun compactOfferedStatuses(gender: Gender?): List<PrayerStatus> =
     if (gender == Gender.FEMALE) {

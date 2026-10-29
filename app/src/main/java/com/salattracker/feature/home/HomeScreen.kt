@@ -737,15 +737,16 @@ private fun v27HeroFigure(status: PrayerStatus, gender: Gender?): Int? = when (s
                             }
                         }
                     } else Column(horizontalAlignment = Alignment.End) {
+                        val statusInk = compactPrayerStatusContentColor(status)
                         Row(Modifier.height(34.dp).clip(CircleShape).background(homeStatusColor(status))
                             .clickable { onSave(date, type, if (status == PrayerStatus.QAZA_COMPLETED)
                                 PrayerStatus.QAZA_PENDING else PrayerStatus.NOT_RECORDED) }.padding(horizontal = 10.dp),
                             verticalAlignment = Alignment.CenterVertically) {
-                            V27StatusArtwork(status, state.gender, true, false, Modifier.size(22.dp), Color.White)
+                            V27StatusArtwork(status, state.gender, true, false, Modifier.size(22.dp), statusInk)
                             Spacer(Modifier.width(4.dp))
                             V27FixedText(v27StatusLabel(status, state.gender), size = 12,
                                 line = if (LocalConfiguration.current.locales[0].language == "ur") 23 else 18,
-                                color = Color.White, maxLines = 1)
+                                color = statusInk, maxLines = 1)
                         }
                         if (status == PrayerStatus.QAZA_PENDING) TextButton(
                             onClick = { onSave(date, type, PrayerStatus.QAZA_COMPLETED) },
