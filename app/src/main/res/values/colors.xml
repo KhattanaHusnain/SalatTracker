@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Brand colours (mirrors Theme.kt / Color.kt) -->
-    <color name="primary">#003527</color>
+    <!-- Brand colours (mirrors LightSalatColors in Color.kt) -->
+    <color name="primary">#087E83</color>
     <color name="on_primary">#FFFFFF</color>
-    <color name="primary_container">#064E3B</color>
-    <color name="primary_fixed">#B0F0D6</color>
+    <color name="primary_container">#07595C</color>
+    <color name="primary_fixed">#BDE5E2</color>
 
-    <color name="secondary">#52625C</color>
-    <color name="secondary_container">#D3E3DC</color>
-    <color name="on_secondary_container">#566660</color>
+    <color name="secondary">#6B7270</color>
+    <color name="secondary_container">#EEF1EE</color>
+    <color name="on_secondary_container">#39413F</color>
 
-    <color name="background">#F8FAF6</color>
-    <color name="surface">#F8FAF6</color>
-    <color name="surface_container">#ECEEEB</color>
-    <color name="surface_container_high">#E7E9E5</color>
-    <color name="surface_container_highest">#E1E3E0</color>
-    <color name="outline_variant">#BFC9C3</color>
+    <color name="background">#FFFFFF</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_container">#F3F5F3</color>
+    <color name="surface_container_high">#EEF1EE</color>
+    <color name="surface_container_highest">#E7EBE8</color>
+    <color name="outline_variant">#E3E6E2</color>
 
     <color name="error">#BA1A1A</color>
     <color name="on_error">#FFFFFF</color>
 
-    <!-- Used by the splash window background to prevent white flash -->
-    <color name="splash_background">#F8FAF6</color>
+    <!-- Used by the splash window background to prevent flash before Compose renders -->
+    <color name="splash_background">#FFFFFF</color>
 </resources>
