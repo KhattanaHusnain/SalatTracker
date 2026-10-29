@@ -62,6 +62,7 @@ fun HomeScreen(
     onPastStatusSave: (LocalDate, PrayerType, PrayerStatus) -> Unit = { date, _, _ -> onDayClick(date) },
     onReminderToggle: (PrayerType) -> Unit = {},
     onMenuClick: () -> Unit = {},
+    hostedBelowSharedTopBar: Boolean = false,
     onLocationClick: () -> Unit = {},
     onDonateClick: () -> Unit = {},
     onCatchUpClick: () -> Unit = {},
@@ -101,6 +102,7 @@ fun HomeScreen(
                 V27Hero(
                     uiState,
                     onOpenMenu = onMenuClick,
+                    hostedBelowSharedTopBar = hostedBelowSharedTopBar,
                     onLocation = onLocationClick,
                     onSave = onQuickStatusSave,
                     onOpenStreaks = { showStreaks = true },
@@ -173,6 +175,7 @@ fun HomeScreen(
 private fun V27Hero(
     state: HomeUiState,
     onOpenMenu: () -> Unit,
+    hostedBelowSharedTopBar: Boolean,
     onLocation: () -> Unit,
     onSave: (PrayerType, PrayerStatus) -> Unit,
     onOpenStreaks: () -> Unit,
@@ -207,15 +210,24 @@ private fun V27Hero(
         Box(Modifier.matchParentSize().background(Brush.verticalGradient(
             0f to Color(0xB8064E52), .55f to Color(0x6B064E52), 1f to Color(0xDB053C40),
         )))
-        Column(Modifier.fillMaxWidth().statusBarsPadding().padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 26.dp)) {
-            Row(Modifier.fillMaxWidth().height(30.dp), verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onOpenMenu, modifier = Modifier.size(40.dp).offset(x = (-10).dp)
-                    .testTag("home-menu-open")) {
-                    Icon(painterResource(R.drawable.ic_menu), stringResource(R.string.home_v8_menu),
-                        tint = Color.White, modifier = Modifier.size(20.dp))
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .then(if (hostedBelowSharedTopBar) Modifier else Modifier.statusBarsPadding())
+                .padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 26.dp),
+        ) {
+            if (!hostedBelowSharedTopBar || state.appearance.streakBadge) {
+                Row(Modifier.fillMaxWidth().height(30.dp), verticalAlignment = Alignment.CenterVertically) {
+                    if (!hostedBelowSharedTopBar) {
+                        IconButton(onClick = onOpenMenu, modifier = Modifier.size(40.dp).offset(x = (-10).dp)
+                            .testTag("home-menu-open")) {
+                            Icon(painterResource(R.drawable.ic_menu), stringResource(R.string.home_v8_menu),
+                                tint = Color.White, modifier = Modifier.size(20.dp))
+                        }
+                    }
+                    Spacer(Modifier.weight(1f))
+                    if (state.appearance.streakBadge) V27StreakDisplay(state, true, onAppearanceChanged, onOpenStreaks)
                 }
-                Spacer(Modifier.weight(1f))
-                if (state.appearance.streakBadge) V27StreakDisplay(state, true, onAppearanceChanged, onOpenStreaks)
             }
             val enlarged = LocalDensity.current.fontScale > 1.15f
             BoxWithConstraints(Modifier.fillMaxWidth().heightIn(min = 196.dp)) {
