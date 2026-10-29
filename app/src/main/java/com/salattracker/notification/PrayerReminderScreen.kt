@@ -1,5 +1,6 @@
 package com.salattracker.notification
 
+import android.animation.ValueAnimator
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -200,13 +201,18 @@ fun PrayerReminderScreen(
             }
 
             // ── Pulsing logo + verse ──────────────────────────────────────────
-            val infiniteTransition = rememberInfiniteTransition(label = "breathe")
-            val scale by infiniteTransition.animateFloat(
-                initialValue  = 1f,
-                targetValue   = 1.1f,
-                animationSpec = infiniteRepeatable(tween(1500), RepeatMode.Reverse),
-                label         = "scale",
-            )
+            val scale = if (ValueAnimator.areAnimatorsEnabled()) {
+                val infiniteTransition = rememberInfiniteTransition(label = "breathe")
+                val animated by infiniteTransition.animateFloat(
+                    initialValue  = 1f,
+                    targetValue   = 1.1f,
+                    animationSpec = infiniteRepeatable(tween(1500), RepeatMode.Reverse),
+                    label         = "scale",
+                )
+                animated
+            } else {
+                1f
+            }
             Box(
                 modifier = Modifier
                     .weight(1f)

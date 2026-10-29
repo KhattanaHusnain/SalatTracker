@@ -1,5 +1,6 @@
 package com.salattracker.feature.calendar
 
+import android.animation.ValueAnimator
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
@@ -578,8 +579,14 @@ private fun RingDayCell(
 
 @Composable
 private fun DayCellSkeleton(modifier: Modifier = Modifier) {
-    val alpha by rememberInfiniteTransition(label = "sk")
-        .animateFloat(0.3f, 0.7f, infiniteRepeatable(tween(800), RepeatMode.Reverse), label = "a")
+    val animationsEnabled = remember { ValueAnimator.areAnimatorsEnabled() }
+    val alpha = if (animationsEnabled) {
+        val animated by rememberInfiniteTransition(label = "sk")
+            .animateFloat(0.3f, 0.7f, infiniteRepeatable(tween(800), RepeatMode.Reverse), label = "a")
+        animated
+    } else {
+        0.5f
+    }
     Box(modifier = modifier.clip(RoundedCornerShape(10.dp)).background(SalatSurfaceContainerHigh.copy(alpha = alpha)))
 }
 

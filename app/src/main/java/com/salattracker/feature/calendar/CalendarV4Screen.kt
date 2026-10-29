@@ -1,5 +1,6 @@
 package com.salattracker.feature.calendar
 
+import android.animation.ValueAnimator
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -240,7 +241,7 @@ private fun FilterRow(state: CalendarV4UiState, onQazaOnly: () -> Unit, onPrayer
 @Composable
 private fun FilterChip(label: String, selected: Boolean, onClick: () -> Unit) {
     Surface(onClick = onClick, shape = CircleShape,
-        color = if (selected) Color(0xFFEAF4F3) else SalatSurface,
+        color = if (selected) SalatPrimary.copy(alpha = 0.14f) else SalatSurface,
         border = BorderStroke(1.5.dp, if (selected) SalatPrimary else SalatOutlineVariant)) {
         Box(Modifier.height(40.dp).padding(horizontal = 12.dp), contentAlignment = Alignment.Center) {
             Text(label, fontFamily = AppUiFontFamily, fontSize = 12.5.sp,
@@ -320,12 +321,16 @@ private fun CalendarDayCell(state: CalendarV4UiState, date: LocalDate, onClick: 
 
 @Composable
 private fun TodayPulseRing() {
-    val alpha = rememberInfiniteTransition(label = "calendar-today-pulse").animateFloat(
-        initialValue = .35f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(tween(1300), RepeatMode.Reverse),
-        label = "calendar-today-alpha",
-    ).value
+    val alpha = if (ValueAnimator.areAnimatorsEnabled()) {
+        rememberInfiniteTransition(label = "calendar-today-pulse").animateFloat(
+            initialValue = .35f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(tween(1300), RepeatMode.Reverse),
+            label = "calendar-today-alpha",
+        ).value
+    } else {
+        0.85f
+    }
     val gold = Color(0xFFD9A441)
     Box(
         Modifier.size(40.dp)

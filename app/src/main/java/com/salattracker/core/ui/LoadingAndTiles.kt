@@ -1,5 +1,6 @@
 package com.salattracker.core.ui
 
+import android.animation.ValueAnimator
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -32,7 +33,14 @@ import com.salattracker.core.theme.SalatSurfaceContainerHigh
  * so every skeleton in the app pulses at the same rate. */
 @Composable
 fun ShimmerBox(modifier: Modifier = Modifier) {
-    val alpha by rememberInfiniteTransition(label = "sk").animateFloat(0.3f, 0.7f, infiniteRepeatable(tween(800), RepeatMode.Reverse), label = "a")
+    val alpha = if (ValueAnimator.areAnimatorsEnabled()) {
+        val animated by rememberInfiniteTransition(label = "sk").animateFloat(
+            0.3f, 0.7f, infiniteRepeatable(tween(800), RepeatMode.Reverse), label = "a",
+        )
+        animated
+    } else {
+        0.5f
+    }
     Box(modifier.clip(RoundedCornerShape(8.dp)).background(SalatSurfaceContainerHigh.copy(alpha = alpha)))
 }
 

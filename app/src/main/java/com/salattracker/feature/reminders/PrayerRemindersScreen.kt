@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -151,6 +152,10 @@ private fun ReminderCard(
     val context = LocalContext.current
     val fullScreenUnavailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE &&
         !context.getSystemService(android.app.NotificationManager::class.java).canUseFullScreenIntent()
+    val chevronRotation by animateFloatAsState(
+        targetValue = if (expanded) 180f else 0f,
+        label = "reminder-chevron",
+    )
     Surface(
         modifier        = Modifier.fillMaxWidth(),
         shape           = RoundedCornerShape(16.dp),
@@ -200,7 +205,7 @@ private fun ReminderCard(
                     painter            = painterResource(R.drawable.ic_expand_more),
                     contentDescription = null,
                     tint               = SalatOnSurfaceVariant,
-                    modifier           = Modifier.rotate(if (expanded) 180f else 0f),
+                    modifier           = Modifier.rotate(chevronRotation),
                 )
             }
 
