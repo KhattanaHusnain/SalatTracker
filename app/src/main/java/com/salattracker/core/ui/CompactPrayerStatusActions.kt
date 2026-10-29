@@ -32,13 +32,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.AppUiFontFamily
+import com.salattracker.core.theme.SalatOutlineVariant
+import com.salattracker.core.theme.SalatStatusCongregation
+import com.salattracker.core.theme.SalatStatusExcused
+import com.salattracker.core.theme.SalatStatusIndividual
+import com.salattracker.core.theme.SalatStatusNotRecorded
+import com.salattracker.core.theme.SalatStatusQazaCompleted
+import com.salattracker.core.theme.SalatStatusQazaPending
 import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
 
-private val CompactTeal = Color(0xFF087E83)
-private val CompactGold = Color(0xFFD9A441)
-private val CompactDivider = Color(0xFFE3E6E2)
+private val CompactDivider: Color @Composable get() = SalatOutlineVariant
 
 /** Home's inline prayer-status control, shared with Calendar's selected-day rows. */
 @Composable
@@ -130,13 +135,14 @@ internal fun compactPrayerStatusLabel(status: PrayerStatus, gender: Gender?): St
     else -> status.label()
 }
 
+@Composable
 internal fun compactPrayerStatusColor(status: PrayerStatus): Color = when (status) {
-    PrayerStatus.CONGREGATION -> CompactTeal
-    PrayerStatus.INDIVIDUAL -> Color(0xFF6DBBB6)
-    PrayerStatus.QAZA_PENDING -> Color(0xFFD9603B)
-    PrayerStatus.QAZA_COMPLETED -> CompactGold
-    PrayerStatus.MENSTRUATION -> Color(0xFFC9338E)
-    PrayerStatus.NOT_RECORDED -> Color(0xFFDADFDA)
+    PrayerStatus.CONGREGATION -> SalatStatusCongregation
+    PrayerStatus.INDIVIDUAL -> SalatStatusIndividual
+    PrayerStatus.QAZA_PENDING -> SalatStatusQazaPending
+    PrayerStatus.QAZA_COMPLETED -> SalatStatusQazaCompleted
+    PrayerStatus.MENSTRUATION -> SalatStatusExcused
+    PrayerStatus.NOT_RECORDED -> SalatStatusNotRecorded
 }
 
 private fun compactOfferedStatuses(gender: Gender?): List<PrayerStatus> =
