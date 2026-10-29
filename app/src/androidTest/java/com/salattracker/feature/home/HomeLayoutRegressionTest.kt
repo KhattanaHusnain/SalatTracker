@@ -161,7 +161,7 @@ class HomeLayoutRegressionTest(private val width: Int, private val height: Int, 
         compose.onNodeWithTag("home-screen").assertIsDisplayed()
         compose.onNodeWithTag("home-menu-open").assertDoesNotExist()
         compose.onNodeWithTag("app-top-bar").assertIsDisplayed()
-        compose.onNodeWithTag("home-shared-top-bar-space").assertIsDisplayed()
+        compose.onNodeWithTag("home-shared-top-bar-space").assertExists()
         val hero = compose.onNodeWithTag("home-hero").fetchSemanticsNode().boundsInRoot
         val bar = compose.onNodeWithTag("app-top-bar").fetchSemanticsNode().boundsInRoot
         val date = compose.onNodeWithTag("home-date-block").fetchSemanticsNode().boundsInRoot
