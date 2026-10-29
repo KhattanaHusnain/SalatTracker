@@ -26,6 +26,7 @@
     <string name="home_v8_translation">الترجمة</string>
     <string name="home_v8_photo_title">مسجد نصير الملك</string>
     <string name="home_v8_photo_detail">شيراز، إيران · زخارف قاجارية</string>
+    <string name="home_v8_photo_address_tooltip">هذا العنوان هو للمسجد الظاهر في خلفية الواجهة الرئيسية.</string>
     <string name="home_v8_hide_photo">إخفاء معلومات الصورة</string>
     <string name="home_v8_about_photo">عن هذه الصورة</string>
     <string name="home_v8_donate">ادعم استقامة</string>

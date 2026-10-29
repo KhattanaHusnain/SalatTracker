@@ -10,6 +10,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
@@ -25,7 +26,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -253,7 +256,8 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
     val navController = rememberNavController()
     val navBackStack  by navController.currentBackStackEntryAsState()
     val currentDest   = navBackStack?.destination
-    val isTopLevel    = isTabRoute(currentDest?.route)
+    val currentRoute  = currentDest?.route
+    val isTopLevel    = currentRoute == null || isTabRoute(currentRoute)
 
     val drawerState    = rememberDrawerState(DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
@@ -263,13 +267,14 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
     val backupNeedsAttention by shellViewModel.backupNeedsAttention.collectAsState()
     val qazaPendingTotal by shellViewModel.qazaPendingTotal.collectAsState()
     val hideQazaBadge by shellViewModel.hideQazaBadge.collectAsState()
+    val isHome = currentRoute == null || currentRoute == BottomNavRoute.Home.route
     val view = LocalView.current
     val background = SalatBackground
-    DisposableEffect(background) {
+    DisposableEffect(isHome, background) {
         val window = (view.context as? android.app.Activity)?.window
         val controller = window?.let { WindowCompat.getInsetsController(it, view) }
         val previous = controller?.isAppearanceLightStatusBars
-        controller?.isAppearanceLightStatusBars = background.luminance() > .5f
+        controller?.isAppearanceLightStatusBars = !isHome && background.luminance() > .5f
         onDispose { previous?.let { controller?.isAppearanceLightStatusBars = it } }
     }
 
@@ -366,6 +371,7 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                     quranPageControls    = if (isQuranPageRoute) quranPageControls else null,
                     calendarAwayFromToday    = calendarUiState.awayFromToday,
                     onCalendarTodayClick     = calendarViewModel::onTodayClick,
+                    overlaysHomeHero         = isHome,
                 )
             },
             bottomBar = {
@@ -383,10 +389,22 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
                 }
             },
         ) { innerPadding ->
+            val layoutDirection = LocalLayoutDirection.current
+            // Home owns the top inset so its hero can paint behind the shared transparent bar.
+            // Other destinations continue consuming Scaffold's complete content padding.
+            val contentModifier = if (isHome) {
+                Modifier.padding(
+                    start = innerPadding.calculateStartPadding(layoutDirection),
+                    end = innerPadding.calculateEndPadding(layoutDirection),
+                    bottom = innerPadding.calculateBottomPadding(),
+                )
+            } else {
+                Modifier.padding(innerPadding)
+            }
             NavHost(
                 navController    = navController,
                 startDestination = BottomNavRoute.Home.route,
-                modifier         = Modifier.padding(innerPadding),
+                modifier         = contentModifier,
             ) {
                 composable(BottomNavRoute.Home.route) {
                     HomeEntry(
@@ -563,18 +581,32 @@ internal fun TopBar(
     quranPageControls: QuranPageControls?,
     calendarAwayFromToday: Boolean,
     onCalendarTodayClick: () -> Unit,
+    overlaysHomeHero: Boolean = false,
 ) {
+    val barSurface by animateColorAsState(
+        targetValue = if (overlaysHomeHero) Color.Transparent else SalatBackground,
+        label = "top-bar-surface",
+    )
+    val barPrimary by animateColorAsState(
+        targetValue = if (overlaysHomeHero) Color.White else SalatPrimary,
+        label = "top-bar-primary",
+    )
+    val barSecondary by animateColorAsState(
+        targetValue = if (overlaysHomeHero) Color.White else SalatOnSurface,
+        label = "top-bar-secondary",
+    )
     TopAppBar(
         modifier = Modifier.testTag("app-top-bar"),
         title = {
             Box(Modifier.fillMaxWidth()) {
                 ArchitecturalFrieze(
                     modifier = Modifier.align(Alignment.CenterEnd).size(112.dp, 18.dp),
+                    color = barPrimary,
                     alpha = .16f,
                 )
                 Text(
                     text       = title,
-                    color      = SalatPrimary,
+                    color      = barPrimary,
                     fontSize   = 22.sp,
                     fontWeight = FontWeight.SemiBold,
                     fontFamily = AppTitleFontFamily,
@@ -589,43 +621,43 @@ internal fun TopBar(
             if (isTopLevel) {
                 IconButton(onClick = onMenuClick) {
                     BadgedBox(badge = { if (backupNeedsAttention) Badge(containerColor = SalatError) }) {
-                        Icon(painterResource(R.drawable.ic_menu), stringResource(R.string.cd_menu), tint = SalatPrimary)
+                        Icon(painterResource(R.drawable.ic_menu), stringResource(R.string.cd_menu), tint = barPrimary)
                     }
                 }
             } else {
                 IconButton(onClick = onBackClick) {
-                    Icon(painterResource(R.drawable.ic_arrow_back), stringResource(R.string.cd_back), tint = SalatPrimary)
+                    Icon(painterResource(R.drawable.ic_arrow_back), stringResource(R.string.cd_back), tint = barPrimary)
                 }
             }
         },
         actions = {
             quranPageControls?.let { controls ->
                 IconButton(onClick = controls.onPreviousPage, enabled = controls.hasPreviousPage) {
-                    Icon(painterResource(R.drawable.ic_chevron_left), stringResource(R.string.quran_mushaf_previous_page), tint = SalatPrimary)
+                    Icon(painterResource(R.drawable.ic_chevron_left), stringResource(R.string.quran_mushaf_previous_page), tint = barPrimary)
                 }
                 Text(
                     text = stringResource(R.string.quran_mushaf_page_label, controls.pageNumber),
-                    color = SalatOnSurface,
+                    color = barSecondary,
                     fontSize = 12.sp,
                     fontFamily = AppUiFontFamily,
                 )
                 IconButton(onClick = controls.onNextPage, enabled = controls.hasNextPage) {
-                    Icon(painterResource(R.drawable.ic_chevron_right), stringResource(R.string.quran_mushaf_next_page), tint = SalatPrimary)
+                    Icon(painterResource(R.drawable.ic_chevron_right), stringResource(R.string.quran_mushaf_next_page), tint = barPrimary)
                 }
             }
             if (showAddGoal) {
                 IconButton(onClick = onAddGoalClick) {
-                    Icon(painterResource(R.drawable.ic_add), stringResource(R.string.action_add_goal), tint = SalatPrimary)
+                    Icon(painterResource(R.drawable.ic_add), stringResource(R.string.action_add_goal), tint = barPrimary)
                 }
             }
             goalDetailsControls?.let { controls ->
                 var expanded by remember { mutableStateOf(false) }
                 IconButton(onClick = controls.onEdit) {
-                    Icon(painterResource(R.drawable.ic_edit_square), stringResource(R.string.goal_action_edit), tint = SalatPrimary)
+                    Icon(painterResource(R.drawable.ic_edit_square), stringResource(R.string.goal_action_edit), tint = barPrimary)
                 }
                 Box {
                     IconButton(onClick = { expanded = true }) {
-                        Icon(painterResource(R.drawable.ic_more_vert), stringResource(R.string.goals_v2_more_options), tint = SalatPrimary)
+                        Icon(painterResource(R.drawable.ic_more_vert), stringResource(R.string.goals_v2_more_options), tint = barPrimary)
                     }
                     DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                         if (controls.status != com.salattracker.domain.usecase.GoalStatus.COMPLETED) {
@@ -644,30 +676,36 @@ internal fun TopBar(
             if (showCalendarEdit) {
                 if (calendarAwayFromToday) {
                     IconButton(onClick = onCalendarTodayClick) {
-                        Icon(painterResource(R.drawable.ic_calendar_today), stringResource(R.string.calendar_today), tint = SalatPrimary)
+                        Icon(painterResource(R.drawable.ic_calendar_today), stringResource(R.string.calendar_today), tint = barPrimary)
                     }
                 }
                 IconButton(onClick = onCalendarEditClick) {
-                    Icon(painterResource(R.drawable.ic_edit_square), stringResource(R.string.calendar_v4_edit), tint = SalatPrimary)
+                    Icon(painterResource(R.drawable.ic_edit_square), stringResource(R.string.calendar_v4_edit), tint = barPrimary)
                 }
             }
             if (showQuranSearch) {
                 IconButton(onClick = onQuranSearchClick) {
-                    Icon(painterResource(R.drawable.ic_search), stringResource(R.string.quran_jump_title), tint = SalatPrimary)
+                    Icon(painterResource(R.drawable.ic_search), stringResource(R.string.quran_jump_title), tint = barPrimary)
                 }
             }
             if (showQuranResume) {
                 IconButton(onClick = onQuranResumeClick, enabled = quranResumeEnabled) {
-                    Icon(painterResource(R.drawable.ic_play), stringResource(R.string.quran_continue_reading), tint = SalatPrimary)
+                    Icon(painterResource(R.drawable.ic_play), stringResource(R.string.quran_continue_reading), tint = barPrimary)
                 }
             }
             if (showMushafButton) {
                 IconButton(onClick = onMushafButtonClick) {
-                    Icon(painterResource(R.drawable.ic_nav_quran), stringResource(R.string.quran_mushaf_mode), tint = SalatPrimary)
+                    Icon(painterResource(R.drawable.ic_nav_quran), stringResource(R.string.quran_mushaf_mode), tint = barPrimary)
                 }
             }
         },
-        colors = TopAppBarDefaults.topAppBarColors(containerColor = SalatBackground),
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = barSurface,
+            scrolledContainerColor = barSurface,
+            navigationIconContentColor = barPrimary,
+            titleContentColor = barPrimary,
+            actionIconContentColor = barPrimary,
+        ),
     )
 }
 
