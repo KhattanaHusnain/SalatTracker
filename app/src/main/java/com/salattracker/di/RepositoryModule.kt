@@ -15,6 +15,7 @@ import com.salattracker.data.repository.PrayerRepositoryImpl
 import com.salattracker.data.repository.QuranContentRepositoryImpl
 import com.salattracker.data.repository.QuranUserDataRepositoryImpl
 import com.salattracker.data.repository.SettingsRepositoryImpl
+import com.salattracker.data.local.preferences.DataStoreQazaPreferencesRepository
 import com.salattracker.data.repository.TasbihRepositoryImpl
 import com.salattracker.data.repository.VerseRepositoryImpl
 import com.salattracker.domain.repository.BackupRepository
@@ -42,6 +43,7 @@ import com.salattracker.domain.repository.PrayerRepository
 import com.salattracker.domain.repository.QuranContentRepository
 import com.salattracker.domain.repository.QuranUserDataRepository
 import com.salattracker.domain.repository.SettingsRepository
+import com.salattracker.domain.repository.QazaPreferencesRepository
 import com.salattracker.domain.repository.TasbihRepository
 import com.salattracker.domain.repository.VerseRepository
 import dagger.Binds
@@ -53,6 +55,10 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {
+
+    @Binds
+    @Singleton
+    abstract fun bindQazaPreferencesRepository(impl: DataStoreQazaPreferencesRepository): QazaPreferencesRepository
 
     @Binds
     @Singleton

@@ -20,7 +20,7 @@ class SalatDatabaseMigrationTest {
     )
 
     @Test
-    fun migrateFrom7To13_preservesPrayerAndGoalData() {
+    fun migrateFrom7To14_preservesPrayerAndGoalData() {
         helper.createDatabase(TEST_DB_NAME, 7).apply {
             execSQL(
                 "INSERT INTO prayer_entries " +
@@ -38,7 +38,7 @@ class SalatDatabaseMigrationTest {
 
         val database = helper.runMigrationsAndValidate(
             TEST_DB_NAME,
-            13,
+            14,
             true,
             MIGRATION_7_8,
             MIGRATION_8_9,
@@ -46,12 +46,18 @@ class SalatDatabaseMigrationTest {
             MIGRATION_10_11,
             MIGRATION_11_12,
             MIGRATION_12_13,
+            MIGRATION_13_14,
         )
 
-        database.query("SELECT status, logged_late FROM prayer_entries WHERE user_id = 'migration-user'").use { cursor ->
+        database.query("SELECT status, logged_late, qaza_reason FROM prayer_entries WHERE user_id = 'migration-user'").use { cursor ->
             assertTrue(cursor.moveToFirst())
             assertEquals("INDIVIDUAL", cursor.getString(0))
             assertEquals(0, cursor.getInt(1))
+            assertTrue(cursor.isNull(2))
+        }
+        database.query("SELECT COUNT(*) FROM qaza_activity").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(0, cursor.getInt(0))
         }
         database.query("SELECT name, uses_tasbih_counter FROM spiritual_goals WHERE name = 'Read Quran'").use { cursor ->
             assertTrue(cursor.moveToFirst())

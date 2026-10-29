@@ -8,7 +8,6 @@ import com.salattracker.domain.model.GoalHistory
 import com.salattracker.domain.model.SpiritualGoal
 import com.salattracker.domain.repository.GoalRepository
 import com.salattracker.domain.usecase.DayLog
-import com.salattracker.domain.usecase.GoalDayState
 import com.salattracker.domain.usecase.GoalStatus
 import com.salattracker.domain.usecase.currentPeriodAmount
 import com.salattracker.domain.usecase.dayIndex
@@ -28,9 +27,6 @@ import java.time.Clock
 import java.time.LocalDate
 import javax.inject.Inject
 
-// ── UI models ────────────────────────────────────────────────────────────────
-
-/** "Done today 3/4" — daily goals due today (excused days left out), plus weekly/monthly goals. */
 data class TodaySummary(
     val dailyDone: Int = 0,
     val dailyTotal: Int = 0,
@@ -41,13 +37,11 @@ data class TodaySummary(
 data class GoalCardUi(
     val goal: SpiritualGoal,
     val streak: Int,
-    /** Today's amount for daily goals; this week's / month's amount for weekly / monthly goals. */
     val currentAmount: Int,
     val dueToday: Boolean,
-    /** Today is excused for this daily goal. */
     val skippedToday: Boolean,
     val dayIndex: Int?,
-    /** The last 7 days, oldest first, ending today. */
+    /** The current Monday–Sunday week. */
     val strip: List<GoalDayUi>,
 ) {
     val isPeriodDone: Boolean get() = currentAmount >= goal.targetAmount
@@ -60,21 +54,20 @@ data class GoalsUiState(
     val today: TodaySummary = TodaySummary(),
     val active: List<GoalCardUi> = emptyList(),
     val archived: List<ArchivedGoalUi> = emptyList(),
-    val logSheet: LogSheetUi? = null,
     val errorRes: Int? = null,
 ) {
     val hasAnyGoals: Boolean get() = active.isNotEmpty() || archived.isNotEmpty()
 }
 
-private const val STRIP_DAYS = 7
+private const val WEEK_DAYS = 7
 
-/** Pure projection of the stored histories onto what the Goals tab shows for [today]. */
 internal fun buildGoalsContent(
     histories: List<GoalHistory>,
     today: LocalDate,
 ): Triple<TodaySummary, List<GoalCardUi>, List<ArchivedGoalUi>> {
     val active = mutableListOf<GoalCardUi>()
     val archived = mutableListOf<ArchivedGoalUi>()
+    val weekStart = today.minusDays(today.dayOfWeek.value - 1L)
 
     histories.forEach { (goal, checkIns) ->
         val status = goal.statusOn(today)
@@ -83,8 +76,8 @@ internal fun buildGoalsContent(
             return@forEach
         }
         val log = DayLog(checkIns)
-        val strip = (STRIP_DAYS - 1 downTo 0).map { back ->
-            val date = today.minusDays(back.toLong())
+        val strip = (0 until WEEK_DAYS).map { offset ->
+            val date = weekStart.plusDays(offset.toLong())
             val amount = log.amountOn(date)
             GoalDayUi(
                 date = date,
@@ -96,7 +89,11 @@ internal fun buildGoalsContent(
         active += GoalCardUi(
             goal = goal,
             streak = goalStreak(goal, checkIns, today).current,
-            currentAmount = if (goal.frequency == GoalFrequency.DAILY) log.amountOn(today) else currentPeriodAmount(goal, checkIns, today),
+            currentAmount = if (goal.frequency == GoalFrequency.DAILY) {
+                log.amountOn(today)
+            } else {
+                currentPeriodAmount(goal, checkIns, today)
+            },
             dueToday = goal.isDueOn(today),
             skippedToday = log.isSkipped(today),
             dayIndex = goal.dayIndex(today),
@@ -104,7 +101,9 @@ internal fun buildGoalsContent(
         )
     }
 
-    val daily = active.filter { it.goal.frequency == GoalFrequency.DAILY && it.dueToday && !it.skippedToday }
+    val daily = active.filter {
+        it.goal.frequency == GoalFrequency.DAILY && it.dueToday && !it.skippedToday
+    }
     val periodic = active.filter { it.goal.frequency != GoalFrequency.DAILY }
     val summary = TodaySummary(
         dailyDone = daily.count { it.isPeriodDone },
@@ -112,11 +111,8 @@ internal fun buildGoalsContent(
         periodicDone = periodic.count { it.isPeriodDone },
         periodicTotal = periodic.size,
     )
-    // Completed goals first, then manually archived ones; stable otherwise.
     return Triple(summary, active, archived.sortedBy { it.status != GoalStatus.COMPLETED })
 }
-
-// ── ViewModel ────────────────────────────────────────────────────────────────
 
 @HiltViewModel
 class GoalsViewModel @Inject constructor(
@@ -126,97 +122,31 @@ class GoalsViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(GoalsUiState())
     val uiState: StateFlow<GoalsUiState> = _uiState.asStateFlow()
-
-    private var histories: List<GoalHistory> = emptyList()
-
-    /** Bumped by [refresh] so "today" and the strip are recomputed when the screen is shown again
-     * (e.g. after midnight) even if no check-in changed. */
     private val refreshTrigger = MutableStateFlow(0)
 
-    init { observeGoals() }
-
-    private fun observeGoals() {
+    init {
         viewModelScope.launch {
-            combine(goalRepository.observeGoalHistories(), refreshTrigger) { h, _ -> h to LocalDate.now(clock) }
-                .catch { _ -> _uiState.update { it.copy(isLoading = false, errorRes = R.string.error_load_generic) } }
-                .collect { (h, today) ->
-                    histories = h
-                    val (summary, active, archived) = buildGoalsContent(h, today)
-                    _uiState.update {
-                        it.copy(isLoading = false, today = summary, active = active, archived = archived)
-                    }
-                }
-        }
-    }
-
-    fun refresh() = refreshTrigger.update { it + 1 }
-
-    // ── Strip taps ───────────────────────────────────────────────────────────
-
-    fun onDayTap(goalId: Long, date: LocalDate) {
-        val card = _uiState.value.active.firstOrNull { it.goal.id == goalId } ?: return
-        val day = card.strip.firstOrNull { it.date == date } ?: return
-        when (day.state) {
-            GoalDayState.LOCKED, GoalDayState.NOT_DUE -> Unit
-            // Excused or already-complete multi-step days: tapping can't "add", so open the editor.
-            GoalDayState.SKIPPED -> openSheet(card.goal, date)
-            GoalDayState.DONE -> if (card.goal.targetAmount > 1) openSheet(card.goal, date) else save(goalId, date, 0, false)
-            else -> {
-                if (card.goal.targetAmount == 1 && day.amount > 0) {
-                    save(goalId, date, 0, false)           // single-step goals toggle off
-                } else {
-                    viewModelScope.launch {
-                        runCatching { goalRepository.checkIn(goalId, 1, date) }
-                            .onFailure { _ -> _uiState.update { it.copy(errorRes = R.string.error_save_generic) } }
-                    }
+            combine(goalRepository.observeGoalHistories(), refreshTrigger) { histories, _ ->
+                histories to LocalDate.now(clock)
+            }.catch {
+                _uiState.update { it.copy(isLoading = false, errorRes = R.string.error_load_generic) }
+            }.collect { (histories, today) ->
+                val (summary, active, archived) = buildGoalsContent(histories, today)
+                _uiState.update {
+                    it.copy(isLoading = false, today = summary, active = active, archived = archived)
                 }
             }
         }
     }
 
-    fun onDayLongPress(goalId: Long, date: LocalDate) {
+    fun refresh() = refreshTrigger.update { it + 1 }
+
+    fun onQuickAdd(goalId: Long) {
         val card = _uiState.value.active.firstOrNull { it.goal.id == goalId } ?: return
-        val day = card.strip.firstOrNull { it.date == date } ?: return
-        if (day.state != GoalDayState.LOCKED) openSheet(card.goal, date)
-    }
-
-    private fun openSheet(goal: SpiritualGoal, date: LocalDate) {
-        val checkIns = histories.firstOrNull { it.goal.id == goal.id }?.checkIns.orEmpty()
-        _uiState.update { it.copy(logSheet = goal.logSheetFor(date, checkIns)) }
-    }
-
-    // ── Log sheet ────────────────────────────────────────────────────────────
-
-    fun onLogAmountChanged(amount: Int) = _uiState.update { s ->
-        s.copy(logSheet = s.logSheet?.copy(amount = amount.coerceIn(0, MAX_LOG_AMOUNT)))
-    }
-
-    fun onLogSkippedChanged(skipped: Boolean) = _uiState.update { s ->
-        s.copy(logSheet = s.logSheet?.copy(skipped = skipped))
-    }
-
-    fun onLogMarkDone() = _uiState.update { s ->
-        s.copy(logSheet = s.logSheet?.copy(amount = s.logSheet.target, skipped = false))
-    }
-
-    fun onLogSave() {
-        val sheet = _uiState.value.logSheet ?: return
-        _uiState.update { it.copy(logSheet = null) }
-        save(sheet.goalId, sheet.date, sheet.amount, sheet.skipped)
-    }
-
-    fun onLogClear() {
-        val sheet = _uiState.value.logSheet ?: return
-        _uiState.update { it.copy(logSheet = null) }
-        save(sheet.goalId, sheet.date, 0, false)
-    }
-
-    fun onLogDismiss() = _uiState.update { it.copy(logSheet = null) }
-
-    private fun save(goalId: Long, date: LocalDate, amount: Int, skipped: Boolean) {
+        if (!card.dueToday || card.skippedToday || card.isPeriodDone) return
         viewModelScope.launch {
-            runCatching { goalRepository.setDayLog(goalId, date, amount, skipped) }
-                .onFailure { _ -> _uiState.update { it.copy(errorRes = R.string.error_save_generic) } }
+            runCatching { goalRepository.checkIn(goalId, 1, LocalDate.now(clock)) }
+                .onFailure { _uiState.update { it.copy(errorRes = R.string.error_save_generic) } }
         }
     }
 

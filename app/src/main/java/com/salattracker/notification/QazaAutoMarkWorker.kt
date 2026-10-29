@@ -8,6 +8,7 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.salattracker.domain.model.PrayerStatus
+import com.salattracker.domain.model.QazaActivitySource
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.repository.PrayerRepository
 import dagger.assisted.Assisted
@@ -62,7 +63,10 @@ class QazaAutoMarkWorker @AssistedInject constructor(
 
             val status = entries.find { it.prayerType == type }?.status ?: PrayerStatus.NOT_RECORDED
             if (status == PrayerStatus.NOT_RECORDED) {
-                prayerRepository.upsertPrayerStatus(date, type, PrayerStatus.QAZA_PENDING)
+                prayerRepository.upsertPrayerStatus(
+                    date, type, PrayerStatus.QAZA_PENDING,
+                    source = QazaActivitySource.AUTOMATIC,
+                )
             }
         }
     }

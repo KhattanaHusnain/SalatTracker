@@ -8,6 +8,7 @@ import com.salattracker.data.local.entity.GoalCheckInEntity
 import com.salattracker.data.local.entity.MosqueEntity
 import com.salattracker.data.local.entity.PrayerEntryEntity
 import com.salattracker.data.local.entity.SpiritualGoalEntity
+import com.salattracker.data.local.entity.QazaActivityEntity
 
 /**
  * Select-all / clear-all / bulk-insert operations used only by backup and restore.
@@ -36,6 +37,9 @@ interface BackupDao {
 
     @Query("SELECT * FROM mosques ORDER BY id ASC")
     suspend fun getAllMosques(): List<MosqueEntity>
+
+    @Query("SELECT * FROM qaza_activity WHERE user_id = :userId ORDER BY recorded_at ASC, id ASC")
+    suspend fun getAllQazaActivities(userId: String): List<QazaActivityEntity>
 
     // ── Counts for the shrink guard (cheaper than reading every row) ──
 
@@ -66,6 +70,9 @@ interface BackupDao {
     @Query("DELETE FROM mosques")
     suspend fun clearMosques()
 
+    @Query("DELETE FROM qaza_activity WHERE user_id = :userId")
+    suspend fun clearQazaActivities(userId: String)
+
     // ── Bulk insert for restore. Goals and check-ins keep their original ids (nullif(?, 0)
     // in Room's generated SQL preserves a non-zero id instead of autogenerating one). ──
 
@@ -80,4 +87,7 @@ interface BackupDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMosques(mosques: List<MosqueEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertQazaActivities(activities: List<QazaActivityEntity>)
 }

@@ -406,6 +406,40 @@
     <string name="goal_month_progress">هذا الشهر %1$d/%2$d %3$s</string>
     <string name="goal_not_due_today">غير مستحق اليوم</string>
     <string name="goals_archived">المؤرشفة (%1$d)</string>
+    <string name="goals_v2_empty_intro">لا توجد أهداف بعد. اختر هدفًا للبدء.</string>
+    <string name="goals_v2_custom_goal">هدفك الخاص</string>
+    <string name="goals_v2_preset_quran_summary">صفحة واحدة · كل يوم</string>
+    <string name="goals_v2_preset_daily_once">مرة واحدة · كل يوم</string>
+    <string name="goals_v2_preset_tahajjud_summary">ركعتان · كل يوم</string>
+    <string name="goals_v2_preset_fast_summary">مرة · الاثنين، الخميس</string>
+    <string name="goals_v2_preset_weekly_once">مرة · كل أسبوع</string>
+    <string name="goals_v2_add">إضافة</string>
+    <string name="goals_v2_done_count">%1$d من %2$d</string>
+    <string name="goals_v2_done_today">أُنجز اليوم</string>
+    <string name="goals_v2_add_progress">إضافة تقدم</string>
+    <string name="goals_v2_target">الهدف</string>
+    <string name="goals_v2_how_often">التكرار</string>
+    <string name="goals_v2_on_days">في هذه الأيام</string>
+    <string name="goals_v2_remind_me">ذكّرني</string>
+    <string name="goals_v2_stop_after">التوقف بعد عدد من الأيام</string>
+    <string name="goals_v2_more_options">خيارات إضافية</string>
+    <string name="goals_v2_advanced_presets">قوالب متقدمة</string>
+    <string name="goals_v2_every_day">كل يوم</string>
+    <string name="goals_v2_every_week">كل أسبوع</string>
+    <string name="goals_v2_every_month">كل شهر</string>
+    <string name="goals_v2_calendar_hint">اضغط على يوم لتسجيله. الأرشفة والحذف ضمن المزيد.</string>
+    <string name="goals_v2_reminder_at">تذكير %1$s</string>
+    <string name="goals_v2_since">منذ %1$s</string>
+    <string name="goals_v2_streak_value">%1$d أيام</string>
+    <string name="goals_v2_streak_best">السلسلة · الأفضل %1$d</string>
+    <string name="goals_v2_days_done_value">%1$d من %2$d</string>
+    <string name="goals_v2_days_done">الأيام المنجزة</string>
+    <string name="goals_v2_total">المجموع</string>
+    <string name="goals_v2_of_target">من %1$d %2$s</string>
+    <string name="goals_v2_done">تم</string>
+    <string name="goals_v2_skip_day">تخطي هذا اليوم</string>
+    <string name="goals_v2_auto_save_hint">تُحفظ التغييرات فور الضغط. تظهر كلمة تم فقط للهدف ذي القيمة 1.</string>
+    <string name="goals_v2_log_day">تسجيل يوم</string>
     <string name="goal_delete_title">حذف الهدف؟</string>
     <string name="goal_delete_desc">سيؤدي هذا إلى إزالة تقدّمك وسلاسلك لهذا الهدف نهائيًا. لا يمكن التراجع عن هذا الإجراء.</string>
     <string name="goal_deleting">جارٍ حذف الهدف</string>
@@ -433,6 +467,7 @@
     <string name="unit_times">مرة/مرات</string>
     <string name="unit_minutes">دقائق</string>
     <string name="unit_pages">صفحات</string>
+    <string name="unit_rakahs">ركعات</string>
     <plurals name="goal_amount_times"><item quantity="zero">0 مرات</item><item quantity="one">%1$d مرة</item><item quantity="two">مرتان</item><item quantity="few">%1$d مرات</item><item quantity="many">%1$d مرة</item><item quantity="other">%1$d مرة</item></plurals>
     <plurals name="goal_amount_minutes"><item quantity="zero">0 دقائق</item><item quantity="one">%1$d دقيقة</item><item quantity="two">دقيقتان</item><item quantity="few">%1$d دقائق</item><item quantity="many">%1$d دقيقة</item><item quantity="other">%1$d دقيقة</item></plurals>
     <plurals name="goal_amount_pages"><item quantity="zero">0 صفحات</item><item quantity="one">%1$d صفحة</item><item quantity="two">صفحتان</item><item quantity="few">%1$d صفحات</item><item quantity="many">%1$d صفحة</item><item quantity="other">%1$d صفحة</item></plurals>
@@ -743,4 +778,34 @@
     <string name="onboarding_prayers_included">الصلوات المشمولة</string>
     <string name="onboarding_edit_calendar">يمكنك تعديل أي يوم لاحقًا في التقويم.</string>
     <string name="onboarding_suggested_cities">مدن مقترحة</string>
+    <string name="qaza_v10_left">صلوات متبقية للقضاء</string>
+    <string name="qaza_v10_made_up">تم قضاء %1$d · %2$d%%</string>
+    <string name="qaza_v10_daily_goal">الهدف اليومي</string>
+    <string name="qaza_v10_per_day">%1$d يوميًا</string>
+    <string name="qaza_v10_today_goal">هدف اليوم</string>
+    <string name="qaza_v10_today_progress">تم قضاء %1$d من %2$d اليوم</string>
+    <string name="qaza_v10_tap_plus">اضغط + بعد إتمام صلاة قضاء.</string>
+    <string name="qaza_v10_recent">النشاط الأخير</string>
+    <string name="qaza_v10_nothing_recent">لم يُسجل شيء بعد.</string>
+    <string name="qaza_v10_daily_goals">الأهداف اليومية</string>
+    <string name="qaza_v10_pace">وتيرتك</string>
+    <string name="qaza_v10_weekly">الفائت والمقضي هذا الأسبوع</string>
+    <string name="qaza_v10_new">جديد</string><string name="qaza_v10_out">مقضي</string>
+    <string name="qaza_v10_insights">من أين يأتي الفائت</string>
+    <string name="qaza_v10_milestones">المراحل</string><string name="qaza_v10_first_made_up">أول صلاة مقضية</string>
+    <string name="qaza_v10_add">إضافة صلوات فائتة</string><string name="qaza_v10_log">تسجيل عدة صلوات مقضية</string>
+    <string name="qaza_v10_older">صلوات فائتة أقدم</string><string name="qaza_v10_by_dates">بالتواريخ</string><string name="qaza_v10_by_count">بالعدد</string>
+    <string name="qaza_v10_from">من</string><string name="qaza_v10_to">إلى</string><string name="qaza_v10_which">أي الصلوات؟</string>
+    <string name="qaza_v10_reason">السبب؟ اختياري وخاص.</string><string name="qaza_v10_preview">معاينة</string>
+    <string name="qaza_v10_add_count">إضافة %1$d صلوات</string><string name="qaza_v10_preview_summary">ستُضاف %1$d · تم تخطي %2$d مواضع محفوظة</string>
+    <string name="qaza_v10_order">الترتيب</string><string name="qaza_v10_oldest_first">الأقدم أولًا</string><string name="qaza_v10_newest_first">الأحدث أولًا</string>
+    <string name="qaza_v10_log_count">تسجيل %1$d صلوات</string><string name="qaza_v10_how_long">ما مدة الصلوات الفائتة؟</string><string name="qaza_v10_years">%1$d سنوات</string>
+    <string name="qaza_v10_excused">أيام العذر التقريبية شهريًا</string><string name="qaza_v10_estimate_note">تُحفظ التواريخ التقريبية بخصوصية ولا تستبدل صلوات محفوظة.</string>
+    <string name="qaza_v10_privacy">إخفاء عدد القضاء في التنقل</string><string name="qaza_v10_sound">صوت الإنجاز</string><string name="qaza_v10_reduce_motion">تقليل الحركة</string>
+    <string name="qaza_v10_history_empty">يبدأ السجل المفصل مع هذا التحديث. تظل الإجماليات السابقة متاحة.</string>
+    <string name="qaza_v10_goal_hit">تحقق الهدف في %1$d من آخر %2$d أيام</string><string name="qaza_v10_back">العودة إلى القضاء</string><string name="qaza_v10_loading">جارٍ الحفظ…</string><string name="qaza_v10_undo">تراجع</string><string name="qaza_v10_days_at_goal">%1$d أيام عند الهدف</string>
+    <string name="qaza_v10_what_if">ماذا لو زدت؟</string><string name="qaza_v10_finish_days">بمعدل %1$d يوميًا: نحو %2$d يومًا</string>
+    <string name="qaza_v10_reason_overslept">نوم</string><string name="qaza_v10_reason_work">عمل</string><string name="qaza_v10_reason_travel">سفر</string><string name="qaza_v10_reason_forgot">نسيان</string><string name="qaza_v10_reason_illness">مرض</string>
+    <string name="qaza_v10_reason_older_estimate">تقدير أقدم</string>
+    <string name="qaza_v10_added_result">تمت إضافة %1$d صلوات، وتخطي %2$d مواضع محفوظة.</string><string name="qaza_v10_added_estimated_result">تمت إضافة %1$d صلوات تقديرية.</string>
 </resources>

@@ -1,45 +1,56 @@
 package com.salattracker.feature.goals
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.salattracker.domain.usecase.GoalStatus
+import java.time.LocalDate
 
-/**
- * Nav entry-point for the goal details screen.
- *   composable("goal_details/{goalId}") { GoalDetailsEntry(onEdit = { navController.push(Routes.editGoal(it)) }, onDeleted = { navController.popBackStack() }) }
- */
+data class GoalDetailsTopBarControls(
+    val title: String,
+    val status: GoalStatus,
+    val onEdit: () -> Unit,
+    val onArchiveToggle: () -> Unit,
+    val onDelete: () -> Unit,
+)
+
 @Composable
 fun GoalDetailsEntry(
     onEdit: (Long) -> Unit,
+    onLogDay: (Long, LocalDate) -> Unit,
     onDeleted: () -> Unit,
+    onTopBarControls: (GoalDetailsTopBarControls?) -> Unit,
     viewModel: GoalDetailsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
-
-    // Also leave when the goal no longer exists (e.g. it was deleted from the Edit screen above us).
     val gone = uiState.deleted || (!uiState.isLoading && uiState.goal == null)
-    LaunchedEffect(gone) {
-        if (gone) onDeleted()
+    LaunchedEffect(gone) { if (gone) onDeleted() }
+
+    val controls = uiState.goal?.let { goal ->
+        remember(goal.id, goal.name, uiState.status) {
+            GoalDetailsTopBarControls(
+                title = goal.name,
+                status = uiState.status,
+                onEdit = { onEdit(goal.id) },
+                onArchiveToggle = viewModel::onArchiveToggle,
+                onDelete = viewModel::onDeleteClick,
+            )
+        }
     }
+    LaunchedEffect(controls) { onTopBarControls(controls) }
+    DisposableEffect(Unit) { onDispose { onTopBarControls(null) } }
 
     GoalDetailsScreen(
-        uiState                = uiState,
-        onPrevMonth            = viewModel::onPrevMonth,
-        onNextMonth            = viewModel::onNextMonth,
-        onDayClick             = viewModel::onDayClick,
-        onEditClick            = { uiState.goal?.let { onEdit(it.id) } },
-        onArchiveToggle        = viewModel::onArchiveToggle,
-        onDeleteClick          = viewModel::onDeleteClick,
-        onConfirmDelete        = viewModel::onConfirmDelete,
+        uiState = uiState,
+        onPrevMonth = viewModel::onPrevMonth,
+        onNextMonth = viewModel::onNextMonth,
+        onDayClick = { date -> uiState.goal?.let { onLogDay(it.id, date) } },
+        onConfirmDelete = viewModel::onConfirmDelete,
         onDismissDeleteConfirm = viewModel::onDismissDeleteConfirm,
-        onLogAmountChanged     = viewModel::onLogAmountChanged,
-        onLogSkippedChanged    = viewModel::onLogSkippedChanged,
-        onLogMarkDone          = viewModel::onLogMarkDone,
-        onLogSave              = viewModel::onLogSave,
-        onLogClear             = viewModel::onLogClear,
-        onLogDismiss           = viewModel::onLogDismiss,
-        onErrorDismiss         = viewModel::clearError,
+        onErrorDismiss = viewModel::clearError,
     )
 }

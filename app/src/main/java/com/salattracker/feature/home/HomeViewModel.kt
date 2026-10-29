@@ -9,6 +9,7 @@ import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerEntry
 import com.salattracker.domain.model.PrayerStatus
+import com.salattracker.domain.model.QazaActivitySource
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.StreakInfo
 import com.salattracker.domain.model.VerseInfo
@@ -291,7 +292,7 @@ class HomeViewModel @Inject constructor(
         if (_uiState.value.isSaving || !date.isBefore(_uiState.value.todayDate)) return
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true) }
-            runCatching { prayerRepository.upsertPrayerStatus(date, type, status) }
+            runCatching { prayerRepository.upsertPrayerStatus(date, type, status, source = QazaActivitySource.HOME) }
                 .onSuccess { _uiState.update { it.copy(isSaving = false) } }
                 .onFailure { _uiState.update { it.copy(isSaving = false, errorRes = R.string.error_save_generic) } }
         }

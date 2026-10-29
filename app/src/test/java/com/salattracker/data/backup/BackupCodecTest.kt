@@ -5,6 +5,8 @@ import com.salattracker.domain.model.GoalFrequency
 import com.salattracker.domain.model.Mosque
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
+import com.salattracker.domain.model.QazaActivitySource
+import com.salattracker.domain.repository.QazaPreferences
 import com.salattracker.domain.repository.UserPrefs
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -19,7 +21,7 @@ class BackupCodecTest {
     private fun sampleSnapshot() = BackupSnapshot(
         prayerEntries = listOf(
             BackupPrayerEntry(LocalDate.of(2026, 1, 1), PrayerType.FAJR, PrayerStatus.CONGREGATION, 1000L),
-            BackupPrayerEntry(LocalDate.of(2026, 1, 1), PrayerType.DHUHR, PrayerStatus.INDIVIDUAL, 1001L),
+            BackupPrayerEntry(LocalDate.of(2026, 1, 1), PrayerType.DHUHR, PrayerStatus.QAZA_PENDING, 1001L, qazaReason = "Work"),
         ),
         goals = listOf(
             BackupGoal(
@@ -35,6 +37,10 @@ class BackupCodecTest {
         ),
         highestStreaks = mapOf(PrayerType.FAJR to 12, PrayerType.DHUHR to 5),
         settings = UserPrefs(),
+        qazaActivities = listOf(
+            BackupQazaActivity(4, LocalDate.of(2026, 1, 1), PrayerType.DHUHR, null, PrayerStatus.QAZA_PENDING, "Work", QazaActivitySource.QAZA, 1001L),
+        ),
+        qazaPreferences = QazaPreferences(dailyGoal = 10, oldestFirst = false, soundEnabled = false, hideNavigationBadge = true, reducedMotion = true),
     )
 
     private fun sampleMeta(snapshot: BackupSnapshot) = BackupMeta(
@@ -61,6 +67,8 @@ class BackupCodecTest {
         assertEquals(snapshot.goals, decodedSnapshot.goals)
         assertEquals(mapOf(PrayerType.FAJR to 12, PrayerType.DHUHR to 5, PrayerType.ASR to 0, PrayerType.MAGHRIB to 0, PrayerType.ISHA to 0), decodedSnapshot.highestStreaks)
         assertEquals(snapshot.settings, decodedSnapshot.settings)
+        assertEquals(snapshot.qazaActivities, decodedSnapshot.qazaActivities)
+        assertEquals(snapshot.qazaPreferences, decodedSnapshot.qazaPreferences)
     }
 
     @Test

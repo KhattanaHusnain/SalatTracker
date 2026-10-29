@@ -6,6 +6,7 @@ import com.salattracker.R
 import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.PrayerEntry
 import com.salattracker.domain.model.PrayerStatus
+import com.salattracker.domain.model.QazaActivitySource
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.repository.PrayerBatchUndo
 import com.salattracker.domain.repository.PrayerRepository
@@ -223,7 +224,7 @@ class CalendarV4ViewModel @Inject constructor(
         if (preview.updates.isEmpty()) { dismissPreview(); return }
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true) }
-            runCatching { prayerRepository.applyPrayerBatch(preview.updates) }
+            runCatching { prayerRepository.applyPrayerBatch(preview.updates, QazaActivitySource.CALENDAR) }
                 .onSuccess { snapshot ->
                     undo = snapshot
                     undoJob?.cancel()
@@ -257,7 +258,11 @@ class CalendarV4ViewModel @Inject constructor(
         if (!isSlotEligible(PrayerSlot(date, type), state) || state.isSaving) return
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true) }
-            runCatching { prayerRepository.upsertPrayerStatus(date, type, status, loggedLate = true) }
+            runCatching {
+                prayerRepository.upsertPrayerStatus(
+                    date, type, status, loggedLate = true, source = QazaActivitySource.CALENDAR,
+                )
+            }
                 .onSuccess {
                     if (date == today) reminderNotifications.dismiss(type)
                     _uiState.update { it.copy(isSaving = false) }

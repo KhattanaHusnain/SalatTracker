@@ -49,6 +49,35 @@ data class PrayerEntryEntity(
     @ColumnInfo(name = "status")      val status: PrayerStatus,
     @ColumnInfo(name = "updated_at")  val updatedAt: Long = System.currentTimeMillis(),
     @ColumnInfo(name = "logged_late") val loggedLate: Boolean = false,
+    /** Optional private context for a missed prayer. Never surfaced outside Qaza analytics. */
+    @ColumnInfo(name = "qaza_reason") val qazaReason: String? = null,
+)
+
+// ── Qaza activity ledger ────────────────────────────────────────────────────────────
+
+/**
+ * Append-only audit row for every transition into or out of Qaza. Keeping the previous status
+ * makes recent actions exactly reversible and gives the v10 charts a truthful event timeline.
+ */
+@Entity(
+    tableName = "qaza_activity",
+    indices = [
+        Index(value = ["user_id", "recorded_at"]),
+        Index(value = ["user_id", "prayer_date", "prayer_type"]),
+    ],
+)
+data class QazaActivityEntity(
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id") val id: Long = 0,
+    @ColumnInfo(name = "user_id") val userId: String,
+    @ColumnInfo(name = "prayer_date") val prayerDate: LocalDate,
+    @ColumnInfo(name = "prayer_type") val prayerType: PrayerType,
+    @ColumnInfo(name = "previous_status") val previousStatus: String? = null,
+    @ColumnInfo(name = "new_status") val newStatus: String,
+    @ColumnInfo(name = "reason_tag") val reasonTag: String? = null,
+    @ColumnInfo(name = "source") val source: String,
+    @ColumnInfo(name = "recorded_at") val recordedAt: Long,
+    @ColumnInfo(name = "batch_id") val batchId: String? = null,
 )
 
 // ── Streak snapshot entity ────────────────────────────────────────────────────

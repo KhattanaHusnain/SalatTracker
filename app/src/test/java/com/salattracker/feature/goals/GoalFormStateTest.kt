@@ -10,6 +10,16 @@ import java.time.DayOfWeek
 class GoalFormStateTest {
 
     @Test
+    fun `primary presets match Goals v2 defaults`() {
+        assertEquals(1, GoalTemplate.READ_QURAN.target)
+        assertEquals("Pages", GoalTemplate.READ_QURAN.unit)
+        assertEquals(2, GoalTemplate.TAHAJJUD.target)
+        assertEquals("Rak'ahs", GoalTemplate.TAHAJJUD.unit)
+        assertEquals(setOf(DayOfWeek.MONDAY, DayOfWeek.THURSDAY), GoalTemplate.FAST_MON_THU.days)
+        assertEquals(GoalFrequency.WEEKLY, GoalTemplate.WEEKLY_SADAQAH.frequency)
+    }
+
+    @Test
     fun `numeric fields only accept digits`() {
         val form = GoalFormState()
         assertEquals("12", form.withTargetAmount("12").targetAmount)

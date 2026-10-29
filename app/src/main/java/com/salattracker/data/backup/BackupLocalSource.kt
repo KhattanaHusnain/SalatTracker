@@ -11,12 +11,14 @@ import com.salattracker.data.local.entity.GoalCheckInEntity
 import com.salattracker.data.local.entity.MosqueEntity
 import com.salattracker.data.local.entity.PrayerEntryEntity
 import com.salattracker.data.local.entity.SpiritualGoalEntity
+import com.salattracker.data.local.entity.QazaActivityEntity
 import com.salattracker.data.local.entity.StreakSnapshotEntity
 import com.salattracker.data.repository.LOCAL_USER_ID
 import com.salattracker.core.locale.LocaleManager
 import com.salattracker.domain.model.Mosque
 import com.salattracker.domain.repository.PrayerRepository
 import com.salattracker.domain.repository.SettingsRepository
+import com.salattracker.domain.repository.QazaPreferencesRepository
 import com.salattracker.notification.GoalAlarmScheduler
 import com.salattracker.notification.GoalReminderReceiver
 import com.salattracker.notification.GoalReminderWorker
@@ -52,6 +54,7 @@ class RoomBackupLocalSource @Inject constructor(
     private val streakDao: StreakDao,
     private val settingsRepository: SettingsRepository,
     private val prayerRepository: PrayerRepository,
+    private val qazaPreferencesRepository: QazaPreferencesRepository,
     private val workManager: WorkManager,
     @ApplicationContext private val context: Context,
 ) : BackupLocalSource {
@@ -77,6 +80,21 @@ class RoomBackupLocalSource @Inject constructor(
         val highestStreaks = streakDao.getAllSnapshots(userId).associate { it.prayerType to it.highestStreak }
         val mosques = backupDao.getAllMosques().map { Mosque(it.id, it.name, it.latitude, it.longitude, it.radiusMeters) }
         val settings = settingsRepository.getCurrentPrefs()
+        val qazaPreferences = qazaPreferencesRepository.get()
+        val qazaActivities = backupDao.getAllQazaActivities(userId).map {
+            BackupQazaActivity(
+                id = it.id,
+                prayerDate = it.prayerDate,
+                prayerType = it.prayerType,
+                previousStatus = it.previousStatus?.let(com.salattracker.domain.model.PrayerStatus::valueOf),
+                newStatus = com.salattracker.domain.model.PrayerStatus.valueOf(it.newStatus),
+                reasonTag = it.reasonTag,
+                source = runCatching { com.salattracker.domain.model.QazaActivitySource.valueOf(it.source) }
+                    .getOrDefault(com.salattracker.domain.model.QazaActivitySource.OTHER),
+                recordedAt = it.recordedAt,
+                batchId = it.batchId,
+            )
+        }
 
         BackupSnapshot(
             prayerEntries  = prayerEntries,
@@ -85,6 +103,8 @@ class RoomBackupLocalSource @Inject constructor(
             highestStreaks = highestStreaks,
             settings       = settings,
             mosques        = mosques,
+            qazaActivities = qazaActivities,
+            qazaPreferences = qazaPreferences,
         )
     }
 
@@ -104,10 +124,11 @@ class RoomBackupLocalSource @Inject constructor(
             backupDao.clearLinkedTasbihSessions()
             backupDao.clearStreaks(userId)
             backupDao.clearMosques()
+            backupDao.clearQazaActivities(userId)
 
             backupDao.insertPrayerEntries(
                 snapshot.prayerEntries.map {
-                    PrayerEntryEntity(userId = userId, date = it.date, prayerType = it.prayerType, status = it.status, updatedAt = it.updatedAt, loggedLate = it.loggedLate)
+                    PrayerEntryEntity(userId = userId, date = it.date, prayerType = it.prayerType, status = it.status, updatedAt = it.updatedAt, loggedLate = it.loggedLate, qazaReason = it.qazaReason)
                 }
             )
             backupDao.insertGoals(
@@ -127,6 +148,20 @@ class RoomBackupLocalSource @Inject constructor(
             backupDao.insertMosques(
                 snapshot.mosques.map { MosqueEntity(it.id, it.name, it.latitude, it.longitude, it.radiusMeters) }
             )
+            backupDao.insertQazaActivities(snapshot.qazaActivities.map {
+                QazaActivityEntity(
+                    id = it.id,
+                    userId = userId,
+                    prayerDate = it.prayerDate,
+                    prayerType = it.prayerType,
+                    previousStatus = it.previousStatus?.name,
+                    newStatus = it.newStatus.name,
+                    reasonTag = it.reasonTag,
+                    source = it.source.name,
+                    recordedAt = it.recordedAt,
+                    batchId = it.batchId,
+                )
+            })
             // Seed highest streak so recalculateStreaks() carries it forward correctly;
             // current streak is always recomputed below, never trusted from the backup.
             snapshot.highestStreaks.forEach { (type, highest) ->
@@ -168,6 +203,7 @@ class RoomBackupLocalSource @Inject constructor(
         )
         settingsRepository.setHijriAdjustmentDays(s.hijriAdjustmentDays)
         settingsRepository.setOnboardingCompleted(true)
+        qazaPreferencesRepository.save(snapshot.qazaPreferences)
 
         // Cancel alarms/notifications for every goal that existed before the replace —
         // their ids may now belong to a different restored goal, or to nothing at all.

@@ -3,6 +3,8 @@ package com.salattracker.domain.repository
 import com.salattracker.domain.model.PrayerEntry
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
+import com.salattracker.domain.model.QazaActivity
+import com.salattracker.domain.model.QazaActivitySource
 import com.salattracker.domain.model.StreakInfo
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
@@ -21,16 +23,23 @@ interface PrayerRepository {
         prayerType: PrayerType,
         status: PrayerStatus,
         loggedLate: Boolean = false,
+        qazaReason: String? = null,
+        source: QazaActivitySource = QazaActivitySource.OTHER,
     )
 
     /** Sets [status] for every listed (date, prayer type) pair in one write, recalculating streaks once at the end. */
     suspend fun bulkUpsertPrayerStatus(
         entries: List<Pair<LocalDate, PrayerType>>,
         status: PrayerStatus,
+        qazaReason: String? = null,
+        source: QazaActivitySource = QazaActivitySource.OTHER,
     )
 
     /** Atomically applies per-slot statuses and returns the exact rows needed for a lossless undo. */
-    suspend fun applyPrayerBatch(updates: Map<PrayerSlot, PrayerStatus>): PrayerBatchUndo
+    suspend fun applyPrayerBatch(
+        updates: Map<PrayerSlot, PrayerStatus>,
+        source: QazaActivitySource = QazaActivitySource.OTHER,
+    ): PrayerBatchUndo
 
     /** Atomically restores a batch result, including deleting rows which did not exist before it. */
     suspend fun restorePrayerBatch(undo: PrayerBatchUndo)
@@ -81,6 +90,12 @@ interface PrayerRepository {
     /** Pending and completed Qaza entries, including their original date and last status update. */
     suspend fun getQazaHistory(): List<PrayerEntry>
 
+    /** Every known Qaza transition, newest first. Older installs start with partial history. */
+    fun observeQazaActivities(): Flow<List<QazaActivity>>
+
+    /** Exactly reverts one still-current ledger event and removes that event from the ledger. */
+    suspend fun undoQazaActivity(activityId: Long): Boolean
+
     // ── Analytics ─────────────────────────────────────────────────────────────
 
     /**
@@ -115,6 +130,7 @@ data class PrayerSlot(val date: LocalDate, val prayerType: PrayerType)
 data class PrayerBatchUndo(
     val slots: Set<PrayerSlot>,
     val previousEntries: List<PrayerEntry>,
+    val activityIds: List<Long> = emptyList(),
 )
 
 // ── Domain result types (no feature-layer imports) ────────────────────────────
