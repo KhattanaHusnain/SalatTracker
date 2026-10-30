@@ -113,7 +113,9 @@ class SettingsViewModel @Inject constructor(
             val city = runCatching { geocodingRepository.reverseGeocode(lat, lon) }.getOrNull()
             runCatching {
                 settingsRepository.setLocation(lat, lon)
-                settingsRepository.setLocationLabel(city?.fullLabel)
+                city?.takeIf { it.name.isNotBlank() }?.let {
+                    settingsRepository.setLocationLabel(it.fullLabel)
+                }
             }.onSuccess {
                 prayerReminderRescheduler.rescheduleAll()
             }.onFailure { _ -> _uiState.update { it.copy(errorRes = R.string.error_save_generic) } }

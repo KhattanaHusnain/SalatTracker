@@ -24,7 +24,11 @@ class EditCoordinatesViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val repository = FakeSettingsRepository(UserPrefs(latitude = 24.4672, longitude = 39.6111))
+    private val repository = FakeSettingsRepository(UserPrefs(
+        latitude = 24.4672,
+        longitude = 39.6111,
+        locationLabel = "Madinah, Saudi Arabia",
+    ))
     private val geocodingRepository = FakeGeocodingRepository()
     private val locationProvider = FakeLocationProvider()
     private val rescheduler = FakePrayerReminderRescheduler()
@@ -40,7 +44,8 @@ class EditCoordinatesViewModelTest {
     }
 
     @Test
-    fun `onSaveCoordinates writes manually typed numbers, clears any label, turns off device location, reschedules, and is done`() {
+    fun `onSaveCoordinates replaces the city only after a successful lookup`() {
+        geocodingRepository.nextReverseResult = CityResult("New City", "Region", "Country", 12.3, 45.6)
         val viewModel = createViewModel()
         viewModel.onLatitudeChanged("12.3")
         viewModel.onLongitudeChanged("45.6")
@@ -48,8 +53,23 @@ class EditCoordinatesViewModelTest {
         viewModel.onSaveCoordinates()
 
         assertEquals(listOf(12.3 to 45.6), repository.locationCalls)
-        assertEquals(listOf(null), repository.locationLabelCalls)
+        assertEquals(listOf("New City, Region, Country"), repository.locationLabelCalls)
         assertEquals(listOf(false), repository.useDeviceLocationCalls)
+        assertEquals(1, rescheduler.rescheduleCount)
+        assertTrue(viewModel.uiState.value.isDone)
+    }
+
+    @Test
+    fun `onSaveCoordinates keeps the previous city when lookup fails`() {
+        geocodingRepository.nextReverseResult = null
+        val viewModel = createViewModel()
+        viewModel.onLatitudeChanged("12.3")
+        viewModel.onLongitudeChanged("45.6")
+
+        viewModel.onSaveCoordinates()
+
+        assertEquals(listOf(12.3 to 45.6), repository.locationCalls)
+        assertTrue(repository.locationLabelCalls.isEmpty())
         assertEquals(1, rescheduler.rescheduleCount)
         assertTrue(viewModel.uiState.value.isDone)
     }
@@ -77,6 +97,20 @@ class EditCoordinatesViewModelTest {
         assertEquals(listOf(1.5 to 2.5), repository.locationCalls)
         assertEquals(listOf(true), repository.useDeviceLocationCalls)
         assertEquals(listOf("Karachi, Sindh, Pakistan"), repository.locationLabelCalls)
+        assertEquals(1, rescheduler.rescheduleCount)
+        assertTrue(viewModel.uiState.value.isDone)
+    }
+
+    @Test
+    fun `onUseMyLocationClick keeps the previous city when reverse geocoding fails`() {
+        locationProvider.nextLocation = 1.5 to 2.5
+        geocodingRepository.nextReverseResult = null
+        val viewModel = createViewModel()
+
+        viewModel.onUseMyLocationClick()
+
+        assertEquals(listOf(1.5 to 2.5), repository.locationCalls)
+        assertTrue(repository.locationLabelCalls.isEmpty())
         assertEquals(1, rescheduler.rescheduleCount)
         assertTrue(viewModel.uiState.value.isDone)
     }

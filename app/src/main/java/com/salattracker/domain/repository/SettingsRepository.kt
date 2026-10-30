@@ -68,11 +68,9 @@ interface SettingsRepository {
 
     /** A human-readable name for the current coordinates (e.g. "Karachi, Sindh, Pakistan"),
      * shown in Settings/onboarding instead of raw numbers when known. Set independently of
-     * [setLocation] — callers that know a name (onboarding's confirm step, Edit Location's city
-     * search / "Use my location") set both; callers that only have numbers (manual coordinate
-     * entry, the routine background GPS resync on every launch) leave whatever label was already
-     * there rather than wiping it on every call. Null clears it (e.g. a manual coordinate edit
-     * that no longer matches the previous name). */
+     * [setLocation] — callers replace it only after reverse geocoding successfully resolves a
+     * non-empty city name. A failed lookup leaves the last known label intact. Null is reserved for
+     * an explicit clear (for example, restoring a backup that intentionally has no label). */
     suspend fun setLocationLabel(label: String?)
 
     suspend fun setCalculationMethodId(id: Int)

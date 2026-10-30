@@ -80,10 +80,12 @@ class EditCoordinatesViewModel @Inject constructor(
             return
         }
         viewModelScope.launch {
+            val city = runCatching { geocodingRepository.reverseGeocode(lat, lon) }.getOrNull()
             settingsRepository.setUseDeviceLocation(false)
             settingsRepository.setLocation(lat, lon)
-            // Typed numbers with no known name — clear any stale city label from before.
-            settingsRepository.setLocationLabel(null)
+            city?.takeIf { it.name.isNotBlank() }?.let {
+                settingsRepository.setLocationLabel(it.fullLabel)
+            }
             prayerReminderRescheduler.rescheduleAll()
             _uiState.update { it.copy(isDone = true) }
         }
@@ -101,7 +103,9 @@ class EditCoordinatesViewModel @Inject constructor(
             settingsRepository.setUseDeviceLocation(true)
             settingsRepository.setLocation(lat, lon)
             val city = runCatching { geocodingRepository.reverseGeocode(lat, lon) }.getOrNull()
-            settingsRepository.setLocationLabel(city?.fullLabel)
+            city?.takeIf { it.name.isNotBlank() }?.let {
+                settingsRepository.setLocationLabel(it.fullLabel)
+            }
             prayerReminderRescheduler.rescheduleAll()
             _uiState.update { it.copy(isLocating = false, isDone = true) }
         }
