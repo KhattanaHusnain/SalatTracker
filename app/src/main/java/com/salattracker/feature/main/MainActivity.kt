@@ -8,6 +8,7 @@ import android.os.Bundle
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
@@ -110,7 +111,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        WindowCompat.setDecorFitsSystemWindows(window, false)
+        enableEdgeToEdge()
         pendingRoute = if (savedInstanceState == null) {
             intent.openRouteOrNull()
         } else {
@@ -273,9 +274,14 @@ fun MainScaffold(initialRoute: String? = null, onRouteConsumed: () -> Unit = {})
     DisposableEffect(isHome, background) {
         val window = (view.context as? android.app.Activity)?.window
         val controller = window?.let { WindowCompat.getInsetsController(it, view) }
-        val previous = controller?.isAppearanceLightStatusBars
+        val previousStatus = controller?.isAppearanceLightStatusBars
+        val previousNavigation = controller?.isAppearanceLightNavigationBars
         controller?.isAppearanceLightStatusBars = !isHome && background.luminance() > .5f
-        onDispose { previous?.let { controller?.isAppearanceLightStatusBars = it } }
+        controller?.isAppearanceLightNavigationBars = background.luminance() > .5f
+        onDispose {
+            previousStatus?.let { controller?.isAppearanceLightStatusBars = it }
+            previousNavigation?.let { controller?.isAppearanceLightNavigationBars = it }
+        }
     }
 
     // Scoped here (not inside the NavHost's Calendar composable) so the exact same instance

@@ -4,9 +4,14 @@
 # For more details, see
 #   https://d.android.com/r/tools/r8/keep-rules
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Gson supplies general @SerializedName rules. Keep only annotated members in the app's
+# reflection-backed wire models so R8 may still rename and optimize their classes.
+-keepclassmembers,allowobfuscation,allowoptimization class com.salattracker.data.backup.** {
+    @com.google.gson.annotations.SerializedName <fields>;
+}
+-keepclassmembers,allowobfuscation,allowoptimization class com.salattracker.data.remote.api.** {
+    @com.google.gson.annotations.SerializedName <fields>;
+}
+-keepclassmembers,allowobfuscation,allowoptimization class com.salattracker.notification.*Asset {
+    @com.google.gson.annotations.SerializedName <fields>;
+}
