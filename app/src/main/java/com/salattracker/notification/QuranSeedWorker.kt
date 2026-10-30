@@ -49,7 +49,7 @@ class QuranSeedWorker @AssistedInject constructor(
     private val contentPackDao: QuranContentPackDao,
 ) : CoroutineWorker(context, params) {
 
-    private val gson = Gson()
+    private val assets = QuranSeedAssetReader(context)
 
     override suspend fun doWork(): Result {
         return try {
@@ -66,17 +66,17 @@ class QuranSeedWorker @AssistedInject constructor(
     private suspend fun seedCoreContentIfNeeded() {
         if (chapterDao.get(1) != null) return // already seeded
 
-        val chapters = readChapterAssets().map { it.toEntity() }
+        val chapters = assets.chapters()
         chapterDao.insertAll(chapters)
 
-        val verses = readVerseAssets().map { it.toEntity() }
+        val verses = assets.verses()
         verseDao.insertAll(verses)
     }
 
     private suspend fun seedMushafWordsIfNeeded() {
         if (mushafWordDao.countForFirstPage(edition = 1) > 0) return // already seeded
 
-        val words = readMushafWordAssets().mapIndexed { index, asset -> asset.toEntity(orderIndex = index) }
+        val words = assets.mushafWords()
         mushafWordDao.insertAll(words)
     }
 
@@ -88,7 +88,7 @@ class QuranSeedWorker @AssistedInject constructor(
         val dbFile = File(packsDir, "en_sahih.db")
         val packDb = QuranPackDatabases.openTranslation(context, dbFile.absolutePath)
         try {
-            val rows = readTranslationAssets().map { it.toEntity() }
+            val rows = assets.englishTranslation()
             packDb.translationTextDao().insertAll(rows)
         } finally {
             packDb.close()
@@ -120,7 +120,7 @@ class QuranSeedWorker @AssistedInject constructor(
         val dbFile = File(packsDir, "ur_jalandhry.db")
         val packDb = QuranPackDatabases.openTranslation(context, dbFile.absolutePath)
         try {
-            val rows = readUrduTranslationAssets().map { it.toEntity() }
+            val rows = assets.urduTranslation()
             packDb.translationTextDao().insertAll(rows)
         } finally {
             packDb.close()
@@ -144,31 +144,6 @@ class QuranSeedWorker @AssistedInject constructor(
         )
     }
 
-    private fun readChapterAssets(): Array<ChapterAsset> =
-        context.assets.open("quran/chapters.json").use { stream ->
-            InputStreamReader(stream, Charsets.UTF_8).use { reader -> gson.fromJson(reader, Array<ChapterAsset>::class.java) }
-        }
-
-    private fun readVerseAssets(): Array<VerseAsset> =
-        context.assets.open("quran/verses.json").use { stream ->
-            InputStreamReader(stream, Charsets.UTF_8).use { reader -> gson.fromJson(reader, Array<VerseAsset>::class.java) }
-        }
-
-    private fun readTranslationAssets(): Array<TranslationAsset> =
-        context.assets.open("quran/translations/en_sahih.json").use { stream ->
-            InputStreamReader(stream, Charsets.UTF_8).use { reader -> gson.fromJson(reader, Array<TranslationAsset>::class.java) }
-        }
-
-    private fun readUrduTranslationAssets(): Array<TranslationAsset> =
-        context.assets.open("quran/translations/ur_jalandhry.json").use { stream ->
-            InputStreamReader(stream, Charsets.UTF_8).use { reader -> gson.fromJson(reader, Array<TranslationAsset>::class.java) }
-        }
-
-    private fun readMushafWordAssets(): Array<MushafWordAsset> =
-        context.assets.open("quran/mushaf_words.json").use { stream ->
-            InputStreamReader(stream, Charsets.UTF_8).use { reader -> gson.fromJson(reader, Array<MushafWordAsset>::class.java) }
-        }
-
     companion object {
         private const val ONE_TIME_WORK_NAME = "quran_seed_worker"
 
@@ -177,6 +152,37 @@ class QuranSeedWorker @AssistedInject constructor(
             workManager.enqueueUniqueWork(ONE_TIME_WORK_NAME, ExistingWorkPolicy.KEEP, request)
         }
     }
+}
+
+/** Reads the bundled Quran wire format into the entities consumed by the seed worker. Keeping the
+ * JSON boundary in one production component lets optimized instrumentation exercise the exact
+ * reflection path without exposing the private wire DTOs or adding release keep rules. */
+internal class QuranSeedAssetReader(
+    private val context: Context,
+    private val gson: Gson = Gson(),
+) {
+    fun chapters(): List<ChapterEntity> =
+        read("quran/chapters.json", Array<ChapterAsset>::class.java).map(ChapterAsset::toEntity)
+
+    fun verses(): List<VerseEntity> =
+        read("quran/verses.json", Array<VerseAsset>::class.java).map(VerseAsset::toEntity)
+
+    fun englishTranslation(): List<TranslationTextEntity> =
+        read("quran/translations/en_sahih.json", Array<TranslationAsset>::class.java)
+            .map(TranslationAsset::toEntity)
+
+    fun urduTranslation(): List<TranslationTextEntity> =
+        read("quran/translations/ur_jalandhry.json", Array<TranslationAsset>::class.java)
+            .map(TranslationAsset::toEntity)
+
+    fun mushafWords(): List<MushafWordEntity> =
+        read("quran/mushaf_words.json", Array<MushafWordAsset>::class.java)
+            .mapIndexed { index, asset -> asset.toEntity(orderIndex = index) }
+
+    private fun <T> read(path: String, type: Class<Array<T>>): Array<T> =
+        context.assets.open(path).use { stream ->
+            InputStreamReader(stream, Charsets.UTF_8).use { reader -> gson.fromJson(reader, type) }
+        }
 }
 
 private data class ChapterAsset(

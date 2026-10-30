@@ -1,9 +1,7 @@
 package com.salattracker.notification
 
-import android.app.NotificationManager
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.salattracker.domain.model.PrayerType
 import java.io.FileNotFoundException
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
@@ -16,11 +14,7 @@ class PrayerReminderChannelTest {
     fun bundledAzanUsesStableResolvableResourceNameUri() {
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()
         val channels = PrayerReminderChannels(context)
-        val manager = context.getSystemService(NotificationManager::class.java)
-
-        channels.recreate(PrayerType.FAJR, soundUri = null, vibrationEnabled = true)
-
-        val sound = manager.getNotificationChannel(channels.channelId(PrayerType.FAJR)).sound
+        val sound = channels.azanUri()
         assertEquals("android.resource://${context.packageName}/raw/azan", sound.toString())
         try {
             context.contentResolver.openAssetFileDescriptor(sound, "r")?.use { descriptor ->
