@@ -15,6 +15,8 @@ import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.LocalDate
+import java.io.ByteArrayOutputStream
+import java.util.zip.GZIPOutputStream
 
 class BackupCodecTest {
 
@@ -248,5 +250,44 @@ class BackupCodecTest {
 
         val (_, decoded) = BackupCodec.decode(bytes)
         assertEquals(snapshot.prayerEntries, decoded.prayerEntries)
+    }
+
+    @Test
+    fun `decode accepts a version one backup produced before release optimization`() {
+        val legacyJson = """
+            {
+              "meta": {
+                "formatVersion": 1,
+                "revisionId": "legacy-v1",
+                "createdAt": 123456789,
+                "appVersionCode": 1,
+                "deviceModel": "Legacy device",
+                "prayerEntryCount": 1,
+                "oldestPrayerDate": "2026-01-01",
+                "contentSha256": ""
+              },
+              "payload": {
+                "prayerEntries": [{
+                  "date": "2026-01-01",
+                  "prayerType": "FAJR",
+                  "status": "CONGREGATION",
+                  "updatedAt": 1000
+                }],
+                "goals": [],
+                "checkIns": [],
+                "streaks": [],
+                "settings": {}
+              }
+            }
+        """.trimIndent()
+        val bytes = ByteArrayOutputStream().also { output ->
+            GZIPOutputStream(output).use { it.write(legacyJson.toByteArray(Charsets.UTF_8)) }
+        }.toByteArray()
+
+        val (meta, snapshot) = BackupCodec.decode(bytes)
+
+        assertEquals("legacy-v1", meta.revisionId)
+        assertEquals(PrayerType.FAJR, snapshot.prayerEntries.single().prayerType)
+        assertEquals(PrayerStatus.CONGREGATION, snapshot.prayerEntries.single().status)
     }
 }

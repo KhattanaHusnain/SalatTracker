@@ -1,5 +1,6 @@
 package com.salattracker.data.remote.api
 
+import com.google.gson.annotations.SerializedName
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
 import retrofit2.http.*
@@ -56,14 +57,17 @@ interface DriveApiService {
     ): DriveFileResource
 }
 
-data class DriveAboutResponse(val user: DriveUser?)
-data class DriveUser(val emailAddress: String?, val displayName: String?)
+data class DriveAboutResponse(@SerializedName("user") val user: DriveUser?)
+data class DriveUser(
+    @SerializedName("emailAddress") val emailAddress: String?,
+    @SerializedName("displayName") val displayName: String?,
+)
 
-data class DriveFileListResponse(val files: List<DriveFileResource>?)
+data class DriveFileListResponse(@SerializedName("files") val files: List<DriveFileResource>?)
 
 data class DriveFileResource(
-    val id: String?,
-    val size: String?,
-    val md5Checksum: String?,
-    val appProperties: Map<String, String>?,
+    @SerializedName("id") val id: String?,
+    @SerializedName("size") val size: String?,
+    @SerializedName("md5Checksum") val md5Checksum: String?,
+    @SerializedName("appProperties") val appProperties: Map<String, String>?,
 )

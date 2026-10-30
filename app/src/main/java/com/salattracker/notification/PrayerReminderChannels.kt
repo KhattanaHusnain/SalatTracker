@@ -62,7 +62,9 @@ class PrayerReminderChannels @Inject constructor(
 
     private fun channelName(type: PrayerType): String = context.getString(type.nameRes)
 
-    private fun azanUri(): Uri = Uri.parse("android.resource://${context.packageName}/${R.raw.azan}")
+    // Use the stable type/name form. Numeric resource IDs can change between optimized releases,
+    // while notification channels and their sound URIs persist across app updates and restores.
+    private fun azanUri(): Uri = Uri.parse("android.resource://${context.packageName}/raw/azan")
 
     private fun manager() = context.getSystemService(NotificationManager::class.java)
 }

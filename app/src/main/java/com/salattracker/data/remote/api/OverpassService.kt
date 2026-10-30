@@ -1,5 +1,6 @@
 package com.salattracker.data.remote.api
 
+import com.google.gson.annotations.SerializedName
 import com.salattracker.domain.model.MosqueMode
 import com.salattracker.domain.model.NearbyMosque
 import com.salattracker.domain.usecase.distanceMeters
@@ -11,18 +12,23 @@ import kotlin.math.roundToInt
 
 // Every field is nullable/defaulted: Gson bypasses constructors, and OSM elements vary
 // (nodes carry lat/lon, ways and relations carry a `center`).
-data class OverpassResponse(val elements: List<OverpassElement>? = null)
-
-data class OverpassElement(
-    val type: String? = null,
-    val id: Long? = null,
-    val lat: Double? = null,
-    val lon: Double? = null,
-    val center: OverpassCenter? = null,
-    val tags: Map<String, String>? = null,
+data class OverpassResponse(
+    @SerializedName("elements") val elements: List<OverpassElement>? = null,
 )
 
-data class OverpassCenter(val lat: Double? = null, val lon: Double? = null)
+data class OverpassElement(
+    @SerializedName("type") val type: String? = null,
+    @SerializedName("id") val id: Long? = null,
+    @SerializedName("lat") val lat: Double? = null,
+    @SerializedName("lon") val lon: Double? = null,
+    @SerializedName("center") val center: OverpassCenter? = null,
+    @SerializedName("tags") val tags: Map<String, String>? = null,
+)
+
+data class OverpassCenter(
+    @SerializedName("lat") val lat: Double? = null,
+    @SerializedName("lon") val lon: Double? = null,
+)
 
 interface OverpassService {
     @FormUrlEncoded

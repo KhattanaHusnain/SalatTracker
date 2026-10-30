@@ -32,9 +32,10 @@ android {
 
     buildTypes {
         release {
-            optimization {
-                enable = false
-            }
+            buildConfigField("Boolean", "ENABLE_LOGGING", "false")
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
         }
     }
     compileOptions {

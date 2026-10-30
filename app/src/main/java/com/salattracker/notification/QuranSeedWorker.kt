@@ -8,6 +8,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
 import com.salattracker.data.local.dao.QuranContentPackDao
 import com.salattracker.data.local.entity.QuranContentPackEntity
 import com.salattracker.data.local.quran.ChapterDao
@@ -179,13 +180,13 @@ class QuranSeedWorker @AssistedInject constructor(
 }
 
 private data class ChapterAsset(
-    val number: Int,
-    val nameArabic: String,
-    val nameTransliteration: String,
-    val nameTranslation: String,
-    val versesCount: Int,
-    val revelationPlace: String,
-    val revelationOrder: Int,
+    @SerializedName("number") val number: Int,
+    @SerializedName("nameArabic") val nameArabic: String,
+    @SerializedName("nameTransliteration") val nameTransliteration: String,
+    @SerializedName("nameTranslation") val nameTranslation: String,
+    @SerializedName("versesCount") val versesCount: Int,
+    @SerializedName("revelationPlace") val revelationPlace: String,
+    @SerializedName("revelationOrder") val revelationOrder: Int,
 ) {
     fun toEntity() = ChapterEntity(
         number, nameArabic, nameTransliteration, nameTranslation, versesCount,
@@ -194,14 +195,14 @@ private data class ChapterAsset(
 }
 
 private data class VerseAsset(
-    val chapterNumber: Int,
-    val verseNumber: Int,
-    val textUthmani: String,
-    val juzNumber: Int,
-    val hizbNumber: Int,
-    val rubNumber: Int,
-    val pageNumber: Int,
-    val hasSajda: Boolean,
+    @SerializedName("chapterNumber") val chapterNumber: Int,
+    @SerializedName("verseNumber") val verseNumber: Int,
+    @SerializedName("textUthmani") val textUthmani: String,
+    @SerializedName("juzNumber") val juzNumber: Int,
+    @SerializedName("hizbNumber") val hizbNumber: Int,
+    @SerializedName("rubNumber") val rubNumber: Int,
+    @SerializedName("pageNumber") val pageNumber: Int,
+    @SerializedName("hasSajda") val hasSajda: Boolean,
 ) {
     fun toEntity() = VerseEntity(
         chapterNumber, verseNumber, textUthmani, juzNumber, hizbNumber, rubNumber, pageNumber, hasSajda,
@@ -209,9 +210,9 @@ private data class VerseAsset(
 }
 
 private data class TranslationAsset(
-    val chapterNumber: Int,
-    val verseNumber: Int,
-    val text: String,
+    @SerializedName("chapterNumber") val chapterNumber: Int,
+    @SerializedName("verseNumber") val verseNumber: Int,
+    @SerializedName("text") val text: String,
 ) {
     fun toEntity() = TranslationTextEntity(chapterNumber, verseNumber, text)
 }
@@ -221,13 +222,13 @@ private data class TranslationAsset(
  * array is a valid [MushafWordEntity.orderIndex] since it only needs to increase monotonically
  * *within* a page, which this trivially satisfies given the array's own ordering. */
 private data class MushafWordAsset(
-    val pageNumber: Int,
-    val chapterNumber: Int,
-    val verseNumber: Int,
-    val position: Int,
-    val lineNumber: Int,
-    val glyphCode: String,
-    val isVerseEndMarker: Boolean,
+    @SerializedName("pageNumber") val pageNumber: Int,
+    @SerializedName("chapterNumber") val chapterNumber: Int,
+    @SerializedName("verseNumber") val verseNumber: Int,
+    @SerializedName("position") val position: Int,
+    @SerializedName("lineNumber") val lineNumber: Int,
+    @SerializedName("glyphCode") val glyphCode: String,
+    @SerializedName("isVerseEndMarker") val isVerseEndMarker: Boolean,
 ) {
     fun toEntity(orderIndex: Int) = MushafWordEntity(
         pageNumber = pageNumber,
