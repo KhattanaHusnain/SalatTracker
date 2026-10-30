@@ -168,6 +168,7 @@ fun PrayerReminderScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.safeDrawing)
                 .padding(screenPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
