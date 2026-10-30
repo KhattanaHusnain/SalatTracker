@@ -26,7 +26,12 @@ class SettingsViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val repository = FakeSettingsRepository(UserPrefs(latitude = 24.4672, longitude = 39.6111, calculationMethodId = CalculationMethod.MWL.id))
+    private val repository = FakeSettingsRepository(UserPrefs(
+        latitude = 24.4672,
+        longitude = 39.6111,
+        calculationMethodId = CalculationMethod.MWL.id,
+        locationLabel = "Madinah, Saudi Arabia",
+    ))
     private val locationProvider = FakeLocationProvider()
     private val geocodingRepository = FakeGeocodingRepository()
     private val rescheduler = FakePrayerReminderRescheduler()
@@ -82,6 +87,20 @@ class SettingsViewModelTest {
 
         assertTrue(repository.locationCalls.isEmpty())
         assertEquals(0, rescheduler.rescheduleCount)
+    }
+
+    @Test
+    fun `fetchDeviceLocation keeps the previous city when reverse geocoding fails`() {
+        locationProvider.nextLocation = 1.5 to 2.5
+        geocodingRepository.nextReverseResult = null
+        val viewModel = createViewModel()
+
+        viewModel.fetchDeviceLocation()
+
+        assertEquals(listOf(1.5 to 2.5), repository.locationCalls)
+        assertTrue(repository.locationLabelCalls.isEmpty())
+        assertEquals("Madinah, Saudi Arabia", viewModel.uiState.value.locationLabel)
+        assertEquals(1, rescheduler.rescheduleCount)
     }
 
     @Test

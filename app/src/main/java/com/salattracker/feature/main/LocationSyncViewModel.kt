@@ -31,16 +31,23 @@ class LocationSyncViewModel @Inject constructor(
             val prefs = settingsRepository.getCurrentPrefs()
             if (!prefs.useDeviceLocation) return@launch
             val (lat, lon) = locationProvider.getCurrentLocation() ?: return@launch
+            val locationChanged =
+                lat.roundedForComparison() != prefs.latitude.roundedForComparison() ||
+                    lon.roundedForComparison() != prefs.longitude.roundedForComparison()
             // Prayer times now depend on location (on-device calculation). Reschedule only when
             // the location actually moved by a meaningful amount — comparing at ~1km precision
             // (2 decimal places) so ordinary GPS jitter on every launch doesn't churn the alarms.
-            if (lat.roundedForComparison() != prefs.latitude.roundedForComparison() ||
-                lon.roundedForComparison() != prefs.longitude.roundedForComparison()
-            ) {
+            // A missing label is also retried so installs affected by an earlier failed lookup can
+            // recover without waiting for the device to move.
+            if (locationChanged || prefs.locationLabel.isNullOrBlank()) {
                 val city = runCatching { geocodingRepository.reverseGeocode(lat, lon) }.getOrNull()
-                settingsRepository.setLocation(lat, lon)
-                settingsRepository.setLocationLabel(city?.fullLabel)
-                prayerReminderRescheduler.rescheduleAll()
+                if (locationChanged) {
+                    settingsRepository.setLocation(lat, lon)
+                    prayerReminderRescheduler.rescheduleAll()
+                }
+                city?.takeIf { it.name.isNotBlank() }?.let {
+                    settingsRepository.setLocationLabel(it.fullLabel)
+                }
             }
         }
     }

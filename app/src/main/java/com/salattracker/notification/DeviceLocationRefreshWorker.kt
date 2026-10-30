@@ -31,14 +31,19 @@ class DeviceLocationRefreshWorker @AssistedInject constructor(
         if (!prefs.useDeviceLocation) return Result.success()
 
         val (latitude, longitude) = locationProvider.getCurrentLocation() ?: return Result.success()
-        if (latitude.roundedForComparison() == prefs.latitude.roundedForComparison() &&
-            longitude.roundedForComparison() == prefs.longitude.roundedForComparison()
-        ) return Result.success()
+        val locationChanged =
+            latitude.roundedForComparison() != prefs.latitude.roundedForComparison() ||
+                longitude.roundedForComparison() != prefs.longitude.roundedForComparison()
+        if (!locationChanged && !prefs.locationLabel.isNullOrBlank()) return Result.success()
 
         val city = runCatching { geocodingRepository.reverseGeocode(latitude, longitude) }.getOrNull()
-        settingsRepository.setLocation(latitude, longitude)
-        settingsRepository.setLocationLabel(city?.fullLabel)
-        prayerReminderRescheduler.rescheduleAll()
+        if (locationChanged) {
+            settingsRepository.setLocation(latitude, longitude)
+            prayerReminderRescheduler.rescheduleAll()
+        }
+        city?.takeIf { it.name.isNotBlank() }?.let {
+            settingsRepository.setLocationLabel(it.fullLabel)
+        }
         return Result.success()
     }
 
