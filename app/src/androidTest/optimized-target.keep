@@ -1,0 +1,3 @@
+# AndroidJUnitRunner loads this class from the instrumented target process. The production app
+# does not reference it, so R8 would otherwise remove it from the isolated optimized-test target.
+-keep class androidx.tracing.Trace { *; }
