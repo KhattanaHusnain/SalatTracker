@@ -28,7 +28,6 @@ import com.salattracker.core.theme.SalatTrackerTheme
 import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerType
-import com.salattracker.domain.model.VerseInfo
 import java.io.File
 import java.time.LocalDate
 import java.time.LocalTime
@@ -40,7 +39,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
-enum class ReminderFixture { MALE_WITH_VERSE, FEMALE_WITHOUT_VERSE }
+enum class ReminderFixture { MALE, FEMALE }
 
 /**
  * Full-screen alert coverage using the production composable, bundled fonts and localized strings.
@@ -65,12 +64,13 @@ class PrayerReminderLayoutRegressionTest(
         compose.mainClock.autoAdvance = true
 
         val requiredTags = buildList {
+            add("prayer-reminder-background")
             add("prayer-reminder-clock")
             add("prayer-reminder-action-individual")
             add("prayer-reminder-action-qaza")
             add("prayer-reminder-action-snooze")
             add("prayer-reminder-dismiss")
-            if (fixture == ReminderFixture.MALE_WITH_VERSE) {
+            if (fixture == ReminderFixture.MALE) {
                 add("prayer-reminder-action-congregation")
             }
         }
@@ -81,16 +81,11 @@ class PrayerReminderLayoutRegressionTest(
             val node = compose.onNodeWithTag(tag).assertIsDisplayed().fetchSemanticsNode()
             assertContained(tag, node.boundsInRoot, root)
         }
-        if (fixture == ReminderFixture.FEMALE_WITHOUT_VERSE) {
+        if (fixture == ReminderFixture.FEMALE) {
             compose.onNodeWithTag("prayer-reminder-action-congregation").assertDoesNotExist()
-        } else {
-            val center = compose.onNodeWithTag("prayer-reminder-center-scroll")
-            listOf("prayer-reminder-verse-arabic", "prayer-reminder-verse-translation").forEach { tag ->
-                center.performScrollToNode(hasTestTag(tag))
-                val verseNode = compose.onNodeWithTag(tag).assertIsDisplayed().fetchSemanticsNode()
-                assertContained(tag, verseNode.boundsInRoot, root)
-            }
         }
+        compose.onNodeWithTag("prayer-reminder-verse-arabic").assertDoesNotExist()
+        compose.onNodeWithTag("prayer-reminder-verse-translation").assertDoesNotExist()
 
         assertTextLayoutsDoNotClip()
     }
@@ -129,9 +124,8 @@ class PrayerReminderLayoutRegressionTest(
                                 date = LocalDate.of(2026, 10, 29),
                                 jumuahEnabled = true,
                                 madhab = Madhab.STANDARD,
-                                gender = if (fixture == ReminderFixture.FEMALE_WITHOUT_VERSE) Gender.FEMALE else Gender.MALE,
+                                gender = if (fixture == ReminderFixture.FEMALE) Gender.FEMALE else Gender.MALE,
                                 scheduledTime = LocalTime.of(15, 20),
-                                verse = if (fixture == ReminderFixture.MALE_WITH_VERSE) VERSE else null,
                                 snoozeMinutes = 30,
                                 use24HourFormat = false,
                                 onMark = {},
@@ -209,12 +203,6 @@ class PrayerReminderLayoutRegressionTest(
     }
 
     companion object {
-        private val VERSE = VerseInfo(
-            arabic = "حَافِظُوا عَلَى الصَّلَوَاتِ وَالصَّلَاةِ الْوُسْطَىٰ وَقُومُوا لِلَّهِ قَانِتِينَ",
-            text = "Maintain with care the obligatory prayers, especially the middle prayer, and stand before Allah in devotion.",
-            citation = "Al-Baqarah 2:238",
-        )
-
         @JvmStatic
         @Parameterized.Parameters(name = "viewport={0}x{1} font={2} language={3} fixture={4}")
         fun cases(): List<Array<Any>> {

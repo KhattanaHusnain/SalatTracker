@@ -6,24 +6,25 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -35,9 +36,6 @@ import androidx.compose.ui.unit.sp
 import com.salattracker.R
 import com.salattracker.core.theme.AppUiFontFamily
 import com.salattracker.core.theme.AppTitleFontFamily
-import com.salattracker.core.theme.AmiriQuranFamily
-import com.salattracker.core.theme.SalatHeroGradientEnd
-import com.salattracker.core.theme.SalatHeroGradientStart
 import com.salattracker.core.theme.SalatOnHero
 import com.salattracker.core.theme.SalatPrimary
 import com.salattracker.core.theme.SalatPrimaryContainer
@@ -50,7 +48,6 @@ import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
-import com.salattracker.domain.model.VerseInfo
 import kotlinx.coroutines.delay
 import java.time.LocalDate
 import java.time.LocalTime
@@ -63,7 +60,6 @@ fun PrayerReminderScreen(
     madhab: Madhab,
     gender: Gender?,
     scheduledTime: LocalTime?,
-    verse: VerseInfo?,
     snoozeMinutes: Int,
     use24HourFormat: Boolean,
     onMark: (PrayerStatus) -> Unit,
@@ -79,13 +75,24 @@ fun PrayerReminderScreen(
     }
 
     BoxWithConstraints(
-        modifier = Modifier
-            .fillMaxSize()
-            .testTag("prayer-reminder-screen")
-            .background(
-                Brush.verticalGradient(listOf(SalatHeroGradientStart, SalatHeroGradientEnd, Color.Black))
-            ),
+        modifier = Modifier.fillMaxSize().testTag("prayer-reminder-screen"),
     ) {
+        Image(
+            painter = painterResource(R.drawable.home_mosque),
+            contentDescription = null,
+            modifier = Modifier.matchParentSize().testTag("prayer-reminder-background"),
+            contentScale = ContentScale.Crop,
+            alignment = BiasAlignment(0f, -0.72f),
+        )
+        Box(
+            Modifier.matchParentSize().background(
+                Brush.verticalGradient(
+                    0f to Color(0xD1064E52),
+                    0.55f to Color(0xA3064E52),
+                    1f to Color(0xF2053033),
+                ),
+            ),
+        )
         val veryCompact = maxHeight < 620.dp
         val compact = maxHeight < 760.dp
         val screenPadding = when {
@@ -128,31 +135,6 @@ fun PrayerReminderScreen(
             compact -> 60.dp
             else -> 88.dp
         }
-        val verseTopSpace = when {
-            veryCompact -> 8.dp
-            compact -> 16.dp
-            else -> 32.dp
-        }
-        val arabicSize = when {
-            veryCompact -> 18.sp
-            compact -> 21.sp
-            else -> 24.sp
-        }
-        val translationSize = when {
-            veryCompact -> 12.sp
-            compact -> 14.sp
-            else -> 16.sp
-        }
-        val translationLineHeight = when {
-            veryCompact -> 18.sp
-            compact -> 21.sp
-            else -> 24.sp
-        }
-        val citationSize = when {
-            veryCompact -> 10.sp
-            compact -> 11.sp
-            else -> 12.sp
-        }
         val actionGap = when {
             veryCompact -> 8.dp
             compact -> 12.dp
@@ -163,8 +145,6 @@ fun PrayerReminderScreen(
             compact -> 12.dp
             else -> 24.dp
         }
-        val centerScrollState = rememberScrollState()
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -201,7 +181,7 @@ fun PrayerReminderScreen(
                 )
             }
 
-            // ── Pulsing logo + verse ──────────────────────────────────────────
+            // ── Pulsing prayer icon ───────────────────────────────────────────
             val scale = if (ValueAnimator.areAnimatorsEnabled()) {
                 val infiniteTransition = rememberInfiniteTransition(label = "breathe")
                 val animated by infiniteTransition.animateFloat(
@@ -220,68 +200,21 @@ fun PrayerReminderScreen(
                     .fillMaxWidth(),
                 contentAlignment = Alignment.Center,
             ) {
-                Column(
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .verticalScroll(centerScrollState)
-                        .testTag("prayer-reminder-center-scroll"),
-                    horizontalAlignment = Alignment.CenterHorizontally,
+                        .size(logoSize)
+                        .scale(scale)
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = 0.08f))
+                        .border(1.dp, Color.White.copy(alpha = 0.16f), CircleShape),
+                    contentAlignment = Alignment.Center,
                 ) {
-                    Spacer(modifier = Modifier.height(if (veryCompact) 4.dp else 8.dp))
-                    Box(
-                        modifier = Modifier
-                            .size(logoSize)
-                            .scale(scale)
-                            .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.05f))
-                            .border(1.dp, Color.White.copy(alpha = 0.1f), CircleShape),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Icon(
-                            painter  = painterResource(prayerType.iconRes),
-                            contentDescription = null,
-                            tint     = SalatOnHero,
-                            modifier = Modifier.size(logoIconSize),
-                        )
-                    }
-
-                    if (verse != null) {
-                        Spacer(modifier = Modifier.height(verseTopSpace))
-                        if (verse.arabic.isNotBlank()) {
-                            Text(
-                                text = verse.arabic,
-                                color = SalatOnHero.copy(alpha = 0.9f),
-                                fontSize = arabicSize,
-                                fontFamily = AmiriQuranFamily,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .testTag("prayer-reminder-verse-arabic"),
-                            )
-                            Spacer(modifier = Modifier.height(if (veryCompact) 6.dp else if (compact) 10.dp else 16.dp))
-                        }
-                        Text(
-                            text       = "“${verse.text}”",
-                            color      = SalatOnHero.copy(alpha = 0.9f),
-                            fontSize   = translationSize,
-                            fontFamily = AppUiFontFamily,
-                            textAlign  = TextAlign.Center,
-                            lineHeight = translationLineHeight,
-                            modifier   = Modifier
-                                .padding(horizontal = 8.dp)
-                                .testTag("prayer-reminder-verse-translation"),
-                        )
-                        if (verse.citation.isNotEmpty()) {
-                            Spacer(modifier = Modifier.height(if (veryCompact) 4.dp else if (compact) 6.dp else 8.dp))
-                            Text(
-                                text       = verse.citation,
-                                color      = SalatPrimaryFixedDim.copy(alpha = 0.6f),
-                                fontSize   = citationSize,
-                                fontFamily = AppUiFontFamily,
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(if (veryCompact) 4.dp else 8.dp))
+                    Icon(
+                        painter  = painterResource(prayerType.iconRes),
+                        contentDescription = null,
+                        tint     = SalatOnHero,
+                        modifier = Modifier.size(logoIconSize),
+                    )
                 }
             }
 
@@ -419,10 +352,6 @@ fun PrayerReminderScreenPreview() {
         madhab        = Madhab.STANDARD,
         gender        = null,
         scheduledTime = LocalTime.of(15, 20),
-        verse = VerseInfo(
-            text = "Maintain with care the [obligatory] prayers and [in particular] the middle [i.e., ʿaṣr] prayer and stand before Allāh, devoutly obedient.",
-            citation = "Al-Baqarah 2:238",
-        ),
         snoozeMinutes = 10,
         use24HourFormat = false,
         onMark   = {},
