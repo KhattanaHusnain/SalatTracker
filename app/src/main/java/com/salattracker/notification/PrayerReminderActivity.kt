@@ -20,10 +20,8 @@ import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerStatus
 import com.salattracker.domain.model.PrayerType
-import com.salattracker.domain.model.VerseInfo
 import com.salattracker.domain.repository.PrayerRepository
 import com.salattracker.domain.repository.SettingsRepository
-import com.salattracker.domain.repository.VerseRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -35,7 +33,6 @@ import javax.inject.Inject
 class PrayerReminderActivity : AppCompatActivity() {
 
     @Inject lateinit var prayerRepository: PrayerRepository
-    @Inject lateinit var verseRepository: VerseRepository
     @Inject lateinit var settingsRepository: SettingsRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,7 +55,6 @@ class PrayerReminderActivity : AppCompatActivity() {
 
         setContent {
             var scheduledTime by remember { mutableStateOf<LocalTime?>(null) }
-            var verse by remember { mutableStateOf<VerseInfo?>(null) }
             var snoozeMinutes by remember { mutableStateOf(PrayerReminderReceiver.DEFAULT_SNOOZE_MINUTES) }
             var jumuahEnabled by remember { mutableStateOf(true) }
             var madhab by remember { mutableStateOf(Madhab.STANDARD) }
@@ -67,7 +63,6 @@ class PrayerReminderActivity : AppCompatActivity() {
 
             LaunchedEffect(type) {
                 scheduledTime = prayerRepository.getPrayerTimes(date)?.get(type)
-                verse = verseRepository.getVerseOfDay()
                 val prefs = settingsRepository.getCurrentPrefs()
                 snoozeMinutes = prefs.reminderSnoozeMinutes[type] ?: PrayerReminderReceiver.DEFAULT_SNOOZE_MINUTES
                 jumuahEnabled = prefs.jumuahEnabled
@@ -84,7 +79,6 @@ class PrayerReminderActivity : AppCompatActivity() {
                     madhab        = madhab,
                     gender        = gender,
                     scheduledTime = scheduledTime,
-                    verse         = verse,
                     snoozeMinutes = snoozeMinutes,
                     use24HourFormat = use24HourFormat,
                     onMark        = { status -> markAndFinish(type, date, status) },
