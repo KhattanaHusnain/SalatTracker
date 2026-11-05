@@ -10,6 +10,7 @@ import com.salattracker.domain.model.HighLatitudeRule
 import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.ThemeMode
+import com.salattracker.domain.model.TimeFormatMode
 import com.salattracker.domain.repository.GeocodingRepository
 import com.salattracker.domain.repository.LocaleApplier
 import com.salattracker.domain.repository.LocationProvider
@@ -35,6 +36,7 @@ data class SettingsUiState(
     val highLatitudeRule: HighLatitudeRule = HighLatitudeRule.AUTOMATIC,
     val prayerTimeAdjustMinutes: Map<PrayerType, Int> = PrayerType.values().associateWith { 0 },
     val use24HourFormat: Boolean = false,
+    val timeFormatMode: TimeFormatMode = TimeFormatMode.SYSTEM,
     val language: AppLanguage = AppLanguage.ENGLISH,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     /** Onboarding's "About you" answer — null for an install that skipped/predates it; the About
@@ -84,6 +86,7 @@ class SettingsViewModel @Inject constructor(
                             highLatitudeRule  = prefs.highLatitudeRule,
                             prayerTimeAdjustMinutes = prefs.prayerTimeAdjustMinutes,
                             use24HourFormat   = prefs.use24HourFormat,
+                            timeFormatMode     = prefs.timeFormatMode,
                             language          = prefs.language,
                             themeMode         = prefs.themeMode,
                             gender            = prefs.gender,
@@ -158,6 +161,11 @@ class SettingsViewModel @Inject constructor(
     fun on24HourFormatChanged(enabled: Boolean) {
         _uiState.update { it.copy(use24HourFormat = enabled) }
         write { settingsRepository.setUse24HourFormat(enabled) }
+    }
+
+    fun onTimeFormatModeChanged(mode: TimeFormatMode) {
+        _uiState.update { it.copy(timeFormatMode = mode, use24HourFormat = mode == TimeFormatMode.TWENTY_FOUR_HOUR) }
+        write { settingsRepository.setTimeFormatMode(mode) }
     }
 
     fun onLanguageChanged(language: AppLanguage) {

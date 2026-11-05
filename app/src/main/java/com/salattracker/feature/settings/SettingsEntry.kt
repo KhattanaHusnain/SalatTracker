@@ -61,7 +61,7 @@ fun SettingsEntry(
         onMadhabChanged                 = viewModel::onMadhabChanged,
         onHighLatitudeRuleChanged       = viewModel::onHighLatitudeRuleChanged,
         onPrayerTimeAdjustChanged       = viewModel::onPrayerTimeAdjustChanged,
-        on24HourFormatChanged           = viewModel::on24HourFormatChanged,
+        onTimeFormatModeChanged          = viewModel::onTimeFormatModeChanged,
         onLanguageChanged               = viewModel::onLanguageChanged,
         onThemeModeChanged              = viewModel::onThemeModeChanged,
         homeAppearance                  = homeAppearance,

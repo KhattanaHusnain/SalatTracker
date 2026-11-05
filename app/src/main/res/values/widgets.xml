@@ -1,0 +1,31 @@
+<resources>
+    <string name="widget_small_mono_all">Salat · Small · All prayers</string>
+    <string name="widget_small_mono_focus">Salat · Small · Current &amp; next</string>
+    <string name="widget_small_theme_all">Salat themed · Small · All prayers</string>
+    <string name="widget_small_theme_focus">Salat themed · Small · Current &amp; next</string>
+    <string name="widget_medium_mono_all">Salat · Medium · All prayers</string>
+    <string name="widget_medium_mono_focus">Salat · Medium · Current &amp; next</string>
+    <string name="widget_medium_theme_all">Salat themed · Medium · All prayers</string>
+    <string name="widget_medium_theme_focus">Salat themed · Medium · Current &amp; next</string>
+    <string name="widget_large_mono_all">Salat · Large · All prayers</string>
+    <string name="widget_large_mono_focus">Salat · Large · Current &amp; next</string>
+    <string name="widget_large_theme_all">Salat themed · Large · All prayers</string>
+    <string name="widget_large_theme_focus">Salat themed · Large · Current &amp; next</string>
+    <string name="widget_lock_mono_all">Salat lock screen · All prayers</string>
+    <string name="widget_lock_mono_focus">Salat lock screen · Current &amp; next</string>
+    <string name="widget_lock_theme_all">Salat themed lock screen · All prayers</string>
+    <string name="widget_lock_theme_focus">Salat themed lock screen · Current &amp; next</string>
+    <string name="widget_setup_required">Open app to set up prayer times</string>
+    <string name="widget_ongoing">ongoing</string>
+    <string name="widget_no_active_prayer">No active prayer</string>
+    <string name="widget_next">Next</string>
+    <string name="widget_at">at</string>
+    <string name="widget_current">Now</string>
+    <string name="widget_done">Done</string>
+    <string name="widget_ends_at">Ends at %1$s</string>
+    <string name="widget_config_title">Salat Tracker widget</string>
+    <string name="settings_time_format">Time format</string>
+    <string name="settings_time_system">System</string>
+    <string name="settings_time_12">12 hour</string>
+    <string name="settings_time_24">24 hour</string>
+</resources>

@@ -32,6 +32,7 @@ import com.salattracker.domain.model.HighLatitudeRule
 import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.ThemeMode
+import com.salattracker.domain.model.TimeFormatMode
 import com.salattracker.feature.home.HomeAppearance
 import com.salattracker.feature.home.HomeFeedbackSettingsCard
 
@@ -49,7 +50,7 @@ fun SettingsScreen(
     onMadhabChanged: (Madhab) -> Unit,
     onHighLatitudeRuleChanged: (HighLatitudeRule) -> Unit,
     onPrayerTimeAdjustChanged: (PrayerType, Int) -> Unit,
-    on24HourFormatChanged: (Boolean) -> Unit,
+    onTimeFormatModeChanged: (TimeFormatMode) -> Unit,
     onLanguageChanged: (AppLanguage) -> Unit,
     onThemeModeChanged: (ThemeMode) -> Unit,
     homeAppearance: HomeAppearance,
@@ -111,10 +112,10 @@ fun SettingsScreen(
             AppearanceCard(
                 language          = uiState.language,
                 themeMode         = uiState.themeMode,
-                use24Hour         = uiState.use24HourFormat,
+                timeFormatMode    = uiState.timeFormatMode,
                 onLanguageChanged = onLanguageChanged,
                 onThemeChanged    = onThemeModeChanged,
-                on24HourChanged   = on24HourFormatChanged,
+                onTimeFormatChanged = onTimeFormatModeChanged,
             )
 
             SettingsSectionLabel(stringResource(R.string.home_v27_appreciation))
@@ -402,10 +403,10 @@ private fun AdjustPrayerTimesCard(
 private fun AppearanceCard(
     language: AppLanguage,
     themeMode: ThemeMode,
-    use24Hour: Boolean,
+    timeFormatMode: TimeFormatMode,
     onLanguageChanged: (AppLanguage) -> Unit,
     onThemeChanged: (ThemeMode) -> Unit,
-    on24HourChanged: (Boolean) -> Unit,
+    onTimeFormatChanged: (TimeFormatMode) -> Unit,
 ) {
     SettingsCard {
         // Theme
@@ -469,18 +470,21 @@ private fun AppearanceCard(
         HorizontalDivider(color = SalatOutlineVariant.copy(alpha = 0.4f))
         Spacer(Modifier.height(16.dp))
 
-        // 24-hour format
-        Row(
-            modifier              = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment     = Alignment.CenterVertically,
-        ) {
-            Text(stringResource(R.string.settings_24hour), color = SalatOnSurface, fontSize = 16.sp, fontFamily = AppUiFontFamily)
-            Switch(
-                checked         = use24Hour,
-                onCheckedChange = on24HourChanged,
-                colors          = salatSwitchColors(),
-            )
+        Text(stringResource(R.string.settings_time_format), color = SalatOnSurfaceVariant, fontSize = 12.sp, fontFamily = AppUiFontFamily)
+        Spacer(Modifier.height(8.dp))
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            TimeFormatMode.entries.forEach { mode ->
+                ThemeModeChip(
+                    label = stringResource(when (mode) {
+                        TimeFormatMode.SYSTEM -> R.string.settings_time_system
+                        TimeFormatMode.TWELVE_HOUR -> R.string.settings_time_12
+                        TimeFormatMode.TWENTY_FOUR_HOUR -> R.string.settings_time_24
+                    }),
+                    isSelected = timeFormatMode == mode,
+                    onClick = { onTimeFormatChanged(mode) },
+                    modifier = Modifier.weight(1f),
+                )
+            }
         }
     }
 }
@@ -557,7 +561,7 @@ fun SettingsScreenPreview() {
         onMadhabChanged            = {},
         onHighLatitudeRuleChanged  = {},
         onPrayerTimeAdjustChanged  = { _, _ -> },
-        on24HourFormatChanged      = {},
+        onTimeFormatModeChanged    = {},
         onLanguageChanged          = {},
         onThemeModeChanged         = {},
         homeAppearance             = HomeAppearance(),

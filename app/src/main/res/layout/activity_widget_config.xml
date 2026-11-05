@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="24dp">
+        <TextView android:id="@+id/widget_config_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="22sp" android:textStyle="bold" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="Text contrast" android:textStyle="bold" />
+        <RadioGroup android:id="@+id/widget_config_contrast" android:layout_width="match_parent" android:layout_height="wrap_content">
+            <RadioButton android:id="@+id/widget_contrast_auto" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Automatic" />
+            <RadioButton android:id="@+id/widget_contrast_light" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Dark text for light wallpaper" />
+            <RadioButton android:id="@+id/widget_contrast_dark" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Light text for dark wallpaper" />
+        </RadioGroup>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:text="Wallpaper source" android:textStyle="bold" />
+        <RadioGroup android:id="@+id/widget_config_wallpaper" android:layout_width="match_parent" android:layout_height="wrap_content">
+            <RadioButton android:id="@+id/widget_wallpaper_home" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Home screen" />
+            <RadioButton android:id="@+id/widget_wallpaper_lock" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Lock screen" />
+        </RadioGroup>
+        <Button android:id="@+id/widget_config_done" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="28dp" android:text="Add widget" />
+    </LinearLayout>
+</ScrollView>
