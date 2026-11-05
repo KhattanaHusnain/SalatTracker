@@ -45,6 +45,13 @@ android {
             matchingFallbacks += listOf("release")
             proguardFiles("src/androidTest/optimized-target.keep")
         }
+        create("layoutTest") {
+            initWith(getByName("debug"))
+            applicationIdSuffix = ".layouttest"
+            versionNameSuffix = "-layout-test"
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += listOf("debug")
+        }
     }
     testBuildType = providers.gradleProperty("salatTestBuildType").orElse("debug").get()
     compileOptions {
@@ -88,6 +95,7 @@ dependencies {
     androidTestImplementation(libs.androidx.room.testing)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     add("optimizedImplementation", libs.androidx.compose.ui.test.manifest)
+    add("layoutTestImplementation", libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     // Hilt

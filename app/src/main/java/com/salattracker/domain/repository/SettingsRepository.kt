@@ -6,6 +6,7 @@ import com.salattracker.domain.model.HighLatitudeRule
 import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.ThemeMode
+import com.salattracker.domain.model.TimeFormatMode
 import kotlinx.coroutines.flow.Flow
 
 /** Sentinel for [UserPrefs.reminderSoundUri]: the user explicitly chose the device's own
@@ -79,6 +80,8 @@ interface SettingsRepository {
     suspend fun setHijriAdjustmentDays(days: Int)
 
     suspend fun setUse24HourFormat(enabled: Boolean)
+
+    suspend fun setTimeFormatMode(mode: TimeFormatMode)
 
     /** Also marks [UserPrefs.madhabChosen] true, so this is the single call both onboarding and
      * the one-time existing-user prompt need — there's no separate "mark chosen" setter to
@@ -156,6 +159,7 @@ data class UserPrefs(
     val reminderSoundUri: Map<PrayerType, String?> = PrayerType.values()
         .associateWith { null },
     val use24HourFormat: Boolean = false,
+    val timeFormatMode: TimeFormatMode = TimeFormatMode.SYSTEM,
     // App preferences collected at onboarding.
     val language: AppLanguage = AppLanguage.ENGLISH,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,

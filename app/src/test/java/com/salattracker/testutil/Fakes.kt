@@ -423,6 +423,10 @@ class FakeSettingsRepository(initial: UserPrefs = UserPrefs()) : SettingsReposit
         prefs.update { it.copy(use24HourFormat = enabled) }
     }
 
+    override suspend fun setTimeFormatMode(mode: com.salattracker.domain.model.TimeFormatMode) {
+        prefs.update { it.copy(timeFormatMode = mode, use24HourFormat = mode == com.salattracker.domain.model.TimeFormatMode.TWENTY_FOUR_HOUR) }
+    }
+
     override suspend fun setLanguage(language: AppLanguage) {
         languageCalls += language
         prefs.update { it.copy(language = language) }

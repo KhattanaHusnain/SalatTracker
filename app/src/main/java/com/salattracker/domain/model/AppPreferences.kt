@@ -14,6 +14,10 @@ enum class AppLanguage(val code: String, val displayName: String) {
     FRENCH("fr", "Français"),
 }
 
+/** Time display policy. Existing installs migrate their old 12/24 toggle to an explicit mode;
+ * brand-new installs follow the phone's clock preference. */
+enum class TimeFormatMode { SYSTEM, TWELVE_HOUR, TWENTY_FOUR_HOUR }
+
 /**
  * App theme mode chosen during onboarding / in Settings.
  *

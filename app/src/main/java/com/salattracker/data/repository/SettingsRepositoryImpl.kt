@@ -7,6 +7,7 @@ import com.salattracker.domain.model.HighLatitudeRule
 import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.ThemeMode
+import com.salattracker.domain.model.TimeFormatMode
 import com.salattracker.domain.repository.SettingsRepository
 import com.salattracker.domain.repository.UserPrefs
 import kotlinx.coroutines.flow.Flow
@@ -84,6 +85,8 @@ class SettingsRepositoryImpl @Inject constructor(
     override suspend fun setHijriAdjustmentDays(days: Int) = dataStore.setHijriAdjustmentDays(days)
 
     override suspend fun setUse24HourFormat(enabled: Boolean) = dataStore.setUse24HourFormat(enabled)
+
+    override suspend fun setTimeFormatMode(mode: TimeFormatMode) = dataStore.setTimeFormatMode(mode)
 
     override suspend fun setLanguage(language: AppLanguage) = dataStore.setLanguage(language)
 

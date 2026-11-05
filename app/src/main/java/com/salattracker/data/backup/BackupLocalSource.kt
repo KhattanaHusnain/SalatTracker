@@ -202,6 +202,7 @@ class RoomBackupLocalSource @Inject constructor(
             locationLabel             = s.locationLabel,
         )
         settingsRepository.setHijriAdjustmentDays(s.hijriAdjustmentDays)
+        settingsRepository.setTimeFormatMode(s.timeFormatMode)
         settingsRepository.setOnboardingCompleted(true)
         qazaPreferencesRepository.save(snapshot.qazaPreferences)
 

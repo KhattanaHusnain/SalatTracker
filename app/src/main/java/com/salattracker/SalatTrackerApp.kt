@@ -11,6 +11,7 @@ import com.salattracker.notification.BackupWorker
 import com.salattracker.notification.GoalReminderWorker
 import com.salattracker.notification.MosqueModeSyncWorker
 import com.salattracker.notification.PrayerReminderWorker
+import com.salattracker.widget.WidgetUpdateScheduler
 import com.salattracker.notification.QazaAutoMarkWorker
 import com.salattracker.notification.QuranSeedWorker
 import dagger.hilt.android.HiltAndroidApp
@@ -35,6 +36,7 @@ class SalatTrackerApp : Application(), Configuration.Provider {
         createNotificationChannels()
         PrayerReminderWorker.enqueueOneTime(workManager)
         PrayerReminderWorker.enqueuePeriodic(workManager)
+        WidgetUpdateScheduler.enqueuePeriodic(this)
         QazaAutoMarkWorker.enqueuePeriodic(workManager)
         GoalReminderWorker.enqueueOneTime(workManager)
         GoalReminderWorker.enqueuePeriodic(workManager)

@@ -57,6 +57,30 @@
             android:turnScreenOn="true"
             android:theme="@style/Theme.SalatTracker" />
 
+        <activity
+            android:name=".widget.WidgetConfigActivity"
+            android:exported="false"
+            android:theme="@style/Theme.SalatTracker" />
+
+        <receiver android:name=".widget.WidgetTransitionReceiver" android:exported="false" />
+
+        <receiver android:name=".widget.SmallMonoAllWidgetProvider" android:exported="false"><intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter><meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_small_mono_all" /></receiver>
+        <receiver android:name=".widget.SmallMonoFocusWidgetProvider" android:exported="false"><intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter><meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_small_mono_focus" /></receiver>
+        <receiver android:name=".widget.SmallThemeAllWidgetProvider" android:exported="false"><intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter><meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_small_theme_all" /></receiver>
+        <receiver android:name=".widget.SmallThemeFocusWidgetProvider" android:exported="false"><intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter><meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_small_theme_focus" /></receiver>
+        <receiver android:name=".widget.MediumMonoAllWidgetProvider" android:exported="false"><intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter><meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_medium_mono_all" /></receiver>
+        <receiver android:name=".widget.MediumMonoFocusWidgetProvider" android:exported="false"><intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter><meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_medium_mono_focus" /></receiver>
+        <receiver android:name=".widget.MediumThemeAllWidgetProvider" android:exported="false"><intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter><meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_medium_theme_all" /></receiver>
+        <receiver android:name=".widget.MediumThemeFocusWidgetProvider" android:exported="false"><intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter><meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_medium_theme_focus" /></receiver>
+        <receiver android:name=".widget.LargeMonoAllWidgetProvider" android:exported="false"><intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter><meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_large_mono_all" /></receiver>
+        <receiver android:name=".widget.LargeMonoFocusWidgetProvider" android:exported="false"><intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter><meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_large_mono_focus" /></receiver>
+        <receiver android:name=".widget.LargeThemeAllWidgetProvider" android:exported="false"><intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter><meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_large_theme_all" /></receiver>
+        <receiver android:name=".widget.LargeThemeFocusWidgetProvider" android:exported="false"><intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter><meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_large_theme_focus" /></receiver>
+        <receiver android:name=".widget.LockMonoAllWidgetProvider" android:exported="false"><intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter><meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_lock_mono_all" /></receiver>
+        <receiver android:name=".widget.LockMonoFocusWidgetProvider" android:exported="false"><intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter><meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_lock_mono_focus" /></receiver>
+        <receiver android:name=".widget.LockThemeAllWidgetProvider" android:exported="false"><intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter><meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_lock_theme_all" /></receiver>
+        <receiver android:name=".widget.LockThemeFocusWidgetProvider" android:exported="false"><intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter><meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_lock_theme_focus" /></receiver>
+
         <receiver
             android:name=".notification.PrayerReminderReceiver"
             android:enabled="true"
@@ -80,6 +104,8 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
                 <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.DATE_CHANGED" />
             </intent-filter>
         </receiver>
 

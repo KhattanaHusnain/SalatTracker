@@ -2,15 +2,26 @@ package com.salattracker.data.local.preferences
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
+import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
+import com.salattracker.widget.WidgetUpdateScheduler
 import com.salattracker.domain.model.AppLanguage
 import com.salattracker.domain.model.Gender
 import com.salattracker.domain.model.HighLatitudeRule
 import com.salattracker.domain.model.Madhab
 import com.salattracker.domain.model.PrayerType
 import com.salattracker.domain.model.ThemeMode
+import com.salattracker.domain.model.TimeFormatMode
+import android.text.format.DateFormat
 import com.salattracker.domain.repository.SettingsRepository
 import com.salattracker.domain.repository.UserPrefs
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -20,8 +31,19 @@ import javax.inject.Singleton
 
 @Singleton
 class DataStoreSettingsRepository @Inject constructor(
+    @ApplicationContext private val appContext: Context,
     private val dataStore: DataStore<Preferences>,
 ) : SettingsRepository {
+
+    private val widgetRefreshScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    init {
+        // Covers calculation, location, language, Hijri, and time-format changes without
+        // duplicating widget refresh calls in every granular setting writer.
+        widgetRefreshScope.launch {
+            dataStore.data.drop(1).collect { WidgetUpdateScheduler.enqueue(appContext) }
+        }
+    }
 
     // ── Keys ──────────────────────────────────────────────────────────────────
 
@@ -33,6 +55,7 @@ class DataStoreSettingsRepository @Inject constructor(
         val CALCULATION_METHOD_ID = intPreferencesKey("calculation_method_id")
         val HIJRI_ADJUSTMENT_DAYS = intPreferencesKey("hijri_adjustment_days")
         val USE_24_HOUR           = booleanPreferencesKey("use_24_hour")
+        val TIME_FORMAT_MODE       = stringPreferencesKey("time_format_mode")
         val LANGUAGE              = stringPreferencesKey("language")
         val THEME_MODE            = stringPreferencesKey("theme_mode")
         val ONBOARDING_COMPLETED  = booleanPreferencesKey("onboarding_completed")
@@ -82,7 +105,17 @@ class DataStoreSettingsRepository @Inject constructor(
     override suspend fun getCurrentPrefs(): UserPrefs =
         dataStore.data.first().toUserPrefs()
 
-    private fun Preferences.toUserPrefs() = UserPrefs(
+    private fun Preferences.toUserPrefs(): UserPrefs {
+        val savedMode = this[Keys.TIME_FORMAT_MODE]?.let { runCatching { TimeFormatMode.valueOf(it) }.getOrNull() }
+        val formatMode = savedMode ?: if (contains(Keys.USE_24_HOUR)) {
+            if (this[Keys.USE_24_HOUR] == true) TimeFormatMode.TWENTY_FOUR_HOUR else TimeFormatMode.TWELVE_HOUR
+        } else TimeFormatMode.SYSTEM
+        val use24 = when (formatMode) {
+            TimeFormatMode.SYSTEM -> DateFormat.is24HourFormat(appContext)
+            TimeFormatMode.TWELVE_HOUR -> false
+            TimeFormatMode.TWENTY_FOUR_HOUR -> true
+        }
+        return UserPrefs(
         useDeviceLocation    = this[Keys.USE_DEVICE_LOCATION]   ?: true,
         latitude             = this[Keys.LATITUDE]               ?: 0.0,
         longitude            = this[Keys.LONGITUDE]              ?: 0.0,
@@ -107,7 +140,8 @@ class DataStoreSettingsRepository @Inject constructor(
         reminderSoundUri      = PrayerType.values().associateWith { type ->
             this[Keys.reminderSound(type)]
         },
-        use24HourFormat      = this[Keys.USE_24_HOUR]            ?: false,
+        use24HourFormat      = use24,
+        timeFormatMode       = formatMode,
         language             = this[Keys.LANGUAGE]?.let { runCatching { AppLanguage.valueOf(it) }.getOrNull() }
             ?: AppLanguage.ENGLISH,
         themeMode            = this[Keys.THEME_MODE]?.let { runCatching { ThemeMode.valueOf(it) }.getOrNull() }
@@ -125,7 +159,8 @@ class DataStoreSettingsRepository @Inject constructor(
         jumuahReminderLeadMinutes = this[Keys.JUMUAH_REMINDER_LEAD] ?: 0,
         gender               = this[Keys.GENDER]?.let { runCatching { Gender.valueOf(it) }.getOrNull() },
         locationLabel        = this[Keys.LOCATION_LABEL],
-    )
+        )
+    }
 
     // ── Write ─────────────────────────────────────────────────────────────────
 
@@ -200,7 +235,14 @@ class DataStoreSettingsRepository @Inject constructor(
     }
 
     override suspend fun setUse24HourFormat(enabled: Boolean) {
-        dataStore.edit { it[Keys.USE_24_HOUR] = enabled }
+        setTimeFormatMode(if (enabled) TimeFormatMode.TWENTY_FOUR_HOUR else TimeFormatMode.TWELVE_HOUR)
+    }
+
+    override suspend fun setTimeFormatMode(mode: TimeFormatMode) {
+        dataStore.edit { prefs ->
+            prefs[Keys.TIME_FORMAT_MODE] = mode.name
+            prefs[Keys.USE_24_HOUR] = mode == TimeFormatMode.TWENTY_FOUR_HOUR
+        }
     }
 
     override suspend fun setLanguage(language: AppLanguage) {

@@ -1,6 +1,9 @@
 package com.salattracker.data.repository
 
 import androidx.room.withTransaction
+import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
+import com.salattracker.widget.WidgetUpdateScheduler
 import com.salattracker.data.local.dao.*
 import com.salattracker.data.local.db.SalatDatabase
 import com.salattracker.data.local.entity.*
@@ -20,6 +23,7 @@ const val LOCAL_USER_ID = "local"
 
 @Singleton
 class PrayerRepositoryImpl @Inject constructor(
+    @ApplicationContext private val appContext: Context,
     private val prayerDao: PrayerDao,
     private val streakDao: StreakDao,
     private val prayerTimeCalculator: PrayerTimeCalculator,
@@ -342,6 +346,9 @@ class PrayerRepositoryImpl @Inject constructor(
                 )
             )
         }
+        // A prayer save, correction, or restore can change both completion markers and streaks.
+        // Coalesce the actual widget redraw through WorkManager rather than drawing in a database call.
+        WidgetUpdateScheduler.enqueue(appContext)
     }
 }
 

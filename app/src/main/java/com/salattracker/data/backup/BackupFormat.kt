@@ -190,6 +190,7 @@ private data class SettingsDto(
     @SerializedName("reminderVibrationEnabled") val reminderVibrationEnabled: Map<String, Boolean>?,
     @SerializedName("reminderSoundUri") val reminderSoundUri: Map<String, String?>?,
     @SerializedName("use24HourFormat") val use24HourFormat: Boolean?,
+    @SerializedName("timeFormatMode") val timeFormatMode: String?,
     @SerializedName("language") val language: String?,
     @SerializedName("themeMode") val themeMode: String?,
     // Added after format v1; absent in older backups. madhab == null is also how a restore
@@ -385,6 +386,7 @@ object BackupCodec {
                 type.name to settings.reminderSoundUri[type]?.takeUnless { it.startsWith("content:") }
             },
             use24HourFormat         = settings.use24HourFormat,
+            timeFormatMode           = settings.timeFormatMode.name,
             language                = settings.language.name,
             themeMode               = settings.themeMode.name,
             // null when the source device hasn't chosen a madhab yet, so a restore on any
@@ -531,6 +533,9 @@ object BackupCodec {
                 reminderSoundUri?.get(type.name)?.takeUnless { it.startsWith("content:") }
             },
             use24HourFormat         = use24HourFormat ?: false,
+            timeFormatMode = timeFormatMode?.let { runCatching { com.salattracker.domain.model.TimeFormatMode.valueOf(it) }.getOrNull() }
+                ?: if (use24HourFormat == true) com.salattracker.domain.model.TimeFormatMode.TWENTY_FOUR_HOUR
+                else com.salattracker.domain.model.TimeFormatMode.TWELVE_HOUR,
             language = language?.let { runCatching { com.salattracker.domain.model.AppLanguage.valueOf(it) }.getOrNull() }
                 ?: com.salattracker.domain.model.AppLanguage.ENGLISH,
             themeMode = themeMode?.let { runCatching { com.salattracker.domain.model.ThemeMode.valueOf(it) }.getOrNull() }
